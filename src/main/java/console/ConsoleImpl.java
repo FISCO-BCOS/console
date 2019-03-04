@@ -137,7 +137,10 @@ public class ConsoleImpl implements ConsoleFace {
       {
     	  System.out.println("Don't connect a removed node.");
       }
-      System.out.println(e.getMessage());
+      else
+      {
+    	  System.out.println(e.getMessage());
+      }
 	  close();
     }
     catch(Exception e) {
