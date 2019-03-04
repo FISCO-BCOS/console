@@ -32,9 +32,11 @@ import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
 import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
+import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.fisco.bcos.web3j.tx.Contract;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -59,6 +61,7 @@ public class ConsoleImpl implements ConsoleFace {
   private RemoteCall<?> remoteCall;
   private String privateKey = "";
   public static int groupID;
+  public static final int InvalidRequest = 40009;
   private ChannelEthereumService channelEthereumService = new ChannelEthereumService();
 
   public void init(String[] args) {
@@ -125,8 +128,17 @@ public class ConsoleImpl implements ConsoleFace {
     channelEthereumService.setTimeout(60000);
     web3j = Web3j.build(channelEthereumService, groupID);
     try {
-      web3j.getBlockNumber().send().getBlockNumber();
-    } catch (IOException e) {
+      web3j.getBlockNumber().sendForReturnString();
+    } 
+    catch(ResponseExcepiton e) {
+      if(e.getCode() == InvalidRequest)
+      {
+    	  System.out.println("Don't connect a removed node.");
+      }
+      System.out.println(e.getMessage());
+	  close();
+    }
+    catch(Exception e) {
       System.out.println(
           "Failed to connect blockchain, please check running status for blockchain and configruation for console.");
       close();
