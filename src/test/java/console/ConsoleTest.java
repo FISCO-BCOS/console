@@ -3,8 +3,6 @@ package console;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import org.fisco.bcos.web3j.console.ConsoleFace;
-import org.fisco.bcos.web3j.console.ConsoleImpl;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;
