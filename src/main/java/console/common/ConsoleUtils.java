@@ -158,14 +158,15 @@ public class ConsoleUtils {
   public static void dynamicLoadClass()
       throws NoSuchMethodException, MalformedURLException, InvocationTargetException,
           IllegalAccessException, ClassNotFoundException {
-
-    int clazzCount = 0;
     File clazzPath = new File(TARGETCLASSPATH);
-
+    
     if (clazzPath.exists() && clazzPath.isDirectory()) {
-
       int clazzPathLen = clazzPath.getAbsolutePath().length() + 1;
-
+      
+      URL[] urls = new URL[1];
+      urls[0] = clazzPath.toURI().toURL();
+      URLClassLoader classLoader = new URLClassLoader(urls);
+        
       Stack<File> stack = new Stack<>();
       stack.push(clazzPath);
 
@@ -182,26 +183,13 @@ public class ConsoleUtils {
           if (subFile.isDirectory()) {
             stack.push(subFile);
           } else {
-            if (clazzCount++ == 0) {
-              Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-              boolean accessible = method.isAccessible();
-              try {
-                if (!accessible) {
-                  method.setAccessible(true);
-                }
-                URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-                method.invoke(classLoader, clazzPath.toURI().toURL());
-              } finally {
-                method.setAccessible(accessible);
-              }
-            }
             String className = subFile.getAbsolutePath();
             if (className.contains("$")) {
               continue;
             }
             className = className.substring(clazzPathLen, className.length() - 6);
             className = className.replace(File.separatorChar, '.');
-            Class.forName(className);
+            Class.forName(className, true, classLoader);
           }
         }
       }
