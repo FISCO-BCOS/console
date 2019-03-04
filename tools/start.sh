@@ -32,7 +32,5 @@ if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
     exit 0
 else
-	java -cp "apps/*:conf/:lib/*:classes/" org.fisco.bcos.web3j.console.ConsoleClient $1 $2    
+	java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $1 $2    
 fi
-
-
