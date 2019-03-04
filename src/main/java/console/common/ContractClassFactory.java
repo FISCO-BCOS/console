@@ -11,11 +11,6 @@ import org.fisco.bcos.web3j.tuples.Tuple;
 
 public class ContractClassFactory {
 
-  public static Class<?> getContractClass(String contractName)
-      throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-    return (Class<?>) Class.forName(contractName);
-  }
-
   @SuppressWarnings("rawtypes")
   public static Class[] getParameterType(Class clazz, String methodName, int paramsLen)
       throws ClassNotFoundException {
