@@ -88,7 +88,8 @@ public class ConsoleClient {
       completers.add(new ArgumentCompleter(new StringsCompleter("grantSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("revokeSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("listSysConfigManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey")));
+      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter("tx_count_limit")));
+      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter("tx_gas_limit")));
       completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey")));
       completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
 
@@ -297,7 +298,7 @@ public class ConsoleClient {
         System.out.println();
       } catch (IOException e) {
         if (e.getMessage().startsWith("activeConnections")) {
-          System.out.println("Please check the connection between sdk to node.");
+          System.out.println("Please check the connection between console to node.");
         } else if (e.getMessage().startsWith("No value")) {
           System.out.println(
               "The groupID is not configured in dist/conf/applicationContext.xml file.");

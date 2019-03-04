@@ -15,7 +15,29 @@ public class ContractClassFactory {
       throws ClassNotFoundException, InstantiationException, IllegalAccessException {
     return (Class<?>) Class.forName(contractName);
   }
+  
+  public static Method getDeployFunction(Class<?> contractClass) {
+      Method[] methods = contractClass.getDeclaredMethods();
+      Class[] type = null;
+      for (Method method : methods) {
+          if ("deploy".equals(method.getName())) {
 
+              Class[] paramsType = method.getParameterTypes();
+              List<String> ilist = new ArrayList<>();
+              for (Class param : paramsType) {
+                  ilist.add(param.getCanonicalName());
+              }
+
+              if (ilist.contains("org.fisco.bcos.web3j.protocol.Web3j") && ilist.contains("org.fisco.bcos.web3j.crypto.Credentials") && ilist.contains("org.fisco.bcos.web3j.tx.gas.ContractGasProvider")) {
+                  return method;
+              }
+          }
+      }
+      return null;
+  }
+  
+  
+  
   @SuppressWarnings("rawtypes")
   public static Class[] getParameterType(Class clazz, String methodName, int paramsLen)
       throws ClassNotFoundException {
@@ -38,13 +60,13 @@ public class ContractClassFactory {
   }
 
   @SuppressWarnings("rawtypes")
-  public static Object[] getPrametersObject(String funcName, Class[] type, String[] params) {
-    Object[] obj = new Object[params.length - 4];
+  public static Object[] getPrametersObject(String funcName, Class[] type, String[] params, String generics) {
+    Object[] obj = new Object[params.length];
     for (int i = 0; i < obj.length; i++) {
       if (type[i] == String.class) {
-        if (params[i + 4].startsWith("\"") && params[i + 4].endsWith("\"")) {
+        if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
           try {
-            obj[i] = params[i + 4].substring(1, params[i + 4].length() - 1);
+            obj[i] = params[i].substring(1, params[i].length() - 1);
           } catch (Exception e) {
             System.out.println(
                 "Please provide double quote for String that cannot contain any blank spaces.");
@@ -59,7 +81,7 @@ public class ContractClassFactory {
         }
       } else if (type[i] == Boolean.class) {
         try {
-          obj[i] = Boolean.parseBoolean(params[i + 4]);
+          obj[i] = Boolean.parseBoolean(params[i]);
         } catch (Exception e) {
           System.out.println(
               "The " + (i + 1) + "th parameter of " + funcName + " needs boolean value.");
@@ -68,7 +90,7 @@ public class ContractClassFactory {
         }
       } else if (type[i] == BigInteger.class) {
         try {
-          obj[i] = new BigInteger(params[i + 4]);
+          obj[i] = new BigInteger(params[i]);
         } catch (Exception e) {
           System.out.println(
               "The " + (i + 1) + "th parameter of " + funcName + " needs integer value.");
@@ -76,9 +98,9 @@ public class ContractClassFactory {
           return null;
         }
       } else if (type[i] == byte[].class) {
-        if (params[i + 4].startsWith("\"") && params[i + 4].endsWith("\"")) {
+        if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
           byte[] bytes1 = new byte[Integer.MAX_VALUE];
-          byte[] bytes2 = params[i + 4].substring(1, params[i + 4].length() - 1).getBytes();
+          byte[] bytes2 = params[i].substring(1, params[i].length() - 1).getBytes();
           for (int j = 0; j < bytes2.length; j++) {
             bytes1[j] = bytes2[j];
           }
@@ -88,7 +110,36 @@ public class ContractClassFactory {
           System.out.println();
           return null;
         }
-      }
+      } else if(type[i] == List.class) {
+
+          if (params[i].startsWith("[") && params[i].endsWith("]")) {
+	            try {
+		              String listParams = params[i].substring(1, params[i].length() - 1);
+		              String[] ilist = listParams.split(",");
+		              List paramsList = new ArrayList();
+		              if(generics.contains("String")) {
+		                paramsList = new ArrayList<String>();
+		                for (int j = 0 ;j < ilist.length; j++) {
+		                  paramsList.add(ilist[j].substring(1, ilist[j].length() - 1));
+		                }
+		
+		              }
+		              else if(generics.contains("BigInteger")){
+		                 paramsList = new ArrayList<BigInteger>();
+		                for (int j = 0 ;j < ilist.length; j++) {
+		                  paramsList.add(new BigInteger(ilist[j]));
+		                }
+		
+		                obj[i] =paramsList;
+		                }
+		              }
+		              catch (Exception e)
+		              {
+		            	  System.out.println(e.getMessage());
+		              }
+	            
+	            }
+            }
     }
     return obj;
   }
