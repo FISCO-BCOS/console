@@ -158,42 +158,6 @@ public class ConsoleUtils {
   public static void dynamicLoadClass()
       throws NoSuchMethodException, MalformedURLException, InvocationTargetException,
           IllegalAccessException, ClassNotFoundException {
-    File clazzPath = new File(TARGETCLASSPATH);
-    
-    if (clazzPath.exists() && clazzPath.isDirectory()) {
-      int clazzPathLen = clazzPath.getAbsolutePath().length() + 1;
-      
-      URL[] urls = new URL[1];
-      urls[0] = clazzPath.toURI().toURL();
-      URLClassLoader classLoader = new URLClassLoader(urls);
-        
-      Stack<File> stack = new Stack<>();
-      stack.push(clazzPath);
-
-      while (!stack.isEmpty()) {
-        File path = stack.pop();
-        File[] classFiles =
-            path.listFiles(
-                new FileFilter() {
-                  public boolean accept(File pathname) {
-                    return pathname.isDirectory() || pathname.getName().endsWith(".class");
-                  }
-                });
-        for (File subFile : classFiles) {
-          if (subFile.isDirectory()) {
-            stack.push(subFile);
-          } else {
-            String className = subFile.getAbsolutePath();
-            if (className.contains("$")) {
-              continue;
-            }
-            className = className.substring(clazzPathLen, className.length() - 6);
-            className = className.replace(File.separatorChar, '.');
-            Class.forName(className, true, classLoader);
-          }
-        }
-      }
-    }
   }
 
   public static void dynamicCompileSolFilesToJava() throws IOException {
