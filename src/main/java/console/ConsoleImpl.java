@@ -1166,7 +1166,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = consensusService.addSealer(nodeId);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1199,7 +1199,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = consensusService.addObserver(nodeId);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1231,7 +1231,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = consensusService.removeNode(nodeId);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1268,7 +1268,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.grantUserTableManager(tableName, addr);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1304,7 +1304,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.revokeUserTableManager(tableName, addr);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1355,7 +1355,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.grantDeployAndCreateManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1386,7 +1386,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.revokeDeployAndCreateManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1427,7 +1427,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.grantPermissionManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1458,7 +1458,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.revokePermissionManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1499,7 +1499,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.grantNodeManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1530,7 +1530,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.revokeNodeManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1571,7 +1571,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.grantCNSManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1602,7 +1602,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.revokeCNSManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1643,7 +1643,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.grantSysConfigManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1674,7 +1674,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = permission.revokeSysConfigManager(address);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}
@@ -1719,7 +1719,7 @@ public class ConsoleImpl implements ConsoleFace {
 	try {
 		result = systemConfigSerivce.setValueByKey(key, value);
 	} catch (Exception e) {
-		System.out.println(OpertionFailed);
+		System.out.println(OutOfTime);
 		System.out.println();
 		return;
 	}

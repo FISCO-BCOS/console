@@ -18,6 +18,7 @@ import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
+import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
 
@@ -88,9 +89,10 @@ public class ConsoleClient {
       completers.add(new ArgumentCompleter(new StringsCompleter("grantSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("revokeSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("listSysConfigManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter("tx_count_limit")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter("tx_gas_limit")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey")));
+      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.txGasLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.txGasLimit)));
       completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
 
       Terminal terminal = TerminalBuilder.terminal();
@@ -105,7 +107,7 @@ public class ConsoleClient {
     }
 
     while (true) {
-      String request = lineReader.readLine(ConsoleImpl.groupID+"> ").trim().replaceAll(" +", " ");
+      String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ").trim().replaceAll(" +", " ");
       String[] params = request.split(" ");
       if (params.length < 1) {
         System.out.print("");
