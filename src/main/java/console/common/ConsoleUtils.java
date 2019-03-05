@@ -163,54 +163,6 @@ public class ConsoleUtils {
   public static void dynamicLoadClass()
       throws NoSuchMethodException, MalformedURLException, InvocationTargetException,
           IllegalAccessException, ClassNotFoundException {
-
-    int clazzCount = 0;
-    File clazzPath = new File(TARGETCLASSPATH);
-
-    if (clazzPath.exists() && clazzPath.isDirectory()) {
-
-      int clazzPathLen = clazzPath.getAbsolutePath().length() + 1;
-
-      Stack<File> stack = new Stack<>();
-      stack.push(clazzPath);
-
-      while (!stack.isEmpty()) {
-        File path = stack.pop();
-        File[] classFiles =
-            path.listFiles(
-                new FileFilter() {
-                  public boolean accept(File pathname) {
-                    return pathname.isDirectory() || pathname.getName().endsWith(".class");
-                  }
-                });
-        for (File subFile : classFiles) {
-          if (subFile.isDirectory()) {
-            stack.push(subFile);
-          } else {
-            if (clazzCount++ == 0) {
-              Method method = URLClassLoader.class.getDeclaredMethod("addURL", URL.class);
-              boolean accessible = method.isAccessible();
-              try {
-                if (!accessible) {
-                  method.setAccessible(true);
-                }
-                URLClassLoader classLoader = (URLClassLoader) ClassLoader.getSystemClassLoader();
-                method.invoke(classLoader, clazzPath.toURI().toURL());
-              } finally {
-                method.setAccessible(accessible);
-              }
-            }
-            String className = subFile.getAbsolutePath();
-            if (className.contains("$")) {
-              continue;
-            }
-            className = className.substring(clazzPathLen, className.length() - 6);
-            className = className.replace(File.separatorChar, '.');
-            Class.forName(className);
-          }
-        }
-      }
-    }
   }
 
   public static void dynamicCompileSolFilesToJava() throws IOException {

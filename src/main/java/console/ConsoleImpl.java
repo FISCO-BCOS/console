@@ -757,6 +757,7 @@ public class ConsoleImpl implements ConsoleFace {
     try {
       contractClass = ContractClassFactory.getContractClass(contractName);
     } catch (Exception e) {
+      e.printStackTrace();
       System.out.println(
           "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
       System.out.println();
