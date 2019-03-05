@@ -20,7 +20,7 @@ public class ContractClassFactory {
   public static final String TARGETCLASSPATH = "solidity/java/classes";
 
   public static Class<?> getContractClass(String contractName)
-      throws ClassNotFoundException, InstantiationException, IllegalAccessException, MalformedURLException {
+      throws ClassNotFoundException, MalformedURLException {
 
     File clazzPath = new File(TARGETCLASSPATH);
 
@@ -66,7 +66,6 @@ public class ContractClassFactory {
   
   public static Method getDeployFunction(Class<?> contractClass) {
       Method[] methods = contractClass.getDeclaredMethods();
-      Class[] type = null;
       for (Method method : methods) {
           if ("deploy".equals(method.getName())) {
 
@@ -88,7 +87,7 @@ public class ContractClassFactory {
   
   @SuppressWarnings("rawtypes")
   public static Class[] getParameterType(Class clazz, String methodName, int paramsLen)
-      throws ClassNotFoundException {
+          throws ClassNotFoundException, IllegalAccessException, MalformedURLException, InstantiationException {
     Method[] methods = clazz.getDeclaredMethods();
     Class[] type = null;
     for (Method method : methods) {
@@ -147,8 +146,9 @@ public class ContractClassFactory {
         }
       } else if (type[i] == byte[].class) {
         if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-          byte[] bytes1 = new byte[Integer.MAX_VALUE];
-          byte[] bytes2 = params[i].substring(1, params[i].length() - 1).getBytes();
+            byte[] bytes2 = params[i].substring(1, params[i].length() - 1).getBytes();
+            byte[] bytes1 = new byte[32];
+
           for (int j = 0; j < bytes2.length; j++) {
             bytes1[j] = bytes2[j];
           }
@@ -185,7 +185,7 @@ public class ContractClassFactory {
 		                for (int j = 0; j < ilist.length; j++) {
 		                  if (ilist[j].startsWith("\"") && ilist[j].endsWith("\"")) {
 		                    byte[] bytes = ilist[j].substring(1, ilist[j].length() - 1).getBytes();
-		                    byte[] bytes1 = new byte[bytes.length];
+		                    byte[] bytes1 = new byte[32];
 		                    byte[] bytes2 = bytes;
 		                    for (int k = 0; k < bytes2.length; k++) {
 		                      bytes1[k] = bytes2[k];
@@ -210,7 +210,7 @@ public class ContractClassFactory {
   @SuppressWarnings("rawtypes")
   public static String getReturnObject(
       Class clazz, String methodName, Class[] parameterType, Object result)
-      throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException,
+      throws  IllegalAccessException, IllegalArgumentException,
           InvocationTargetException, NoSuchMethodException, SecurityException {
     Method[] methods = clazz.getDeclaredMethods();
     for (Method method : methods) {
