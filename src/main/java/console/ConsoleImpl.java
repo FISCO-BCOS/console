@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +33,11 @@ import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
 import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
+import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.fisco.bcos.web3j.tx.Contract;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -49,11 +52,11 @@ import static console.common.ContractClassFactory.getContractClass;
 public class ConsoleImpl implements ConsoleFace {
 
   private Service service = null;
-  private Web3j web3j = null;
-  private java.math.BigInteger gasPrice = new BigInteger("1");
-  private java.math.BigInteger gasLimit = new BigInteger("30000000");
+  private static Web3j web3j = null;
+  private static java.math.BigInteger gasPrice = new BigInteger("1");
+  private static java.math.BigInteger gasLimit = new BigInteger("30000000");
   private ECKeyPair keyPair;
-  private Credentials credentials;
+  private static Credentials credentials;
   private String contractAddress;
   private String contractName;
   private String contractVersion;
@@ -61,6 +64,8 @@ public class ConsoleImpl implements ConsoleFace {
   private RemoteCall<?> remoteCall;
   private String privateKey = "";
   public static int groupID;
+  public static final int InvalidRequest = 40009;
+  public static final String OutOfTime = "Transaction receipt was not generated after 60 seconds.";
   private ChannelEthereumService channelEthereumService = new ChannelEthereumService();
 
   public void init(String[] args) {
@@ -127,8 +132,20 @@ public class ConsoleImpl implements ConsoleFace {
     channelEthereumService.setTimeout(60000);
     web3j = Web3j.build(channelEthereumService, groupID);
     try {
-      web3j.getBlockNumber().send().getBlockNumber();
-    } catch (IOException e) {
+      web3j.getBlockNumber().sendForReturnString();
+    } 
+    catch(ResponseExcepiton e) {
+      if(e.getCode() == InvalidRequest)
+      {
+    	  System.out.println("Don't connect a removed node.");
+      }
+      else
+      {
+    	  System.out.println(e.getMessage());
+      }
+	  close();
+    }
+    catch(Exception e) {
       System.out.println(
           "Failed to connect blockchain, please check running status for blockchain and configruation for console.");
       close();
@@ -219,7 +236,7 @@ public class ConsoleImpl implements ConsoleFace {
         "getTransactionReceipt                    Query the receipt of a transaction by transaction hash.\n");
     sb.append("getPendingTransactions                   Query pending transactions.\n");
     sb.append("getPendingTxSize                         Query pending transactions size.\n");
-    sb.append("getCode(gc)                              Query code at a given address.\n");
+    sb.append("getCode                                  Query code at a given address.\n");
     sb.append("getTotalTransactionCount                 Query total transaction count.\n");
     sb.append("deploy                                   Deploy a contract on blockchain.\n");
     sb.append(
@@ -717,10 +734,10 @@ public class ConsoleImpl implements ConsoleFace {
       HelpInfo.promptHelp("deploy");
       return;
     }
-    if (params.length > 2) {
-      HelpInfo.promptHelp("deploy");
-      return;
-    }
+//    if (params.length > 2) {
+//      HelpInfo.promptHelp("deploy");
+//      return;
+//    }
     if ("-h".equals(params[1]) || "--help".equals(params[1])) {
       HelpInfo.deployHelp();
       return;
@@ -749,10 +766,27 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     ContractGasProvider gasProvider = new StaticGasProvider(gasPrice, gasLimit);
-    Method deploy =
-        contractClass.getMethod(
-            "deploy", Web3j.class, Credentials.class, ContractGasProvider.class);
-    remoteCall = (RemoteCall<?>) deploy.invoke(null, web3j, credentials, gasProvider);
+//    Method deploy =
+//        contractClass.getMethod(
+//            "deploy", Web3j.class, Credentials.class, ContractGasProvider.class);
+   Method method =  ContractClassFactory.getDeployFunction(contractClass);
+   
+   String generic = "";
+   Type[] classType = method.getParameterTypes();
+   for (int i = 0; i < classType.length; i++) {
+       if (classType[i].getTypeName().equals("java.util.List")) {
+           generic = method.getGenericParameterTypes()[i].getTypeName();
+       }
+   }
+   Class[] classList = new Class[classType.length];
+   for (int i = 0; i < classType.length; i++) {
+       Class clazz = (Class) classType[i];
+       classList[i] = clazz;
+   }
+   String[] newParams = new String[params.length-2];
+   System.arraycopy(params, 2, newParams, 0, params.length - 2);
+   Object[] obj = getDeployPrametersObject("deploy", classList, newParams, generic);
+    remoteCall = (RemoteCall<?>) method.invoke(null, obj);
     Contract contract;
 	try {
 		contract = (Contract) remoteCall.send();
@@ -772,7 +806,7 @@ public class ConsoleImpl implements ConsoleFace {
     System.out.println(contractAddress);
     System.out.println();
   }
-
+  
   @Override
   public void call(String[] params) throws Exception {
     if (params.length < 2) {
@@ -820,6 +854,20 @@ public class ConsoleImpl implements ConsoleFace {
     }
     contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
     String funcName = params[3];
+    Method[] methods = contractClass.getDeclaredMethods();
+    Class[] type = null;
+    Method method = ContractClassFactory.getMethodByName(funcName, methods);
+    String[] generic = new String[method.getParameterCount()];
+    Type[] classType = method.getParameterTypes();
+    for (int i = 0; i < classType.length; i++) {
+    	generic[i]= method.getGenericParameterTypes()[i].getTypeName();
+    }
+    Class[] classList = new Class[classType.length];
+    for (int i = 0; i < classType.length; i++) {
+        Class clazz = (Class) classType[i];
+        classList[i] = clazz;
+    }
+    
     Class[] parameterType =
         ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
     if (parameterType == null) {
@@ -827,7 +875,9 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     Method func = contractClass.getMethod(funcName, parameterType);
-    Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, params);
+    String[] newParams = new String[params.length - 4];
+    System.arraycopy(params, 4, newParams, 0, params.length - 4);
+    Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, newParams,generic);
     if (argobj == null) {
       return;
     }
@@ -1008,9 +1058,21 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
-
-    Method[] methods = contractClass.getMethods();
     String funcName = params[3];
+    Method[] methods = contractClass.getMethods();
+    Class[] type = null;
+    Method method = ContractClassFactory.getMethodByName(funcName, methods);
+    String[] generic = new String[method.getParameterCount()];
+    Type[] classType = method.getParameterTypes();
+    for (int i = 0; i < classType.length; i++) {
+    	generic[i]= method.getGenericParameterTypes()[i].getTypeName();
+    }
+    
+    Class[] classList = new Class[classType.length];
+    for (int i = 0; i < classType.length; i++) {
+        Class clazz = (Class) classType[i];
+        classList[i] = clazz;
+    }
     Class[] parameterType =
         ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
     if (parameterType == null) {
@@ -1018,7 +1080,9 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     Method func = contractClass.getMethod(funcName, parameterType);
-    Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, params);
+    String[] newParams = new String[params.length - 4];
+    System.arraycopy(params, 4, newParams, 0, params.length - 4);
+    Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, newParams, generic);
     if (argobj == null) {
       return;
     }
@@ -1108,7 +1172,14 @@ public class ConsoleImpl implements ConsoleFace {
       ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
     } else {
       ConsensusService consensusService = new ConsensusService(web3j, credentials);
-      String result = consensusService.addSealer(nodeId);
+      String result;
+	try {
+		result = consensusService.addSealer(nodeId);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
       ConsoleUtils.printJson(result);
     }
     System.out.println();
@@ -1134,7 +1205,14 @@ public class ConsoleImpl implements ConsoleFace {
       ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
     } else {
       ConsensusService consensusService = new ConsensusService(web3j, credentials);
-      String result = consensusService.addObserver(nodeId);
+      String result;
+	try {
+		result = consensusService.addObserver(nodeId);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
       ConsoleUtils.printJson(result);
     }
     System.out.println();
@@ -1159,7 +1237,14 @@ public class ConsoleImpl implements ConsoleFace {
       ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
     } else {
       ConsensusService consensusService = new ConsensusService(web3j, credentials);
-      String result = consensusService.removeNode(nodeId);
+      String result = null;
+	try {
+		result = consensusService.removeNode(nodeId);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
       ConsoleUtils.printJson(result);
     }
     System.out.println();
@@ -1189,7 +1274,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.grantUserTableManager(tableName, addr);
+    String result = null;
+	try {
+		result = permission.grantUserTableManager(tableName, addr);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1218,7 +1310,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.revokeUserTableManager(tableName, addr);
+    String result = null;
+	try {
+		result = permission.revokeUserTableManager(tableName, addr);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1262,7 +1361,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.grantDeployAndCreateManager(address);
+    String result;
+	try {
+		result = permission.grantDeployAndCreateManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1286,7 +1392,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.revokeDeployAndCreateManager(address);
+    String result;
+	try {
+		result = permission.revokeDeployAndCreateManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1320,7 +1433,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.grantPermissionManager(address);
+    String result;
+	try {
+		result = permission.grantPermissionManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1344,7 +1464,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.revokePermissionManager(address);
+    String result;
+	try {
+		result = permission.revokePermissionManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1378,7 +1505,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.grantNodeManager(address);
+    String result;
+	try {
+		result = permission.grantNodeManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1402,7 +1536,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.revokeNodeManager(address);
+    String result;
+	try {
+		result = permission.revokeNodeManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1436,7 +1577,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.grantCNSManager(address);
+    String result;
+	try {
+		result = permission.grantCNSManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1460,7 +1608,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.revokeCNSManager(address);
+    String result;
+	try {
+		result = permission.revokeCNSManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1494,7 +1649,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.grantSysConfigManager(address);
+    String result;
+	try {
+		result = permission.grantSysConfigManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1518,7 +1680,14 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     PermissionService permission = new PermissionService(web3j, credentials);
-    String result = permission.revokeSysConfigManager(address);
+    String result;
+	try {
+		result = permission.revokeSysConfigManager(address);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1556,7 +1725,14 @@ public class ConsoleImpl implements ConsoleFace {
 
     String[] args = {"setSystemConfig", key, value};
     SystemConfigSerivce systemConfigSerivce = new SystemConfigSerivce(web3j, credentials);
-    String result = systemConfigSerivce.setValueByKey(key, value);
+    String result;
+	try {
+		result = systemConfigSerivce.setValueByKey(key, value);
+	} catch (Exception e) {
+		System.out.println(OutOfTime);
+		System.out.println();
+		return;
+	}
     ConsoleUtils.printJson(result);
     System.out.println();
   }
@@ -1602,4 +1778,93 @@ public class ConsoleImpl implements ConsoleFace {
     ConsoleUtils.singleLineForTable();
     System.out.println();
   }
+  
+  public static Object[] getDeployPrametersObject(String funcName, Class[] type, String[] params,String generic) {
+	    Object[] obj = new Object[params.length+3];
+	    obj[0]= web3j;
+	    obj[1]= credentials;
+	    obj[2]= new StaticGasProvider(gasPrice, gasLimit);
+
+	    for (int i = 0; i < params.length; i++) {
+	      if (type[i+3] == String.class) {
+	        if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
+	          try {
+	            obj[i+3] = params[i].substring(1, params[i].length() - 1);
+	          } catch (Exception e) {
+	            System.out.println(
+	                    "Please provide double quote for String that cannot contain any blank spaces.");
+	            System.out.println();
+	            return null;
+	          }
+	        } else {
+	          System.out.println(
+	                  "Please provide double quote for String that cannot contain any blank spaces.");
+	          System.out.println();
+	          return null;
+	        }
+	      } else if (type[i+3] == Boolean.class) {
+	        try {
+	          obj[i+3] = Boolean.parseBoolean(params[i]);
+	        } catch (Exception e) {
+	          System.out.println(
+	                  "The " + (i + 1) + "th parameter of " + funcName + " needs boolean value.");
+	          System.out.println();
+	          return null;
+	        }
+	      } else if (type[i+3] == BigInteger.class) {
+	        try {
+	          obj[i+3] = new BigInteger(params[i]);
+	        } catch (Exception e) {
+	          System.out.println(
+	                  "The " + (i + 1) + "th parameter of " + funcName + " needs integer value.");
+	          System.out.println();
+	          return null;
+	        }
+	      } else if (type[i+3] == byte[].class) {
+	        if (params[i ].startsWith("\"") && params[i ].endsWith("\"")) {
+	          byte[] bytes1 = new byte[Integer.MAX_VALUE];
+	          byte[] bytes2 = params[i + 3].substring(1, params[i + 3].length() - 1).getBytes();
+	          for (int j = 0; j < bytes2.length; j++) {
+	            bytes1[j] = bytes2[j];
+	          }
+	          obj[i+3] = bytes1;
+	        } else {
+	          System.out.println("Please provide double quote for byte String.");
+	          System.out.println();
+	          return null;
+	        }
+	      }
+	      else if(type[i+3] == List.class){
+
+	        if (params[i ].startsWith("[") && params[i].endsWith("]")) {
+	          try {
+	            String listParams = params[i].substring(1, params[i ].length() - 1);
+	            String[] ilist = listParams.split(",");
+	            List paramsList = new ArrayList();
+	            if(generic.contains("String")) {
+	              paramsList = new ArrayList<String>();
+	              for (int j = 0 ;j < ilist.length; j++) {
+	                paramsList.add(ilist[j].substring(1, ilist[j].length() - 1));
+	              }
+
+	            }
+	            else if(generic.contains("BigInteger")){
+	              paramsList = new ArrayList<BigInteger>();
+	              for (int j = 0 ;j < ilist.length; j++) {
+	                paramsList.add(new BigInteger(ilist[j]));
+	              }
+
+	            }
+	            obj[i+3] =paramsList;
+	          } catch (Exception e) {
+	            System.out.println(
+	                    "Please provide double quote for String that cannot contain any blank spaces.");
+	            System.out.println();
+	            return null;
+	          }
+	        }
+	      }
+	    }
+	    return obj;
+	  }
 }

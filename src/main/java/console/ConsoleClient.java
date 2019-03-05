@@ -18,6 +18,7 @@ import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
+import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
 
@@ -88,8 +89,10 @@ public class ConsoleClient {
       completers.add(new ArgumentCompleter(new StringsCompleter("grantSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("revokeSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("listSysConfigManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey")));
+      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.txGasLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.txGasLimit)));
       completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
 
       Terminal terminal = TerminalBuilder.terminal();
@@ -104,8 +107,16 @@ public class ConsoleClient {
     }
 
     while (true) {
-      String request = lineReader.readLine(ConsoleImpl.groupID+"> ").trim().replaceAll(" +", " ");
-      String[] params = request.split(" ");
+//      String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ").trim().replaceAll(" +", " ");
+//      String[] params = request.split(" ");
+      String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ");
+      String[] params = null;
+			try {
+				params = ConsoleUtils.tokenizeCommand(request);
+			} catch (Exception e2) {
+				System.out.println(e2.getMessage());;
+				continue;
+			}
       if (params.length < 1) {
         System.out.print("");
         continue;
@@ -297,7 +308,7 @@ public class ConsoleClient {
         System.out.println();
       } catch (IOException e) {
         if (e.getMessage().startsWith("activeConnections")) {
-          System.out.println("Please check the connection between sdk to node.");
+          System.out.println("Please check the connection between console to node.");
         } else if (e.getMessage().startsWith("No value")) {
           System.out.println(
               "The groupID is not configured in dist/conf/applicationContext.xml file.");
