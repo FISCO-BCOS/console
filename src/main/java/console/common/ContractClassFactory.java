@@ -108,7 +108,7 @@ public class ContractClassFactory {
   }
 
   @SuppressWarnings("rawtypes")
-  public static Object[] getPrametersObject(String funcName, Class[] type, String[] params, String generics) {
+  public static Object[] getPrametersObject(String funcName, Class[] type, String[] params, String[] generics) {
     Object[] obj = new Object[params.length];
     for (int i = 0; i < obj.length; i++) {
       if (type[i] == String.class) {
@@ -165,21 +165,36 @@ public class ContractClassFactory {
 		              String listParams = params[i].substring(1, params[i].length() - 1);
 		              String[] ilist = listParams.split(",");
 		              List paramsList = new ArrayList();
-		              if(generics.contains("String")) {
+		              if(generics[i].contains("String")) {
 		                paramsList = new ArrayList<String>();
 		                for (int j = 0 ;j < ilist.length; j++) {
 		                  paramsList.add(ilist[j].substring(1, ilist[j].length() - 1));
 		                }
 		
 		              }
-		              else if(generics.contains("BigInteger")){
+		              else if(generics[i].contains("BigInteger")){
 		                 paramsList = new ArrayList<BigInteger>();
 		                for (int j = 0 ;j < ilist.length; j++) {
 		                  paramsList.add(new BigInteger(ilist[j]));
 		                }
 		
-		                obj[i] =paramsList;
+		              }
+		              
+		              else if(generics[i].contains("byte[]")) {
+		                paramsList = new ArrayList<byte[]>();
+		                for (int j = 0; j < ilist.length; j++) {
+		                  if (ilist[j].startsWith("\"") && ilist[j].endsWith("\"")) {
+		                    byte[] bytes = ilist[j].substring(1, ilist[j].length() - 1).getBytes();
+		                    byte[] bytes1 = new byte[bytes.length];
+		                    byte[] bytes2 = bytes;
+		                    for (int k = 0; k < bytes2.length; k++) {
+		                      bytes1[k] = bytes2[k];
+		                    }
+		                    paramsList.add(bytes1);
+		                  }
 		                }
+		              }
+		                obj[i] =paramsList;
 		              }
 		              catch (Exception e)
 		              {
@@ -253,4 +268,26 @@ public class ContractClassFactory {
     }
     return null;
   }
+  
+	public static  Method getMethodByName(String funcName, Method[] methods) {
+		Method method = null;
+		for (Method method1 : methods) {
+        if (funcName.equals(method1.getName())) {
+        Class[] paramsType = method1.getParameterTypes();
+        List<String>ilist = new ArrayList<>();
+        for(Class param : paramsType) {
+        	ilist.add(param.getCanonicalName());
+        }
+        
+        	if(!ilist.contains("org.fisco.bcos.channel.client.TransactionSucCallback")) {
+    
+        	method = method1;
+        	break;
+        }
+        	
+       }
+    }
+		return method;
+	}
+	
 }

@@ -769,11 +769,11 @@ public class ConsoleImpl implements ConsoleFace {
 //            "deploy", Web3j.class, Credentials.class, ContractGasProvider.class);
    Method method =  ContractClassFactory.getDeployFunction(contractClass);
    
-   String fanxing = "";
+   String generic = "";
    Type[] classType = method.getParameterTypes();
    for (int i = 0; i < classType.length; i++) {
        if (classType[i].getTypeName().equals("java.util.List")) {
-           fanxing = method.getGenericParameterTypes()[i].getTypeName();
+           generic = method.getGenericParameterTypes()[i].getTypeName();
        }
    }
    Class[] classList = new Class[classType.length];
@@ -783,7 +783,7 @@ public class ConsoleImpl implements ConsoleFace {
    }
    String[] newParams = new String[params.length-2];
    System.arraycopy(params, 2, newParams, 0, params.length - 2);
-   Object[] obj = getDeployPrametersObject("deploy", classList, newParams, fanxing);
+   Object[] obj = getDeployPrametersObject("deploy", classList, newParams, generic);
     remoteCall = (RemoteCall<?>) method.invoke(null, obj);
     Contract contract;
 	try {
@@ -852,21 +852,13 @@ public class ConsoleImpl implements ConsoleFace {
     }
     contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
     String funcName = params[3];
-    
     Method[] methods = contractClass.getDeclaredMethods();
     Class[] type = null;
-    Method method = null;
-    for (Method method1 : methods) {
-        if (funcName.equals(method1.getName())) {
-         method = method1;   
-        }
-    }
-    String fanxing = "";
+    Method method = ContractClassFactory.getMethodByName(funcName, methods);
+    String[] generic = new String[method.getParameterCount()];
     Type[] classType = method.getParameterTypes();
     for (int i = 0; i < classType.length; i++) {
-        if (classType[i].getTypeName().equals("java.util.List")) {
-            fanxing = method.getGenericParameterTypes()[i].getTypeName();
-        }
+    	generic[i]= method.getGenericParameterTypes()[i].getTypeName();
     }
     Class[] classList = new Class[classType.length];
     for (int i = 0; i < classType.length; i++) {
@@ -883,7 +875,7 @@ public class ConsoleImpl implements ConsoleFace {
     Method func = contractClass.getMethod(funcName, parameterType);
     String[] newParams = new String[params.length - 4];
     System.arraycopy(params, 4, newParams, 0, params.length - 4);
-    Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, newParams,fanxing);
+    Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, newParams,generic);
     if (argobj == null) {
       return;
     }
@@ -1064,9 +1056,21 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
-
-    Method[] methods = contractClass.getMethods();
     String funcName = params[3];
+    Method[] methods = contractClass.getMethods();
+    Class[] type = null;
+    Method method = ContractClassFactory.getMethodByName(funcName, methods);
+    String[] generic = new String[method.getParameterCount()];
+    Type[] classType = method.getParameterTypes();
+    for (int i = 0; i < classType.length; i++) {
+    	generic[i]= method.getGenericParameterTypes()[i].getTypeName();
+    }
+    
+    Class[] classList = new Class[classType.length];
+    for (int i = 0; i < classType.length; i++) {
+        Class clazz = (Class) classType[i];
+        classList[i] = clazz;
+    }
     Class[] parameterType =
         ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
     if (parameterType == null) {
@@ -1076,7 +1080,7 @@ public class ConsoleImpl implements ConsoleFace {
     Method func = contractClass.getMethod(funcName, parameterType);
     String[] newParams = new String[params.length - 4];
     System.arraycopy(params, 4, newParams, 0, params.length - 4);
-    Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, newParams, "");
+    Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, newParams, generic);
     if (argobj == null) {
       return;
     }
@@ -1773,7 +1777,7 @@ public class ConsoleImpl implements ConsoleFace {
     System.out.println();
   }
   
-  public static Object[] getDeployPrametersObject(String funcName, Class[] type, String[] params,String fanxing) {
+  public static Object[] getDeployPrametersObject(String funcName, Class[] type, String[] params,String generic) {
 	    Object[] obj = new Object[params.length+3];
 	    obj[0]= web3j;
 	    obj[1]= credentials;
@@ -1835,14 +1839,14 @@ public class ConsoleImpl implements ConsoleFace {
 	            String listParams = params[i].substring(1, params[i ].length() - 1);
 	            String[] ilist = listParams.split(",");
 	            List paramsList = new ArrayList();
-	            if(fanxing.contains("String")) {
+	            if(generic.contains("String")) {
 	              paramsList = new ArrayList<String>();
 	              for (int j = 0 ;j < ilist.length; j++) {
 	                paramsList.add(ilist[j].substring(1, ilist[j].length() - 1));
 	              }
 
 	            }
-	            else if(fanxing.contains("BigInteger")){
+	            else if(generic.contains("BigInteger")){
 	              paramsList = new ArrayList<BigInteger>();
 	              for (int j = 0 ;j < ilist.length; j++) {
 	                paramsList.add(new BigInteger(ilist[j]));

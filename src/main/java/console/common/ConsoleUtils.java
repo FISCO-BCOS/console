@@ -232,10 +232,14 @@ public class ConsoleUtils {
               case StreamTokenizer.TT_WORD:
                   tokens.add(tokenizer.sval);
                   break;
-              case '\'':
+              case '\'':  
+              		// If the tailing ' is missing, it will add a tailing ' to it.
+              	  // E.g. 'abc -> 'abc'
                   tokens.add(String.format("'%s'", tokenizer.sval));
                   break;
               case '"':
+              	  // If the tailing " is missing, it will add a tailing ' to it.
+                  // E.g. "abc -> "abc"
                   tokens.add(String.format("\"%s\"", tokenizer.sval));
                   break;
               default:
