@@ -1,19 +1,72 @@
 package console.common;
 
+import java.io.File;
+import java.io.FileFilter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
+
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tuples.Tuple;
 
 public class ContractClassFactory {
+  public static final String TARGETCLASSPATH = "solidity/java/classes";
+
+  public static Class<?> getContractClass(String contractName)
+      throws ClassNotFoundException, InstantiationException, IllegalAccessException, MalformedURLException {
+
+    File clazzPath = new File(TARGETCLASSPATH);
+
+    if (clazzPath.exists() && clazzPath.isDirectory()) {
+      URL[] urls = new URL[1];
+      urls[0] = clazzPath.toURI().toURL();
+      URLClassLoader classLoader = new URLClassLoader(urls);
+
+      int clazzPathLen = clazzPath.getAbsolutePath().length() + 1;
+
+      Stack<File> stack = new Stack<>();
+      stack.push(clazzPath);
+
+      while (!stack.isEmpty()) {
+        File path = stack.pop();
+        File[] classFiles = path.listFiles(new FileFilter() {
+          public boolean accept(File pathname) {
+            return pathname.isDirectory() || pathname.getName().endsWith(".class");
+          }
+        });
+        for (File subFile : classFiles) {
+          if (subFile.isDirectory()) {
+            stack.push(subFile);
+          } else {
+            String className = subFile.getAbsolutePath();
+            if (className.contains("$")) {
+              continue;
+            }
+            
+            className = className.substring(clazzPathLen, className.length() - 6);
+            className = className.replace(File.separatorChar, '.');
+
+            if (contractName.equals(className)) {
+              return Class.forName(className, true, classLoader);
+            }
+          }
+        }
+      }
+    }
+
+    return (Class<?>) Class.forName(contractName);
+  }
 
   @SuppressWarnings("rawtypes")
   public static Class[] getParameterType(Class clazz, String methodName, int paramsLen)
-      throws ClassNotFoundException {
+          throws ClassNotFoundException, IllegalAccessException, MalformedURLException, InstantiationException {
     Method[] methods = clazz.getDeclaredMethods();
     Class[] type = null;
     for (Method method : methods) {
@@ -23,7 +76,7 @@ public class ContractClassFactory {
         for (int i = 0; i < params.length; i++) {
           String typeName = params[i].getParameterizedType().getTypeName();
           if ("byte[]".equals(typeName)) type[i] = byte[].class;
-          else type[i] = Class.forName(typeName);
+          else type[i] = getContractClass(typeName);
         }
         break;
       }

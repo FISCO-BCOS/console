@@ -44,6 +44,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import static console.common.ContractClassFactory.getContractClass;
+
 public class ConsoleImpl implements ConsoleFace {
 
   private Service service = null;
@@ -738,8 +740,9 @@ public class ConsoleImpl implements ConsoleFace {
     ConsoleUtils.dynamicLoadClass();
     contractName = ConsoleUtils.PACKAGENAME + "." + name;
     try {
-      contractClass = Class.forName(contractName);
+      contractClass = getContractClass(contractName);
     } catch (Exception e) {
+      e.printStackTrace();
       System.out.println(
           "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
       System.out.println();
@@ -756,7 +759,7 @@ public class ConsoleImpl implements ConsoleFace {
 	} catch (Exception e) {
 		if(e.getMessage().contains("0x19"))
 		{
-			ConsoleUtils.printJson(PrecompiledCommon.transferToJson(50000));
+			ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
 		}
 		else
 		{
@@ -791,7 +794,7 @@ public class ConsoleImpl implements ConsoleFace {
     contractName = ConsoleUtils.PACKAGENAME + "." + name;
     ConsoleUtils.dynamicLoadClass();
     try {
-      contractClass = Class.forName(contractName);
+      contractClass = getContractClass(contractName);
     } catch (Exception e) {
       System.out.println(
           "There is no "
@@ -882,7 +885,7 @@ public class ConsoleImpl implements ConsoleFace {
       }
     }
     if (!flag) {
-      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(50000));
+      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
       System.out.println();
       return;
     }
@@ -894,7 +897,7 @@ public class ConsoleImpl implements ConsoleFace {
     CnsService cnsService = new CnsService(web3j, credentials);
     List<CnsInfo> qcns = cnsService.queryCnsByNameAndVersion(name, params[2]);
     if (qcns.size() != 0) {
-      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(51200));
+      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.ContractNameAndVersionExist));
       System.out.println();
       return;
     }
@@ -909,7 +912,7 @@ public class ConsoleImpl implements ConsoleFace {
     ConsoleUtils.dynamicCompileJavaToClass(name);
     ConsoleUtils.dynamicLoadClass();
     try {
-      contractClass = Class.forName(contractName);
+      contractClass = getContractClass(contractName);
     } catch (Exception e) {
       System.out.println(
           "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
@@ -923,7 +926,7 @@ public class ConsoleImpl implements ConsoleFace {
     remoteCall = (RemoteCall<?>) deploy.invoke(null, web3j, credentials, gasProvider);
     contractVersion = params[2];
     if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
-      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(51201));
+      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
       System.out.println();
       return;
     }
@@ -933,7 +936,7 @@ public class ConsoleImpl implements ConsoleFace {
 	} catch (Exception e) {
 		if(e.getMessage().contains("0x19"))
 		{
-			ConsoleUtils.printJson(PrecompiledCommon.transferToJson(50000));
+			ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
 		}
 		else
 		{
@@ -971,7 +974,7 @@ public class ConsoleImpl implements ConsoleFace {
     }
     contractName = ConsoleUtils.PACKAGENAME + "." + name;
     try {
-      contractClass = Class.forName(contractName);
+      contractClass = getContractClass(contractName);
     } catch (Exception e) {
       System.out.println(
           "There is no "
@@ -1102,7 +1105,7 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     if (nodeId.length() != 128) {
-      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(51100));
+      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
     } else {
       ConsensusService consensusService = new ConsensusService(web3j, credentials);
       String result = consensusService.addSealer(nodeId);
@@ -1128,7 +1131,7 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     if (nodeId.length() != 128) {
-      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(51100));
+      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
     } else {
       ConsensusService consensusService = new ConsensusService(web3j, credentials);
       String result = consensusService.addObserver(nodeId);
@@ -1153,7 +1156,7 @@ public class ConsoleImpl implements ConsoleFace {
       return;
     }
     if (nodeId.length() != 128) {
-      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(51100));
+      ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
     } else {
       ConsensusService consensusService = new ConsensusService(web3j, credentials);
       String result = consensusService.removeNode(nodeId);
