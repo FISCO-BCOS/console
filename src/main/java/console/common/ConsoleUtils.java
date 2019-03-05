@@ -167,6 +167,9 @@ public class ConsoleUtils {
 
   public static void dynamicCompileSolFilesToJava() throws IOException {
     File solFileList = new File("solidity/contracts/");
+    if(!solFileList.exists()){
+      throw new IOException("Please checkout solidity/contracts/ is exist");
+    }
     File[] solFiles = solFileList.listFiles();
 
     for (File solFile : solFiles) {
