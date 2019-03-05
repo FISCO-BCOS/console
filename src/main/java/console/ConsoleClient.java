@@ -341,7 +341,7 @@ public class ConsoleClient {
           System.out.println();
         }
       } catch (Exception e) {
-        System.out.println(e.getMessage());
+        System.out.println(e.getStackTrace());
         System.out.println();
       }
     }
