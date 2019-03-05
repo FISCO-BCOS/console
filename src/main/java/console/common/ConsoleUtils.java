@@ -3,12 +3,17 @@ package console.common;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
@@ -241,7 +246,55 @@ public class ConsoleUtils {
               .toArray(new String[0]));
     }
   }
+  
+  private static class CommandTokenizer extends StreamTokenizer {
+      public CommandTokenizer(Reader r) {
+          super(r);
+          resetSyntax();
+          // Invisible ASCII characters.
+          whitespaceChars(0x00, 0x20);
+          // All visible ASCII characters.
+          wordChars(0x21, 0x7E);
+          // Other UTF8 characters.
+          wordChars(0xA0, 0xFF);
+          // Uncomment this to allow comments in the command.
+          // commentChar('/');
+          // Allow both types of quoted strings, e.g. 'abc' and "abc".
+          quoteChar('\'');
+          quoteChar('"');
+      }
+      public void parseNumbers() {}
+  }
 
+  public static String[] tokenizeCommand(String command) throws Exception {
+      List<String> tokens = new ArrayList<>();
+
+      StreamTokenizer tokenizer = new CommandTokenizer(new StringReader(command));
+
+      int token = tokenizer.nextToken();
+      while (token != StreamTokenizer.TT_EOF) {
+          switch (token){
+              case StreamTokenizer.TT_EOL:
+                  // Ignore \n character.
+                  break;
+              case StreamTokenizer.TT_WORD:
+                  tokens.add(tokenizer.sval);
+                  break;
+              case '\'':
+                  tokens.add(String.format("'%s'", tokenizer.sval));
+                  break;
+              case '"':
+                  tokens.add(String.format("\"%s\"", tokenizer.sval));
+                  break;
+              default:
+                  // Ignore all other unknown characters.
+              	throw new RuntimeException("unexpected input tokens " + token);
+          }
+          token = tokenizer.nextToken();
+      }
+      return tokens.toArray(new String[tokens.size()]);
+  }
+  
   public static void singleLine() {
     System.out.println(
         "-------------------------------------------------------------------------------------");

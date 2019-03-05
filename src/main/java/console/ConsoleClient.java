@@ -107,8 +107,16 @@ public class ConsoleClient {
     }
 
     while (true) {
-      String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ").trim().replaceAll(" +", " ");
-      String[] params = request.split(" ");
+//      String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ").trim().replaceAll(" +", " ");
+//      String[] params = request.split(" ");
+      String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ");
+      String[] params = null;
+			try {
+				params = ConsoleUtils.tokenizeCommand(request);
+			} catch (Exception e2) {
+				System.out.println(e2.getMessage());;
+				continue;
+			}
       if (params.length < 1) {
         System.out.print("");
         continue;

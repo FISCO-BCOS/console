@@ -69,13 +69,13 @@ public class ContractClassFactory {
             obj[i] = params[i].substring(1, params[i].length() - 1);
           } catch (Exception e) {
             System.out.println(
-                "Please provide double quote for String that cannot contain any blank spaces.");
+                "Please provide double quote for String type parameters.");
             System.out.println();
             return null;
           }
         } else {
           System.out.println(
-              "Please provide double quote for String that cannot contain any blank spaces.");
+              "Please provide double quote for String type parameters.");
           System.out.println();
           return null;
         }
