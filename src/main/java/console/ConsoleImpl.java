@@ -1,13 +1,6 @@
 package console;
 
-import com.alibaba.fastjson.JSONObject;
-
-import console.common.ConsoleUtils;
-import console.common.ContractClassFactory;
-import console.common.HelpInfo;
-import io.bretty.console.table.Alignment;
-import io.bretty.console.table.ColumnFormatter;
-import io.bretty.console.table.Table;
+import static console.common.ContractClassFactory.getContractClass;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,7 +32,6 @@ import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
-import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.fisco.bcos.web3j.tx.Contract;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -49,7 +41,14 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import static console.common.ContractClassFactory.getContractClass;
+import com.alibaba.fastjson.JSONObject;
+
+import console.common.ConsoleUtils;
+import console.common.ContractClassFactory;
+import console.common.HelpInfo;
+import io.bretty.console.table.Alignment;
+import io.bretty.console.table.ColumnFormatter;
+import io.bretty.console.table.Table;
 
 public class ConsoleImpl implements ConsoleFace {
 
@@ -69,10 +68,10 @@ public class ConsoleImpl implements ConsoleFace {
     public static final int InvalidRequest = 40009;
     public static final String OutOfTime = "Transaction receipt was not generated after 60 seconds.";
     private ChannelEthereumService channelEthereumService = new ChannelEthereumService();
-
+    private ApplicationContext context;
+    
     public void init(String[] args) {
-        ApplicationContext context =
-                new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+        context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         service = context.getBean(Service.class);
         groupID = service.getGroupId();
         if (args.length < 2) {
@@ -327,6 +326,18 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         groupID = toGroupID;
+        channelEthereumService = new ChannelEthereumService();
+        service = context.getBean(Service.class);
+        service.setGroupId(groupID);
+        try {
+          service.run();
+		    } catch (Exception e) {
+		        System.out.println(
+		                "Failed to connect to the node. Please check the node status and the console configruation.");
+		        close();
+		    }
+        channelEthereumService.setChannelService(service);
+        channelEthereumService.setTimeout(60000);
         web3j = Web3j.build(channelEthereumService, groupID);
         System.out.println("Switched to group " + groupID + ".");
         System.out.println();
