@@ -308,7 +308,8 @@ public class ConsoleClient {
         System.out.println();
       } catch (IOException e) {
         if (e.getMessage().startsWith("activeConnections")) {
-          System.out.println("Please check the connection between console to node.");
+					System.out.println("Lost the connection to the node. " 
+							+ "Please check the connection between the console and the node.");
         } else if (e.getMessage().startsWith("No value")) {
           System.out.println(
               "The groupID is not configured in dist/conf/applicationContext.xml file.");

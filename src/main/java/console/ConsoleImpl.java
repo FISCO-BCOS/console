@@ -127,7 +127,7 @@ public class ConsoleImpl implements ConsoleFace {
             service.run();
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect blockchain, please check running status for blockchain and configruation for console.");
+                    "Failed to connect to the node. Please check the node status and the console configruation.");
             close();
         }
         channelEthereumService.setChannelService(service);
@@ -144,7 +144,7 @@ public class ConsoleImpl implements ConsoleFace {
             close();
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect blockchain, please check running status for blockchain and configruation for console.");
+                    "Failed to connect to the node. Please check the node status and the console configruation.");
             close();
         }
     }
