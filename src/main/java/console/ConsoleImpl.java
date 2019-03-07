@@ -332,9 +332,10 @@ public class ConsoleImpl implements ConsoleFace {
         try {
           service.run();
 		    } catch (Exception e) {
-		        System.out.println(
-		                "Failed to connect to the node. Please check the node status and the console configruation.");
-		        close();
+		    	System.out.println(
+              "Switch to group "+ groupID +" failed! Please check the node status and the console configruation.");
+		    	System.out.println();
+		    	return;
 		    }
         channelEthereumService.setChannelService(service);
         channelEthereumService.setTimeout(60000);
