@@ -52,7 +52,6 @@ import io.bretty.console.table.Table;
 
 public class ConsoleImpl implements ConsoleFace {
 
-    private Service service = null;
     private static Web3j web3j = null;
     private static java.math.BigInteger gasPrice = new BigInteger("10");
     private static java.math.BigInteger gasLimit = new BigInteger("50000000");
@@ -67,12 +66,10 @@ public class ConsoleImpl implements ConsoleFace {
     public static int groupID;
     public static final int InvalidRequest = 40009;
     public static final String OutOfTime = "Transaction receipt was not generated after 60 seconds.";
-    private ChannelEthereumService channelEthereumService = new ChannelEthereumService();
-    private ApplicationContext context;
     
     public void init(String[] args) {
-        context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
-        service = context.getBean(Service.class);
+    		ApplicationContext context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+    		Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
         if (args.length < 2) {
             InputStream is = null;
@@ -101,7 +98,7 @@ public class ConsoleImpl implements ConsoleFace {
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                close();
+                System.exit(0);
             }
         }
         switch (args.length) {
@@ -119,7 +116,7 @@ public class ConsoleImpl implements ConsoleFace {
             credentials = GenCredential.create(privateKey);
         } catch (NumberFormatException e) {
             System.out.println("Please provide private key by hex format.");
-            close();
+            System.exit(0);
         }
         service.setGroupId(groupID);
         try {
@@ -127,8 +124,9 @@ public class ConsoleImpl implements ConsoleFace {
         } catch (Exception e) {
             System.out.println(
                     "Failed to connect to the node. Please check the node status and the console configruation.");
-            close();
+            System.exit(0);
         }
+        ChannelEthereumService channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
         channelEthereumService.setTimeout(60000);
         web3j = Web3j.build(channelEthereumService, groupID);
@@ -140,23 +138,11 @@ public class ConsoleImpl implements ConsoleFace {
             } else {
                 System.out.println(e.getMessage());
             }
-            close();
+            System.exit(0);
         } catch (Exception e) {
             System.out.println(
                     "Failed to connect to the node. Please check the node status and the console configruation.");
-            close();
-        }
-    }
-
-    @Override
-    public void close() {
-        try {
-            if (channelEthereumService != null) {
-                channelEthereumService.close();
-            }
             System.exit(0);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
     }
 
@@ -326,8 +312,9 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         groupID = toGroupID;
-        channelEthereumService = new ChannelEthereumService();
-        service = context.getBean(Service.class);
+        ChannelEthereumService channelEthereumService = new ChannelEthereumService();
+        ApplicationContext context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+        Service service = context.getBean(Service.class);
         service.setGroupId(groupID);
         try {
           service.run();
@@ -742,10 +729,6 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("deploy");
             return;
         }
-//    if (params.length > 2) {
-//      HelpInfo.promptHelp("deploy");
-//      return;
-//    }
         if ("-h".equals(params[1]) || "--help".equals(params[1])) {
             HelpInfo.deployHelp();
             return;
