@@ -5,6 +5,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.Response;
@@ -101,41 +102,34 @@ public class ConsoleClient {
               .terminal(terminal)
               .completer(new AggregateCompleter(completers))
               .build();
-    } catch (IOException e2) {
-      e2.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
       console.close();
     }
 
     while (true) {
-//      String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ").trim().replaceAll(" +", " ");
-//      String[] params = request.split(" ");
-      String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ");
-      String[] params = null;
-			try {
+    	try {
+		    String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ");
+		    String[] params = null;
 				params = ConsoleUtils.tokenizeCommand(request);
-			} catch (Exception e2) {
-				System.out.println(e2.getMessage());;
-				continue;
-			}
-      if (params.length < 1) {
-        System.out.print("");
-        continue;
-      }
-      if ("".equals(params[0].trim())) {
-        System.out.print("");
-        continue;
-      }
-      if ("quit".equals(params[0]) || "q".equals(params[0])) {
-        if (HelpInfo.promptNoParams(params, "q")) {
-          continue;
-        } else if (params.length > 2) {
-          HelpInfo.promptHelp("q");
-          continue;
-        }
-        console.close();
-        break;
-      }
-      try {
+	      if (params.length < 1) {
+	        System.out.print("");
+	        continue;
+	      }
+	      if ("".equals(params[0].trim())) {
+	        System.out.print("");
+	        continue;
+	      }
+	      if ("quit".equals(params[0]) || "q".equals(params[0])) {
+	        if (HelpInfo.promptNoParams(params, "q")) {
+	          continue;
+	        } else if (params.length > 2) {
+	          HelpInfo.promptHelp("q");
+	          continue;
+	        }
+	        console.close();
+	        break;
+	      }
         switch (params[0]) {
           case "help":
           case "h":
@@ -299,7 +293,8 @@ public class ConsoleClient {
             System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
             break;
         }
-      } catch (ResponseExcepiton e) {
+	  
+			}catch (ResponseExcepiton e) {
         ConsoleUtils.printJson(
             "{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
         System.out.println();
@@ -337,13 +332,15 @@ public class ConsoleClient {
             System.out.println();
           }
         } catch (Exception e1) {
-          System.out.println(e1.getMessage());
+          System.out.println(e.getStackTrace());
           System.out.println();
         }
-      } catch (Exception e) {
+      } 
+      catch (Exception e) {
         System.out.println(e.getStackTrace());
         System.out.println();
-      }
+      } 
+    	
     }
   }
 }
