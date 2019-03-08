@@ -799,8 +799,11 @@ public class ConsoleImpl implements ConsoleFace {
     private void writeLog() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-
-        String log = "time : " + LocalDateTime.now().format(formatter) + "  group : "+ groupID + "  contractAddress : " + contractAddress + "  contractName : "+ contractName.substring(20);
+       String name =  contractName.substring(20);
+       while(name.length() < 15){
+           name = name + " ";
+       }
+        String log = "contractName: "+ name + "  contractAddress: " + contractAddress  + "  group: "+ groupID + "  time: " + LocalDateTime.now().format(formatter)  ;
         try {
             File logFile =  new File("deploylog.txt");
             if(!logFile.exists()){
@@ -830,7 +833,6 @@ public class ConsoleImpl implements ConsoleFace {
             while (!textStack.empty()&& i>0) {
                 stringBuilder.append(textStack.pop());
                 stringBuilder.append(ls);
-                i--;
             }
             System.out.println("");
             System.out.println(stringBuilder.toString());
