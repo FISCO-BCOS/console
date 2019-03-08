@@ -1,2 +1,0 @@
-time : 2019-03-08 14:21:07  contractAddress : 0x3c7b383cded00167d9df5e565556e9351f17e988  contractName : Ok
-time : 2019-03-08 14:21:28  contractAddress : 0x401a05af0904c4b71373317dce8cb4737916faf6  contractName : HelloWorld

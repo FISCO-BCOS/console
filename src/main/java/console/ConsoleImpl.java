@@ -800,8 +800,12 @@ public class ConsoleImpl implements ConsoleFace {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
-        String log = "time : " + LocalDateTime.now().format(formatter) +  "  contractAddress : " + contractAddress + "  contractName : "+ contractName.substring(20);
+        String log = "time : " + LocalDateTime.now().format(formatter) + "  group : "+ groupID + "  contractAddress : " + contractAddress + "  contractName : "+ contractName.substring(20);
         try {
+            File logFile =  new File("deploylog.txt");
+            if(!logFile.exists()){
+                logFile.createNewFile();
+            }
             PrintWriter pw = new PrintWriter(new FileWriter("deploylog.txt",true));
             pw.println(log);
             pw.flush();
@@ -822,9 +826,11 @@ public class ConsoleImpl implements ConsoleFace {
             while((line = reader.readLine()) != null) {
              textStack.push(line);
             }
-            while (!textStack.empty()) {
+            int i=20;
+            while (!textStack.empty()&& i>0) {
                 stringBuilder.append(textStack.pop());
                 stringBuilder.append(ls);
+                i--;
             }
             System.out.println("");
             System.out.println(stringBuilder.toString());
