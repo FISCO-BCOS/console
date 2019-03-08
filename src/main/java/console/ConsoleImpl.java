@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.fisco.bcos.channel.client.Service;
+import org.fisco.bcos.channel.handler.ChannelConnections;
+import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
@@ -313,28 +315,55 @@ public class ConsoleImpl implements ConsoleFace {
         int toGroupID = 1;
         try {
             toGroupID = Integer.parseInt(groupIDStr);
+            if(toGroupID <= 0)
+            {
+              System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+              System.out.println();
+              return;
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Please provide group ID by positive integer mode.");
+            System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
             System.out.println();
             return;
         }
         List<String> groupList = web3j.getGroupList().send().getGroupList();
-        if (!groupList.contains(groupIDStr)) {
+        if (!groupList.contains(toGroupID+"")) {
             System.out.println("Group " + toGroupID + " does not exist. The group list is " + groupList + ".");
             System.out.println();
             return;
         }
-        ChannelEthereumService channelEthereumService = new ChannelEthereumService();
+				context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         Service service = context.getBean(Service.class);
-        service.setGroupId(toGroupID);
-        try {
-          service.run();
-		    } catch (Exception e) {
-		    	System.out.println(
+        GroupChannelConnectionsConfig groupChannelConnectionsConfig = service.getAllChannelConnections();
+        List<ChannelConnections> allChannelConnections = groupChannelConnectionsConfig.getAllChannelConnections();
+        boolean flag = false;
+        for (ChannelConnections channelConnection : allChannelConnections) {
+        	if(channelConnection.getGroupId() == toGroupID)
+        	{
+        		flag = true;
+        		break;
+        	}
+				}
+        if(flag)
+        {
+        	service.setGroupId(toGroupID);
+        	try {
+						service.run();
+					} catch (Exception e) {
+	        	System.out.println(
+	              "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
+			    	System.out.println();
+			    	return;
+					}
+        }
+        else 
+        {
+        	System.out.println(
               "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
 		    	System.out.println();
 		    	return;
-		    }
+        }
+        ChannelEthereumService channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
         channelEthereumService.setTimeout(60000);
         web3j = Web3j.build(channelEthereumService, groupID);

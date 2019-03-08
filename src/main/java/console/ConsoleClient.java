@@ -26,12 +26,14 @@ import console.common.HelpInfo;
 public class ConsoleClient {
   @SuppressWarnings("resource")
   public static void main(String[] args) {
-    ConsoleFace console = new ConsoleImpl();
-    console.init(args);
-    console.welcome();
+  	ConsoleFace console = null;
+  	LineReader lineReader = null;
+  	try {	
+  		
+  		console = new ConsoleImpl();
+     	console.init(args);
+    	console.welcome();
 
-    LineReader lineReader = null;
-    try {
       List<Completer> completers = new ArrayList<Completer>();
       completers.add(new ArgumentCompleter(new StringsCompleter("help")));
       completers.add(new ArgumentCompleter(new StringsCompleter("switch")));
@@ -102,12 +104,13 @@ public class ConsoleClient {
               .terminal(terminal)
               .completer(new AggregateCompleter(completers))
               .build();
-    } catch (IOException e) {
-      e.printStackTrace();
-      console.close();
-    }
-
-    while (true) {
+  	 }catch (Exception e) {
+        System.out.println(e.getMessage());
+        return;
+     } 
+      
+     while (true) {
+    	 
     	try {
 		    String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ");
 		    String[] params = null;
@@ -314,33 +317,41 @@ public class ConsoleClient {
         System.out.println();
       } catch (RuntimeException e) {
         String message = e.getMessage();
-        Response t = null;
-        try {
-          t =
-              ObjectMapperFactory.getObjectMapper(true)
-                  .readValue(
-                      message.substring(message.indexOf("{"), message.lastIndexOf("}") + 1),
-                      Response.class);
-          if (t != null) {
-            ConsoleUtils.printJson(
-                "{\"code\":"
-                    + t.getError().getCode()
-                    + ", \"msg\":"
-                    + "\""
-                    + t.getError().getMessage()
-                    + "\"}");
+        if(message.contains("error") && message.contains("code") && message.contains("message"))
+        {
+          Response t = null;
+          try {
+            t =
+                ObjectMapperFactory.getObjectMapper(true)
+                    .readValue(
+                        message.substring(message.indexOf("{"), message.lastIndexOf("}") + 1),
+                        Response.class);
+            if (t != null) {
+              ConsoleUtils.printJson(
+                  "{\"code\":"
+                      + t.getError().getCode()
+                      + ", \"msg\":"
+                      + "\""
+                      + t.getError().getMessage()
+                      + "\"}");
+              System.out.println();
+            }
+          } catch (Exception e1) {
+            System.out.println(e1.getMessage());
             System.out.println();
           }
-        } catch (Exception e1) {
-          System.out.println(e.getStackTrace());
-          System.out.println();
         }
+        else 
+        {
+        	System.out.println(e.getMessage());
+        	System.out.println();
+        }
+
       } 
       catch (Exception e) {
-        System.out.println(e.getStackTrace());
+        System.out.println(e.getMessage());
         System.out.println();
       } 
-    	
-    }
+     }
   }
 }
