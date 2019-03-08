@@ -162,7 +162,7 @@ public class ConsoleUtils {
           IllegalAccessException, ClassNotFoundException {
   }
 
-  public static void dynamicCompileSolFilesToJava() throws IOException {
+  public static void dynamicCompileSolFilesToJava() throws Exception {
     File solFileList = new File("solidity/contracts/");
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
@@ -184,8 +184,7 @@ public class ConsoleUtils {
 				    SolidityCompiler.Options.INTERFACE,
 				    SolidityCompiler.Options.METADATA);
 			} catch (Exception e) {
-				System.out.println("Compile failed! Please check solidity file or retry.");
-				return;
+				throw new Exception("Compile failed! Please check solidity file or retry.");
 			}
       
       CompilationResult result = CompilationResult.parse(res.output);

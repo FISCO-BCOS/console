@@ -213,7 +213,7 @@ public class ConsoleClient {
             console.deploy(params);
             break;
           case "getDeployLog":
-            console.getDeployLog();
+            console.getDeployLog(params);
             break;
           case "call":
             console.call(params);
@@ -321,7 +321,7 @@ public class ConsoleClient {
         System.out.println();
       } catch (RuntimeException e) {
         String message = e.getMessage();
-        if(message.contains("error") && message.contains("code") && message.contains("message"))
+        if(message != null && message.contains("error") && message.contains("code") && message.contains("message"))
         {
           Response t = null;
           try {
