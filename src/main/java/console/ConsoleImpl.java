@@ -9,18 +9,17 @@ import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
@@ -792,7 +791,42 @@ public class ConsoleImpl implements ConsoleFace {
         }
         contractAddress = contract.getContractAddress();
         System.out.println(contractAddress);
+        writeLog();
         System.out.println();
+    }
+
+    private void writeLog() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+
+        String log = "contractName : "+ contractName.substring(20)+ "  contractAddress : " + contractAddress + "   time : " + LocalDateTime.now().format(formatter);
+        try {
+            PrintWriter pw = new PrintWriter(new FileWriter("deploylog.txt",true));
+            pw.println(log);
+            pw.flush();
+            pw.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+   public   String getDeployLog() throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader ("deploylog.txt"));
+        String         line = null;
+        StringBuilder  stringBuilder = new StringBuilder();
+        String         ls = System.getProperty("line.separator");
+
+        try {
+            while((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+                stringBuilder.append(ls);
+            }
+            System.out.println(stringBuilder.toString());
+            return stringBuilder.toString();
+        } finally {
+            reader.close();
+        }
     }
 
     @Override
@@ -885,7 +919,8 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
             return;
         }
-
+        String s ;
+       ;
         System.out.println(returnObject);
         System.out.println();
     }

@@ -214,6 +214,9 @@ public class ConsoleClient {
           case "deploy":
             console.deploy(params);
             break;
+          case "getDeployLog":
+            console.getDeployLog();
+            break;
           case "call":
             console.call(params);
             break;
