@@ -796,7 +796,7 @@ public class ConsoleImpl implements ConsoleFace {
     }
 
     private void writeLog() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
         String log = "contractName : "+ contractName.substring(20)+ "  contractAddress : " + contractAddress + "   time : " + LocalDateTime.now().format(formatter);
@@ -822,6 +822,7 @@ public class ConsoleImpl implements ConsoleFace {
                 stringBuilder.append(line);
                 stringBuilder.append(ls);
             }
+            System.out.println("");
             System.out.println(stringBuilder.toString());
             return stringBuilder.toString();
         } finally {
