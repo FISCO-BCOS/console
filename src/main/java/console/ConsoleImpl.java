@@ -1,13 +1,6 @@
 package console;
 
-import com.alibaba.fastjson.JSONObject;
-
-import console.common.ConsoleUtils;
-import console.common.ContractClassFactory;
-import console.common.HelpInfo;
-import io.bretty.console.table.Alignment;
-import io.bretty.console.table.ColumnFormatter;
-import io.bretty.console.table.Table;
+import static console.common.ContractClassFactory.getContractClass;
 
 import java.io.*;
 import java.lang.reflect.Method;
@@ -22,6 +15,8 @@ import java.util.Stack;
 
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.channel.client.Service;
+import org.fisco.bcos.channel.handler.ChannelConnections;
+import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
@@ -39,7 +34,6 @@ import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
-import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.fisco.bcos.web3j.tx.Contract;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -49,12 +43,20 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import static console.common.ContractClassFactory.getContractClass;
+import com.alibaba.fastjson.JSONObject;
+
+import console.common.ConsoleUtils;
+import console.common.ContractClassFactory;
+import console.common.HelpInfo;
+import io.bretty.console.table.Alignment;
+import io.bretty.console.table.ColumnFormatter;
+import io.bretty.console.table.Table;
 
 public class ConsoleImpl implements ConsoleFace {
-
-    private Service service = null;
+	
+	  private static ChannelEthereumService channelEthereumService;
     private static Web3j web3j = null;
+    private ApplicationContext context;
     private static java.math.BigInteger gasPrice = new BigInteger("10");
     private static java.math.BigInteger gasLimit = new BigInteger("50000000");
     private ECKeyPair keyPair;
@@ -67,13 +69,10 @@ public class ConsoleImpl implements ConsoleFace {
     private String privateKey = "";
     public static int groupID;
     public static final int InvalidRequest = 40009;
-    public static final String OutOfTime = "Transaction receipt was not generated after 60 seconds.";
-    private ChannelEthereumService channelEthereumService = new ChannelEthereumService();
-
+    
     public void init(String[] args) {
-        ApplicationContext context =
-                new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
-        service = context.getBean(Service.class);
+    		context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+    		Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
         if (args.length < 2) {
             InputStream is = null;
@@ -127,9 +126,10 @@ public class ConsoleImpl implements ConsoleFace {
             service.run();
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect blockchain, please check running status for blockchain and configruation for console.");
+                    "Failed to connect to the node. Please check the node status and the console configruation.");
             close();
         }
+        channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
         channelEthereumService.setTimeout(60000);
         web3j = Web3j.build(channelEthereumService, groupID);
@@ -144,20 +144,8 @@ public class ConsoleImpl implements ConsoleFace {
             close();
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect blockchain, please check running status for blockchain and configruation for console.");
+                    "Failed to connect to the node. Please check the node status and the console configruation.");
             close();
-        }
-    }
-
-    @Override
-    public void close() {
-        try {
-            if (channelEthereumService != null) {
-                channelEthereumService.close();
-            }
-            System.exit(0);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
     }
 
@@ -166,16 +154,28 @@ public class ConsoleImpl implements ConsoleFace {
             groupID = Integer.parseInt(args[0]);
         } catch (NumberFormatException e) {
             System.out.println("Please provide groupID by integer format.");
-            System.exit(0);
+            close();
         }
         return groupID;
     }
-
+    
+    @Override
+    public void close() {
+      try {
+        if (channelEthereumService != null) {
+            channelEthereumService.close();
+        }
+        System.exit(0);
+    } catch (IOException e) {
+        System.out.println(e.getMessage());
+    }
+    
+    }
     @Override
     public void welcome() {
         ConsoleUtils.doubleLine();
         System.out.println("Welcome to FISCO BCOS console!");
-        System.out.println("Type 'help' for help. Type 'quit' to quit console.");
+        System.out.println("Type 'help' or 'h' for help. Type 'quit' or 'q' to quit console.");
         String logo =
                 " ________ ______  ______   ______   ______       _______   ______   ______   ______  \n"
                         + "|        |      \\/      \\ /      \\ /      \\     |       \\ /      \\ /      \\ /      \\ \n"
@@ -315,19 +315,59 @@ public class ConsoleImpl implements ConsoleFace {
         int toGroupID = 1;
         try {
             toGroupID = Integer.parseInt(groupIDStr);
+            if(toGroupID <= 0)
+            {
+              System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+              System.out.println();
+              return;
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Please provide group ID by positive integer mode.");
+            System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
             System.out.println();
             return;
         }
         List<String> groupList = web3j.getGroupList().send().getGroupList();
-        if (!groupList.contains(groupIDStr)) {
+        if (!groupList.contains(toGroupID+"")) {
             System.out.println("Group " + toGroupID + " does not exist. The group list is " + groupList + ".");
             System.out.println();
             return;
         }
-        groupID = toGroupID;
+				context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+        Service service = context.getBean(Service.class);
+        GroupChannelConnectionsConfig groupChannelConnectionsConfig = service.getAllChannelConnections();
+        List<ChannelConnections> allChannelConnections = groupChannelConnectionsConfig.getAllChannelConnections();
+        boolean flag = false;
+        for (ChannelConnections channelConnection : allChannelConnections) {
+        	if(channelConnection.getGroupId() == toGroupID)
+        	{
+        		flag = true;
+        		break;
+        	}
+				}
+        if(flag)
+        {
+        	service.setGroupId(toGroupID);
+        	try {
+						service.run();
+					} catch (Exception e) {
+	        	System.out.println(
+	              "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
+			    	System.out.println();
+			    	return;
+					}
+        }
+        else 
+        {
+        	System.out.println(
+              "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
+		    	System.out.println();
+		    	return;
+        }
+        ChannelEthereumService channelEthereumService = new ChannelEthereumService();
+        channelEthereumService.setChannelService(service);
+        channelEthereumService.setTimeout(60000);
         web3j = Web3j.build(channelEthereumService, groupID);
+        groupID = toGroupID;
         System.out.println("Switched to group " + groupID + ".");
         System.out.println();
     }
@@ -730,10 +770,6 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("deploy");
             return;
         }
-//    if (params.length > 2) {
-//      HelpInfo.promptHelp("deploy");
-//      return;
-//    }
         if ("-h".equals(params[1]) || "--help".equals(params[1])) {
             HelpInfo.deployHelp();
             return;
@@ -778,17 +814,17 @@ public class ConsoleImpl implements ConsoleFace {
         System.arraycopy(params, 2, newParams, 0, params.length - 2);
         Object[] obj = getDeployPrametersObject("deploy", classList, newParams, generic);
         remoteCall = (RemoteCall<?>) method.invoke(null, obj);
-        Contract contract;
         try {
-            contract = (Contract) remoteCall.send();
+        	Contract contract = (Contract) remoteCall.send();
+      	  contractAddress = contract.getContractAddress();
+          System.out.println(contractAddress);
+          System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
             } else {
-                System.out.println(e.getMessage());
+                throw e;
             }
-            System.out.println();
-            return;
         }
         contractAddress = contract.getContractAddress();
         System.out.println(contractAddress);
@@ -917,25 +953,16 @@ public class ConsoleImpl implements ConsoleFace {
         }
 
         remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
-        Object result;
-        try {
-            result = remoteCall.send();
-        } catch (Exception e) {
-            System.out.println("Call failed.");
-            System.out.println();
-            return;
-        }
-
+        Object result = remoteCall.send();
         String returnObject =
                 ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
         if (returnObject == null) {
             HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
             return;
         }
-        String s ;
-       ;
         System.out.println(returnObject);
         System.out.println();
+
     }
 
     @Override
@@ -1015,23 +1042,21 @@ public class ConsoleImpl implements ConsoleFace {
             System.out.println();
             return;
         }
-        Contract contract;
         try {
-            contract = (Contract) remoteCall.send();
+        		Contract contract = (Contract) remoteCall.send();
+            contractAddress = contract.getContractAddress();
+            // register cns
+            String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
+            System.out.println(contractAddress);
+            System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
             } else {
-                System.out.println(e.getMessage());
+                throw e;
             }
-            System.out.println();
-            return;
         }
-        contractAddress = contract.getContractAddress();
-        // register cns
-        String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
-        System.out.println(contractAddress);
-        System.out.println();
+
     }
 
     @SuppressWarnings("rawtypes")
@@ -1119,21 +1144,15 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
-        Object result = null;
-        try {
-            result = remoteCall.send();
-            String returnObject =
-                    ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
-            if (returnObject == null) {
-                HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
-                return;
-            }
-            System.out.println(returnObject);
-            System.out.println();
-        } catch (Exception e) {
-            System.out.println("Call faild.");
-            System.out.println();
+        Object result = remoteCall.send();
+        String returnObject =
+                ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
+        if (returnObject == null) {
+            HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
+            return;
         }
+        System.out.println(returnObject);
+        System.out.println();
     }
 
     @SuppressWarnings("rawtypes")
@@ -1205,13 +1224,7 @@ public class ConsoleImpl implements ConsoleFace {
         } else {
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             String result;
-            try {
-                result = consensusService.addSealer(nodeId);
-            } catch (Exception e) {
-                System.out.println(OutOfTime);
-                System.out.println();
-                return;
-            }
+            result = consensusService.addSealer(nodeId);
             ConsoleUtils.printJson(result);
         }
         System.out.println();
@@ -1238,13 +1251,7 @@ public class ConsoleImpl implements ConsoleFace {
         } else {
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             String result;
-            try {
-                result = consensusService.addObserver(nodeId);
-            } catch (Exception e) {
-                System.out.println(OutOfTime);
-                System.out.println();
-                return;
-            }
+            result = consensusService.addObserver(nodeId);
             ConsoleUtils.printJson(result);
         }
         System.out.println();
@@ -1270,13 +1277,7 @@ public class ConsoleImpl implements ConsoleFace {
         } else {
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             String result = null;
-            try {
-                result = consensusService.removeNode(nodeId);
-            } catch (Exception e) {
-                System.out.println(OutOfTime);
-                System.out.println();
-                return;
-            }
+            result = consensusService.removeNode(nodeId);
             ConsoleUtils.printJson(result);
         }
         System.out.println();
@@ -1307,13 +1308,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = null;
-        try {
-            result = permission.grantUserTableManager(tableName, addr);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.grantUserTableManager(tableName, addr);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1343,13 +1338,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = null;
-        try {
-            result = permission.revokeUserTableManager(tableName, addr);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.revokeUserTableManager(tableName, addr);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1394,13 +1383,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.grantDeployAndCreateManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.grantDeployAndCreateManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1425,13 +1408,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.revokeDeployAndCreateManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.revokeDeployAndCreateManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1466,13 +1443,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.grantPermissionManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.grantPermissionManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1497,13 +1468,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.revokePermissionManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.revokePermissionManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1538,13 +1503,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.grantNodeManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.grantNodeManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1569,13 +1528,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.revokeNodeManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.revokeNodeManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1610,13 +1563,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.grantCNSManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.grantCNSManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1641,13 +1588,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.revokeCNSManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.revokeCNSManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1682,13 +1623,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.grantSysConfigManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.grantSysConfigManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1713,13 +1648,7 @@ public class ConsoleImpl implements ConsoleFace {
         }
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
-        try {
-            result = permission.revokeSysConfigManager(address);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = permission.revokeSysConfigManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1758,13 +1687,7 @@ public class ConsoleImpl implements ConsoleFace {
         String[] args = {"setSystemConfig", key, value};
         SystemConfigSerivce systemConfigSerivce = new SystemConfigSerivce(web3j, credentials);
         String result;
-        try {
-            result = systemConfigSerivce.setValueByKey(key, value);
-        } catch (Exception e) {
-            System.out.println(OutOfTime);
-            System.out.println();
-            return;
-        }
+        result = systemConfigSerivce.setValueByKey(key, value);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
