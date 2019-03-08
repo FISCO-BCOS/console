@@ -822,6 +822,7 @@ public class ConsoleImpl implements ConsoleFace {
                 stringBuilder.append(line);
                 stringBuilder.append(ls);
             }
+            System.out.println("");
             System.out.println(stringBuilder.toString());
             return stringBuilder.toString();
         } finally {
