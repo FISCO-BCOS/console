@@ -1,22 +1,19 @@
 package console.common;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Stack;
+
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
 import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
@@ -177,14 +174,20 @@ public class ConsoleUtils {
   	  {
   			continue;
   	  }
-      SolidityCompiler.Result res =
-          SolidityCompiler.compile(
-              solFile,
-              true,
-              SolidityCompiler.Options.ABI,
-              SolidityCompiler.Options.BIN,
-              SolidityCompiler.Options.INTERFACE,
-              SolidityCompiler.Options.METADATA);
+      SolidityCompiler.Result res;
+			try {
+				res = SolidityCompiler.compile(
+				    solFile,
+				    true,
+				    SolidityCompiler.Options.ABI,
+				    SolidityCompiler.Options.BIN,
+				    SolidityCompiler.Options.INTERFACE,
+				    SolidityCompiler.Options.METADATA);
+			} catch (Exception e) {
+				System.out.println("Compile failed! Please check solidity file or retry.");
+				return;
+			}
+      
       CompilationResult result = CompilationResult.parse(res.output);
       String contractname = solFile.getName().split("\\.")[0];
       CompilationResult.ContractMetadata a = result.getContract(solFile.getName().split("\\.")[0]);

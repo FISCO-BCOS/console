@@ -7,9 +7,11 @@ contract TableTest {
     event removeResult(int count);
     
     //create table
-    function create() public {
+    function create() public returns(int) {
         TableFactory tf = TableFactory(0x1001); //The fixed address is 0x1001 for TableFactory
-        tf.createTable("t_test", "name", "item_id,item_name");
+        int count = tf.createTable("t_test", "name", "item_id,item_name");
+        // createResult(count);
+        return count;
     }
 
     //select records
