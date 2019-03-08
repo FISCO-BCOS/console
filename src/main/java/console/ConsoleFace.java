@@ -5,7 +5,9 @@ import java.io.IOException;
 public interface ConsoleFace {
 
   void welcome();
-
+  
+  void close();
+  
   void help(String[] params);
 
   void switchGroupID(String[] params) throws IOException;
