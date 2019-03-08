@@ -112,5 +112,7 @@ public interface ConsoleFace {
 
   void getSystemConfigByKey(String[] params) throws Exception;
 
+  String getDeployLog() throws Exception;
+
   void init(String[] args);
 }

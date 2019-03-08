@@ -2,18 +2,18 @@ package console;
 
 import static console.common.ContractClassFactory.getContractClass;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Stack;
 
+import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
@@ -826,7 +826,56 @@ public class ConsoleImpl implements ConsoleFace {
                 throw e;
             }
         }
-       
+        contractAddress = contract.getContractAddress();
+        System.out.println(contractAddress);
+        writeLog();
+        System.out.println();
+    }
+
+    private void writeLog() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+       String name =  contractName.substring(20);
+       while(name.length() < 15){
+           name = name + " ";
+       }
+        String log = "contractName: "+ name + "  contractAddress: " + contractAddress  + "  group: "+ groupID + "  time: " + LocalDateTime.now().format(formatter)  ;
+        try {
+            File logFile =  new File("deploylog.txt");
+            if(!logFile.exists()){
+                logFile.createNewFile();
+            }
+            PrintWriter pw = new PrintWriter(new FileWriter("deploylog.txt",true));
+            pw.println(log);
+            pw.flush();
+            pw.close();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+   public   String getDeployLog() throws IOException {
+        BufferedReader reader = new BufferedReader(new FileReader ("deploylog.txt"));
+        String         line ;
+        StringBuilder  stringBuilder = new StringBuilder();
+        String         ls = System.getProperty("line.separator");
+       Stack<String> textStack = new Stack<String>();
+        try {
+            while((line = reader.readLine()) != null) {
+             textStack.push(line);
+            }
+            int i=20;
+            while (!textStack.empty()&& i>0) {
+                stringBuilder.append(textStack.pop());
+                stringBuilder.append(ls);
+            }
+            System.out.println("");
+            System.out.println(stringBuilder.toString());
+            return stringBuilder.toString();
+        } finally {
+            reader.close();
+        }
     }
 
     @Override
