@@ -18,6 +18,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Stack;
 
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.channel.client.Service;
@@ -799,7 +800,7 @@ public class ConsoleImpl implements ConsoleFace {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 
-        String log = "contractName : "+ contractName.substring(20)+ "  contractAddress : " + contractAddress + "   time : " + LocalDateTime.now().format(formatter);
+        String log = "time : " + LocalDateTime.now().format(formatter) +  "  contractAddress : " + contractAddress + "  contractName : "+ contractName.substring(20);
         try {
             PrintWriter pw = new PrintWriter(new FileWriter("deploylog.txt",true));
             pw.println(log);
@@ -813,13 +814,16 @@ public class ConsoleImpl implements ConsoleFace {
 
    public   String getDeployLog() throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader ("deploylog.txt"));
-        String         line = null;
+        String         line ;
         StringBuilder  stringBuilder = new StringBuilder();
         String         ls = System.getProperty("line.separator");
-
+       Stack<String> textStack = new Stack<String>();
         try {
             while((line = reader.readLine()) != null) {
-                stringBuilder.append(line);
+             textStack.push(line);
+            }
+            while (!textStack.empty()) {
+                stringBuilder.append(textStack.pop());
                 stringBuilder.append(ls);
             }
             System.out.println("");
