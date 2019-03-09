@@ -35,7 +35,10 @@ jobs:
       - run: 
             name: fisco-bcos
             command: |
-              sudo apt-get update 
+              sudo apt-get update
+              curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+              sudo apt-get install git-lfs
+              git lfs install 
               sudo apt install -y openssl curl
               curl -LO https://raw.githubusercontent.com/FISCO-BCOS/FISCO-BCOS/release-2.0.1/tools/build_chain.sh && chmod u+x build_chain.sh
               bash <(curl -s https://raw.githubusercontent.com/FISCO-BCOS/FISCO-BCOS/release-2.0.1/tools/ci/download_bin.sh) -b release-2.0.1
