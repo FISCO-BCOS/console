@@ -103,6 +103,7 @@ jar {
 		}
 		copy {
 			from file('tools/start.sh')
+			from file('tools/replace_solc_jar.sh')
 			into 'dist/'
 		}
 		copy {
