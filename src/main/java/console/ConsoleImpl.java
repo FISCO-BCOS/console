@@ -777,9 +777,8 @@ public class ConsoleImpl implements ConsoleFace {
         String name = params[1];
         try {
             ConsoleUtils.dynamicCompileSolFilesToJava();
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             return;
         }
         if (name.endsWith(".sol")) {
@@ -966,9 +965,8 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
             ConsoleUtils.dynamicCompileSolFilesToJava();
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             return;
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
