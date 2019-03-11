@@ -1,6 +1,6 @@
 contract TableFactory {
     function openTable(string) public constant returns (Table); //open table
-    function createTable(string,string,string) public constant returns(Table); //create table
+    function createTable(string,string,string) public constant returns(int); //create table
 }
 
 //select condition
