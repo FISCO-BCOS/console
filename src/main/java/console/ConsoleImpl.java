@@ -1299,10 +1299,9 @@ public class ConsoleImpl implements ConsoleFace {
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
         } else {
-            ConsensusService consensusService = new ConsensusService(web3j, credentials);
-            String result;
-            result = consensusService.addObserver(nodeId);
-            ConsoleUtils.printJson(result);
+						ConsensusService consensusService = new ConsensusService(web3j, credentials);
+						String result = consensusService.addObserver(nodeId);
+						ConsoleUtils.printJson(result);
         }
         System.out.println();
     }
