@@ -799,6 +799,11 @@ public class ConsoleImpl implements ConsoleFace {
         Method method = ContractClassFactory.getDeployFunction(contractClass);
 
         Type[] classType = method.getParameterTypes();
+        if(classType.length - 3  != params.length - 2) {
+        	System.out.println("The number of paramters does not match!");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         for (int i = 0; i < classType.length; i++) {
             generic[i] = method.getGenericParameterTypes()[i].getTypeName();
@@ -877,6 +882,11 @@ public class ConsoleImpl implements ConsoleFace {
         String funcName = params[3];
         Method[] methods = contractClass.getDeclaredMethods();
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        if(method == null) {
+        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
         for (int i = 0; i < classType.length; i++) {
@@ -1068,6 +1078,11 @@ public class ConsoleImpl implements ConsoleFace {
         Method[] methods = contractClass.getMethods();
         Class[] type = null;
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        if(method == null) {
+        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
         for (int i = 0; i < classType.length; i++) {
