@@ -39,6 +39,7 @@ import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -332,42 +333,32 @@ public class ConsoleImpl implements ConsoleFace {
             System.out.println();
             return;
         }
-				context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+        ((AbstractRefreshableApplicationContext)context).refresh();
         Service service = context.getBean(Service.class);
+        Service oldService = service;
         GroupChannelConnectionsConfig groupChannelConnectionsConfig = service.getAllChannelConnections();
         List<ChannelConnections> allChannelConnections = groupChannelConnectionsConfig.getAllChannelConnections();
-        boolean flag = false;
-        for (ChannelConnections channelConnection : allChannelConnections) {
-        	if(channelConnection.getGroupId() == toGroupID)
-        	{
-        		flag = true;
-        		break;
-        	}
-				}
-        if(flag)
-        {
-        	service.setGroupId(toGroupID);
-        	try {
-						service.run();
-					} catch (Exception e) {
-	        	System.out.println(
-	              "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
-			    	System.out.println();
-			    	return;
-					}
-        }
-        else 
-        {
-        	System.out.println(
-              "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
+        
+        service.setGroupId(toGroupID);
+        
+	    	try {
+					service.run();
+	        groupID = toGroupID;
+				} catch (Exception e) {
+	      	System.out.println(
+	            "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
 		    	System.out.println();
+		    	service.setGroupId(groupID);
+		    	try {
+						service.run();
+					} catch (Exception e1) {
+					}
 		    	return;
-        }
+				}
         ChannelEthereumService channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
         channelEthereumService.setTimeout(60000);
         web3j = Web3j.build(channelEthereumService, groupID);
-        groupID = toGroupID;
         System.out.println("Switched to group " + groupID + ".");
         System.out.println();
     }
@@ -777,9 +768,8 @@ public class ConsoleImpl implements ConsoleFace {
         String name = params[1];
         try {
             ConsoleUtils.dynamicCompileSolFilesToJava();
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             return;
         }
         if (name.endsWith(".sol")) {
@@ -791,7 +781,6 @@ public class ConsoleImpl implements ConsoleFace {
         try {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
-            e.printStackTrace();
             System.out.println(
                     "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
             System.out.println();
@@ -800,6 +789,11 @@ public class ConsoleImpl implements ConsoleFace {
         Method method = ContractClassFactory.getDeployFunction(contractClass);
 
         Type[] classType = method.getParameterTypes();
+        if(classType.length - 3  != params.length - 2) {
+        	System.out.println("The number of paramters does not match!");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         for (int i = 0; i < classType.length; i++) {
             generic[i] = method.getGenericParameterTypes()[i].getTypeName();
@@ -923,6 +917,11 @@ public class ConsoleImpl implements ConsoleFace {
         String funcName = params[3];
         Method[] methods = contractClass.getDeclaredMethods();
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        if(method == null) {
+        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
         for (int i = 0; i < classType.length; i++) {
@@ -1010,9 +1009,8 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
             ConsoleUtils.dynamicCompileSolFilesToJava();
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             return;
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
@@ -1114,6 +1112,11 @@ public class ConsoleImpl implements ConsoleFace {
         Method[] methods = contractClass.getMethods();
         Class[] type = null;
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        if(method == null) {
+        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
         for (int i = 0; i < classType.length; i++) {
