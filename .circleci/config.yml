@@ -8,7 +8,7 @@ jobs:
     working_directory: ~/console
     branches:
       only: 
-        - master
+        - /.*/
 
     docker:
       # specify the version you desire here
