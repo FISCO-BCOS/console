@@ -17,9 +17,10 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Stack;
 
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.channel.handler.ChannelConnections;
@@ -840,7 +841,7 @@ public class ConsoleImpl implements ConsoleFace {
        while(name.length() < 20){
            name = name + " ";
        }
-        String log =  name + "  " + contractAddress  + "  "+ groupID + "  " + LocalDateTime.now().format(formatter)  ;
+        String log = LocalDateTime.now().format(formatter) + "  [group:"+ groupID +  "]  " + name + "  " + contractAddress;
         try {
             File logFile =  new File("deploylog.txt");
             if(!logFile.exists()){
@@ -851,8 +852,9 @@ public class ConsoleImpl implements ConsoleFace {
             pw.flush();
             pw.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.out.println(e.getMessage());
+            System.out.println();
+            return;
         }
     }
 
@@ -878,28 +880,28 @@ public class ConsoleImpl implements ConsoleFace {
         String         line ;
         StringBuilder  stringBuilder = new StringBuilder();
         String         ls = System.getProperty("line.separator");
-       Stack<String> textStack = new Stack<String>();
+        Deque<String> textDeque = new LinkedList<String>();
         try {
             while((line = reader.readLine()) != null) {
             String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
             if ("".equals(queryGroupID) ) {
-            	textStack.push(line);
+            	textDeque.offer(line);
 						} 
             else {
-							 if(queryGroupID.equals(contractInfos[2]))
+							 if(("[group:" + queryGroupID +"]").equals(contractInfos[2]))
 							 {
-								 textStack.push(line);
+								 textDeque.offer(line);
 							 }
 						}
             
             }
             int i=20;
-            while (!textStack.empty()&& i>0) {
-                stringBuilder.append(textStack.pop());
+            while (!textDeque.isEmpty()&& i>0) {
+                stringBuilder.append(textDeque.poll());
                 stringBuilder.append(ls);
                 i--;
             }
-            System.out.println("");
+            System.out.println();
             System.out.println(stringBuilder.toString());
         } finally {
             reader.close();
