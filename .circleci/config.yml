@@ -5,10 +5,7 @@
 version: 2
 jobs:            
   build:
-    working_directory: ~/console
-    branches:
-      only: 
-        - master
+    working_directory: ~/console    
 
     docker:
       # specify the version you desire here
