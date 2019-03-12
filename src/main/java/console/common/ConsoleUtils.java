@@ -1,5 +1,10 @@
 package console.common;
 
+import static org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options.ABI;
+import static org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options.BIN;
+import static org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options.INTERFACE;
+import static org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options.METADATA;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -162,7 +167,7 @@ public class ConsoleUtils {
           IllegalAccessException, ClassNotFoundException {
   }
 
-  public static void dynamicCompileSolFilesToJava() throws IOException {
+  public static void dynamicCompileSolFilesToJava() throws Exception {
     File solFileList = new File("solidity/contracts/");
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
@@ -174,20 +179,12 @@ public class ConsoleUtils {
   	  {
   			continue;
   	  }
-      SolidityCompiler.Result res;
-			try {
-				res = SolidityCompiler.compile(
-				    solFile,
-				    true,
-				    SolidityCompiler.Options.ABI,
-				    SolidityCompiler.Options.BIN,
-				    SolidityCompiler.Options.INTERFACE,
-				    SolidityCompiler.Options.METADATA);
-			} catch (Exception e) {
-				System.out.println("Compile failed! Please check solidity file or retry.");
-				return;
-			}
-      
+      SolidityCompiler.Result res =
+          SolidityCompiler.compile(solFile, true, ABI, BIN, INTERFACE, METADATA);
+      if("".equals(res.output))
+      {
+      	throw new IOException("Compile error: " + res.errors);
+      }
       CompilationResult result = CompilationResult.parse(res.output);
       String contractname = solFile.getName().split("\\.")[0];
       CompilationResult.ContractMetadata a = result.getContract(solFile.getName().split("\\.")[0]);

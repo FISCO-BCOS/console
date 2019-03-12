@@ -2,18 +2,26 @@ package console;
 
 import static console.common.ContractClassFactory.getContractClass;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Stack;
 
-import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
@@ -39,6 +47,7 @@ import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -205,6 +214,7 @@ public class ConsoleImpl implements ConsoleFace {
         sb.append("help(h)                                  Provide help information.\n");
         sb.append("switch(s)                                Switch to a specific group by group ID.\n");
         sb.append("getBlockNumber                           Query the number of most recent block.\n");
+        sb.append("getDeployLog                             Query the log of deployed contracts.\n");
         sb.append("getPbftView                              Query the pbft view of node.\n");
         sb.append("getSealerList                            Query nodeId list for sealer nodes.\n");
         sb.append("getObserverList                          Query nodeId list for observer nodes.\n");
@@ -332,42 +342,32 @@ public class ConsoleImpl implements ConsoleFace {
             System.out.println();
             return;
         }
-				context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+        ((AbstractRefreshableApplicationContext)context).refresh();
         Service service = context.getBean(Service.class);
+        Service oldService = service;
         GroupChannelConnectionsConfig groupChannelConnectionsConfig = service.getAllChannelConnections();
         List<ChannelConnections> allChannelConnections = groupChannelConnectionsConfig.getAllChannelConnections();
-        boolean flag = false;
-        for (ChannelConnections channelConnection : allChannelConnections) {
-        	if(channelConnection.getGroupId() == toGroupID)
-        	{
-        		flag = true;
-        		break;
-        	}
-				}
-        if(flag)
-        {
-        	service.setGroupId(toGroupID);
-        	try {
-						service.run();
-					} catch (Exception e) {
-	        	System.out.println(
-	              "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
-			    	System.out.println();
-			    	return;
-					}
-        }
-        else 
-        {
-        	System.out.println(
-              "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
+        
+        service.setGroupId(toGroupID);
+        
+	    	try {
+					service.run();
+	        groupID = toGroupID;
+				} catch (Exception e) {
+	      	System.out.println(
+	            "Switch to group "+ toGroupID +" failed! Please check the node status and the console configruation.");
 		    	System.out.println();
+		    	service.setGroupId(groupID);
+		    	try {
+						service.run();
+					} catch (Exception e1) {
+					}
 		    	return;
-        }
+				}
         ChannelEthereumService channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
         channelEthereumService.setTimeout(60000);
         web3j = Web3j.build(channelEthereumService, groupID);
-        groupID = toGroupID;
         System.out.println("Switched to group " + groupID + ".");
         System.out.println();
     }
@@ -777,9 +777,8 @@ public class ConsoleImpl implements ConsoleFace {
         String name = params[1];
         try {
             ConsoleUtils.dynamicCompileSolFilesToJava();
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             return;
         }
         if (name.endsWith(".sol")) {
@@ -791,7 +790,6 @@ public class ConsoleImpl implements ConsoleFace {
         try {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
-            e.printStackTrace();
             System.out.println(
                     "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
             System.out.println();
@@ -800,6 +798,11 @@ public class ConsoleImpl implements ConsoleFace {
         Method method = ContractClassFactory.getDeployFunction(contractClass);
 
         Type[] classType = method.getParameterTypes();
+        if(classType.length - 3  != params.length - 2) {
+        	System.out.println("The number of paramters does not match!");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         for (int i = 0; i < classType.length; i++) {
             generic[i] = method.getGenericParameterTypes()[i].getTypeName();
@@ -819,6 +822,8 @@ public class ConsoleImpl implements ConsoleFace {
       	  contractAddress = contract.getContractAddress();
           System.out.println(contractAddress);
           System.out.println();
+          contractAddress = contract.getContractAddress();
+          writeLog();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
@@ -826,20 +831,17 @@ public class ConsoleImpl implements ConsoleFace {
                 throw e;
             }
         }
-        contractAddress = contract.getContractAddress();
-        System.out.println(contractAddress);
-        writeLog();
-        System.out.println();
+
     }
 
     private void writeLog() {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
        String name =  contractName.substring(20);
-       while(name.length() < 15){
+       while(name.length() < 20){
            name = name + " ";
        }
-        String log = "contractName: "+ name + "  contractAddress: " + contractAddress  + "  group: "+ groupID + "  time: " + LocalDateTime.now().format(formatter)  ;
+        String log = LocalDateTime.now().format(formatter) + "  [group:"+ groupID +  "]  " + name + "  " + contractAddress;
         try {
             File logFile =  new File("deploylog.txt");
             if(!logFile.exists()){
@@ -850,29 +852,57 @@ public class ConsoleImpl implements ConsoleFace {
             pw.flush();
             pw.close();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.out.println(e.getMessage());
+            System.out.println();
+            return;
         }
     }
 
-   public   String getDeployLog() throws IOException {
+   public void getDeployLog(String[] params) throws Exception {
+
+	      if (params.length > 2) {
+            HelpInfo.promptHelp("getDeployLog");
+            return;
+        }
+	      String queryGroupID = "";
+	      if (params.length == 2) {
+	      	 queryGroupID = params[1];
+	      }
+        if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
+            HelpInfo.getDeployLogHelp();
+            return;
+        }
+        File logFile =  new File("deploylog.txt");
+        if(!logFile.exists()){
+            logFile.createNewFile();
+        }
         BufferedReader reader = new BufferedReader(new FileReader ("deploylog.txt"));
         String         line ;
         StringBuilder  stringBuilder = new StringBuilder();
         String         ls = System.getProperty("line.separator");
-       Stack<String> textStack = new Stack<String>();
+        Deque<String> textDeque = new LinkedList<String>();
         try {
             while((line = reader.readLine()) != null) {
-             textStack.push(line);
+            String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
+            if ("".equals(queryGroupID) ) {
+            	textDeque.offer(line);
+						} 
+            else {
+							 if(("[group:" + queryGroupID +"]").equals(contractInfos[2]))
+							 {
+								 textDeque.offer(line);
+							 }
+						}
+            
             }
             int i=20;
-            while (!textStack.empty()&& i>0) {
-                stringBuilder.append(textStack.pop());
+            while (!textDeque.isEmpty()&& i>0) {
+                stringBuilder.append(textDeque.poll());
                 stringBuilder.append(ls);
+                i--;
             }
-            System.out.println("");
+            System.out.println();
             System.out.println(stringBuilder.toString());
-            return stringBuilder.toString();
         } finally {
             reader.close();
         }
@@ -927,6 +957,11 @@ public class ConsoleImpl implements ConsoleFace {
         String funcName = params[3];
         Method[] methods = contractClass.getDeclaredMethods();
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        if(method == null) {
+        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
         for (int i = 0; i < classType.length; i++) {
@@ -937,7 +972,6 @@ public class ConsoleImpl implements ConsoleFace {
             Class clazz = (Class) classType[i];
             classList[i] = clazz;
         }
-
         Class[] parameterType =
                 ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
         if (parameterType == null) {
@@ -1015,9 +1049,8 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
             ConsoleUtils.dynamicCompileSolFilesToJava();
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             return;
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
@@ -1048,6 +1081,8 @@ public class ConsoleImpl implements ConsoleFace {
             // register cns
             String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
             System.out.println(contractAddress);
+            contractName = contractName+":"+contractVersion;
+            writeLog();
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
@@ -1119,6 +1154,11 @@ public class ConsoleImpl implements ConsoleFace {
         Method[] methods = contractClass.getMethods();
         Class[] type = null;
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        if(method == null) {
+        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println();
+        	return;
+        }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
         for (int i = 0; i < classType.length; i++) {
@@ -1249,10 +1289,9 @@ public class ConsoleImpl implements ConsoleFace {
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
         } else {
-            ConsensusService consensusService = new ConsensusService(web3j, credentials);
-            String result;
-            result = consensusService.addObserver(nodeId);
-            ConsoleUtils.printJson(result);
+						ConsensusService consensusService = new ConsensusService(web3j, credentials);
+						String result = consensusService.addObserver(nodeId);
+						ConsoleUtils.printJson(result);
         }
         System.out.println();
     }
