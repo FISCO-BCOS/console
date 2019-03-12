@@ -185,6 +185,7 @@ public class ConsoleUtils {
       {
       	throw new IOException("Compile error: " + res.errors);
       }
+
       CompilationResult result = CompilationResult.parse(res.output);
       String contractname = solFile.getName().split("\\.")[0];
       CompilationResult.ContractMetadata a = result.getContract(solFile.getName().split("\\.")[0]);
