@@ -1,19 +1,12 @@
 package console;
 
-import static console.common.ContractClassFactory.getContractClass;
-
-import java.io.*;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Stack;
-
-import org.apache.commons.io.FileUtils;
+import com.alibaba.fastjson.JSONObject;
+import console.common.ConsoleUtils;
+import console.common.ContractClassFactory;
+import console.common.HelpInfo;
+import io.bretty.console.table.Alignment;
+import io.bretty.console.table.ColumnFormatter;
+import io.bretty.console.table.Table;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.channel.handler.ChannelConnections;
 import org.fisco.bcos.channel.handler.GroupChannelConnectionsConfig;
@@ -44,14 +37,18 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
-import com.alibaba.fastjson.JSONObject;
+import java.io.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+import java.util.Stack;
 
-import console.common.ConsoleUtils;
-import console.common.ContractClassFactory;
-import console.common.HelpInfo;
-import io.bretty.console.table.Alignment;
-import io.bretty.console.table.ColumnFormatter;
-import io.bretty.console.table.Table;
+import static console.common.ContractClassFactory.getContractClass;
 
 public class ConsoleImpl implements ConsoleFace {
 	
@@ -946,14 +943,18 @@ public class ConsoleImpl implements ConsoleFace {
         if (argobj == null) {
             return;
         }
-
         remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
-        Object result = remoteCall.send();
-        String returnObject =
-                ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
-        if (returnObject == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
-            return;
+        Object result=null;
+        String returnObject = "";
+        try {
+             result = remoteCall.send();
+        }  catch (Exception e) {
+            System.out.println("transaction failed");
+        }
+        try {
+            returnObject = ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
+        }catch (Exception e) {
+            System.out.println("transaction  result decode failed");
         }
         System.out.println(returnObject);
         System.out.println();
