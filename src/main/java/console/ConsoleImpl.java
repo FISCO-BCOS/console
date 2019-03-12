@@ -34,6 +34,7 @@ import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tx.Contract;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -903,7 +904,18 @@ public class ConsoleImpl implements ConsoleFace {
         }
 
         remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
-        Object result = remoteCall.send();
+        Object result;
+				result = remoteCall.send();
+				if(result instanceof TransactionReceipt)
+				{
+					TransactionReceipt receipt = (TransactionReceipt)result;
+					if(!"0x0".equals(receipt.getStatus()))
+					{
+						System.out.println(receipt.getStatus());
+						System.out.println();
+						return;
+					}
+				}
         String returnObject =
                 ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
         if (returnObject == null) {
@@ -1099,6 +1111,16 @@ public class ConsoleImpl implements ConsoleFace {
         }
         remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
         Object result = remoteCall.send();
+				if(result instanceof TransactionReceipt)
+				{
+					TransactionReceipt receipt = (TransactionReceipt)result;
+					if(!"0x0".equals(receipt.getStatus()))
+					{
+						System.out.println(receipt.getStatus());
+						System.out.println();
+						return;
+					}
+				}
         String returnObject =
                 ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
         if (returnObject == null) {
