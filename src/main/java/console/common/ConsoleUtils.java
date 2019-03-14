@@ -167,7 +167,7 @@ public class ConsoleUtils {
           IllegalAccessException, ClassNotFoundException {
   }
 
-  public static void dynamicCompileSolFilesToJava() throws IOException {
+  public static void dynamicCompileSolFilesToJava(String name) throws IOException {
     File solFileList = new File("solidity/contracts/");
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
@@ -175,7 +175,7 @@ public class ConsoleUtils {
     File[] solFiles = solFileList.listFiles();
 
     for (File solFile : solFiles) {
-      if(!solFile.getName().endsWith(".sol"))
+      if(!(name + ".sol").equals(solFile.getName()) || solFile.getName().contains("Lib"))
   	  {
   			continue;
   	  }
