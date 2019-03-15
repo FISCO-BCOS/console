@@ -45,11 +45,11 @@ Go to [issues page](https://github.com/FISCO-BCOS/console/issues)
 
 **Continous integration platform**
 
-* travis-ci: [![Build Status](https://travis-ci.org/FISCO-BCOS/web3sdk.svg?branch=release-2.0.1)](https://travis-ci.org/FISCO-BCOS/web3sdk)
+* travis-ci: [![Build Status](https://travis-ci.org/FISCO-BCOS/console.svg?branch=master)](https://travis-ci.org/FISCO-BCOS/console)
 
 
 **Code quality**
 
-* [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c9769615cc364a408969b088e90d7912)](https://www.codacy.com/app/fisco/web3sdk?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/web3sdk&amp;utm_campaign=Badge_Grade)
+* [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1bbdd693ef534bc58da3f28aee3911b5)](https://www.codacy.com/app/fqliao/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
 
 
