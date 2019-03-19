@@ -45,6 +45,7 @@
 持续集成框架
 
 * travis-ci: [![Build Status](https://travis-ci.org/FISCO-BCOS/console.svg?branch=master)](https://travis-ci.org/FISCO-BCOS/console)
+* circleci: [![CircleCI](https://circleci.com/gh/FISCO-BCOS/console/tree/master.svg?style=shield)](https://circleci.com/gh/FISCO-BCOS/console/tree/master)
 
 
 代码质量
