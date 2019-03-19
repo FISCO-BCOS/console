@@ -11,7 +11,7 @@ targetCompatibility = 1.8
 repositories {
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
     maven { url "https://dl.bintray.com/ethereum/maven/" }
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+//    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     mavenCentral()
 }
 
@@ -39,7 +39,8 @@ dependencies {
     compile logger,spring
     runtime logger,spring
     
-	compile group:"org.fisco-bcos", name:"web3sdk", version:"2.0-SNAPSHOT", changing: true
+//	compile group:"org.fisco-bcos", name:"web3sdk", version:"2.0-SNAPSHOT", changing: true
+	compile	'org.fisco-bcos:web3sdk:2.0.0-rc1'
 	compile	'org.ethereum:solcJ-all:0.4.25'
     compile logger,spring,alibaba
     compile 'org.apache.commons:commons-lang3:3.1'
@@ -69,10 +70,9 @@ dependencies {
 			'org.mockito:mockito-core:2.23.0'
 }
 
-configurations.all {
-// check for updates every build
-	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-}
+//configurations.all {
+//	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+//}
 sourceSets {
 	main {
 		java {
