@@ -106,7 +106,7 @@ public class HelpInfo {
   public static void getDeployLogHelp() {
   	System.out.println("Query the log of deployed contract.");
   	System.out.println("Usage: getDeployLog [groupId]");
-	  System.out.println("groupId -- The ID of a group.");
+	  System.out.println("groupId -- (optional) The ID of a group.");
 	  System.out.println();
   }
 

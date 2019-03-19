@@ -864,15 +864,29 @@ public class ConsoleImpl implements ConsoleFace {
 	      if (params.length > 2) {
             HelpInfo.promptHelp("getDeployLog");
             return;
-        }
-	      String queryGroupID = "";
-	      if (params.length == 2) {
-	      	 queryGroupID = params[1];
-	      }
-        if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
-            HelpInfo.getDeployLogHelp();
-            return;
-        }
+          }
+          String queryGroupID = "";
+	      int groupID = 1;
+          if (params.length == 2) {
+              queryGroupID = params[1];
+              if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
+                  HelpInfo.getDeployLogHelp();
+                  return;
+              }
+              try {
+                  groupID = Integer.parseInt(queryGroupID);
+                  if(groupID <= 0)
+                  {
+                      System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+                      System.out.println();
+                      return;
+                  }
+              } catch (NumberFormatException e) {
+                  System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+                  System.out.println();
+                  return;
+              }
+          }
         File logFile =  new File("deploylog.txt");
         if(!logFile.exists()){
             logFile.createNewFile();
@@ -887,14 +901,13 @@ public class ConsoleImpl implements ConsoleFace {
             String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
             if ("".equals(queryGroupID) ) {
             	textDeque.offer(line);
-						} 
+			}
             else {
-							 if(("[group:" + queryGroupID +"]").equals(contractInfos[2]))
-							 {
-								 textDeque.offer(line);
-							 }
-						}
-            
+                     if(("[group:" + groupID +"]").equals(contractInfos[2]))
+                     {
+                         textDeque.offer(line);
+                     }
+                }
             }
             int i=20;
             while (!textDeque.isEmpty()&& i>0) {
@@ -902,8 +915,16 @@ public class ConsoleImpl implements ConsoleFace {
                 stringBuilder.append(ls);
                 i--;
             }
-            System.out.println();
-            System.out.println(stringBuilder.toString());
+            if ("".equals(stringBuilder.toString()))
+            {
+                System.out.println("Empty set.");
+                System.out.println();
+            }
+            else
+            {
+                System.out.println();
+                System.out.println(stringBuilder.toString());
+            }
         } finally {
             reader.close();
         }
