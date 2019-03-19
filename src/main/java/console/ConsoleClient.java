@@ -69,6 +69,7 @@ public class ConsoleClient {
           new ArgumentCompleter(new StringsCompleter("callByCNS"), new FilesCompleter(path)));
       completers.add(
           new ArgumentCompleter(new StringsCompleter("queryCNS"), new FilesCompleter(path)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("getDeployLog")));
       completers.add(new ArgumentCompleter(new StringsCompleter("addSealer")));
       completers.add(new ArgumentCompleter(new StringsCompleter("addObserver")));
       completers.add(new ArgumentCompleter(new StringsCompleter("removeNode")));
@@ -208,6 +209,9 @@ public class ConsoleClient {
             break;
           case "deploy":
             console.deploy(params);
+            break;
+          case "getDeployLog":
+            console.getDeployLog(params);
             break;
           case "call":
             console.call(params);

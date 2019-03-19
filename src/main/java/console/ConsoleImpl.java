@@ -2,15 +2,23 @@ package console;
 
 import static console.common.ContractClassFactory.getContractClass;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -207,6 +215,7 @@ public class ConsoleImpl implements ConsoleFace {
         sb.append("help(h)                                  Provide help information.\n");
         sb.append("switch(s)                                Switch to a specific group by group ID.\n");
         sb.append("getBlockNumber                           Query the number of most recent block.\n");
+        sb.append("getDeployLog                             Query the log of deployed contracts.\n");
         sb.append("getPbftView                              Query the pbft view of node.\n");
         sb.append("getSealerList                            Query nodeId list for sealer nodes.\n");
         sb.append("getObserverList                          Query nodeId list for observer nodes.\n");
@@ -814,6 +823,8 @@ public class ConsoleImpl implements ConsoleFace {
       	  contractAddress = contract.getContractAddress();
           System.out.println(contractAddress);
           System.out.println();
+          contractAddress = contract.getContractAddress();
+          writeLog();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
@@ -821,7 +832,81 @@ public class ConsoleImpl implements ConsoleFace {
                 throw e;
             }
         }
-       
+
+    }
+
+    private void writeLog() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+       String name =  contractName.substring(20);
+       while(name.length() < 20){
+           name = name + " ";
+       }
+        String log = LocalDateTime.now().format(formatter) + "  [group:"+ groupID +  "]  " + name + "  " + contractAddress;
+        try {
+            File logFile =  new File("deploylog.txt");
+            if(!logFile.exists()){
+                logFile.createNewFile();
+            }
+            PrintWriter pw = new PrintWriter(new FileWriter("deploylog.txt",true));
+            pw.println(log);
+            pw.flush();
+            pw.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            System.out.println();
+            return;
+        }
+    }
+
+   public void getDeployLog(String[] params) throws Exception {
+
+	      if (params.length > 2) {
+            HelpInfo.promptHelp("getDeployLog");
+            return;
+        }
+	      String queryGroupID = "";
+	      if (params.length == 2) {
+	      	 queryGroupID = params[1];
+	      }
+        if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
+            HelpInfo.getDeployLogHelp();
+            return;
+        }
+        File logFile =  new File("deploylog.txt");
+        if(!logFile.exists()){
+            logFile.createNewFile();
+        }
+        BufferedReader reader = new BufferedReader(new FileReader ("deploylog.txt"));
+        String         line ;
+        StringBuilder  stringBuilder = new StringBuilder();
+        String         ls = System.getProperty("line.separator");
+        Deque<String> textDeque = new LinkedList<String>();
+        try {
+            while((line = reader.readLine()) != null) {
+            String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
+            if ("".equals(queryGroupID) ) {
+            	textDeque.offer(line);
+						} 
+            else {
+							 if(("[group:" + queryGroupID +"]").equals(contractInfos[2]))
+							 {
+								 textDeque.offer(line);
+							 }
+						}
+            
+            }
+            int i=20;
+            while (!textDeque.isEmpty()&& i>0) {
+                stringBuilder.append(textDeque.poll());
+                stringBuilder.append(ls);
+                i--;
+            }
+            System.out.println();
+            System.out.println(stringBuilder.toString());
+        } finally {
+            reader.close();
+        }
     }
 
     @Override
@@ -888,7 +973,6 @@ public class ConsoleImpl implements ConsoleFace {
             Class clazz = (Class) classType[i];
             classList[i] = clazz;
         }
-
         Class[] parameterType =
                 ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
         if (parameterType == null) {
@@ -1009,6 +1093,8 @@ public class ConsoleImpl implements ConsoleFace {
             // register cns
             String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
             System.out.println(contractAddress);
+            contractName = contractName+":"+contractVersion;
+            writeLog();
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {

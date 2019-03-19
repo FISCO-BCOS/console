@@ -167,7 +167,7 @@ public class ConsoleUtils {
           IllegalAccessException, ClassNotFoundException {
   }
 
-  public static void dynamicCompileSolFilesToJava() throws IOException {
+  public static void dynamicCompileSolFilesToJava() throws Exception {
     File solFileList = new File("solidity/contracts/");
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
