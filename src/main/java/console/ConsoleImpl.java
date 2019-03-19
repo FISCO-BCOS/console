@@ -338,12 +338,6 @@ public class ConsoleImpl implements ConsoleFace {
             System.out.println();
             return;
         }
-        List<String> groupList = web3j.getGroupList().send().getGroupList();
-        if (!groupList.contains(toGroupID+"")) {
-            System.out.println("Group " + toGroupID + " does not exist. The group list is " + groupList + ".");
-            System.out.println();
-            return;
-        }
         ((AbstractRefreshableApplicationContext)context).refresh();
         Service service = context.getBean(Service.class);
         Service oldService = service;
