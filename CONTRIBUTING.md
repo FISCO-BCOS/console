@@ -46,6 +46,7 @@ Go to [issues page](https://github.com/FISCO-BCOS/console/issues)
 **Continous integration platform**
 
 * travis-ci: [![Build Status](https://travis-ci.org/FISCO-BCOS/console.svg?branch=master)](https://travis-ci.org/FISCO-BCOS/console)
+* circleci: [![CircleCI](https://circleci.com/gh/FISCO-BCOS/console/tree/master.svg?style=shield)](https://circleci.com/gh/FISCO-BCOS/console/tree/master)
 
 
 **Code quality**
