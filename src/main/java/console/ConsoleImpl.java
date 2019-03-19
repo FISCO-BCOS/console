@@ -779,17 +779,16 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         String name = params[1];
-        try {
-            ConsoleUtils.dynamicCompileSolFilesToJava();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return;
-        }
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
         }
+        try {
+        	ConsoleUtils.dynamicCompileSolFilesToJava(name);
+        } catch (IOException e) {
+        	System.out.println(e.getMessage());
+        	return;
+        }
         ConsoleUtils.dynamicCompileJavaToClass(name);
-        ConsoleUtils.dynamicLoadClass();
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
         try {
             contractClass = getContractClass(contractName);
@@ -952,7 +951,6 @@ public class ConsoleImpl implements ConsoleFace {
             name = name.substring(0, name.length() - 4);
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
-        ConsoleUtils.dynamicLoadClass();
         try {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
@@ -1086,14 +1084,13 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         try {
-            ConsoleUtils.dynamicCompileSolFilesToJava();
+            ConsoleUtils.dynamicCompileSolFilesToJava(name);
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return;
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
         ConsoleUtils.dynamicCompileJavaToClass(name);
-        ConsoleUtils.dynamicLoadClass();
         try {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
@@ -1147,7 +1144,6 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("callByCNS");
             return;
         }
-        ConsoleUtils.dynamicLoadClass();
         String name = params[1];
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);

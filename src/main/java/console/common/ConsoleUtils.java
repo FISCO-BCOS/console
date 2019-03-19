@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -229,46 +227,66 @@ public class ConsoleUtils {
     }
   }
 
-  // dynamic load class
-  public static void dynamicLoadClass()
-      throws NoSuchMethodException, MalformedURLException, InvocationTargetException,
-          IllegalAccessException, ClassNotFoundException {
-  }
-
-  public static void dynamicCompileSolFilesToJava() throws Exception {
+  public static void dynamicCompileSolFilesToJava(String name) throws IOException {
     File solFileList = new File("solidity/contracts/");
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
     }
-    File[] solFiles = solFileList.listFiles();
+    String tempDirPath = new File("solidity/java").getAbsolutePath();
+    compileSolToJava(tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
+  }
+  
+  public static void main(String[] args) throws Exception {
+    if (args.length < 1) {
+      System.out.println("Please provide a package name.");
+      return;
+    }
 
+    File solFileList = new File("contracts");
+    String tempDirPath = new File("java").getAbsolutePath();
+    compileSolToJava(tempDirPath, args[0], solFileList, "abi/", "bin/");
+    System.out.println("\nCompile solidity contract files to java contract files successfully!");
+  }
+
+	private static void compileSolToJava(String tempDirPath, String packageName, File solFileList, 
+			String abiDir, String binDir) throws IOException {
+		File[] solFiles = solFileList.listFiles();
+    if(solFiles.length == 0)
+    {
+    	System.out.println("The contracts directory is empty.");
+    	return;
+    }
     for (File solFile : solFiles) {
-      if(!solFile.getName().endsWith(".sol"))
-  	  {
-  			continue;
-  	  }
+      if(!solFile.getName().endsWith(".sol") || solFile.getName().contains("Lib"))
+			{
+				continue;
+			}
       SolidityCompiler.Result res =
           SolidityCompiler.compile(solFile, true, ABI, BIN, INTERFACE, METADATA);
       if("".equals(res.output))
       {
-      	throw new IOException("Compile error: " + res.errors);
+      	System.out.println("Compile error: " + res.errors);
+      	return;
       }
       CompilationResult result = CompilationResult.parse(res.output);
       String contractname = solFile.getName().split("\\.")[0];
       CompilationResult.ContractMetadata a = result.getContract(solFile.getName().split("\\.")[0]);
-      FileUtils.writeStringToFile(new File("solidity/abi/" + contractname + ".abi"), a.abi);
-      FileUtils.writeStringToFile(new File("solidity/bin/" + contractname + ".bin"), a.bin);
+      FileUtils.writeStringToFile(new File(abiDir + contractname + ".abi"), a.abi);
+      FileUtils.writeStringToFile(new File(binDir + contractname + ".bin"), a.bin);
       String binFile;
       String abiFile;
-      String tempDirPath = new File("solidity/java").getAbsolutePath();
       String filename = contractname;
-      abiFile = "solidity/abi/" + filename + ".abi";
-      binFile = "solidity/bin/" + filename + ".bin";
+      abiFile = abiDir + filename + ".abi";
+      binFile = binDir + filename + ".bin";
       SolidityFunctionWrapperGenerator.main(
-          Arrays.asList("-a", abiFile, "-b", binFile, "-p", PACKAGENAME, "-o", tempDirPath)
+          Arrays.asList(
+                  "-a", abiFile,
+                  "-b", binFile,
+                  "-p", packageName,
+                  "-o", tempDirPath)
               .toArray(new String[0]));
     }
-  }
+	}
   
   private static class CommandTokenizer extends StreamTokenizer {
       public CommandTokenizer(Reader r) {
