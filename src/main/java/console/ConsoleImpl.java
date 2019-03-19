@@ -55,6 +55,7 @@ import org.springframework.core.io.Resource;
 
 import com.alibaba.fastjson.JSONObject;
 
+import console.common.Address;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
@@ -739,9 +740,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.getCodeHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         String code = web3j.getCode(address, DefaultBlockParameterName.LATEST).sendForReturnString();
         if ("0x".equals(code)) {
             System.out.println("This address doesn't exist.");
@@ -972,9 +975,11 @@ public class ConsoleImpl implements ConsoleFace {
         Object contractObject;
 
         contractAddress = params[2];
-        if (ConsoleUtils.isInvalidAddress(contractAddress)) {
+        Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
+        if (!convertAddr.isValid()) {
             return;
         }
+        contractAddress = convertAddr.getAddress();
         contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
         String funcName = params[3];
         Method[] methods = contractClass.getDeclaredMethods();
@@ -1384,13 +1389,15 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("grantUserTableManager");
             return;
         }
-        String addr = params[2];
-        if (ConsoleUtils.isInvalidAddress(addr)) {
+        String address = params[2];
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = null;
-        result = permission.grantUserTableManager(tableName, addr);
+        result = permission.grantUserTableManager(tableName, address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1414,13 +1421,15 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("revokeUserTableManager");
             return;
         }
-        String addr = params[2];
-        if (ConsoleUtils.isInvalidAddress(addr)) {
+        String address = params[2];
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = null;
-        result = permission.revokeUserTableManager(tableName, addr);
+        result = permission.revokeUserTableManager(tableName, address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1460,9 +1469,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantDeployAndCreateManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantDeployAndCreateManager(address);
@@ -1485,9 +1496,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokeDeployAndCreateManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeDeployAndCreateManager(address);
@@ -1520,9 +1533,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantPermissionManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantPermissionManager(address);
@@ -1545,9 +1560,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokePermissionManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokePermissionManager(address);
@@ -1580,9 +1597,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantNodeManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantNodeManager(address);
@@ -1605,9 +1624,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokeNodeManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeNodeManager(address);
@@ -1640,9 +1661,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantCNSManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantCNSManager(address);
@@ -1665,9 +1688,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokeCNSManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeCNSManager(address);
@@ -1700,9 +1725,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantSysConfigManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantSysConfigManager(address);
@@ -1725,9 +1752,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokeSysConfigManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeSysConfigManager(address);
