@@ -120,7 +120,7 @@ public class ConsoleUtils {
       return false;
     }
   }
-
+  
   public static int proccessIndex(String indexStr) {
 		int index = 0;
 		try {

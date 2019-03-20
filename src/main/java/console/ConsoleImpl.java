@@ -863,76 +863,76 @@ public class ConsoleImpl implements ConsoleFace {
         }
     }
 
-   public void getDeployLog(String[] params) throws Exception {
-
-	      if (params.length > 2) {
-            HelpInfo.promptHelp("getDeployLog");
-            return;
-          }
-          String queryGroupID = "";
-	      int groupID = 1;
-          if (params.length == 2) {
-              queryGroupID = params[1];
-              if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
-                  HelpInfo.getDeployLogHelp();
-                  return;
-              }
-              try {
-                  groupID = Integer.parseInt(queryGroupID);
-                  if(groupID <= 0)
-                  {
-                      System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
-                      System.out.println();
-                      return;
-                  }
-              } catch (NumberFormatException e) {
-                  System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
-                  System.out.println();
-                  return;
-              }
-          }
-        File logFile =  new File("deploylog.txt");
-        if(!logFile.exists()){
-            logFile.createNewFile();
-        }
-        BufferedReader reader = new BufferedReader(new FileReader ("deploylog.txt"));
-        String         line ;
-        StringBuilder  stringBuilder = new StringBuilder();
-        String         ls = System.getProperty("line.separator");
-        Deque<String> textDeque = new LinkedList<String>();
-        try {
-            while((line = reader.readLine()) != null) {
-            String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
-            if ("".equals(queryGroupID) ) {
-            	textDeque.offer(line);
+		public void getDeployLog(String[] params) throws Exception {
+		
+			if (params.length > 2) {
+				HelpInfo.promptHelp("getDeployLog");
+				return;
 			}
-            else {
-                     if(("[group:" + groupID +"]").equals(contractInfos[2]))
-                     {
-                         textDeque.offer(line);
-                     }
-                }
-            }
-            int i=20;
-            while (!textDeque.isEmpty()&& i>0) {
-                stringBuilder.append(textDeque.poll());
-                stringBuilder.append(ls);
-                i--;
-            }
-            if ("".equals(stringBuilder.toString()))
-            {
-                System.out.println("Empty set.");
-                System.out.println();
-            }
-            else
-            {
-                System.out.println();
-                System.out.println(stringBuilder.toString());
-            }
-        } finally {
-            reader.close();
-        }
-    }
+			String queryGroupID = "";
+			int groupID = 1;
+			if (params.length == 2) {
+				queryGroupID = params[1];
+				if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
+					HelpInfo.getDeployLogHelp();
+					return;
+				}
+				try {
+					groupID = Integer.parseInt(queryGroupID);
+					if (groupID <= 0) {
+						System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+						System.out.println();
+						return;
+					}
+				} catch (NumberFormatException e) {
+					System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+					System.out.println();
+					return;
+				}
+			}
+			File logFile = new File("deploylog.txt");
+			if (!logFile.exists()) {
+				logFile.createNewFile();
+			}
+			BufferedReader reader = new BufferedReader(new FileReader("deploylog.txt"));
+			String line;
+			String ls = System.getProperty("line.separator");
+			Deque<String> textDeque = new LinkedList<String>();
+			try {
+				while ((line = reader.readLine()) != null) {
+					String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
+					if ("".equals(queryGroupID)) {
+						textDeque.push(line);
+					} else {
+						if (("[group:" + groupID + "]").equals(contractInfos[2])) {
+							textDeque.push(line);
+						}
+					}
+				}
+				int i = Common.QueryLogCount;
+				Deque<String> resultDeque = new LinkedList<String>();
+				while (!textDeque.isEmpty() && i > 0) {
+					resultDeque.push(textDeque.pop());
+					i--;
+				}
+				StringBuilder stringBuilder = new StringBuilder();
+				int j = Common.QueryLogCount;
+				while (!resultDeque.isEmpty() && j > 0) {
+					stringBuilder.append(resultDeque.pop());
+					stringBuilder.append(ls);
+					j--;
+				}
+				if ("".equals(stringBuilder.toString())) {
+					System.out.println("Empty set.");
+					System.out.println();
+				} else {
+					System.out.println();
+					System.out.println(stringBuilder.toString());
+				}
+			} finally {
+				reader.close();
+			}
+		}
 
     @Override
     public void call(String[] params) throws Exception {
