@@ -216,7 +216,6 @@ public class ConsoleImpl implements ConsoleFace {
         sb.append("help(h)                                  Provide help information.\n");
         sb.append("switch(s)                                Switch to a specific group by group ID.\n");
         sb.append("getBlockNumber                           Query the number of most recent block.\n");
-        sb.append("getDeployLog                             Query the log of deployed contracts.\n");
         sb.append("getPbftView                              Query the pbft view of node.\n");
         sb.append("getSealerList                            Query nodeId list for sealer nodes.\n");
         sb.append("getObserverList                          Query nodeId list for observer nodes.\n");
@@ -248,13 +247,14 @@ public class ConsoleImpl implements ConsoleFace {
         sb.append("getCode                                  Query code at a given address.\n");
         sb.append("getTotalTransactionCount                 Query total transaction count.\n");
         sb.append("deploy                                   Deploy a contract on blockchain.\n");
+        sb.append("getDeployLog                             Query the log of deployed contracts.\n");
         sb.append(
                 "call                                     Call a contract by a function and paramters.\n");
         sb.append("deployByCNS                              Deploy a contract on blockchain by CNS.\n");
         sb.append(
-                "callByCNS                                Call a contract by a function and paramters by CNS.\n");
+            "queryCNS                                 Query CNS information by contract name and contract version.\n");
         sb.append(
-                "queryCNS                                 Query CNS information by contract name and contract version.\n");
+                "callByCNS                                Call a contract by a function and paramters by CNS.\n");
         sb.append("addSealer                                Add a sealer node.\n");
         sb.append("addObserver                              Add an observer node.\n");
         sb.append("removeNode                               Remove a node.\n");
