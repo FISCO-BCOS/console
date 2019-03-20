@@ -121,6 +121,24 @@ public class ConsoleUtils {
     }
   }
 
+  public static int proccessIndex(String indexStr) {
+		int index = 0;
+		try {
+			index = Integer.parseInt(indexStr);
+		  if(index < 0)
+		  {
+		    System.out.println("Please provide index by non-negative integer mode(0~2147483647).");
+		    System.out.println();
+		    return Common.InvalidReturnNumber;
+		  }
+		} catch (NumberFormatException e) {
+		    System.out.println("Please provide index by non-negative integer mode(0~2147483647).");
+		    System.out.println();
+		    return Common.InvalidReturnNumber;
+		}
+		return index;
+	}
+  
   public static Address convertAddress(String addressStr)
   {	
   	Address address = new Address();

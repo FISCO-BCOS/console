@@ -95,9 +95,9 @@ public class ConsoleClient {
       completers.add(new ArgumentCompleter(new StringsCompleter("revokeSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("listSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.txGasLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
       completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.txGasLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
       completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
 
       Terminal terminal = TerminalBuilder.terminal();

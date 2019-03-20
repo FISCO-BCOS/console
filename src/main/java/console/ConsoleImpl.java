@@ -56,6 +56,7 @@ import org.springframework.core.io.Resource;
 import com.alibaba.fastjson.JSONObject;
 
 import console.common.Address;
+import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
@@ -631,12 +632,17 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
             return;
         }
-        if (ConsoleUtils.isInvalidHash(blockHash)) return;
+        if (ConsoleUtils.isInvalidHash(blockHash)) 
+        {
+        	return;
+        }
         String indexStr = params[2];
-        if (ConsoleUtils.isInvalidNumber(indexStr, 1)) return;
-        BigInteger index = new BigInteger(indexStr);
+        int index = ConsoleUtils.proccessIndex(indexStr);
+        if (index == Common.InvalidReturnNumber) {
+					return;
+				}
         String transaction =
-                web3j.getTransactionByBlockHashAndIndex(blockHash, index).sendForReturnString();
+                web3j.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index)).sendForReturnString();
         ConsoleUtils.printJson(transaction);
         System.out.println();
     }
@@ -663,11 +669,13 @@ public class ConsoleImpl implements ConsoleFace {
         if (ConsoleUtils.isInvalidNumber(blockNumberStr, 0)) return;
         BigInteger blockNumber = new BigInteger(blockNumberStr);
         String indexStr = params[2];
-        if (ConsoleUtils.isInvalidNumber(indexStr, 1)) return;
-        BigInteger index = new BigInteger(indexStr);
+        int index = ConsoleUtils.proccessIndex(indexStr);
+        if (index == Common.InvalidReturnNumber) {
+					return;
+				}
         String transaction =
                 web3j
-                        .getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), index)
+                        .getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), BigInteger.valueOf(index))
                         .sendForReturnString();
         ConsoleUtils.printJson(transaction);
         System.out.println();
