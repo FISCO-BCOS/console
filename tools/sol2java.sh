@@ -32,7 +32,7 @@ if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
     exit 0
 else
-	java -cp "../apps/*:../lib/*:../conf/" org.fisco.bcos.web3j.utils.CompileSolToJava $1    
+	java -cp "../apps/*:../lib/*:../conf/" console.common.ConsoleUtils $1    
 fi
 
 

@@ -2,15 +2,23 @@ package console;
 
 import static console.common.ContractClassFactory.getContractClass;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -47,6 +55,8 @@ import org.springframework.core.io.Resource;
 
 import com.alibaba.fastjson.JSONObject;
 
+import console.common.Address;
+import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
@@ -238,13 +248,14 @@ public class ConsoleImpl implements ConsoleFace {
         sb.append("getCode                                  Query code at a given address.\n");
         sb.append("getTotalTransactionCount                 Query total transaction count.\n");
         sb.append("deploy                                   Deploy a contract on blockchain.\n");
+        sb.append("getDeployLog                             Query the log of deployed contracts.\n");
         sb.append(
                 "call                                     Call a contract by a function and paramters.\n");
         sb.append("deployByCNS                              Deploy a contract on blockchain by CNS.\n");
         sb.append(
-                "callByCNS                                Call a contract by a function and paramters by CNS.\n");
+            "queryCNS                                 Query CNS information by contract name and contract version.\n");
         sb.append(
-                "queryCNS                                 Query CNS information by contract name and contract version.\n");
+                "callByCNS                                Call a contract by a function and paramters by CNS.\n");
         sb.append("addSealer                                Add a sealer node.\n");
         sb.append("addObserver                              Add an observer node.\n");
         sb.append("removeNode                               Remove a node.\n");
@@ -325,12 +336,6 @@ public class ConsoleImpl implements ConsoleFace {
             }
         } catch (NumberFormatException e) {
             System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
-            System.out.println();
-            return;
-        }
-        List<String> groupList = web3j.getGroupList().send().getGroupList();
-        if (!groupList.contains(toGroupID+"")) {
-            System.out.println("Group " + toGroupID + " does not exist. The group list is " + groupList + ".");
             System.out.println();
             return;
         }
@@ -627,12 +632,17 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
             return;
         }
-        if (ConsoleUtils.isInvalidHash(blockHash)) return;
+        if (ConsoleUtils.isInvalidHash(blockHash)) 
+        {
+        	return;
+        }
         String indexStr = params[2];
-        if (ConsoleUtils.isInvalidNumber(indexStr, 1)) return;
-        BigInteger index = new BigInteger(indexStr);
+        int index = ConsoleUtils.proccessIndex(indexStr);
+        if (index == Common.InvalidReturnNumber) {
+					return;
+				}
         String transaction =
-                web3j.getTransactionByBlockHashAndIndex(blockHash, index).sendForReturnString();
+                web3j.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index)).sendForReturnString();
         ConsoleUtils.printJson(transaction);
         System.out.println();
     }
@@ -659,11 +669,13 @@ public class ConsoleImpl implements ConsoleFace {
         if (ConsoleUtils.isInvalidNumber(blockNumberStr, 0)) return;
         BigInteger blockNumber = new BigInteger(blockNumberStr);
         String indexStr = params[2];
-        if (ConsoleUtils.isInvalidNumber(indexStr, 1)) return;
-        BigInteger index = new BigInteger(indexStr);
+        int index = ConsoleUtils.proccessIndex(indexStr);
+        if (index == Common.InvalidReturnNumber) {
+					return;
+				}
         String transaction =
                 web3j
-                        .getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), index)
+                        .getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), BigInteger.valueOf(index))
                         .sendForReturnString();
         ConsoleUtils.printJson(transaction);
         System.out.println();
@@ -730,9 +742,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.getCodeHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         String code = web3j.getCode(address, DefaultBlockParameterName.LATEST).sendForReturnString();
         if ("0x".equals(code)) {
             System.out.println("This address doesn't exist.");
@@ -767,17 +781,16 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         String name = params[1];
-        try {
-            ConsoleUtils.dynamicCompileSolFilesToJava();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return;
-        }
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
         }
+        try {
+        	ConsoleUtils.dynamicCompileSolFilesToJava(name);
+        } catch (IOException e) {
+        	System.out.println(e.getMessage());
+        	return;
+        }
         ConsoleUtils.dynamicCompileJavaToClass(name);
-        ConsoleUtils.dynamicLoadClass();
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
         try {
             contractClass = getContractClass(contractName);
@@ -814,6 +827,8 @@ public class ConsoleImpl implements ConsoleFace {
       	  contractAddress = contract.getContractAddress();
           System.out.println(contractAddress);
           System.out.println();
+          contractAddress = contract.getContractAddress();
+          writeLog();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
@@ -821,7 +836,102 @@ public class ConsoleImpl implements ConsoleFace {
                 throw e;
             }
         }
-       
+
+    }
+
+    private void writeLog() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+       String name =  contractName.substring(20);
+       while(name.length() < 20){
+           name = name + " ";
+       }
+        String log = LocalDateTime.now().format(formatter) + "  [group:"+ groupID +  "]  " + name + "  " + contractAddress;
+        try {
+            File logFile =  new File("deploylog.txt");
+            if(!logFile.exists()){
+                logFile.createNewFile();
+            }
+            PrintWriter pw = new PrintWriter(new FileWriter("deploylog.txt",true));
+            pw.println(log);
+            pw.flush();
+            pw.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            System.out.println();
+            return;
+        }
+    }
+
+   public void getDeployLog(String[] params) throws Exception {
+
+	      if (params.length > 2) {
+            HelpInfo.promptHelp("getDeployLog");
+            return;
+          }
+          String queryGroupID = "";
+	      int groupID = 1;
+          if (params.length == 2) {
+              queryGroupID = params[1];
+              if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
+                  HelpInfo.getDeployLogHelp();
+                  return;
+              }
+              try {
+                  groupID = Integer.parseInt(queryGroupID);
+                  if(groupID <= 0)
+                  {
+                      System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+                      System.out.println();
+                      return;
+                  }
+              } catch (NumberFormatException e) {
+                  System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+                  System.out.println();
+                  return;
+              }
+          }
+        File logFile =  new File("deploylog.txt");
+        if(!logFile.exists()){
+            logFile.createNewFile();
+        }
+        BufferedReader reader = new BufferedReader(new FileReader ("deploylog.txt"));
+        String         line ;
+        StringBuilder  stringBuilder = new StringBuilder();
+        String         ls = System.getProperty("line.separator");
+        Deque<String> textDeque = new LinkedList<String>();
+        try {
+            while((line = reader.readLine()) != null) {
+            String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
+            if ("".equals(queryGroupID) ) {
+            	textDeque.offer(line);
+			}
+            else {
+                     if(("[group:" + groupID +"]").equals(contractInfos[2]))
+                     {
+                         textDeque.offer(line);
+                     }
+                }
+            }
+            int i=20;
+            while (!textDeque.isEmpty()&& i>0) {
+                stringBuilder.append(textDeque.poll());
+                stringBuilder.append(ls);
+                i--;
+            }
+            if ("".equals(stringBuilder.toString()))
+            {
+                System.out.println("Empty set.");
+                System.out.println();
+            }
+            else
+            {
+                System.out.println();
+                System.out.println(stringBuilder.toString());
+            }
+        } finally {
+            reader.close();
+        }
     }
 
     @Override
@@ -843,7 +953,6 @@ public class ConsoleImpl implements ConsoleFace {
             name = name.substring(0, name.length() - 4);
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
-        ConsoleUtils.dynamicLoadClass();
         try {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
@@ -866,9 +975,11 @@ public class ConsoleImpl implements ConsoleFace {
         Object contractObject;
 
         contractAddress = params[2];
-        if (ConsoleUtils.isInvalidAddress(contractAddress)) {
+        Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
+        if (!convertAddr.isValid()) {
             return;
         }
+        contractAddress = convertAddr.getAddress();
         contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
         String funcName = params[3];
         Method[] methods = contractClass.getDeclaredMethods();
@@ -888,7 +999,6 @@ public class ConsoleImpl implements ConsoleFace {
             Class clazz = (Class) classType[i];
             classList[i] = clazz;
         }
-
         Class[] parameterType =
                 ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
         if (parameterType == null) {
@@ -976,14 +1086,13 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         try {
-            ConsoleUtils.dynamicCompileSolFilesToJava();
+            ConsoleUtils.dynamicCompileSolFilesToJava(name);
         } catch (IOException e) {
             System.out.println(e.getMessage());
             return;
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
         ConsoleUtils.dynamicCompileJavaToClass(name);
-        ConsoleUtils.dynamicLoadClass();
         try {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
@@ -1009,6 +1118,8 @@ public class ConsoleImpl implements ConsoleFace {
             // register cns
             String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
             System.out.println(contractAddress);
+            contractName = contractName+":"+contractVersion;
+            writeLog();
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
@@ -1035,7 +1146,6 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("callByCNS");
             return;
         }
-        ConsoleUtils.dynamicLoadClass();
         String name = params[1];
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
@@ -1277,13 +1387,15 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("grantUserTableManager");
             return;
         }
-        String addr = params[2];
-        if (ConsoleUtils.isInvalidAddress(addr)) {
+        String address = params[2];
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = null;
-        result = permission.grantUserTableManager(tableName, addr);
+        result = permission.grantUserTableManager(tableName, address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1307,13 +1419,15 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("revokeUserTableManager");
             return;
         }
-        String addr = params[2];
-        if (ConsoleUtils.isInvalidAddress(addr)) {
+        String address = params[2];
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = null;
-        result = permission.revokeUserTableManager(tableName, addr);
+        result = permission.revokeUserTableManager(tableName, address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -1353,9 +1467,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantDeployAndCreateManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantDeployAndCreateManager(address);
@@ -1378,9 +1494,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokeDeployAndCreateManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeDeployAndCreateManager(address);
@@ -1413,9 +1531,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantPermissionManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantPermissionManager(address);
@@ -1438,9 +1558,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokePermissionManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokePermissionManager(address);
@@ -1473,9 +1595,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantNodeManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantNodeManager(address);
@@ -1498,9 +1622,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokeNodeManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeNodeManager(address);
@@ -1533,9 +1659,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantCNSManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantCNSManager(address);
@@ -1558,9 +1686,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokeCNSManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeCNSManager(address);
@@ -1593,9 +1723,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.grantSysConfigManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantSysConfigManager(address);
@@ -1618,9 +1750,11 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.revokeSysConfigManagerHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidAddress(address)) {
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
             return;
         }
+        address = convertAddr.getAddress();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeSysConfigManager(address);

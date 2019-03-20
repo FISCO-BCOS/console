@@ -1,7 +1,7 @@
 # safelist
 branches:
-  only: 
-    - master
+  only:
+      - /.*/
 
 language: java
 jdk:

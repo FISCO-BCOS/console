@@ -102,6 +102,13 @@ public class HelpInfo {
     System.out.println("Provide help information.");
     System.out.println("Usage: help");
   }
+  
+  public static void getDeployLogHelp() {
+  	System.out.println("Query the log of deployed contract.");
+  	System.out.println("Usage: getDeployLog [groupId]");
+	  System.out.println("groupId -- (optional) The ID of a group.");
+	  System.out.println();
+  }
 
   public static void getBlockNumberHelp() {
     System.out.println("Query the number of most recent block.");
@@ -111,7 +118,7 @@ public class HelpInfo {
   public static void switchGroupIDHelp() {
 	  System.out.println("Switch to a specific group by group ID.");
 	  System.out.println("Usage: switch groupId ");
-	  System.out.println("groupId -- The ID of a group.");
+	  System.out.println("groupId -- (optional) The ID of a group.");
 	  System.out.println();
   }
 
