@@ -60,6 +60,7 @@ import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
+import console.exception.CompileSolidityException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
@@ -786,8 +787,12 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
         	ConsoleUtils.dynamicCompileSolFilesToJava(name);
-        } catch (IOException e) {
+        }catch (CompileSolidityException e) {
         	System.out.println(e.getMessage());
+        	return;
+        }catch (IOException e) {
+        	System.out.println(e.getMessage());
+        	System.out.println();
         	return;
         }
         ConsoleUtils.dynamicCompileJavaToClass(name);
@@ -1087,8 +1092,12 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
             ConsoleUtils.dynamicCompileSolFilesToJava(name);
+        } catch (CompileSolidityException e) {
+        	System.out.println(e.getMessage());
+        	return;
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            System.out.println();
             return;
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;

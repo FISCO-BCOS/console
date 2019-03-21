@@ -22,6 +22,8 @@ import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
 import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
 import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
 
+import console.exception.CompileSolidityException;
+
 public class ConsoleUtils {
 
   public static final String JAVAPATH = "solidity/java/org/fisco/bcos/temp";
@@ -246,15 +248,18 @@ public class ConsoleUtils {
   }
 
   public static void dynamicCompileSolFilesToJava(String name) throws IOException {
+    if (!name.endsWith(".sol")) {
+      name = name + ".sol";
+    }
     File solFileList = new File("solidity/contracts/");
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
     }
     String tempDirPath = new File("solidity/java").getAbsolutePath();
-    compileSolToJava(tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
+    compileSolToJava(name, tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
   }
   
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args){
     if (args.length < 1) {
       System.out.println("Please provide a package name.");
       return;
@@ -262,11 +267,15 @@ public class ConsoleUtils {
 
     File solFileList = new File("contracts");
     String tempDirPath = new File("java").getAbsolutePath();
-    compileSolToJava(tempDirPath, args[0], solFileList, "abi/", "bin/");
-    System.out.println("\nCompile solidity contract files to java contract files successfully!");
+    try {
+			compileSolToJava("*", tempDirPath, args[0], solFileList, "abi/", "bin/");
+			System.out.println("\nCompile solidity contract files to java contract files successfully!");
+		} catch (IOException e) {
+			System.out.print(e.getMessage());
+		}
   }
 
-	private static void compileSolToJava(String tempDirPath, String packageName, File solFileList, 
+	private static void compileSolToJava(String solName, String tempDirPath, String packageName, File solFileList, 
 			String abiDir, String binDir) throws IOException {
 		File[] solFiles = solFileList.listFiles();
     if(solFiles.length == 0)
@@ -275,16 +284,33 @@ public class ConsoleUtils {
     	return;
     }
     for (File solFile : solFiles) {
-      if(!solFile.getName().endsWith(".sol") || solFile.getName().contains("Lib"))
+      if(!solFile.getName().endsWith(".sol"))
 			{
 				continue;
 			}
+      if(!"*".equals(solName))
+      {
+      	if(!solFile.getName().equals(solName))
+      	{
+      		continue;
+      	}
+      	if(solFile.getName().contains("Lib"))
+      	{
+      		throw new IOException("Don't deploy the library: " + solFile.getName());
+      	}
+      }
+      else 
+      {
+      	if(solFile.getName().contains("Lib"))
+      	{
+      		continue;
+      	}
+      }
       SolidityCompiler.Result res =
           SolidityCompiler.compile(solFile, true, ABI, BIN, INTERFACE, METADATA);
       if("".equals(res.output))
       {
-      	System.out.println("Compile error: " + res.errors);
-      	return;
+      		throw new CompileSolidityException("Compile error: " + res.errors);
       }
       CompilationResult result = CompilationResult.parse(res.output);
       String contractname = solFile.getName().split("\\.")[0];
