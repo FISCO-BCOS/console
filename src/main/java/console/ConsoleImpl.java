@@ -331,12 +331,13 @@ public class ConsoleImpl implements ConsoleFace {
             toGroupID = Integer.parseInt(groupIDStr);
             if(toGroupID <= 0)
             {
-              System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+              System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
+              System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
               System.out.println();
               return;
             }
         } catch (NumberFormatException e) {
-            System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+            System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
             System.out.println();
             return;
         }
@@ -674,12 +675,11 @@ public class ConsoleImpl implements ConsoleFace {
         if (index == Common.InvalidReturnNumber) {
 					return;
 				}
-        String transaction =
-                web3j
-                        .getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), BigInteger.valueOf(index))
-                        .sendForReturnString();
-        ConsoleUtils.printJson(transaction);
-        System.out.println();
+				String transaction = web3j
+						.getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), BigInteger.valueOf(index))
+						.sendForReturnString();
+				ConsoleUtils.printJson(transaction);
+				System.out.println();
     }
 
     @Override
@@ -885,12 +885,12 @@ public class ConsoleImpl implements ConsoleFace {
 				try {
 					groupID = Integer.parseInt(queryGroupID);
 					if (groupID <= 0) {
-						System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+						System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
 						System.out.println();
 						return;
 					}
 				} catch (NumberFormatException e) {
-					System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+					System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
 					System.out.println();
 					return;
 				}
@@ -1184,6 +1184,11 @@ public class ConsoleImpl implements ConsoleFace {
         // get address from cns
         contractName = name;
         contractVersion = params[2];
+        if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
+          ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
+          System.out.println();
+          return;
+        }
         CnsService cnsResolver = new CnsService(web3j, credentials);
         try {
             contractAddress =
@@ -1274,6 +1279,11 @@ public class ConsoleImpl implements ConsoleFace {
         }
         if (params.length == 3) {
             contractVersion = params[2];
+            if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
+              ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
+              System.out.println();
+              return;
+            }
             cnsInfos = cnsService.queryCnsByNameAndVersion(contractName, contractVersion);
         } else {
             cnsInfos = cnsService.queryCnsByName(contractName);
