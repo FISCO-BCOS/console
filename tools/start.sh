@@ -25,12 +25,36 @@ function LOG_INFO()
 
 function Usage() {
     LOG_INFO "# Console TOOLS"
-    LOG_INFO "--Start console: \t./start [groupID] [privateKey]\n"
+    LOG_INFO "--Start console: \t./start.sh [groupID] [privateKey]\n"
+}
+
+function check_java(){
+   version=$(java -version 2>&1 |grep version |awk '{print $3}')
+   len=${#version}-2
+   version=${version:1:len}
+
+   IFS='.' arr=($version)
+   if [ -z ${arr[0]} ];then
+      LOG_ERROR "At least Java8 is required."
+      exit 1
+   fi
+   if [ ${arr[0]} -eq 1 ];then
+      if [ ${arr[1]} -lt 8 ];then
+           LOG_ERROR "At least Java8 is required."
+           exit 1
+      fi
+   elif [ ${arr[0]} -gt 8 ];then
+          :
+   else
+       LOG_ERROR "At least Java8 is required."
+       exit 1
+   fi
 }
 
 if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
     exit 0
 else
-	java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $1 $2    
+   check_java
+   java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $1 $2
 fi
