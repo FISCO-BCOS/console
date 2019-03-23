@@ -106,8 +106,8 @@ public class HelpInfo {
   
   public static void getDeployLogHelp() {
   	System.out.println("Query the log of deployed contract.");
-  	System.out.println("Usage: getDeployLog [groupId]");
-	  System.out.println("groupId -- (optional) The ID of a group, " + Common.GroupIDRange + ".");
+  	System.out.println("Usage: getDeployLog [recordNumber]");
+	  System.out.println("recordNumber -- (optional) The number of deployed contract records, " + Common.DeployLogntegerRange + "(default 20).");
 	  System.out.println();
   }
 
@@ -119,7 +119,7 @@ public class HelpInfo {
   public static void switchGroupIDHelp() {
 	  System.out.println("Switch to a specific group by group ID.");
 	  System.out.println("Usage: switch groupId ");
-	  System.out.println("groupId -- (optional) The ID of a group, " + Common.GroupIDRange + ".");
+	  System.out.println("groupId -- (optional) The ID of a group, " + Common.PositiveIntegerRange + ".");
 	  System.out.println();
   }
 
@@ -190,7 +190,7 @@ public class HelpInfo {
   public static void getBlockByNumberHelp() {
     System.out.println("Query information about a block by block number.");
     System.out.println("Usage: getBlockByNumber blockNumber [boolean]");
-    System.out.println("blockNumber -- Integer of a block number, " + Common.BlockNumberAndTxIndexRange + ".");
+    System.out.println("blockNumber -- Integer of a block number, " + Common.NonNegativeIntegerRange + ".");
     System.out.println(
         "boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
     System.out.println();
@@ -199,7 +199,7 @@ public class HelpInfo {
   public static void getBlockHashByNumberHelp() {
     System.out.println("Query block hash by block number.");
     System.out.println("Usage: getBlockHashByNumber blockNumber");
-    System.out.println("blockNumber -- Integer of a block number, " + Common.BlockNumberAndTxIndexRange + ".");
+    System.out.println("blockNumber -- Integer of a block number, " + Common.NonNegativeIntegerRange + ".");
     System.out.println();
   }
 
@@ -215,7 +215,7 @@ public class HelpInfo {
         "Query information about a transaction by block hash and transaction index position.");
     System.out.println("Usage: getTransactionByBlockHashAndIndex blockHash index");
     System.out.println("blockHash -- 32 Bytes - The hash of a block.");
-    System.out.println("index -- Integer of a transaction index, " + Common.BlockNumberAndTxIndexRange + ".");
+    System.out.println("index -- Integer of a transaction index, " + Common.NonNegativeIntegerRange + ".");
     System.out.println();
   }
 
@@ -223,8 +223,8 @@ public class HelpInfo {
     System.out.println(
         "Query information about a transaction by block number and transaction index position.");
     System.out.println("Usage: getTransactionByBlockNumberAndIndex blockNumber index");
-    System.out.println("blockNumber -- Integer of a block number, " + Common.BlockNumberAndTxIndexRange + ".");
-    System.out.println("index -- Integer of a transaction index, " + Common.BlockNumberAndTxIndexRange + ".");
+    System.out.println("blockNumber -- Integer of a block number, " + Common.NonNegativeIntegerRange + ".");
+    System.out.println("index -- Integer of a transaction index, " + Common.NonNegativeIntegerRange + ".");
     System.out.println();
   }
 

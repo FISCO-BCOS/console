@@ -129,12 +129,12 @@ public class ConsoleUtils {
 			index = Integer.parseInt(indexStr);
 		  if(index < 0)
 		  {
-		    System.out.println("Please provide index by non-negative integer mode, " + Common.BlockNumberAndTxIndexRange + ".");
+		    System.out.println("Please provide index by non-negative integer mode, " + Common.NonNegativeIntegerRange + ".");
 		    System.out.println();
 		    return Common.InvalidReturnNumber;
 		  }
 		} catch (NumberFormatException e) {
-		    System.out.println("Please provide index by non-negative integer mode, " + Common.BlockNumberAndTxIndexRange + ".");
+		    System.out.println("Please provide index by non-negative integer mode, " + Common.NonNegativeIntegerRange + ".");
 		    System.out.println();
 		    return Common.InvalidReturnNumber;
 		}

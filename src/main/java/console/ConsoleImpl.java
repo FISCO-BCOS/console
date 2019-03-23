@@ -331,13 +331,13 @@ public class ConsoleImpl implements ConsoleFace {
             toGroupID = Integer.parseInt(groupIDStr);
             if(toGroupID <= 0)
             {
-              System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
-              System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
+              System.out.println("Please provide group ID by positive integer mode, " + Common.PositiveIntegerRange +".");
+              System.out.println("Please provide group ID by positive integer mode, " + Common.PositiveIntegerRange +".");
               System.out.println();
               return;
             }
         } catch (NumberFormatException e) {
-            System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
+            System.out.println("Please provide group ID by positive integer mode, " + Common.PositiveIntegerRange +".");
             System.out.println();
             return;
         }
@@ -869,28 +869,28 @@ public class ConsoleImpl implements ConsoleFace {
     }
 
 		public void getDeployLog(String[] params) throws Exception {
-		
+			
 			if (params.length > 2) {
 				HelpInfo.promptHelp("getDeployLog");
 				return;
 			}
-			String queryGroupID = "";
-			int groupID = 1;
+			String queryRecordNumber = "";
+			int recordNumber = Common.QueryLogCount;
 			if (params.length == 2) {
-				queryGroupID = params[1];
-				if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
+				queryRecordNumber = params[1];
+				if ("-h".equals(queryRecordNumber) || "--help".equals(queryRecordNumber)) {
 					HelpInfo.getDeployLogHelp();
 					return;
 				}
 				try {
-					groupID = Integer.parseInt(queryGroupID);
-					if (groupID <= 0) {
-						System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
+					recordNumber = Integer.parseInt(queryRecordNumber);
+					if (recordNumber <= 0 || recordNumber > 100) {
+						System.out.println("Please provide record number by integer mode, " + Common.DeployLogntegerRange +".");
 						System.out.println();
 						return;
 					}
 				} catch (NumberFormatException e) {
-					System.out.println("Please provide group ID by positive integer mode, " + Common.GroupIDRange +".");
+					System.out.println("Please provide record number by integer mode, " + Common.DeployLogntegerRange +".");
 					System.out.println();
 					return;
 				}
@@ -906,22 +906,18 @@ public class ConsoleImpl implements ConsoleFace {
 			try {
 				while ((line = reader.readLine()) != null) {
 					String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
-					if ("".equals(queryGroupID)) {
+					if (("[group:" + groupID + "]").equals(contractInfos[2])) {
 						textDeque.push(line);
-					} else {
-						if (("[group:" + groupID + "]").equals(contractInfos[2])) {
-							textDeque.push(line);
-						}
 					}
 				}
-				int i = Common.QueryLogCount;
+				int i = recordNumber;
 				Deque<String> resultDeque = new LinkedList<String>();
 				while (!textDeque.isEmpty() && i > 0) {
 					resultDeque.push(textDeque.pop());
 					i--;
 				}
 				StringBuilder stringBuilder = new StringBuilder();
-				int j = Common.QueryLogCount;
+				int j = recordNumber;
 				while (!resultDeque.isEmpty() && j > 0) {
 					stringBuilder.append(resultDeque.pop());
 					stringBuilder.append(ls);
