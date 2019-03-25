@@ -17,8 +17,6 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -60,6 +58,7 @@ import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
+import console.exception.CompileSolidityException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
@@ -330,12 +329,13 @@ public class ConsoleImpl implements ConsoleFace {
             toGroupID = Integer.parseInt(groupIDStr);
             if(toGroupID <= 0)
             {
-              System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+              System.out.println("Please provide group ID by positive integer mode, " + Common.PositiveIntegerRange +".");
+              System.out.println("Please provide group ID by positive integer mode, " + Common.PositiveIntegerRange +".");
               System.out.println();
               return;
             }
         } catch (NumberFormatException e) {
-            System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
+            System.out.println("Please provide group ID by positive integer mode, " + Common.PositiveIntegerRange +".");
             System.out.println();
             return;
         }
@@ -673,12 +673,11 @@ public class ConsoleImpl implements ConsoleFace {
         if (index == Common.InvalidReturnNumber) {
 					return;
 				}
-        String transaction =
-                web3j
-                        .getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), BigInteger.valueOf(index))
-                        .sendForReturnString();
-        ConsoleUtils.printJson(transaction);
-        System.out.println();
+				String transaction = web3j
+						.getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), BigInteger.valueOf(index))
+						.sendForReturnString();
+				ConsoleUtils.printJson(transaction);
+				System.out.println();
     }
 
     @Override
@@ -786,8 +785,12 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
         	ConsoleUtils.dynamicCompileSolFilesToJava(name);
-        } catch (IOException e) {
+        }catch (CompileSolidityException e) {
         	System.out.println(e.getMessage());
+        	return;
+        }catch (IOException e) {
+        	System.out.println(e.getMessage());
+        	System.out.println();
         	return;
         }
         ConsoleUtils.dynamicCompileJavaToClass(name);
@@ -839,8 +842,50 @@ public class ConsoleImpl implements ConsoleFace {
 
     }
 
-    private void writeLog() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    synchronized private void writeLog() {
+    	
+    	BufferedReader reader = null;
+    	try {
+  			File logFile = new File("deploylog.txt");
+  			if (!logFile.exists()) {
+  				logFile.createNewFile();
+  			}
+				reader = new BufferedReader(new FileReader("deploylog.txt"));
+				String line;
+				List<String> textList = new ArrayList<String>();
+				while ((line = reader.readLine()) != null) {
+						textList.add(line);
+				}
+				int i = 0;
+				if (textList.size() >= Common.LogMaxCount) {
+					i = textList.size() - Common.LogMaxCount + 1;
+          if(logFile.exists()){
+              logFile.delete();
+              logFile.createNewFile();
+          }
+          PrintWriter pw = new PrintWriter(new FileWriter("deploylog.txt",true));
+          for(; i < textList.size(); i++)
+          {
+          	pw.println(textList.get(i));
+          }
+          pw.flush();
+          pw.close();
+				}
+			}
+			catch(IOException e)
+			{
+				System.out.println("Read deploylog.txt failed.");
+				return;
+			}
+			finally 
+			{
+				try {
+					reader.close();
+				} catch (IOException e) {
+					System.out.println("Close deploylog.txt failed.");;
+				}
+			}
+       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
        String name =  contractName.substring(20);
        while(name.length() < 20){
@@ -863,76 +908,74 @@ public class ConsoleImpl implements ConsoleFace {
         }
     }
 
-   public void getDeployLog(String[] params) throws Exception {
-
-	      if (params.length > 2) {
-            HelpInfo.promptHelp("getDeployLog");
-            return;
-          }
-          String queryGroupID = "";
-	      int groupID = 1;
-          if (params.length == 2) {
-              queryGroupID = params[1];
-              if ("-h".equals(queryGroupID) || "--help".equals(queryGroupID)) {
-                  HelpInfo.getDeployLogHelp();
-                  return;
-              }
-              try {
-                  groupID = Integer.parseInt(queryGroupID);
-                  if(groupID <= 0)
-                  {
-                      System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
-                      System.out.println();
-                      return;
-                  }
-              } catch (NumberFormatException e) {
-                  System.out.println("Please provide group ID by positive integer mode(1~2147483647).");
-                  System.out.println();
-                  return;
-              }
-          }
-        File logFile =  new File("deploylog.txt");
-        if(!logFile.exists()){
-            logFile.createNewFile();
-        }
-        BufferedReader reader = new BufferedReader(new FileReader ("deploylog.txt"));
-        String         line ;
-        StringBuilder  stringBuilder = new StringBuilder();
-        String         ls = System.getProperty("line.separator");
-        Deque<String> textDeque = new LinkedList<String>();
-        try {
-            while((line = reader.readLine()) != null) {
-            String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
-            if ("".equals(queryGroupID) ) {
-            	textDeque.offer(line);
+		public void getDeployLog(String[] params) throws Exception {
+			
+			if (params.length > 2) {
+				HelpInfo.promptHelp("getDeployLog");
+				return;
 			}
-            else {
-                     if(("[group:" + groupID +"]").equals(contractInfos[2]))
-                     {
-                         textDeque.offer(line);
-                     }
-                }
-            }
-            int i=20;
-            while (!textDeque.isEmpty()&& i>0) {
-                stringBuilder.append(textDeque.poll());
-                stringBuilder.append(ls);
-                i--;
-            }
-            if ("".equals(stringBuilder.toString()))
-            {
-                System.out.println("Empty set.");
-                System.out.println();
-            }
-            else
-            {
-                System.out.println();
-                System.out.println(stringBuilder.toString());
-            }
-        } finally {
-            reader.close();
-        }
-    }
+			String queryRecordNumber = "";
+			int recordNumber = Common.QueryLogCount;
+			if (params.length == 2) {
+				queryRecordNumber = params[1];
+				if ("-h".equals(queryRecordNumber) || "--help".equals(queryRecordNumber)) {
+					HelpInfo.getDeployLogHelp();
+					return;
+				}
+				try {
+					recordNumber = Integer.parseInt(queryRecordNumber);
+					if (recordNumber <= 0 || recordNumber > 100) {
+						System.out.println("Please provide record number by integer mode, " + Common.DeployLogntegerRange +".");
+						System.out.println();
+						return;
+					}
+				} catch (NumberFormatException e) {
+					System.out.println("Please provide record number by integer mode, " + Common.DeployLogntegerRange +".");
+					System.out.println();
+					return;
+				}
+			}
+			File logFile = new File("deploylog.txt");
+			if (!logFile.exists()) {
+				logFile.createNewFile();
+			}
+			BufferedReader reader = new BufferedReader(new FileReader("deploylog.txt"));
+			String line;
+			String ls = System.getProperty("line.separator");
+			List<String> textList = new ArrayList<String>();
+			try {
+				while ((line = reader.readLine()) != null) {
+					String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
+					if (("[group:" + groupID + "]").equals(contractInfos[2])) {
+						textList.add(line);
+					}
+				}
+				StringBuilder stringBuilder = new StringBuilder();
+				int i = 0;
+				int len = textList.size();
+				if(recordNumber >= len)
+				{
+					recordNumber = len;
+				}
+				else
+				{
+					i = len - recordNumber;
+				}
+				for (; i < len; i++) {
+					stringBuilder.append(textList.get(i));
+					stringBuilder.append(ls);
+				}
+				if ("".equals(stringBuilder.toString())) {
+					System.out.println("Empty set.");
+					System.out.println();
+				} else {
+					System.out.println();
+					System.out.println(stringBuilder.toString());
+				}
+			} finally {
+				reader.close();
+			}
+		}
 
     @Override
     public void call(String[] params) throws Exception {
@@ -1087,8 +1130,12 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
             ConsoleUtils.dynamicCompileSolFilesToJava(name);
+        } catch (CompileSolidityException e) {
+        	System.out.println(e.getMessage());
+        	return;
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            System.out.println();
             return;
         }
         contractName = ConsoleUtils.PACKAGENAME + "." + name;
@@ -1175,6 +1222,11 @@ public class ConsoleImpl implements ConsoleFace {
         // get address from cns
         contractName = name;
         contractVersion = params[2];
+        if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
+          ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
+          System.out.println();
+          return;
+        }
         CnsService cnsResolver = new CnsService(web3j, credentials);
         try {
             contractAddress =
@@ -1265,6 +1317,11 @@ public class ConsoleImpl implements ConsoleFace {
         }
         if (params.length == 3) {
             contractVersion = params[2];
+            if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
+              ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
+              System.out.println();
+              return;
+            }
             cnsInfos = cnsService.queryCnsByNameAndVersion(contractName, contractVersion);
         } else {
             cnsInfos = cnsService.queryCnsByName(contractName);
@@ -1791,14 +1848,49 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("setSystemConfigByKey");
             return;
         }
-        String value = params[2];
+      	if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
+          String valueStr = params[2];
+          int value = 1;
+          try {
+          		value = Integer.parseInt(valueStr);
+          		if (Common.TxCountLimit.equals(key) ) {
+          			if(value <= 0)
+          			{
+          				System.out.println("Please provide value by positive integer mode, " + Common.PositiveIntegerRange +".");
+              		System.out.println();
+          				return;
+          			}
+							}
+          		else 
+          		{
+          			if(value < 100000)
+          			{
+          				System.out.println("Please provide value by positive integer mode, " + Common.TxGasLimitRange +".");
+              		System.out.println();
+          				return;
+          			}
+          		}
+              SystemConfigSerivce systemConfigSerivce = new SystemConfigSerivce(web3j, credentials);
+              String result = systemConfigSerivce.setValueByKey(key, value+"");
+              ConsoleUtils.printJson(result);
+          } catch (NumberFormatException e) {
+        		if (Common.TxCountLimit.equals(key) ) {
+              System.out.println("Please provide value by positive integer mode, " + Common.PositiveIntegerRange +".");
+        		}
+        		else 
+        		{
+        			System.out.println("Please provide value by positive integer mode, " + Common.TxGasLimitRange +".");
+        		}
+        		System.out.println();
+        		return;
+          }
+				}
+      	else
+      	{
+          System.out.println("Please provide a valid key, for example: " + Common.TxCountLimit +" or " + Common.TxGasLimit +".");
+      	}
+      	System.out.println();
 
-        String[] args = {"setSystemConfig", key, value};
-        SystemConfigSerivce systemConfigSerivce = new SystemConfigSerivce(web3j, credentials);
-        String result;
-        result = systemConfigSerivce.setValueByKey(key, value);
-        ConsoleUtils.printJson(result);
-        System.out.println();
     }
 
     @Override
@@ -1816,10 +1908,15 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.getSystemConfigByKeyHelp();
             return;
         }
-        String[] args = {"getSystemConfigByKey", key};
-        String value = web3j.getSystemConfigByKey(key).sendForReturnString();
-        System.out.println(value);
-        System.out.println();
+      	if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
+      		String value = web3j.getSystemConfigByKey(key).sendForReturnString();
+      		System.out.println(value);
+      	}
+      	else 
+      	{
+      		System.out.println("Please provide a valid key, for example: " + Common.TxCountLimit +" or " + Common.TxGasLimit +".");
+      	}
+      	System.out.println();
     }
 
     private void printPermissionInfo(List<PermissionInfo> permissionInfos) {

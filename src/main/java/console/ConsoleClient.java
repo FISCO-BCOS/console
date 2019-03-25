@@ -1,6 +1,7 @@
 package console;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -323,6 +324,10 @@ public class ConsoleClient {
         }
         System.out.println();
       } 
+    	catch (InvocationTargetException e) {
+    		System.out.println("Contract call failed.");
+    		System.out.println();
+    	}
       catch (Exception e) {
       	if(e.getMessage().contains("MessageDecodingException"))
       	{
