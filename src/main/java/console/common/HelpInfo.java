@@ -447,9 +447,10 @@ public class HelpInfo {
   public static void setSystemConfigByKeyHelp() {
     System.out.println("Set a system config.");
     System.out.println("Usage: setSystemConfigByKey key value");
-    System.out.println(
-        "key -- the name of system config(tx_count_limit/tx_gas_limit supported currently).");
+    System.out.println("key   -- The name of system config(tx_count_limit/tx_gas_limit supported currently).");
     System.out.println("value -- The value of system config to be set.");
+    System.out.println("      -- The value of tx_count_limit " + Common.PositiveIntegerRange + "(default 1000).");
+    System.out.println("      -- the value of tx_gas_limit " + Common.TxGasLimitRange + "(default 300000000).");
     System.out.println();
   }
 

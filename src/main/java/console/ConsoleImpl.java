@@ -17,8 +17,6 @@ import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
@@ -844,8 +842,50 @@ public class ConsoleImpl implements ConsoleFace {
 
     }
 
-    private void writeLog() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    synchronized private void writeLog() {
+    	
+    	BufferedReader reader = null;
+    	try {
+  			File logFile = new File("deploylog.txt");
+  			if (!logFile.exists()) {
+  				logFile.createNewFile();
+  			}
+				reader = new BufferedReader(new FileReader("deploylog.txt"));
+				String line;
+				List<String> textList = new ArrayList<String>();
+				while ((line = reader.readLine()) != null) {
+						textList.add(line);
+				}
+				int i = 0;
+				if (textList.size() >= Common.LogMaxCount) {
+					i = textList.size() - Common.LogMaxCount + 1;
+          if(logFile.exists()){
+              logFile.delete();
+              logFile.createNewFile();
+          }
+          PrintWriter pw = new PrintWriter(new FileWriter("deploylog.txt",true));
+          for(; i < textList.size(); i++)
+          {
+          	pw.println(textList.get(i));
+          }
+          pw.flush();
+          pw.close();
+				}
+			}
+			catch(IOException e)
+			{
+				System.out.println("Read deploylog.txt failed.");
+				return;
+			}
+			finally 
+			{
+				try {
+					reader.close();
+				} catch (IOException e) {
+					System.out.println("Close deploylog.txt failed.");;
+				}
+			}
+       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
        String name =  contractName.substring(20);
        while(name.length() < 20){
@@ -902,26 +942,28 @@ public class ConsoleImpl implements ConsoleFace {
 			BufferedReader reader = new BufferedReader(new FileReader("deploylog.txt"));
 			String line;
 			String ls = System.getProperty("line.separator");
-			Deque<String> textDeque = new LinkedList<String>();
+			List<String> textList = new ArrayList<String>();
 			try {
 				while ((line = reader.readLine()) != null) {
 					String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
 					if (("[group:" + groupID + "]").equals(contractInfos[2])) {
-						textDeque.push(line);
+						textList.add(line);
 					}
 				}
-				int i = recordNumber;
-				Deque<String> resultDeque = new LinkedList<String>();
-				while (!textDeque.isEmpty() && i > 0) {
-					resultDeque.push(textDeque.pop());
-					i--;
-				}
 				StringBuilder stringBuilder = new StringBuilder();
-				int j = recordNumber;
-				while (!resultDeque.isEmpty() && j > 0) {
-					stringBuilder.append(resultDeque.pop());
+				int i = 0;
+				int len = textList.size();
+				if(recordNumber >= len)
+				{
+					recordNumber = len;
+				}
+				else
+				{
+					i = len - recordNumber;
+				}
+				for (; i < len; i++) {
+					stringBuilder.append(textList.get(i));
 					stringBuilder.append(ls);
-					j--;
 				}
 				if ("".equals(stringBuilder.toString())) {
 					System.out.println("Empty set.");
@@ -1806,14 +1848,49 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("setSystemConfigByKey");
             return;
         }
-        String value = params[2];
+      	if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
+          String valueStr = params[2];
+          int value = 1;
+          try {
+          		value = Integer.parseInt(valueStr);
+          		if (Common.TxCountLimit.equals(key) ) {
+          			if(value <= 0)
+          			{
+          				System.out.println("Please provide value by positive integer mode, " + Common.PositiveIntegerRange +".");
+              		System.out.println();
+          				return;
+          			}
+							}
+          		else 
+          		{
+          			if(value < 100000)
+          			{
+          				System.out.println("Please provide value by positive integer mode, " + Common.TxGasLimitRange +".");
+              		System.out.println();
+          				return;
+          			}
+          		}
+              SystemConfigSerivce systemConfigSerivce = new SystemConfigSerivce(web3j, credentials);
+              String result = systemConfigSerivce.setValueByKey(key, value+"");
+              ConsoleUtils.printJson(result);
+          } catch (NumberFormatException e) {
+        		if (Common.TxCountLimit.equals(key) ) {
+              System.out.println("Please provide value by positive integer mode, " + Common.PositiveIntegerRange +".");
+        		}
+        		else 
+        		{
+        			System.out.println("Please provide value by positive integer mode, " + Common.TxGasLimitRange +".");
+        		}
+        		System.out.println();
+        		return;
+          }
+				}
+      	else
+      	{
+          System.out.println("Please provide a valid key, for example: " + Common.TxCountLimit +" or " + Common.TxGasLimit +".");
+      	}
+      	System.out.println();
 
-        String[] args = {"setSystemConfig", key, value};
-        SystemConfigSerivce systemConfigSerivce = new SystemConfigSerivce(web3j, credentials);
-        String result;
-        result = systemConfigSerivce.setValueByKey(key, value);
-        ConsoleUtils.printJson(result);
-        System.out.println();
     }
 
     @Override
@@ -1831,10 +1908,15 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.getSystemConfigByKeyHelp();
             return;
         }
-        String[] args = {"getSystemConfigByKey", key};
-        String value = web3j.getSystemConfigByKey(key).sendForReturnString();
-        System.out.println(value);
-        System.out.println();
+      	if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
+      		String value = web3j.getSystemConfigByKey(key).sendForReturnString();
+      		System.out.println(value);
+      	}
+      	else 
+      	{
+      		System.out.println("Please provide a valid key, for example: " + Common.TxCountLimit +" or " + Common.TxGasLimit +".");
+      	}
+      	System.out.println();
     }
 
     private void printPermissionInfo(List<PermissionInfo> permissionInfos) {
