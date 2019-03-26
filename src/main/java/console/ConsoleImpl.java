@@ -330,7 +330,6 @@ public class ConsoleImpl implements ConsoleFace {
             if(toGroupID <= 0)
             {
               System.out.println("Please provide group ID by positive integer mode, " + Common.PositiveIntegerRange +".");
-              System.out.println("Please provide group ID by positive integer mode, " + Common.PositiveIntegerRange +".");
               System.out.println();
               return;
             }
