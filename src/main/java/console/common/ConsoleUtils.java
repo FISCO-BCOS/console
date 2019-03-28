@@ -108,37 +108,23 @@ public class ConsoleUtils {
       return true;
     }
   }
-
-  public static boolean isInvalidNumber(String number, int flag) {
-    String numberStr = number.trim();
-    if (!numberStr.matches("^[0-9]*$") || "".equals(numberStr)) {
-      if (flag == 0)
-        System.out.println("Please provide block number as a decimal non-negative integer.");
-      else
-        System.out.println("Please provide transaction index as a decimal non-negative integer.");
-      System.out.println();
-      return true;
-    } else {
-      return false;
-    }
-  }
   
-  public static int proccessIndex(String indexStr) {
-		int index = 0;
+  public static int proccessNonNegativeNumber(String name, String intStr) {
+		int intParam = 0;
 		try {
-			index = Integer.parseInt(indexStr);
-		  if(index < 0)
+			intParam = Integer.parseInt(intStr);
+		  if(intParam < 0)
 		  {
-		    System.out.println("Please provide index by non-negative integer mode, " + Common.NonNegativeIntegerRange + ".");
+		    System.out.println("Please provide "+ name + " by non-negative integer mode, " + Common.NonNegativeIntegerRange + ".");
 		    System.out.println();
 		    return Common.InvalidReturnNumber;
 		  }
 		} catch (NumberFormatException e) {
-		    System.out.println("Please provide index by non-negative integer mode, " + Common.NonNegativeIntegerRange + ".");
+		    System.out.println("Please provide "+ name + " by non-negative integer mode, " + Common.NonNegativeIntegerRange + ".");
 		    System.out.println();
 		    return Common.InvalidReturnNumber;
 		}
-		return index;
+		return intParam;
 	}
   
   public static Address convertAddress(String addressStr)

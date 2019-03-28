@@ -41,6 +41,7 @@ import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tx.Contract;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -527,7 +528,10 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.getBlockByNumberHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidNumber(blockNumberStr1, 0)) return;
+        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        if(blockNumber == Common.InvalidReturnNumber){
+        	return;
+        }
         BigInteger blockNumber1 = new BigInteger(blockNumberStr1);
         String blockNumberStr2 = web3j.getBlockNumber().sendForReturnString();
         BigInteger blockNumber2 = Numeric.decodeQuantity(blockNumberStr2);
@@ -571,12 +575,16 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.getBlockHashByNumberHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidNumber(blockNumberStr, 0)) return;
-        BigInteger blockNumber = new BigInteger(blockNumberStr);
+        int blockNumberi = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        if(blockNumberi == Common.InvalidReturnNumber)
+        {
+        	return;
+        }
+        BigInteger blockNumber = BigInteger.valueOf(blockNumberi);
         BigInteger getBlockNumber =
                 Numeric.decodeQuantity(web3j.getBlockNumber().sendForReturnString());
         if (blockNumber.compareTo(getBlockNumber) > 0) {
-            System.out.println("This block number doesn't exsit.");
+            System.out.println("The block number doesn't exsit.");
             System.out.println();
             return;
         }
@@ -637,9 +645,17 @@ public class ConsoleImpl implements ConsoleFace {
         	return;
         }
         String indexStr = params[2];
-        int index = ConsoleUtils.proccessIndex(indexStr);
+        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
 					return;
+				}
+        BcosBlock bcosBlock = web3j.getBlockByHash(blockHash, false).send();
+				int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
+				if(index > maxIndex)
+				{
+	        System.out.println("The index is out of range.");
+	        System.out.println();
+	        return;
 				}
         String transaction =
                 web3j.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index)).sendForReturnString();
@@ -666,15 +682,32 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
             return;
         }
-        if (ConsoleUtils.isInvalidNumber(blockNumberStr, 0)) return;
-        BigInteger blockNumber = new BigInteger(blockNumberStr);
+        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        if(blockNumber == Common.InvalidReturnNumber){
+        	return;
+        }
+        BigInteger getBlockNumber =
+            Numeric.decodeQuantity(web3j.getBlockNumber().sendForReturnString());
+		    if (BigInteger.valueOf(blockNumber).compareTo(getBlockNumber) > 0) {
+		        System.out.println("The block number doesn't exsit.");
+		        System.out.println();
+		        return;
+		    }
         String indexStr = params[2];
-        int index = ConsoleUtils.proccessIndex(indexStr);
+        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
 					return;
 				}
-				String transaction = web3j
-						.getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), BigInteger.valueOf(index))
+        BcosBlock bcosBlock = web3j.getBlockByNumber(DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), false).send();
+				int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
+				if(index > maxIndex)
+				{
+	        System.out.println("The index is out of range.");
+	        System.out.println();
+	        return;
+				}
+        String transaction = web3j
+						.getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), BigInteger.valueOf(index))
 						.sendForReturnString();
 				ConsoleUtils.printJson(transaction);
 				System.out.println();
@@ -799,7 +832,7 @@ public class ConsoleImpl implements ConsoleFace {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
             System.out.println(
-                    "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
+                    "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
             System.out.println();
             return;
         }
@@ -1040,7 +1073,6 @@ public class ConsoleImpl implements ConsoleFace {
         if (argobj == null) {
             return;
         }
-
         remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
         Object result;
 				result = remoteCall.send();
@@ -1049,7 +1081,7 @@ public class ConsoleImpl implements ConsoleFace {
 					TransactionReceipt receipt = (TransactionReceipt)result;
 					if(!"0x0".equals(receipt.getStatus()))
 					{
-						System.out.println(receipt.getStatus());
+						System.out.println("Call failed.");
 						System.out.println();
 						return;
 					}
@@ -1124,8 +1156,8 @@ public class ConsoleImpl implements ConsoleFace {
         try {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
-            System.out.println(
-                    "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
+        	  System.out.println(
+               "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
             System.out.println();
             return;
         }
@@ -1283,7 +1315,7 @@ public class ConsoleImpl implements ConsoleFace {
 					TransactionReceipt receipt = (TransactionReceipt)result;
 					if(!"0x0".equals(receipt.getStatus()))
 					{
-						System.out.println(receipt.getStatus());
+						System.out.println("Call failed.");
 						System.out.println();
 						return;
 					}
