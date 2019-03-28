@@ -2,120 +2,56 @@ package console;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
-import org.fisco.bcos.web3j.protocol.core.Response;
 import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
-import org.jline.builtins.Completers.FilesCompleter;
-import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.impl.completer.AggregateCompleter;
-import org.jline.reader.impl.completer.ArgumentCompleter;
-import org.jline.reader.impl.completer.StringsCompleter;
-import org.jline.terminal.Terminal;
-import org.jline.terminal.TerminalBuilder;
 
-import console.common.Common;
+import console.common.ConsoleExceptionUtils;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
+import console.common.JlineUtils;
+import console.common.WelcomeInfo;
+import console.contract.ContractFace;
+import console.precompiled.PrecompiledFace;
+import console.precompiled.permission.PermissionFace;
+import console.web3j.Web3jFace;
 
 public class ConsoleClient {
+	
+	private static Web3jFace web3jFace;
+	private static PrecompiledFace precompiledFace;
+	private static PermissionFace permissionFace;
+	private static ContractFace contractFace;
+	
   @SuppressWarnings("resource")
   public static void main(String[] args) {
-  	ConsoleFace console = null;
-  	LineReader lineReader = null;
-  	try {	
-  		
-  		console = new ConsoleImpl();
-     	console.init(args);
-    	console.welcome();
-
-      List<Completer> completers = new ArrayList<Completer>();
-      completers.add(new ArgumentCompleter(new StringsCompleter("help")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("switch")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getBlockNumber")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getPbftView")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getSealerList")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getObserverList")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getConsensusStatus")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getSyncStatus")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getNodeVersion")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getPeers")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getNodeIDList")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getGroupPeers")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getGroupList")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getBlockByHash")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getBlockByNumber")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getBlockHashByNumber")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getTransactionByHash")));
-      completers.add(
-          new ArgumentCompleter(new StringsCompleter("getTransactionByBlockHashAndIndex")));
-      completers.add(
-          new ArgumentCompleter(new StringsCompleter("getTransactionByBlockNumberAndIndex")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getTransactionReceipt")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getPendingTransactions")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getPendingTxSize")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getCode")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getTotalTransactionCount")));
-      Path path = FileSystems.getDefault().getPath("solidity/contracts/", "");
-      completers.add(
-          new ArgumentCompleter(new StringsCompleter("deploy"), new FilesCompleter(path)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("call"), new FilesCompleter(path)));
-      completers.add(
-          new ArgumentCompleter(new StringsCompleter("deployByCNS"), new FilesCompleter(path)));
-      completers.add(
-          new ArgumentCompleter(new StringsCompleter("callByCNS"), new FilesCompleter(path)));
-      completers.add(
-          new ArgumentCompleter(new StringsCompleter("queryCNS"), new FilesCompleter(path)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getDeployLog")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("addSealer")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("addObserver")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("removeNode")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("grantUserTableManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("revokeUserTableManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("listUserTableManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("grantDeployAndCreateManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("revokeDeployAndCreateManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("listDeployAndCreateManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("grantPermissionManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("revokePermissionManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("listPermissionManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("grantNodeManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("revokeNodeManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("listNodeManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("grantCNSManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("revokeCNSManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("listCNSManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("grantSysConfigManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("revokeSysConfigManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("listSysConfigManager")));
-      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
-
-      Terminal terminal = TerminalBuilder.terminal();
-      lineReader =
-          LineReaderBuilder.builder()
-              .terminal(terminal)
-              .completer(new AggregateCompleter(completers))
-              .build();
-  	 }catch (Exception e) {
-        System.out.println(e.getMessage());
-        return;
-     } 
-      
+  	 
+		 ConsoleInitializer consoleInitializer = new ConsoleInitializer();
+		 consoleInitializer.init(args);
+		 web3jFace = consoleInitializer.getWeb3jFace();
+		 precompiledFace = consoleInitializer.getPrecompiledFace();
+		 permissionFace = consoleInitializer.getPermissionFace();
+		 contractFace = consoleInitializer.getContractFace();
+  	 
+  	 LineReader lineReader;
+		 try {
+			 lineReader = JlineUtils.getLineReader();
+		 } catch (IOException e) {
+			 System.out.println(e.getMessage());
+			 return;
+		 }
+		 
+		 WelcomeInfo.welcome();
+		 
      while (true) {
     	 
     	try {
-		    String request = lineReader.readLine("[group:"+ConsoleImpl.groupID+"]> ");
+    		if (lineReader == null) {
+					System.out.println("Console can not read commands.");
+					break;
+				}
+		    String request = lineReader.readLine("[group:"+ consoleInitializer.getGroupID() +"]> ");
 		    String[] params = null;
 				params = ConsoleUtils.tokenizeCommand(request);
 	      if (params.length < 1) {
@@ -133,170 +69,170 @@ public class ConsoleClient {
 	          HelpInfo.promptHelp("q");
 	          continue;
 	        }
-	        console.close();
+	        consoleInitializer.close();
 	        break;
 	      }
         switch (params[0]) {
           case "help":
           case "h":
-            console.help(params);
+          	WelcomeInfo.help(params);
+            break;
+          case "deploy":
+            contractFace.deploy(params);
+            break;
+          case "getDeployLog":
+          	contractFace.getDeployLog(params);
+            break;
+          case "call":
+          	contractFace.call(params);
+            break;
+          case "deployByCNS":
+          	contractFace.deployByCNS(params);
+            break;
+          case "callByCNS":
+          	contractFace.callByCNS(params);
+            break;
+          case "queryCNS":
+          	contractFace.queryCNS(params);
             break;
           case "switch":
           case "s":
-            console.switchGroupID(params);
+          	consoleInitializer.switchGroupID(params);
             break;
           case "getBlockNumber":
-        	  console.getBlockNumber(params);
+          	web3jFace.getBlockNumber(params);
         	  break;
           case "getPbftView":
-            console.getPbftView(params);
+          	web3jFace.getPbftView(params);
             break;
           case "getSealerList":
-            console.getSealerList(params);
+          	web3jFace.getSealerList(params);
             break;
           case "getObserverList":
-            console.getObserverList(params);
+          	web3jFace.getObserverList(params);
             break;
           case "getConsensusStatus":
-            console.getConsensusStatus(params);
+          	web3jFace.getConsensusStatus(params);
             break;
           case "getSyncStatus":
-            console.getSyncStatus(params);
+          	web3jFace.getSyncStatus(params);
             break;
           case "getNodeVersion":
-            console.getNodeVersion(params);
+          	web3jFace.getNodeVersion(params);
             break;
           case "getPeers":
-            console.getPeers(params);
+          	web3jFace.getPeers(params);
             break;
           case "getNodeIDList":
-            console.getNodeIDList(params);
+          	web3jFace.getNodeIDList(params);
             break;
           case "getGroupPeers":
-            console.getGroupPeers(params);
+          	web3jFace.getGroupPeers(params);
             break;
           case "getGroupList":
-            console.getGroupList(params);
+          	web3jFace.getGroupList(params);
             break;
           case "getBlockByHash":
-            console.getBlockByHash(params);
+          	web3jFace.getBlockByHash(params);
             break;
           case "getBlockByNumber":
-            console.getBlockByNumber(params);
+          	web3jFace.getBlockByNumber(params);
             break;
           case "getBlockHashByNumber":
-            console.getBlockHashByNumber(params);
+          	web3jFace.getBlockHashByNumber(params);
             break;
           case "getTransactionByHash":
-            console.getTransactionByHash(params);
+          	web3jFace.getTransactionByHash(params);
             break;
           case "getTransactionByBlockHashAndIndex":
-            console.getTransactionByBlockHashAndIndex(params);
+          	web3jFace.getTransactionByBlockHashAndIndex(params);
             break;
           case "getTransactionByBlockNumberAndIndex":
-            console.getTransactionByBlockNumberAndIndex(params);
+          	web3jFace.getTransactionByBlockNumberAndIndex(params);
             break;
           case "getTransactionReceipt":
-            console.getTransactionReceipt(params);
+          	web3jFace.getTransactionReceipt(params);
             break;
           case "getPendingTransactions":
-            console.getPendingTransactions(params);
+          	web3jFace.getPendingTransactions(params);
             break;
           case "getPendingTxSize":
-            console.getPendingTxSize(params);
+          	web3jFace.getPendingTxSize(params);
             break;
           case "getCode":
-            console.getCode(params);
+          	web3jFace.getCode(params);
             break;
           case "getTotalTransactionCount":
-            console.getTotalTransactionCount(params);
-            break;
-          case "deploy":
-            console.deploy(params);
-            break;
-          case "getDeployLog":
-            console.getDeployLog(params);
-            break;
-          case "call":
-            console.call(params);
-            break;
-          case "deployByCNS":
-            console.deployByCNS(params);
-            break;
-          case "callByCNS":
-            console.callByCNS(params);
-            break;
-          case "queryCNS":
-            console.queryCNS(params);
-            break;
-          case "addSealer":
-            console.addSealer(params);
-            break;
-          case "addObserver":
-            console.addObserver(params);
-            break;
-          case "removeNode":
-            console.removeNode(params);
-            break;
-          case "setSystemConfigByKey":
-            console.setSystemConfigByKey(params);
+          	web3jFace.getTotalTransactionCount(params);
             break;
           case "getSystemConfigByKey":
-            console.getSystemConfigByKey(params);
+          	web3jFace.getSystemConfigByKey(params);
+            break;
+          case "addSealer":
+            precompiledFace.addSealer(params);
+            break;
+          case "addObserver":
+          	precompiledFace.addObserver(params);
+            break;
+          case "removeNode":
+          	precompiledFace.removeNode(params);
+            break;
+          case "setSystemConfigByKey":
+          	precompiledFace.setSystemConfigByKey(params);
             break;
           case "grantUserTableManager":
-            console.grantUserTableManager(params);
+          	permissionFace.grantUserTableManager(params);
             break;
           case "revokeUserTableManager":
-            console.revokeUserTableManager(params);
+          	permissionFace.revokeUserTableManager(params);
             break;
           case "listUserTableManager":
-            console.listUserTableManager(params);
+          	permissionFace.listUserTableManager(params);
             break;
           case "grantDeployAndCreateManager":
-            console.grantDeployAndCreateManager(params);
+          	permissionFace.grantDeployAndCreateManager(params);
             break;
           case "revokeDeployAndCreateManager":
-            console.revokeDeployAndCreateManager(params);
+          	permissionFace.revokeDeployAndCreateManager(params);
             break;
           case "listDeployAndCreateManager":
-            console.listDeployAndCreateManager(params);
+          	permissionFace.listDeployAndCreateManager(params);
             break;
           case "grantPermissionManager":
-            console.grantPermissionManager(params);
+          	permissionFace.grantPermissionManager(params);
             break;
           case "revokePermissionManager":
-            console.revokePermissionManager(params);
+          	permissionFace.revokePermissionManager(params);
             break;
           case "listPermissionManager":
-            console.listPermissionManager(params);
+          	permissionFace.listPermissionManager(params);
             break;
           case "grantNodeManager":
-            console.grantNodeManager(params);
+          	permissionFace.grantNodeManager(params);
             break;
           case "revokeNodeManager":
-            console.revokeNodeManager(params);
+          	permissionFace.revokeNodeManager(params);
             break;
           case "listNodeManager":
-            console.listNodeManager(params);
+          	permissionFace.listNodeManager(params);
             break;
           case "grantCNSManager":
-            console.grantCNSManager(params);
+          	permissionFace.grantCNSManager(params);
             break;
           case "revokeCNSManager":
-            console.revokeCNSManager(params);
+          	permissionFace.revokeCNSManager(params);
             break;
           case "listCNSManager":
-            console.listCNSManager(params);
+          	permissionFace.listCNSManager(params);
             break;
           case "grantSysConfigManager":
-            console.grantSysConfigManager(params);
+          	permissionFace.grantSysConfigManager(params);
             break;
           case "revokeSysConfigManager":
-            console.revokeSysConfigManager(params);
+          	permissionFace.revokeSysConfigManager(params);
             break;
           case "listSysConfigManager":
-            console.listSysConfigManager(params);
+          	permissionFace.listSysConfigManager(params);
             break;
           default:
             System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
@@ -311,7 +247,7 @@ public class ConsoleClient {
         System.out.println(e.getMessage() + " does not exist.");
         System.out.println();
       } catch (MessageDecodingException e) {
-        pringMessageDecodeingException(e);
+      	ConsoleExceptionUtils.pringMessageDecodeingException(e);
       }catch (IOException e) {
         if (e.getMessage().startsWith("activeConnections")) {
 					System.out.println("Lost the connection to the node. " 
@@ -331,7 +267,7 @@ public class ConsoleClient {
       catch (Exception e) {
       	if(e.getMessage().contains("MessageDecodingException"))
       	{
-      		pringMessageDecodeingException(new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
+      		ConsoleExceptionUtils.pringMessageDecodeingException(new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
       	}
       	else {
       		System.out.println(e.getMessage());
@@ -341,26 +277,16 @@ public class ConsoleClient {
      }
   }
 
-	private static void pringMessageDecodeingException(MessageDecodingException e) {
-		String message = e.getMessage();
-		Response t = null;
-		try {
-		    t = ObjectMapperFactory.getObjectMapper(true).readValue(
-		                message.substring(message.indexOf("{"), message.lastIndexOf("}") + 1),
-		                Response.class);
-		    if (t != null) {
-		      ConsoleUtils.printJson(
-		          "{\"code\":"
-		              + t.getError().getCode()
-		              + ", \"msg\":"
-		              + "\""
-		              + t.getError().getMessage()
-		              + "\"}");
-		      System.out.println();
-		    }
-		  }catch (Exception e1) {
-		    System.out.println(e1.getMessage());
-		    System.out.println();
-    }
+	public static void setWeb3jFace(Web3jFace web3jFace) {
+		ConsoleClient.web3jFace = web3jFace;
 	}
+
+	public static void setPrecompiledFace(PrecompiledFace precompiledFace) {
+		ConsoleClient.precompiledFace = precompiledFace;
+	}
+
+	public static void setContractFace(ContractFace contractFace) {
+		ConsoleClient.contractFace = contractFace;
+	}
+
 }
