@@ -732,6 +732,7 @@ public class ConsoleImpl implements ConsoleFace {
         String transactionReceipt = web3j.getTransactionReceipt(transactionHash).sendForReturnString();
         if ("null".equals(transactionReceipt)) {
             System.out.println("This transaction hash doesn't exist.");
+            System.out.println();
             return;
         }
         ConsoleUtils.printJson(transactionReceipt);
