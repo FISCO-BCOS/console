@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
@@ -40,9 +41,9 @@ import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tx.Contract;
-import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.springframework.context.ApplicationContext;
@@ -59,6 +60,7 @@ import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.exception.CompileSolidityException;
+import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
@@ -526,7 +528,10 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.getBlockByNumberHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidNumber(blockNumberStr1, 0)) return;
+        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        if(blockNumber == Common.InvalidReturnNumber){
+        	return;
+        }
         BigInteger blockNumber1 = new BigInteger(blockNumberStr1);
         String blockNumberStr2 = web3j.getBlockNumber().sendForReturnString();
         BigInteger blockNumber2 = Numeric.decodeQuantity(blockNumberStr2);
@@ -570,12 +575,16 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.getBlockHashByNumberHelp();
             return;
         }
-        if (ConsoleUtils.isInvalidNumber(blockNumberStr, 0)) return;
-        BigInteger blockNumber = new BigInteger(blockNumberStr);
+        int blockNumberi = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        if(blockNumberi == Common.InvalidReturnNumber)
+        {
+        	return;
+        }
+        BigInteger blockNumber = BigInteger.valueOf(blockNumberi);
         BigInteger getBlockNumber =
                 Numeric.decodeQuantity(web3j.getBlockNumber().sendForReturnString());
         if (blockNumber.compareTo(getBlockNumber) > 0) {
-            System.out.println("This block number doesn't exsit.");
+            System.out.println("The block number doesn't exsit.");
             System.out.println();
             return;
         }
@@ -636,9 +645,17 @@ public class ConsoleImpl implements ConsoleFace {
         	return;
         }
         String indexStr = params[2];
-        int index = ConsoleUtils.proccessIndex(indexStr);
+        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
 					return;
+				}
+        BcosBlock bcosBlock = web3j.getBlockByHash(blockHash, false).send();
+				int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
+				if(index > maxIndex)
+				{
+	        System.out.println("The index is out of range.");
+	        System.out.println();
+	        return;
 				}
         String transaction =
                 web3j.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index)).sendForReturnString();
@@ -665,15 +682,32 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
             return;
         }
-        if (ConsoleUtils.isInvalidNumber(blockNumberStr, 0)) return;
-        BigInteger blockNumber = new BigInteger(blockNumberStr);
+        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        if(blockNumber == Common.InvalidReturnNumber){
+        	return;
+        }
+        BigInteger getBlockNumber =
+            Numeric.decodeQuantity(web3j.getBlockNumber().sendForReturnString());
+		    if (BigInteger.valueOf(blockNumber).compareTo(getBlockNumber) > 0) {
+		        System.out.println("The block number doesn't exsit.");
+		        System.out.println();
+		        return;
+		    }
         String indexStr = params[2];
-        int index = ConsoleUtils.proccessIndex(indexStr);
+        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
 					return;
 				}
-				String transaction = web3j
-						.getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(blockNumber), BigInteger.valueOf(index))
+        BcosBlock bcosBlock = web3j.getBlockByNumber(DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), false).send();
+				int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
+				if(index > maxIndex)
+				{
+	        System.out.println("The index is out of range.");
+	        System.out.println();
+	        return;
+				}
+        String transaction = web3j
+						.getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), BigInteger.valueOf(index))
 						.sendForReturnString();
 				ConsoleUtils.printJson(transaction);
 				System.out.println();
@@ -698,6 +732,7 @@ public class ConsoleImpl implements ConsoleFace {
         String transactionReceipt = web3j.getTransactionReceipt(transactionHash).sendForReturnString();
         if ("null".equals(transactionReceipt)) {
             System.out.println("This transaction hash doesn't exist.");
+            System.out.println();
             return;
         }
         ConsoleUtils.printJson(transactionReceipt);
@@ -798,32 +833,17 @@ public class ConsoleImpl implements ConsoleFace {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
             System.out.println(
-                    "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
+                    "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
             System.out.println();
             return;
         }
-        Method method = ContractClassFactory.getDeployFunction(contractClass);
-
-        Type[] classType = method.getParameterTypes();
-        if(classType.length - 3  != params.length - 2) {
-        	System.out.println("The number of paramters does not match!");
-        	System.out.println();
-        	return;
-        }
-        String[] generic = new String[method.getParameterCount()];
-        for (int i = 0; i < classType.length; i++) {
-            generic[i] = method.getGenericParameterTypes()[i].getTypeName();
-        }
-        Class[] classList = new Class[classType.length];
-        for (int i = 0; i < classType.length; i++) {
-            Class clazz = (Class) classType[i];
-            classList[i] = clazz;
-        }
-
-        String[] newParams = new String[params.length - 2];
-        System.arraycopy(params, 2, newParams, 0, params.length - 2);
-        Object[] obj = getDeployPrametersObject("deploy", classList, newParams, generic);
-        remoteCall = (RemoteCall<?>) method.invoke(null, obj);
+        try {
+					handleDeployParameters(params, 2);
+				} catch (ConsoleMessageException e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         try {
         	Contract contract = (Contract) remoteCall.send();
       	  contractAddress = contract.getContractAddress();
@@ -1054,7 +1074,6 @@ public class ConsoleImpl implements ConsoleFace {
         if (argobj == null) {
             return;
         }
-
         remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
         Object result;
 				result = remoteCall.send();
@@ -1063,7 +1082,7 @@ public class ConsoleImpl implements ConsoleFace {
 					TransactionReceipt receipt = (TransactionReceipt)result;
 					if(!"0x0".equals(receipt.getStatus()))
 					{
-						System.out.println(receipt.getStatus());
+						System.out.println("Call failed.");
 						System.out.println();
 						return;
 					}
@@ -1082,10 +1101,6 @@ public class ConsoleImpl implements ConsoleFace {
     @Override
     public void deployByCNS(String[] params) throws Exception {
         if (params.length < 2) {
-            HelpInfo.promptHelp("deployByCNS");
-            return;
-        }
-        if (params.length > 3) {
             HelpInfo.promptHelp("deployByCNS");
             return;
         }
@@ -1142,16 +1157,18 @@ public class ConsoleImpl implements ConsoleFace {
         try {
             contractClass = getContractClass(contractName);
         } catch (Exception e) {
-            System.out.println(
-                    "There is no " + name + ".sol" + " in the directory of solidity/contracts.");
+        	  System.out.println(
+               "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
             System.out.println();
             return;
         }
-        ContractGasProvider gasProvider = new StaticGasProvider(gasPrice, gasLimit);
-        Method deploy =
-                contractClass.getMethod(
-                        "deploy", Web3j.class, Credentials.class, ContractGasProvider.class);
-        remoteCall = (RemoteCall<?>) deploy.invoke(null, web3j, credentials, gasProvider);
+        try {
+					handleDeployParameters(params, 3);
+				} catch (ConsoleMessageException e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         contractVersion = params[2];
         if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
             ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
@@ -1176,6 +1193,28 @@ public class ConsoleImpl implements ConsoleFace {
         }
 
     }
+
+		private void handleDeployParameters(String[] params, int num) throws IllegalAccessException, InvocationTargetException, ConsoleMessageException {
+			Method method = ContractClassFactory.getDeployFunction(contractClass);
+			Type[] classType = method.getParameterTypes();
+			if(classType.length - 3  != params.length - num) {
+				throw new ConsoleMessageException("The number of paramters does not match!");
+			}
+			String[] generic = new String[method.getParameterCount()];
+			for (int i = 0; i < classType.length; i++) {
+			    generic[i] = method.getGenericParameterTypes()[i].getTypeName();
+			}
+			Class[] classList = new Class[classType.length];
+			for (int i = 0; i < classType.length; i++) {
+			    Class clazz = (Class) classType[i];
+			    classList[i] = clazz;
+			}
+
+			String[] newParams = new String[params.length - num];
+			System.arraycopy(params, num, newParams, 0, params.length - num);
+			Object[] obj = getDeployPrametersObject("deploy", classList, newParams, generic);
+			remoteCall = (RemoteCall<?>) method.invoke(null, obj);
+		}
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -1277,7 +1316,7 @@ public class ConsoleImpl implements ConsoleFace {
 					TransactionReceipt receipt = (TransactionReceipt)result;
 					if(!"0x0".equals(receipt.getStatus()))
 					{
-						System.out.println(receipt.getStatus());
+						System.out.println("Call failed.");
 						System.out.println();
 						return;
 					}
@@ -1939,7 +1978,7 @@ public class ConsoleImpl implements ConsoleFace {
         System.out.println();
     }
 
-    public static Object[] getDeployPrametersObject(String funcName, Class[] type, String[] params, String[] generic) {
+    public static Object[] getDeployPrametersObject(String funcName, Class[] type, String[] params, String[] generic) throws ConsoleMessageException {
         Object[] obj = new Object[params.length + 3];
         obj[0] = web3j;
         obj[1] = credentials;
@@ -1948,32 +1987,23 @@ public class ConsoleImpl implements ConsoleFace {
         for (int i = 0; i < params.length; i++) {
             if (type[i + 3] == String.class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    try {
-                        obj[i + 3] = params[i].substring(1, params[i].length() - 1);
-                    } catch (Exception e) {
-                        System.out.println(
-                                "Please provide double quote for String that cannot contain any blank spaces.");
-                        System.out.println();
-                        return null;
-                    }
+                    obj[i + 3] = params[i].substring(1, params[i].length() - 1);
+                }
+                else 
+                {
+                  throw new ConsoleMessageException("The " + (i + 1) + "th parameter of " + funcName + " needs string value.");
                 }
             } else if (type[i + 3] == Boolean.class) {
                 try {
                     obj[i + 3] = Boolean.parseBoolean(params[i]);
                 } catch (Exception e) {
-                    System.out.println(
-                            "The " + (i + 1) + "th parameter of " + funcName + " needs boolean value.");
-                    System.out.println();
-                    return null;
+                	throw new ConsoleMessageException("The " + (i + 1) + "th parameter of " + funcName + " needs boolean value.");
                 }
             } else if (type[i + 3] == BigInteger.class) {
                 try {
                     obj[i + 3] = new BigInteger(params[i]);
                 } catch (Exception e) {
-                    System.out.println(
-                            "The " + (i + 1) + "th parameter of " + funcName + " needs integer value.");
-                    System.out.println();
-                    return null;
+                	throw new ConsoleMessageException("The " + (i + 1) + "th parameter of " + funcName + " needs integer value.");
                 }
             } else if (type[i + 3] == byte[].class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
@@ -1984,51 +2014,51 @@ public class ConsoleImpl implements ConsoleFace {
                     }
                     obj[i + 3] = bytes1;
                 } else {
-                    System.out.println("Please provide double quote for byte String.");
-                    System.out.println();
-                    return null;
+                	throw new ConsoleMessageException("The " + (i + 1) + "th parameter of " + funcName + " needs byte string value.");
                 }
             } else if (type[i + 3] == List.class) {
 
                 if (params[i].startsWith("[") && params[i].endsWith("]")) {
-                    try {
-                        String listParams = params[i].substring(1, params[i].length() - 1);
-                        String[] ilist = listParams.split(",");
-                        List paramsList = new ArrayList();
-                        if (generic[i].contains("String")) {
-                            paramsList = new ArrayList<String>();
-                            for (int j = 0; j < ilist.length; j++) {
-                                paramsList.add(ilist[j].substring(1, ilist[j].length() - 1));
-                            }
-
-                        } else if (generic[i].contains("BigInteger")) {
-                            paramsList = new ArrayList<BigInteger>();
-                            for (int j = 0; j < ilist.length; j++) {
-                                paramsList.add(new BigInteger(ilist[j]));
-                            }
-
-                        }
-                        else if(generic[i].contains("byte[]")) {
-                            paramsList = new ArrayList<byte[]>();
-                            for (int j = 0; j < ilist.length; j++) {
-                                if (ilist[j].startsWith("\"") && ilist[j].endsWith("\"")) {
-                                    byte[] bytes = ilist[j].substring(1, ilist[j].length() - 1).getBytes();
-                                    byte[] bytes1 = new byte[32];
-                                    byte[] bytes2 = bytes;
-                                    for (int k = 0; k < bytes2.length; k++) {
-                                        bytes1[k] = bytes2[k];
-                                    }
-                                    paramsList.add(bytes1);
-                                }
-                            }
-                        }
-                        obj[i + 3] = paramsList;
-                    } catch (Exception e) {
-                        System.out.println(
-                                "Please provide double quote for String that cannot contain any blank spaces.");
-                        System.out.println();
-                        return null;
+                    String listParams = params[i].substring(1, params[i].length() - 1);
+                    String[] ilist = listParams.split(",");
+                    String[] jlist = new String[ilist.length];
+                    for(int k = 0; k < jlist.length; k++)
+                    {
+                    	jlist[k] = ilist[k].trim();
                     }
+                    List paramsList = new ArrayList();
+                    if (generic[i].contains("String")) {
+                        paramsList = new ArrayList<String>();
+                        for (int j = 0; j < jlist.length; j++) {
+                            paramsList.add(jlist[j].substring(1, jlist[j].length() - 1));
+                        }
+
+                    } else if (generic[i].contains("BigInteger")) {
+                        paramsList = new ArrayList<BigInteger>();
+                        for (int j = 0; j < jlist.length; j++) {
+                            paramsList.add(new BigInteger(jlist[j]));
+                        }
+
+                    }
+                    else if(generic[i].contains("byte[]")) {
+                        paramsList = new ArrayList<byte[]>();
+                        for (int j = 0; j < jlist.length; j++) {
+                            if (jlist[j].startsWith("\"") && jlist[j].endsWith("\"")) {
+                                byte[] bytes = jlist[j].substring(1, jlist[j].length() - 1).getBytes();
+                                byte[] bytes1 = new byte[32];
+                                byte[] bytes2 = bytes;
+                                for (int k = 0; k < bytes2.length; k++) {
+                                    bytes1[k] = bytes2[k];
+                                }
+                                paramsList.add(bytes1);
+                            }
+                        }
+                    }
+                    obj[i + 3] = paramsList;
+                }
+                else 
+                {
+                	throw new ConsoleMessageException("The " + (i + 1) + "th parameter of " + funcName + " needs array value.");
                 }
             }
         }

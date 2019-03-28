@@ -119,7 +119,7 @@ public class HelpInfo {
   public static void switchGroupIDHelp() {
 	  System.out.println("Switch to a specific group by group ID.");
 	  System.out.println("Usage: switch groupId ");
-	  System.out.println("groupId -- (optional) The ID of a group, " + Common.PositiveIntegerRange + ".");
+	  System.out.println("groupId -- The ID of a group, " + Common.PositiveIntegerRange + ".");
 	  System.out.println();
   }
 
