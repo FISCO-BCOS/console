@@ -18,7 +18,7 @@ public class TestBase {
 	
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-		 ConsoleInitializer consoleInitializer = new ConsoleInitializer();
+		 consoleInitializer = new ConsoleInitializer();
 		 consoleInitializer.init(new String[0]);
 		 web3jFace = consoleInitializer.getWeb3jFace();
 		 precompiledFace = consoleInitializer.getPrecompiledFace();
@@ -28,6 +28,6 @@ public class TestBase {
 
   @AfterClass
   public static void setUpAfterClass() throws Exception {
-  	consoleInitializer.close();
+  	
   }
 }
