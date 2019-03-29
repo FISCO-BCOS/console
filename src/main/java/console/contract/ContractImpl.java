@@ -27,6 +27,7 @@ import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tx.Contract;
+import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 
 import console.common.Address;
@@ -100,7 +101,7 @@ public class ContractImpl implements ContractFace {
 	            contractClass = getContractClass(contractName);
 	        } catch (Exception e) {
 	            System.out.println(
-	                    "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
+	                    "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/");
 	            System.out.println();
 	            return;
 	        }
@@ -289,7 +290,7 @@ public class ContractImpl implements ContractFace {
 	                    "There is no "
 	                            + name
 	                            + ".class"
-	                            + " in the directory of java/classes/org/fisco/bcos/temp");
+	                            + " in the directory of java/classes/org/fisco/bcos/temp/");
 	            System.out.println();
 	            return;
 	        }
@@ -299,8 +300,7 @@ public class ContractImpl implements ContractFace {
 	                        String.class,
 	                        Web3j.class,
 	                        Credentials.class,
-	                        BigInteger.class,
-	                        BigInteger.class);
+	                        ContractGasProvider.class);
 	        Object contractObject;
 
 	        contractAddress = params[2];
@@ -520,8 +520,7 @@ public class ContractImpl implements ContractFace {
 	                        String.class,
 	                        Web3j.class,
 	                        Credentials.class,
-	                        BigInteger.class,
-	                        BigInteger.class);
+	                        ContractGasProvider.class);
 	        Object contractObject;
 
 	        // get address from cns
