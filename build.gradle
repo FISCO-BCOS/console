@@ -11,7 +11,7 @@ targetCompatibility = 1.8
 repositories {
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
     maven { url "https://dl.bintray.com/ethereum/maven/" }
-//    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     mavenCentral()
 }
 
@@ -21,80 +21,81 @@ List alibaba = [
 ]
 
 List logger = [
-	'org.slf4j:slf4j-log4j12:1.7.25'
+        'org.slf4j:slf4j-log4j12:1.7.25'
 ]
 
-def spring_version="4.1.8.RELEASE"
-List spring =[ 
-	"org.springframework:spring-core:$spring_version", 
-	"org.springframework:spring-beans:$spring_version", 
-	"org.springframework:spring-context:$spring_version", 
-	"org.springframework:spring-tx:$spring_version", 
-	"org.springframework:spring-jdbc:$spring_version", 
-	"org.springframework:spring-test:$spring_version"
+def spring_version = "4.1.8.RELEASE"
+List spring = [
+        "org.springframework:spring-core:$spring_version",
+        "org.springframework:spring-beans:$spring_version",
+        "org.springframework:spring-context:$spring_version",
+        "org.springframework:spring-tx:$spring_version",
+        "org.springframework:spring-jdbc:$spring_version",
+        "org.springframework:spring-test:$spring_version"
 ]
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-	compile logger,spring
-	runtime logger,spring
-    
-//	compile group:"org.fisco-bcos", name:"web3sdk", version:"2.0-SNAPSHOT", changing: true
-	compile	'org.fisco-bcos:web3sdk:2.0.0-rc1'
-	compile 'org.jline:jline:3.9.0'
-	compile 'io.bretty:console-table-builder:1.2'
-	testCompile 'junit:junit:4.12'
+    compile logger, spring
+    runtime logger, spring
+
+    compile group: "org.fisco-bcos", name: "web3sdk", version: "2.0.0-SNAPSHOT", changing: true
+//	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.0-rc1'
+    compile group: 'org.jline', name: 'jline', version: '3.10.0'
+    compile group: 'io.bretty', name: 'console-table-builder', version: '1.2'
+    compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.0'
+    testCompile group: 'junit', name: 'junit', version: '4.1'
 }
 
-//configurations.all {
-//	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-//}
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
 sourceSets {
-	main {
-		java {
-	        srcDir 'src/main/java'
-		}
-        resources  {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
             srcDir 'src/main/resources'
         }
-	}
+    }
 }
 
 jar {
-	destinationDir file('dist/apps')
-	archiveName project.name + '.jar'
-	exclude '**/*.xml'
-	exclude '**/*.properties'
-	exclude '**/*.crt'
-	exclude '**/*.key'
+    destinationDir file('dist/apps')
+    archiveName project.name + '.jar'
+    exclude '**/*.xml'
+    exclude '**/*.properties'
+    exclude '**/*.crt'
+    exclude '**/*.key'
 
     doLast {
-		copy {
-			from configurations.runtime
-			into 'dist/lib'
-		}
-		copy {
-			from file('src/main/resources/')
-			into 'dist/conf'
-		}
-		copy {
-			from file('tools/start.sh')
-			from file('tools/replace_solc_jar.sh')
-			into 'dist/'
-		}
-		copy {
-			from file('tools/sol2java.sh')
-			into 'dist/tools/'
-		}
-		copy {
-			from file('src/main/resources/contract/HelloWorld.sol')
-			from file('src/main/resources/contract/Table.sol')
-			from file('src/main/resources/contract/TableTest.sol')
-			into 'dist/solidity/contracts'
-		}
-		copy {
-			from file('src/main/resources/contract/Table.sol')
-			into 'dist/tools/contracts'
-		}
-	}
+        copy {
+            from configurations.runtime
+            into 'dist/lib'
+        }
+        copy {
+            from file('src/main/resources/')
+            into 'dist/conf'
+        }
+        copy {
+            from file('tools/start.sh')
+            from file('tools/replace_solc_jar.sh')
+            into 'dist/'
+        }
+        copy {
+            from file('tools/sol2java.sh')
+            into 'dist/tools/'
+        }
+        copy {
+            from file('src/main/resources/contract/HelloWorld.sol')
+            from file('src/main/resources/contract/Table.sol')
+            from file('src/main/resources/contract/TableTest.sol')
+            into 'dist/solidity/contracts'
+        }
+        copy {
+            from file('src/main/resources/contract/Table.sol')
+            into 'dist/tools/contracts'
+        }
+    }
 }
