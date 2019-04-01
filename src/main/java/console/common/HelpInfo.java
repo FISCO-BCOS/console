@@ -175,7 +175,7 @@ public class HelpInfo {
 
   public static void quitHelp() {
     System.out.println("Quit console.");
-    System.out.println("Usage: quit");
+    System.out.println("Usage: quit or exit");
   }
 
   public static void getBlockByHashHelp() {

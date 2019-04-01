@@ -188,7 +188,7 @@ public class ConsoleImpl implements ConsoleFace {
     public void welcome() {
         ConsoleUtils.doubleLine();
         System.out.println("Welcome to FISCO BCOS console!");
-        System.out.println("Type 'help' or 'h' for help. Type 'quit' or 'q' to quit console.");
+        System.out.println("Type 'help' or 'h' for help. Type 'quit' or 'q' or 'exit' to quit console.");
         String logo =
                 " ________ ______  ______   ______   ______       _______   ______   ______   ______  \n"
                         + "|        |      \\/      \\ /      \\ /      \\     |       \\ /      \\ /      \\ /      \\ \n"
@@ -295,7 +295,8 @@ public class ConsoleImpl implements ConsoleFace {
                 "revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
         sb.append(
                 "listSysConfigManager                     Query permission information for system configuration.\n");
-        sb.append("quit(q)                                  Quit console.");
+        sb.append("quit(q)                                  Quit console.\n");
+        sb.append("exit                                     Quit console.");
         System.out.println(sb.toString());
         ConsoleUtils.singleLine();
         System.out.println();

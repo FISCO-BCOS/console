@@ -100,6 +100,7 @@ public class ConsoleClient {
       completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
       completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
       completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
+      completers.add(new ArgumentCompleter(new StringsCompleter("exit")));
 
       Terminal terminal = TerminalBuilder.terminal();
       lineReader =
@@ -126,7 +127,7 @@ public class ConsoleClient {
 	        System.out.print("");
 	        continue;
 	      }
-	      if ("quit".equals(params[0]) || "q".equals(params[0])) {
+	      if ("quit".equals(params[0]) || "q".equals(params[0]) || "exit".equals(params[0])) {
 	        if (HelpInfo.promptNoParams(params, "q")) {
 	          continue;
 	        } else if (params.length > 2) {
