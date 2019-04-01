@@ -18,4 +18,11 @@ public interface PrecompiledFace {
   //SystemConfigPrecompiled
   void setSystemConfigByKey(String[] params) throws Exception;
   
+  //CRUDPrecompiled
+  void createTable(String[] params);
+  
+  void insert(String[] params);
+  
+  void select(String[] params);
+  
 }

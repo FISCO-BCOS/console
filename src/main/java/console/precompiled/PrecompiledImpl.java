@@ -1,9 +1,16 @@
 package console.precompiled;
 
+import java.util.List;
+import java.util.Map;
+
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.precompile.config.SystemConfigSerivce;
 import org.fisco.bcos.web3j.precompile.consensus.ConsensusService;
+import org.fisco.bcos.web3j.precompile.crud.CRUDSerivce;
+import org.fisco.bcos.web3j.precompile.crud.Condition;
+import org.fisco.bcos.web3j.precompile.crud.Entry;
+import org.fisco.bcos.web3j.precompile.crud.Table;
 import org.fisco.bcos.web3j.protocol.Web3j;
 
 import console.common.Common;
@@ -14,7 +21,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 		
 	  private Web3j web3j;
 	  private Credentials credentials;
-	  
+		
 		@Override
 		public void setWeb3j(Web3j web3j)
 		{
@@ -165,5 +172,61 @@ public class PrecompiledImpl implements PrecompiledFace {
           System.out.println("Please provide a valid key, for example: " + Common.TxCountLimit +" or " + Common.TxGasLimit +".");
       	}
       	System.out.println();
+    }
+    
+    @Override
+    public void createTable(String[] params) {
+    	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+    	String tableName = "t_test";
+			String key = "name";
+			String valueFields = "item_id, item_name";
+			Table table = new Table(tableName, key, valueFields);
+			String result;
+			try {
+				result = crudSerivce.createTable(table);
+				System.out.println("Create table " + tableName + " success.");
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+			System.out.println();
+    }
+    
+    @Override
+    public void insert(String[] params) {
+    	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+    	String tableName = "t_test";
+    	String key = "name";
+    	Table table = new Table(tableName, key);
+    	Entry entry = table.getEntry();
+    	entry.put(key, "fruit");
+    	entry.put("item_id", "1");
+	    entry.put("item_name", "apple");
+    	int result;
+    	try {
+				result = crudSerivce.insert(table, entry);
+    		System.out.println("insert success.");
+    	} catch (Exception e) {
+    		System.out.println(e.getMessage());
+    	}
+    	System.out.println();
+    }
+    
+    @Override
+    public void select(String[] params) {
+    	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+    	String tableName = "t_test";
+    	String key = "name";
+    	Table table = new Table(tableName, key);
+    	Condition condition = table.getCondition();
+    	condition.EQ("item_id", "1");
+    	condition.Limit(1);
+    	List<Map<String, String>> result = null;
+    	try {
+    		result = crudSerivce.select(table, condition);
+    		result.stream().forEach(System.out::println);
+    	} catch (Exception e) {
+    		System.out.println(e.getMessage());
+    	}
+    	System.out.println();
     }
 }

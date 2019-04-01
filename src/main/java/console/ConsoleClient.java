@@ -180,6 +180,15 @@ public class ConsoleClient {
           case "setSystemConfigByKey":
           	precompiledFace.setSystemConfigByKey(params);
             break;
+          case "create":
+          	precompiledFace.createTable(params);
+          	break;
+          case "insert":
+          	precompiledFace.insert(params);
+          	break;
+          case "select":
+          	precompiledFace.select(params);
+          	break;
           case "grantUserTableManager":
           	permissionFace.grantUserTableManager(params);
             break;
