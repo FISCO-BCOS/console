@@ -102,6 +102,7 @@ public class HelpInfo {
   public static void help() {
     System.out.println("Provide help information.");
     System.out.println("Usage: help");
+    System.out.println();
   }
   
   public static void getDeployLogHelp() {
@@ -114,6 +115,7 @@ public class HelpInfo {
   public static void getBlockNumberHelp() {
     System.out.println("Query the number of most recent block.");
     System.out.println("Usage: getBlockNumber");
+    System.out.println();
   }
   
   public static void switchGroupIDHelp() {
@@ -126,56 +128,67 @@ public class HelpInfo {
   public static void getPbftViewHelp() {
     System.out.println("Query the pbft view of node.");
     System.out.println("Usage: getPbftView");
+    System.out.println();
   }
 
   public static void getObserverListHelp() {
     System.out.println("Query nodeId list for observer nodes.");
     System.out.println("Usage: getObserverList");
+    System.out.println();
   }
 
   public static void getSealerListHelp() {
     System.out.println("Query nodeId list for sealer nodes.");
     System.out.println("Usage: getSealerList");
+    System.out.println();
   }
 
   public static void getConsensusStatusHelp() {
     System.out.println("Query consensus status.");
     System.out.println("Usage: getConsensusStatus");
+    System.out.println();
   }
 
   public static void getSyncStatusHelp() {
     System.out.println("Query sync status.");
     System.out.println("Usage: getSyncStatus");
+    System.out.println();
   }
 
   public static void getNodeVersionHelp() {
     System.out.println("Query the current node version.");
     System.out.println("Usage: getNodeVersion");
+    System.out.println();
   }
 
   public static void getPeersHelp() {
     System.out.println("Query peers currently connected to the client.");
     System.out.println("Usage: getPeers");
+    System.out.println();
   }
 
   public static void getNodeIDListHelp() {
     System.out.println("Query nodeId list for all connected nodes.");
     System.out.println("Usage: getNodeIDList");
+    System.out.println();
   }
 
   public static void getGroupPeersHelp() {
     System.out.println("Query nodeId list for sealer and observer nodes.");
     System.out.println("Usage: getGroupPeers");
+    System.out.println();
   }
 
   public static void getGroupListHelp() {
     System.out.println("Query group list.");
     System.out.println("Usage: getGroupList");
+    System.out.println();
   }
 
   public static void quitHelp() {
     System.out.println("Quit console.");
     System.out.println("Usage: quit or exit");
+    System.out.println();
   }
 
   public static void getBlockByHashHelp() {
@@ -238,11 +251,13 @@ public class HelpInfo {
   public static void getPendingTransactionsHelp() {
     System.out.println("Query pending transactions.");
     System.out.println("Usage: getPendingTransactions");
+    System.out.println();
   }
 
   public static void getPendingTxSizeHelp() {
     System.out.println("Query pending transactions size.");
     System.out.println("Usage: getPendingTxSize");
+    System.out.println();
   }
 
   public static void getCodeHelp() {
@@ -255,6 +270,7 @@ public class HelpInfo {
   public static void getTotalTransactionCountHelp() {
     System.out.println("Query total transaction count.");
     System.out.println("Usage: getTotalTransactionCount");
+    System.out.println();
   }
 
   public static void deployHelp() {
