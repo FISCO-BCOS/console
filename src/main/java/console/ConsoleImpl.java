@@ -57,6 +57,7 @@ import com.alibaba.fastjson.JSONObject;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
+import console.common.ConsoleVersion;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.exception.CompileSolidityException;
@@ -187,7 +188,7 @@ public class ConsoleImpl implements ConsoleFace {
     @Override
     public void welcome() {
         ConsoleUtils.doubleLine();
-        System.out.println("Welcome to FISCO BCOS console!");
+        System.out.println("Welcome to FISCO BCOS console(" + ConsoleVersion.Version + ")!");
         System.out.println("Type 'help' or 'h' for help. Type 'quit' or 'q' or 'exit' to quit console.");
         String logo =
                 " ________ ______  ______   ______   ______       _______   ______   ______   ______  \n"

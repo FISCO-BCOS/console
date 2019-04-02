@@ -9,6 +9,7 @@ LANG=zh_CN.UTF-8
 
 # @function: output log with red color (error log)
 # @param: content: error message
+
 function LOG_ERROR()
 {
     local content=${1}
@@ -53,7 +54,8 @@ function check_java(){
 
 if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
-    exit 0
+elif [ "${1}" == "--version" ];then
+    java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
    java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $1 $2
