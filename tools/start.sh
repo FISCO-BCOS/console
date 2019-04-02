@@ -25,8 +25,9 @@ function LOG_INFO()
 }
 
 function Usage() {
-    LOG_INFO "# Console TOOLS"
-    LOG_INFO "--Start console: \t./start.sh [groupID] [privateKey]\n"
+    LOG_INFO "Usage"
+    LOG_INFO "start console: \t./start.sh [groupID] [privateKey]"
+    LOG_INFO "print console version: \t./start.sh --version"
 }
 
 function check_java(){
@@ -54,7 +55,7 @@ function check_java(){
 
 if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
-elif [ "${1}" == "--version" ];then
+elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
