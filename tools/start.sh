@@ -9,6 +9,7 @@ LANG=zh_CN.UTF-8
 
 # @function: output log with red color (error log)
 # @param: content: error message
+
 function LOG_ERROR()
 {
     local content=${1}
@@ -24,8 +25,9 @@ function LOG_INFO()
 }
 
 function Usage() {
-    LOG_INFO "# Console TOOLS"
-    LOG_INFO "--Start console: \t./start.sh [groupID] [privateKey]\n"
+    LOG_INFO "Usage"
+    LOG_INFO "start console: \t./start.sh [groupID] [privateKey]"
+    LOG_INFO "print console version: \t./start.sh --version"
 }
 
 function check_java(){
@@ -53,7 +55,8 @@ function check_java(){
 
 if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
-    exit 0
+elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
+    java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
    java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $1 $2
