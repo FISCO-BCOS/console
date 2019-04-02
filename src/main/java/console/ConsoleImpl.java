@@ -1604,7 +1604,7 @@ public class ConsoleImpl implements ConsoleFace {
 
     @Override
     public void listDeployAndCreateManager(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listyDeployAndCreateManager")) {
+        if (HelpInfo.promptNoParams(params, "listDeployAndCreateManager")) {
             return;
         }
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
