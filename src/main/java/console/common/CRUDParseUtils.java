@@ -31,7 +31,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 public class CRUDParseUtils {
 	
 	public static void  parseCreateTable(String sql, Table table) throws JSQLParserException {
-			Statement statement = CCJSqlParserUtil.parse("CREATE TABLE IF NOT EXISTS `t_test` (name varchar, item_id varchar, item_name varchar,  PRIMARY KEY (name))");
+			Statement statement = CCJSqlParserUtil.parse(sql);
 			CreateTable createTable = (CreateTable)statement;
 			
 			// parse table name
@@ -48,13 +48,16 @@ public class CRUDParseUtils {
 			List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
 			StringBuffer fields = new StringBuffer();
 			for (ColumnDefinition columnDefinition : columnDefinitions) {
-				fields.append(columnDefinition.getColumnName() + ",");
+				if(!columnDefinition.getColumnName().equals(table.getKey()))
+				{
+					fields.append(columnDefinition.getColumnName() + ",");
+				}
 			}
 			table.setValueFields(fields.toString());
 	}
 	
 	public static void parseInsert(String sql, Table table, Entry entry) throws JSQLParserException {
-			Statement statement = CCJSqlParserUtil.parse("insert into t_test (name, item_id, item_name) values (fruit, 1 , apple)");
+			Statement statement = CCJSqlParserUtil.parse(sql);
 			Insert insert = (Insert)statement;
 			
 			// parse table name
@@ -73,7 +76,7 @@ public class CRUDParseUtils {
 	
 	public static void parseSelect(String sql, Table table, Condition condition, List<String> selectColumns) throws JSQLParserException{
 		  Statement statement;
-			statement = CCJSqlParserUtil.parse("SELECT item_name item_id FROM t_test where id = 1 and name = fruit and item_id = 2 limit 1, 2");
+			statement = CCJSqlParserUtil.parse(sql);
 			Select selectStatement = (Select) statement;
 			
 			// parse table name
@@ -88,7 +91,10 @@ public class CRUDParseUtils {
 				condition = getWhereClause((BinaryExpression)(expr), condition);
 			}
 			Limit limit = ((PlainSelect) selectBody).getLimit();
-			parseLimit(condition, limit);
+			if(limit != null)
+			{
+				parseLimit(condition, limit);
+			}
 			
 			// parse select item
 			List<SelectItem> selectItems = ((PlainSelect) selectBody).getSelectItems();
@@ -98,7 +104,7 @@ public class CRUDParseUtils {
 	}
 	
 	public static void parseUpdate(String sql, Table table, Entry entry, Condition condition) throws JSQLParserException {
-			Statement statement = CCJSqlParserUtil.parse("update t_test set item_id = 2, item_name = orange where name = fruit and item_id = 1 limit 1");
+			Statement statement = CCJSqlParserUtil.parse(sql);
 			Update update = (Update)statement;
 			
 			// parse table name
@@ -109,8 +115,6 @@ public class CRUDParseUtils {
 			// parse cloumns
 			List<Column> columns = update.getColumns();
 			List<Expression> expressions = update.getExpressions();
-			System.out.println(columns);
-			System.out.println(expressions);
 			String expr = expressions.toString();
 			String[] values = expr.substring(1, expr.length() -1 ).split(",");
 			for (int i = 0; i < columns.size(); i++) {
@@ -125,7 +129,7 @@ public class CRUDParseUtils {
 	}
 	
 	public static void parseRemove(String sql, Table table, Condition condition) throws JSQLParserException {
-			Statement statement = CCJSqlParserUtil.parse("delete from t_test where item_id > 1 and item_name = apple limit 2");
+			Statement statement = CCJSqlParserUtil.parse(sql);
 			Delete delete = (Delete)statement;
 			
 			// parse table name

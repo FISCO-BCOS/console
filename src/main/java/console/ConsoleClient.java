@@ -181,13 +181,24 @@ public class ConsoleClient {
           	precompiledFace.setSystemConfigByKey(params);
             break;
           case "create":
-          	precompiledFace.createTable(params);
+          case "CREATE":
+          	precompiledFace.createTable(request);
           	break;
           case "insert":
-          	precompiledFace.insert(params);
+          case "INSERT":
+          	precompiledFace.insert(request);
           	break;
           case "select":
-          	precompiledFace.select(params);
+          case "SELECT":
+          	precompiledFace.select(request);
+          	break;
+          case "update":
+          case "UPDATE":
+          	precompiledFace.update(request);
+          	break;
+          case "delete":
+          case "DELETE":
+          	precompiledFace.remove(request);
           	break;
           case "grantUserTableManager":
           	permissionFace.grantUserTableManager(params);

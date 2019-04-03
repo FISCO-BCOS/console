@@ -81,6 +81,12 @@ public class JlineUtils {
 			completers.add(
 					new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
 			completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
+			completers.add(new ArgumentCompleter(new StringsCompleter("create")));
+			completers.add(new ArgumentCompleter(new StringsCompleter("insert")));
+			completers.add(new ArgumentCompleter(new StringsCompleter("select")));
+			completers.add(new ArgumentCompleter(new StringsCompleter("update")));
+			completers.add(new ArgumentCompleter(new StringsCompleter("delete")));
+			completers.add(new ArgumentCompleter(new StringsCompleter("")));
 
 			Terminal terminal = TerminalBuilder.terminal();
 			return LineReaderBuilder.builder().terminal(terminal).completer(new AggregateCompleter(completers)).build();

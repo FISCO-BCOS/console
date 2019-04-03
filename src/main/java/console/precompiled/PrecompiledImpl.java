@@ -1,7 +1,10 @@
 package console.precompiled;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
@@ -13,9 +16,12 @@ import org.fisco.bcos.web3j.precompile.crud.Entry;
 import org.fisco.bcos.web3j.precompile.crud.Table;
 import org.fisco.bcos.web3j.protocol.Web3j;
 
+import console.common.CRUDParseUtils;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
+import console.exception.ConsoleMessageException;
+import net.sf.jsqlparser.JSQLParserException;
 
 public class PrecompiledImpl implements PrecompiledFace {
 		
@@ -175,58 +181,178 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
     
     @Override
-    public void createTable(String[] params) {
-    	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-    	String tableName = "t_test";
-			String key = "name";
-			String valueFields = "item_id, item_name";
-			Table table = new Table(tableName, key, valueFields);
-			String result;
+    public void createTable(String sql) {
+			Table table = new Table();
 			try {
-				result = crudSerivce.createTable(table);
-				System.out.println("Create table " + tableName + " success.");
-			} catch (Exception e) {
+				CRUDParseUtils.parseCreateTable(sql, table);
+			} catch (JSQLParserException e) {
 				System.out.println(e.getMessage());
+				System.out.println();
+				return;
 			}
-			System.out.println();
+			try {
+					CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+					int result = crudSerivce.createTable(table);
+					if(result == 0)
+					{
+						System.out.println("Create table " + table.getTableName() + " successfully.");
+					}
+					else 
+					{
+						System.out.println("Create table " + table.getTableName() + " failure.");
+					}
+					System.out.println();
+			} catch (Exception e) {
+				System.out.println("Could not parse SQL statement.");
+				System.out.println();
+				return;
+			}
     }
     
     @Override
-    public void insert(String[] params) {
+    public void insert(String sql) {
     	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-    	String tableName = "t_test";
-    	String key = "name";
-    	Table table = new Table(tableName, key);
+    	Table table = new Table();
     	Entry entry = table.getEntry();
-    	entry.put(key, "fruit");
-    	entry.put("item_id", "1");
-	    entry.put("item_name", "apple");
-    	int result;
     	try {
-				result = crudSerivce.insert(table, entry);
-    		System.out.println("insert success.");
+				CRUDParseUtils.parseInsert(sql, table, entry);
+			} catch (JSQLParserException e) {
+				System.out.println("Could not parse SQL statement.");
+				System.out.println();
+				return;
+			}
+    	try {
+    		String key = queryKey(table.getTableName());
+    		table.setKey(key);
+				crudSerivce.insert(table, entry);
+				System.out.println("Insert successfully.");
+				System.out.println();
     	} catch (Exception e) {
     		System.out.println(e.getMessage());
+				System.out.println();
+				return;
+    	}
+    }
+    
+    @Override
+    public void update(String sql) {
+    	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+    	Table table = new Table();
+    	Entry entry = table.getEntry();
+    	Condition condition = table.getCondition();
+    	try {
+    		CRUDParseUtils.parseUpdate(sql, table, entry, condition);
+    	} catch (JSQLParserException e) {
+    		System.out.println("Could not parse SQL statement.");
+    		System.out.println();
+    		return;
+    	}
+    	try {
+    		String key = queryKey(table.getTableName());
+    		table.setKey(key);
+    		crudSerivce.update(table, entry, condition);
+    		System.out.println("Update successfully.");
+    		System.out.println();
+    	} catch (Exception e) {
+    		System.out.println(e.getMessage());
+    		System.out.println();
+    		return;
+    	}
+    }
+    
+    @Override
+    public void remove(String sql) {
+    	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+    	Table table = new Table();
+    	Condition condition = table.getCondition();
+    	try {
+    		CRUDParseUtils.parseRemove(sql, table, condition);
+    	} catch (JSQLParserException e) {
+    		System.out.println("Could not parse SQL statement.");
+    		System.out.println();
+    		return;
+    	}
+    	try {
+    		String key = queryKey(table.getTableName());
+    		table.setKey(key);
+    		crudSerivce.remove(table, condition);
+    		System.out.println("Remove successfully.");
+    		System.out.println();
+    	} catch (Exception e) {
+    		System.out.println(e.getMessage());
+    		System.out.println();
+    		return;
+    	}
+    }
+    
+    @Override
+    public void select(String sql) {
+    	Table table = new Table();
+    	Condition condition = table.getCondition();
+      List<String> selectColumns = new ArrayList<>();
+			try {
+				CRUDParseUtils.parseSelect(sql, table, condition, selectColumns);
+			} catch (JSQLParserException e) {
+				System.out.println("Could not parse SQL statement.");
+				System.out.println();
+				return;
+			}
+			CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+    	try {
+    		String key = queryKey(table.getTableName());
+    		table.setKey(key);
+    		List<Map<String, String>> result = crudSerivce.select(table, condition);
+    		if (result.size() == 0) {
+					System.out.println("Empty set.");
+					System.out.println();
+					return;
+				}
+    		
+    		if("*".equals(selectColumns.get(0)))
+    		{
+    			result.stream().forEach(System.out::println);
+    		}
+    		else
+    		{	
+    			int size = result.size();
+					List<Map<String, String>> selectedResult = new ArrayList<>(size);
+					Map<String, String> selectedRecords = new HashMap<>();
+    			for (Map<String, String> records : result) {
+  					for (String column : selectColumns) {
+  						Set<String> recordKeys = records.keySet();
+  						for (String recordKey : recordKeys) {
+								if (recordKey.equals(column)) {
+									selectedRecords.put(recordKey, records.get(recordKey));
+								}
+							}
+    				}
+    				selectedResult.add(selectedRecords);
+    			}
+    			selectedResult.stream().forEach(System.out::println);
+    		}
+    	} catch (Exception e) {
+    		System.out.println(e.getMessage());
+    		System.out.println();
+    		return;
     	}
     	System.out.println();
     }
     
-    @Override
-    public void select(String[] params) {
-    	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-    	String tableName = "t_test";
-    	String key = "name";
-    	Table table = new Table(tableName, key);
+  	private String queryKey(String tableName) throws Exception
+  	{
+  		CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+    	Table table = new Table();
+    	table.setTableName("_sys_tables_");
+    	table.setKey("_user_" +tableName);
     	Condition condition = table.getCondition();
-    	condition.EQ("item_id", "1");
-    	condition.Limit(1);
-    	List<Map<String, String>> result = null;
-    	try {
-    		result = crudSerivce.select(table, condition);
-    		result.stream().forEach(System.out::println);
-    	} catch (Exception e) {
-    		System.out.println(e.getMessage());
-    	}
-    	System.out.println();
-    }
+  		List<Map<String, String>> userTable = crudSerivce.select(table, condition);
+  		if(userTable.size() != 0)
+  		{
+  			return userTable.get(0).get("key_field");
+  		}
+  		else 
+  		{
+  			throw new ConsoleMessageException("The table " + tableName + " does not exist.");
+  		}
+  	}
 }

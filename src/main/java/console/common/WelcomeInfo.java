@@ -111,6 +111,11 @@ public class WelcomeInfo {
               "revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
       sb.append(
               "listSysConfigManager                     Query permission information for system configuration.\n");
+      sb.append("[create sql]                             Create table by sql.\n");
+      sb.append("[insert sql]                             Insert records by sql.\n");
+      sb.append("[select sql]                             Select records by sql.\n");
+      sb.append("[update sql]                             Update records by sql.\n");
+      sb.append("[delete sql]                             Remove records by sql.\n");
       sb.append("quit(q)                                  Quit console.");
       System.out.println(sb.toString());
       ConsoleUtils.singleLine();

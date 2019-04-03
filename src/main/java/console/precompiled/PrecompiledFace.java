@@ -19,10 +19,14 @@ public interface PrecompiledFace {
   void setSystemConfigByKey(String[] params) throws Exception;
   
   //CRUDPrecompiled
-  void createTable(String[] params);
+  void createTable(String sql);
   
-  void insert(String[] params);
+  void insert(String sql);
   
-  void select(String[] params);
+  void update(String sql);
+  
+  void remove(String sql);
+  
+  void select(String sql);
   
 }

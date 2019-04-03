@@ -115,13 +115,14 @@ public class ContractImpl implements ContractFace {
 	        try {
 	        	Contract contract = (Contract) remoteCall.send();
 	      	  contractAddress = contract.getContractAddress();
-	          System.out.println(contractAddress);
+	          System.out.println("contract address:" + contractAddress);
 	          System.out.println();
 	          contractAddress = contract.getContractAddress();
 	          writeLog();
 	        } catch (Exception e) {
 	            if (e.getMessage().contains("0x19")) {
 	                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
+	                System.out.println();
 	            } else {
 	                throw e;
 	            }
@@ -351,8 +352,10 @@ public class ContractImpl implements ContractFace {
 						{
 							System.out.println("Call failed.");
 							System.out.println();
-							return;
+//							return;
 						}
+						System.out.println("output:" + receipt.getOutput());
+						System.out.println("status:" + receipt.getStatus());
 					}
 	        String returnObject =
 	                ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
@@ -447,7 +450,7 @@ public class ContractImpl implements ContractFace {
 	            contractAddress = contract.getContractAddress();
 	            // register cns
 	            String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
-	            System.out.println(contractAddress);
+	            System.out.println("contract address:" +contractAddress);
 	            contractName = contractName+":"+contractVersion;
 	            writeLog();
 	            System.out.println();
