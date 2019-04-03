@@ -60,7 +60,6 @@ import console.common.ConsoleUtils;
 import console.common.ConsoleVersion;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
-import console.exception.CompileSolidityException;
 import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
@@ -820,25 +819,12 @@ public class ConsoleImpl implements ConsoleFace {
             name = name.substring(0, name.length() - 4);
         }
         try {
-        	ConsoleUtils.dynamicCompileSolFilesToJava(name);
-        }catch (CompileSolidityException e) {
-        	System.out.println(e.getMessage());
-        	return;
-        }catch (IOException e) {
-        	System.out.println(e.getMessage());
-        	System.out.println();
-        	return;
-        }
-        ConsoleUtils.dynamicCompileJavaToClass(name);
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
-        try {
-            contractClass = getContractClass(contractName);
-        } catch (Exception e) {
-            System.out.println(
-                    "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
-            System.out.println();
-            return;
-        }
+					compileContract(name);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         try {
 					handleDeployParameters(params, 2);
 				} catch (ConsoleMessageException e) {
@@ -1016,18 +1002,13 @@ public class ConsoleImpl implements ConsoleFace {
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
         }
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
         try {
-            contractClass = getContractClass(contractName);
-        } catch (Exception e) {
-            System.out.println(
-                    "There is no "
-                            + name
-                            + ".class"
-                            + " in the directory of java/classes/org/fisco/bcos/temp");
-            System.out.println();
-            return;
-        }
+					compileContract(name);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         Method load =
                 contractClass.getMethod(
                         "load",
@@ -1145,25 +1126,12 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         try {
-            ConsoleUtils.dynamicCompileSolFilesToJava(name);
-        } catch (CompileSolidityException e) {
-        	System.out.println(e.getMessage());
-        	return;
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
-        ConsoleUtils.dynamicCompileJavaToClass(name);
-        try {
-            contractClass = getContractClass(contractName);
-        } catch (Exception e) {
-        	  System.out.println(
-               "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
-            System.out.println();
-            return;
-        }
+					compileContract(name);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         try {
 					handleDeployParameters(params, 3);
 				} catch (ConsoleMessageException e) {
@@ -1242,18 +1210,13 @@ public class ConsoleImpl implements ConsoleFace {
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
         }
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
         try {
-            contractClass = getContractClass(contractName);
-        } catch (Exception e) {
-            System.out.println(
-                    "There is no "
-                            + name
-                            + ".class"
-                            + " in the directory of java/classes/org/fisco/bcos/temp");
-            System.out.println();
-            return;
-        }
+					compileContract(name);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         Method load =
                 contractClass.getMethod(
                         "load",
@@ -1342,6 +1305,28 @@ public class ConsoleImpl implements ConsoleFace {
         System.out.println(returnObject);
         System.out.println();
     }
+
+		private void compileContract(String name) throws Exception {
+      try {
+      	ConsoleUtils.dynamicCompileSolFilesToJava(name);
+      }catch (IOException e) {
+      	throw new IOException(e.getMessage());
+      }
+			try {
+				ConsoleUtils.dynamicCompileJavaToClass(name);
+			} catch (Exception e1) {
+				throw new Exception("Compile " + name + ".java failed.");
+			}
+			contractName = ConsoleUtils.PACKAGENAME + "." + name;
+			try {
+			    contractClass = getContractClass(contractName);
+			} catch (Exception e) {
+				throw new Exception("There is no "
+			                    + name
+			                    + ".class"
+			                    + " in the directory of java/classes/org/fisco/bcos/temp");
+			}
+		}
 
     @SuppressWarnings("rawtypes")
     @Override

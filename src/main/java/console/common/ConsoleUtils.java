@@ -158,24 +158,8 @@ public class ConsoleUtils {
   			}
 
   		}else {
-  			if(!addressStr.matches("^[a-f0-9]+$"))
-  			{
   				address.setValid(false);
   				address.setAddress(addressStr);
-  			}
-  			else 
-  			{
-    			if(addressStr.length() > Address.ValidLen - 2 )
-    			{
-    				address.setValid(false);
-    				address.setAddress(addressStr);
-    			}
-    			else
-    			{
-    				getAddress(address, addressStr, Address.ValidLen - 2);
-    			}
-  			}
-
   		}
   	}
   	if(!address.isValid())
