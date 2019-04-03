@@ -1177,6 +1177,11 @@ public class ConsoleImpl implements ConsoleFace {
             System.out.println();
             return;
         }
+        if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
+					System.out.println("Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
+					System.out.println();
+					return;
+				}
         try {
         		Contract contract = (Contract) remoteCall.send();
             contractAddress = contract.getContractAddress();
@@ -1267,6 +1272,11 @@ public class ConsoleImpl implements ConsoleFace {
           System.out.println();
           return;
         }
+        if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
+					System.out.println("Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
+					System.out.println();
+					return;
+				}
         CnsService cnsResolver = new CnsService(web3j, credentials);
         try {
             contractAddress =
@@ -1362,6 +1372,11 @@ public class ConsoleImpl implements ConsoleFace {
               System.out.println();
               return;
             }
+            if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
+    					System.out.println("Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
+    					System.out.println();
+    					return;
+    				}
             cnsInfos = cnsService.queryCnsByNameAndVersion(contractName, contractVersion);
         } else {
             cnsInfos = cnsService.queryCnsByName(contractName);
