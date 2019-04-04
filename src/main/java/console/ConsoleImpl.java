@@ -835,7 +835,7 @@ public class ConsoleImpl implements ConsoleFace {
         try {
         	Contract contract = (Contract) remoteCall.send();
       	  contractAddress = contract.getContractAddress();
-          System.out.println(contractAddress);
+          System.out.println("contract address:" + contractAddress);
           System.out.println();
           contractAddress = contract.getContractAddress();
           writeLog();
@@ -1030,7 +1030,7 @@ public class ConsoleImpl implements ConsoleFace {
         Method[] methods = contractClass.getDeclaredMethods();
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
         if(method == null) {
-        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println("Cannot find the method " + funcName + ", please checkout the method name.");
         	System.out.println();
         	return;
         }
@@ -1155,7 +1155,7 @@ public class ConsoleImpl implements ConsoleFace {
             contractAddress = contract.getContractAddress();
             // register cns
             String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
-            System.out.println(contractAddress);
+            System.out.println("contract address:" + contractAddress);
             contractName = contractName+":"+contractVersion;
             writeLog();
             System.out.println();
@@ -1202,13 +1202,47 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.callByCNSHelp();
             return;
         }
-        if (params.length < 4) {
+        if (params.length < 3) {
             HelpInfo.promptHelp("callByCNS");
             return;
         }
+        String contractNameAndVersion = params[1];
         String name = params[1];
+        String contractVersion = null;
+        if (contractNameAndVersion.contains(":")) {
+        	String[] nameAndVersion = contractNameAndVersion.split(":");
+        	if(nameAndVersion.length == 2)
+        	{
+        		name = nameAndVersion[0].trim();
+        		contractVersion = nameAndVersion[1].trim();
+        	}
+        	else 
+        	{
+        		System.out.println("Contract name and version has incorrect format. For example, contractName:contractVersion");
+        		System.out.println();
+        		return;
+        	}
+				}
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
+            if(contractVersion != null)
+            {
+              if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
+                System.out.println();
+                return;
+              }
+              if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
+      					System.out.println("Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
+      					System.out.println();
+      					return;
+      				}
+            	contractNameAndVersion = name + ":" + contractVersion;
+            }
+            else 
+            {
+            	contractNameAndVersion = name;
+            }
         }
         try {
 					compileContract(name);
@@ -1226,37 +1260,25 @@ public class ConsoleImpl implements ConsoleFace {
                         BigInteger.class,
                         BigInteger.class);
         Object contractObject;
-
-        // get address from cns
-        contractName = name;
-        contractVersion = params[2];
-        if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
-          ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
-          System.out.println();
-          return;
-        }
-        if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
-					System.out.println("Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
-					System.out.println();
-					return;
-				}
         CnsService cnsResolver = new CnsService(web3j, credentials);
+        // get address from cns
+        String contractAddress = "";
         try {
             contractAddress =
-                    cnsResolver.getAddressByContractNameAndVersion(contractName + ":" + contractVersion);
+                    cnsResolver.getAddressByContractNameAndVersion(contractNameAndVersion);
         } catch (Exception e) {
             System.out.println(
-                    "The contract " + contractName + " for version " + contractVersion + " doesn't exsit.");
+                    "The contract " + contractNameAndVersion + " doesn't exsit.");
             System.out.println();
             return;
         }
         contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
-        String funcName = params[3];
+        String funcName = params[2];
         Method[] methods = contractClass.getMethods();
         Class[] type = null;
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
         if(method == null) {
-        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println("Cannot find the method " + funcName + ", please checkout the method name.");
         	System.out.println();
         	return;
         }
@@ -1272,14 +1294,14 @@ public class ConsoleImpl implements ConsoleFace {
             classList[i] = clazz;
         }
         Class[] parameterType =
-                ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
+                ContractClassFactory.getParameterType(contractClass, funcName, params.length - 3);
         if (parameterType == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
+            HelpInfo.promptNoFunc(params[1], funcName, params.length - 3);
             return;
         }
         Method func = contractClass.getMethod(funcName, parameterType);
-        String[] newParams = new String[params.length - 4];
-        System.arraycopy(params, 4, newParams, 0, params.length - 4);
+        String[] newParams = new String[params.length - 3];
+        System.arraycopy(params, 3, newParams, 0, params.length - 3);
         Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, newParams, generic);
         if (argobj == null) {
             return;
@@ -1299,7 +1321,7 @@ public class ConsoleImpl implements ConsoleFace {
         String returnObject =
                 ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
         if (returnObject == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
+            HelpInfo.promptNoFunc(params[1], funcName, params.length - 3);
             return;
         }
         System.out.println(returnObject);
