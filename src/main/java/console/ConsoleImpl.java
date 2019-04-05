@@ -1063,11 +1063,33 @@ public class ConsoleImpl implements ConsoleFace {
 				if(result instanceof TransactionReceipt)
 				{
 					TransactionReceipt receipt = (TransactionReceipt)result;
-					if(!"0x0".equals(receipt.getStatus()))
+					if("0x1a".equals(receipt.getStatus()))
 					{
-						System.out.println("Call failed.");
+						System.out.println("The contract address is incorrect.");
 						System.out.println();
 						return;
+					}
+					if(!"0x0".equals(receipt.getStatus()))
+					{
+						System.out.println("The transation executed failed.");
+						System.out.println();
+						return;
+					}
+					String output = receipt.getOutput();
+					if (!"0x".equals(output)) {
+						int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
+						if(code == PrecompiledCommon.TableExist)
+						{
+							System.out.println("The table already exist.");
+							System.out.println();
+							return;
+						}
+						if(code == PrecompiledCommon.PermissionDenied)
+						{
+							System.out.println("Permission denied.");
+							System.out.println();
+							return;
+						}
 					}
 				}
         String returnObject =
