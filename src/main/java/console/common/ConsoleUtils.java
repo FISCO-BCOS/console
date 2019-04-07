@@ -225,6 +225,10 @@ public class ConsoleUtils {
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
     }
+    File solFile = new File("solidity/contracts/"+name);
+    if(!solFile.exists()){
+      throw new IOException("There is no " + name + " in the directory of solidity/contracts");
+    }
     String tempDirPath = new File("solidity/java").getAbsolutePath();
     compileSolToJava(name, tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
   }

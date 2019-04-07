@@ -1266,6 +1266,18 @@ public class ConsoleImpl implements ConsoleFace {
             	contractNameAndVersion = name;
             }
         }
+        // get address from cns
+        String contractAddress = "";
+        CnsService cnsResolver = new CnsService(web3j, credentials);
+        try {
+            contractAddress =
+                    cnsResolver.getAddressByContractNameAndVersion(contractNameAndVersion);
+        } catch (Exception e) {
+            System.out.println(
+                    "The contract " + contractNameAndVersion + " doesn't exsit.");
+            System.out.println();
+            return;
+        }
         try {
 					compileContract(name);
 				} catch (Exception e) {
@@ -1281,23 +1293,9 @@ public class ConsoleImpl implements ConsoleFace {
                         Credentials.class,
                         BigInteger.class,
                         BigInteger.class);
-        Object contractObject;
-        CnsService cnsResolver = new CnsService(web3j, credentials);
-        // get address from cns
-        String contractAddress = "";
-        try {
-            contractAddress =
-                    cnsResolver.getAddressByContractNameAndVersion(contractNameAndVersion);
-        } catch (Exception e) {
-            System.out.println(
-                    "The contract " + contractNameAndVersion + " doesn't exsit.");
-            System.out.println();
-            return;
-        }
-        contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
+        Object contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
         String funcName = params[2];
         Method[] methods = contractClass.getMethods();
-        Class[] type = null;
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
         if(method == null) {
         	System.out.println("Cannot find the method " + funcName + ", please checkout the method name.");
