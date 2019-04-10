@@ -7,7 +7,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SortedMap;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -150,10 +149,10 @@ public class ConsoleClient {
           break;
         }
 
-        if (command == "h" || command == "help") {
+        if ("h".equals(command) || "help".equals(command)) {
           console.help(params);
         } else {
-          if (command == "s" || command == "swith") {
+          if ("s".equals(command) || "swith".equals(command)) {
             console.switchGroupID(params);
           } else {
             Class<?> consoleClass = console.getClass();
