@@ -2,17 +2,17 @@
 branches:
   only:
       - /.*/
-
-language: java
-jdk:
-  - oraclejdk8
-
+      
 matrix:
   fast_finish: true
   include:
       - os: linux
         dist: xenial
         sudo: required
+
+language: java
+jdk:
+  - oraclejdk8
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
