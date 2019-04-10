@@ -19,5 +19,13 @@ cache:
 before_install:
   - gradle wrapper
 
-script: 
-  - ./gradlew build -x test
+script: |
+  sudo apt install -y openssl curl
+  curl -LO https://raw.githubusercontent.com/FISCO-BCOS/FISCO-BCOS/master/tools/build_chain.sh && chmod u+x build_chain.sh
+  bash <(curl -s https://raw.githubusercontent.com/FISCO-BCOS/FISCO-BCOS/master/tools/ci/download_bin.sh)
+  echo "127.0.0.1:4 agency1 1,2,3" > ipconf
+  ./build_chain.sh -e bin/fisco-bcos -f ipconf -p 30300,20200,8545
+  cd nodes/127.0.0.1
+  ./start_all.sh
+  cp nodes/127.0.0.1/sdk/* src/main/resources/
+  ./gradlew build
