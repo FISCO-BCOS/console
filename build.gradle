@@ -11,7 +11,7 @@ targetCompatibility = 1.8
 repositories {
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
     maven { url "https://dl.bintray.com/ethereum/maven/" }
-//    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     mavenCentral()
 }
 
@@ -39,16 +39,16 @@ dependencies {
 	compile logger,spring
 	runtime logger,spring
     
-//	compile group:"org.fisco-bcos", name:"web3sdk", version:"2.0-SNAPSHOT", changing: true
-	compile	'org.fisco-bcos:web3sdk:2.0.0-rc1'
-	compile 'org.jline:jline:3.9.0'
+	compile group:"org.fisco-bcos", name:"web3sdk", version:"2.0.0-SNAPSHOT", changing: true
+//	compile	'org.fisco-bcos:web3sdk:2.0.0-rc1'
+	compile 'org.jline:jline:3.10.0'
 	compile 'io.bretty:console-table-builder:1.2'
 	testCompile 'junit:junit:4.12'
 }
 
-//configurations.all {
-//	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
-//}
+configurations.all {
+	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
 sourceSets {
 	main {
 		java {
@@ -74,7 +74,9 @@ jar {
 			into 'dist/lib'
 		}
 		copy {
-			from file('src/main/resources/')
+			from file('src/main/resources/applicationContext-sample.xml')
+      from file('src/main/resources/log4j.properties')
+      from file('src/main/resources/privateKey.properties')
 			into 'dist/conf'
 		}
 		copy {
@@ -87,14 +89,12 @@ jar {
 			into 'dist/tools/'
 		}
 		copy {
-			from file('src/main/resources/contract/HelloWorld.sol')
-			from file('src/main/resources/contract/Table.sol')
-			from file('src/main/resources/contract/TableTest.sol')
-			into 'dist/solidity/contracts'
+			from file('src/main/resources/contract/')
+			into 'dist/solidity/contracts/'
 		}
 		copy {
 			from file('src/main/resources/contract/Table.sol')
-			into 'dist/tools/contracts'
+			into 'dist/tools/contracts/'
 		}
 	}
 }
