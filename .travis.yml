@@ -2,7 +2,7 @@
 branches:
   only:
       - /.*/
-      
+
 matrix:
   fast_finish: true
   include:
@@ -12,7 +12,7 @@ matrix:
 
 language: java
 jdk:
-  - oraclejdk8
+  - oraclejdk9
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
