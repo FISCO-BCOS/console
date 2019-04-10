@@ -74,7 +74,9 @@ jar {
 			into 'dist/lib'
 		}
 		copy {
-			from file('src/main/resources/')
+			from file('src/main/resources/applicationContext-sample.xml')
+      from file('src/main/resources/log4j.properties')
+      from file('src/main/resources/privateKey.properties')
 			into 'dist/conf'
 		}
 		copy {
@@ -87,14 +89,12 @@ jar {
 			into 'dist/tools/'
 		}
 		copy {
-			from file('src/main/resources/contract/HelloWorld.sol')
-			from file('src/main/resources/contract/Table.sol')
-			from file('src/main/resources/contract/TableTest.sol')
-			into 'dist/solidity/contracts'
+			from file('src/main/resources/contract/')
+			into 'dist/solidity/contracts/'
 		}
 		copy {
 			from file('src/main/resources/contract/Table.sol')
-			into 'dist/tools/contracts'
+			into 'dist/tools/contracts/'
 		}
 	}
 }
