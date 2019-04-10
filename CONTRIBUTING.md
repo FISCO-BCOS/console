@@ -46,11 +46,10 @@ Go to [issues page](https://github.com/FISCO-BCOS/console/issues)
 **Continous integration platform**
 
 * travis-ci: [![Build Status](https://travis-ci.org/FISCO-BCOS/console.svg?branch=master)](https://travis-ci.org/FISCO-BCOS/console)
-* circleci: [![CircleCI](https://circleci.com/gh/FISCO-BCOS/console/tree/master.svg?style=shield)](https://circleci.com/gh/FISCO-BCOS/console/tree/master)
 
 
 **Code quality**
 
-* [![Codacy Badge](https://api.codacy.com/project/badge/Grade/1bbdd693ef534bc58da3f28aee3911b5)](https://www.codacy.com/app/fqliao/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
+* [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b75a11441500447d8eaedcdaca5e214d)](https://www.codacy.com/app/fisco/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
 
 
