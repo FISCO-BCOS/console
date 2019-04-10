@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +21,8 @@ import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
 import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
 import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
+
+import console.exception.CompileSolidityException;
 
 public class ConsoleUtils {
 
@@ -108,30 +108,102 @@ public class ConsoleUtils {
       return true;
     }
   }
+  
+  public static int proccessNonNegativeNumber(String name, String intStr) {
+		int intParam = 0;
+		try {
+			intParam = Integer.parseInt(intStr);
+		  if(intParam < 0)
+		  {
+		    System.out.println("Please provide "+ name + " by non-negative integer mode, " + Common.NonNegativeIntegerRange + ".");
+		    System.out.println();
+		    return Common.InvalidReturnNumber;
+		  }
+		} catch (NumberFormatException e) {
+		    System.out.println("Please provide "+ name + " by non-negative integer mode, " + Common.NonNegativeIntegerRange + ".");
+		    System.out.println();
+		    return Common.InvalidReturnNumber;
+		}
+		return intParam;
+	}
+  
+  public static Address convertAddress(String addressStr)
+  {	
+  	Address address = new Address();
+  	if(addressStr.length() > Address.ValidLen)
+  	{
+  		address.setValid(false);
+  		address.setAddress(addressStr);
+  	}
+  	else
+  	{
+  		address.setValid(true);
+  		if(addressStr.startsWith("0x"))
+  		{	
+  			if(!addressStr.substring(2, addressStr.length()).matches("^[a-f0-9]+$"))
+  			{
+  				address.setValid(false);
+  				address.setAddress(addressStr);
+  			}
+  			else 
+  			{
+    			if(addressStr.length() == Address.ValidLen)
+    			{
+    				address.setAddress(addressStr);
+    			}
+    			else 
+    			{
+    				getAddress(address, addressStr, Address.ValidLen);
+    			}
+  			}
 
-  public static boolean isInvalidNumber(String number, int flag) {
-    String numberStr = number.trim();
-    if (!numberStr.matches("^[0-9]*$") || "".equals(numberStr)) {
-      if (flag == 0)
-        System.out.println("Please provide block number as a decimal non-negative integer.");
-      else
-        System.out.println("Please provide transaction index as a decimal non-negative integer.");
-      System.out.println();
-      return true;
-    } else {
-      return false;
-    }
+  		}else {
+  			if(!addressStr.matches("^[a-f0-9]+$"))
+  			{
+  				address.setValid(false);
+  				address.setAddress(addressStr);
+  			}
+  			else 
+  			{
+    			if(addressStr.length() > Address.ValidLen - 2 )
+    			{
+    				address.setValid(false);
+    				address.setAddress(addressStr);
+    			}
+    			else
+    			{
+    				getAddress(address, addressStr, Address.ValidLen - 2);
+    			}
+  			}
+
+  		}
+  	}
+  	if(!address.isValid())
+  	{
+  		System.out.println("Please provide a valid address.");
+  		System.out.println();
+  	}
+  	return address;
   }
 
-  public static boolean isInvalidAddress(String address) {
-    if (!address.startsWith("0x") || (address.length() != 42)) {
-      System.out.println("Please provide a valid address.");
-      System.out.println();
-      return true;
-    } else {
-      return false;
-    }
-  }
+	private static void getAddress(Address address, String addressStr, int length) {
+		int len = length - addressStr.length();
+		StringBuilder builderAddress = new StringBuilder();
+		for(int i = 0; i < len; i++)
+		{
+			builderAddress.append("0");
+		}
+		String newAddessStr;
+		if(length == Address.ValidLen)
+		{
+			newAddessStr = "0x" + builderAddress.toString() + addressStr.substring(2, addressStr.length());
+		}
+		else 
+		{
+			newAddessStr = "0x" + builderAddress.toString() + addressStr;
+		}
+		address.setAddress(newAddessStr);
+	}
 
   // dynamic compile target java code
   public static void dynamicCompileJavaToClass(String name) throws Exception {
@@ -161,46 +233,90 @@ public class ConsoleUtils {
     }
   }
 
-  // dynamic load class
-  public static void dynamicLoadClass()
-      throws NoSuchMethodException, MalformedURLException, InvocationTargetException,
-          IllegalAccessException, ClassNotFoundException {
-  }
-
-  public static void dynamicCompileSolFilesToJava() throws Exception {
+  public static void dynamicCompileSolFilesToJava(String name) throws IOException {
+    if (!name.endsWith(".sol")) {
+      name = name + ".sol";
+    }
     File solFileList = new File("solidity/contracts/");
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
     }
-    File[] solFiles = solFileList.listFiles();
+    String tempDirPath = new File("solidity/java").getAbsolutePath();
+    compileSolToJava(name, tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
+  }
+  
+  public static void main(String[] args){
+    if (args.length < 1) {
+      System.out.println("Please provide a package name.");
+      return;
+    }
 
+    File solFileList = new File("contracts");
+    String tempDirPath = new File("java").getAbsolutePath();
+    try {
+			compileSolToJava("*", tempDirPath, args[0], solFileList, "abi/", "bin/");
+			System.out.println("\nCompile solidity contract files to java contract files successfully!");
+		} catch (IOException e) {
+			System.out.print(e.getMessage());
+		}
+  }
+
+	private static void compileSolToJava(String solName, String tempDirPath, String packageName, File solFileList, 
+			String abiDir, String binDir) throws IOException {
+		File[] solFiles = solFileList.listFiles();
+    if(solFiles.length == 0)
+    {
+    	System.out.println("The contracts directory is empty.");
+    	return;
+    }
     for (File solFile : solFiles) {
       if(!solFile.getName().endsWith(".sol"))
-  	  {
-  			continue;
-  	  }
+			{
+				continue;
+			}
+      if(!"*".equals(solName))
+      {
+      	if(!solFile.getName().equals(solName))
+      	{
+      		continue;
+      	}
+      	if(solFile.getName().contains("Lib"))
+      	{
+      		throw new IOException("Don't deploy the library: " + solFile.getName());
+      	}
+      }
+      else 
+      {
+      	if(solFile.getName().contains("Lib"))
+      	{
+      		continue;
+      	}
+      }
       SolidityCompiler.Result res =
           SolidityCompiler.compile(solFile, true, ABI, BIN, INTERFACE, METADATA);
       if("".equals(res.output))
       {
-      	throw new IOException("Compile error: " + res.errors);
+      		throw new CompileSolidityException("Compile error: " + res.errors);
       }
       CompilationResult result = CompilationResult.parse(res.output);
       String contractname = solFile.getName().split("\\.")[0];
       CompilationResult.ContractMetadata a = result.getContract(solFile.getName().split("\\.")[0]);
-      FileUtils.writeStringToFile(new File("solidity/abi/" + contractname + ".abi"), a.abi);
-      FileUtils.writeStringToFile(new File("solidity/bin/" + contractname + ".bin"), a.bin);
+      FileUtils.writeStringToFile(new File(abiDir + contractname + ".abi"), a.abi);
+      FileUtils.writeStringToFile(new File(binDir + contractname + ".bin"), a.bin);
       String binFile;
       String abiFile;
-      String tempDirPath = new File("solidity/java").getAbsolutePath();
       String filename = contractname;
-      abiFile = "solidity/abi/" + filename + ".abi";
-      binFile = "solidity/bin/" + filename + ".bin";
+      abiFile = abiDir + filename + ".abi";
+      binFile = binDir + filename + ".bin";
       SolidityFunctionWrapperGenerator.main(
-          Arrays.asList("-a", abiFile, "-b", binFile, "-p", PACKAGENAME, "-o", tempDirPath)
+          Arrays.asList(
+                  "-a", abiFile,
+                  "-b", binFile,
+                  "-p", packageName,
+                  "-o", tempDirPath)
               .toArray(new String[0]));
     }
-  }
+	}
   
   private static class CommandTokenizer extends StreamTokenizer {
       public CommandTokenizer(Reader r) {

@@ -1,12 +1,16 @@
 package console;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
+import org.fisco.bcos.web3j.protocol.core.Response;
+import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
@@ -92,10 +96,11 @@ public class ConsoleClient {
       completers.add(new ArgumentCompleter(new StringsCompleter("revokeSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("listSysConfigManager")));
       completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.txGasLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
       completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxCountLimit)));
-      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.txGasLimit)));
+      completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
       completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
+      completers.add(new ArgumentCompleter(new StringsCompleter("exit")));
 
       Terminal terminal = TerminalBuilder.terminal();
       lineReader =
@@ -122,7 +127,7 @@ public class ConsoleClient {
 	        System.out.print("");
 	        continue;
 	      }
-	      if ("quit".equals(params[0]) || "q".equals(params[0])) {
+	      if ("quit".equals(params[0]) || "q".equals(params[0]) || "exit".equals(params[0])) {
 	        if (HelpInfo.promptNoParams(params, "q")) {
 	          continue;
 	        } else if (params.length > 2) {
@@ -306,7 +311,9 @@ public class ConsoleClient {
       } catch (ClassNotFoundException e) {
         System.out.println(e.getMessage() + " does not exist.");
         System.out.println();
-      } catch (IOException e) {
+      } catch (MessageDecodingException e) {
+        pringMessageDecodeingException(e);
+      }catch (IOException e) {
         if (e.getMessage().startsWith("activeConnections")) {
 					System.out.println("Lost the connection to the node. " 
 							+ "Please check the connection between the console and the node.");
@@ -318,10 +325,43 @@ public class ConsoleClient {
         }
         System.out.println();
       } 
+    	catch (InvocationTargetException e) {
+    		System.out.println("Contract call failed.");
+    		System.out.println();
+    	}
       catch (Exception e) {
-        System.out.println(e.getMessage());
-        System.out.println();
+      	if(e.getMessage().contains("MessageDecodingException"))
+      	{
+      		pringMessageDecodeingException(new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
+      	}
+      	else {
+      		System.out.println(e.getMessage());
+      		System.out.println();
+      	}
       } 
      }
   }
+
+	private static void pringMessageDecodeingException(MessageDecodingException e) {
+		String message = e.getMessage();
+		Response t = null;
+		try {
+		    t = ObjectMapperFactory.getObjectMapper(true).readValue(
+		                message.substring(message.indexOf("{"), message.lastIndexOf("}") + 1),
+		                Response.class);
+		    if (t != null) {
+		      ConsoleUtils.printJson(
+		          "{\"code\":"
+		              + t.getError().getCode()
+		              + ", \"msg\":"
+		              + "\""
+		              + t.getError().getMessage()
+		              + "\"}");
+		      System.out.println();
+		    }
+		  }catch (Exception e1) {
+		    System.out.println(e1.getMessage());
+		    System.out.println();
+    }
+	}
 }

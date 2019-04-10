@@ -17,7 +17,7 @@
 
 ### Issue
 
-可直接去[issues page](https://github.com/FISCO-BCOS/web3sdk/issues)提issue。
+可直接去[issues page](https://github.com/FISCO-BCOS/console/issues)提issue。
 
 ### 修复bug
 
@@ -44,12 +44,12 @@
 
 持续集成框架
 
-* travis-ci: [![Build Status](https://travis-ci.org/FISCO-BCOS/web3sdk.svg?branch=release-2.0.1)](https://travis-ci.org/FISCO-BCOS/web3sdk)
+* travis-ci: [![Build Status](https://travis-ci.org/FISCO-BCOS/console.svg?branch=master)](https://travis-ci.org/FISCO-BCOS/console)
 
 
 代码质量
 
-* Codacy: [![Codacy Badge](https://api.codacy.com/project/badge/Grade/c9769615cc364a408969b088e90d7912)](https://www.codacy.com/app/fisco/web3sdk?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/web3sdk&amp;utm_campaign=Badge_Grade)
+* [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b75a11441500447d8eaedcdaca5e214d)](https://www.codacy.com/app/fisco/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
 
 
 
