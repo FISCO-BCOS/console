@@ -7,6 +7,13 @@ language: java
 jdk:
   - oraclejdk8
 
+matrix:
+  fast_finish: true
+  include:
+      - os: linux
+        dist: xenial
+        sudo: required
+
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
@@ -20,7 +27,6 @@ before_install:
   - gradle wrapper
 
 script: |
-  sudo apt install -y openssl curl
   curl -LO https://raw.githubusercontent.com/FISCO-BCOS/FISCO-BCOS/release-2.0.0-rc2/tools/build_chain.sh && chmod u+x build_chain.sh
   bash <(curl -s https://raw.githubusercontent.com/FISCO-BCOS/FISCO-BCOS/release-2.0.0-rc2/tools/ci/download_bin.sh) -b release-2.0.0-rc2
   echo "127.0.0.1:4 agency1 1,2,3" > ipconf
