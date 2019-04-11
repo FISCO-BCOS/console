@@ -50,6 +50,6 @@ Go to [issues page](https://github.com/FISCO-BCOS/console/issues)
 
 **Code quality**
 
-* [![Codacy Badge](https://api.codacy.com/project/badge/Grade/b75a11441500447d8eaedcdaca5e214d)](https://www.codacy.com/app/fisco/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
+* [![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2a6c2eb499e42739d066ff775d1b288)](https://www.codacy.com/app/fisco/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
 
 
