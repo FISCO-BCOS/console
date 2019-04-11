@@ -181,6 +181,38 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
     
     @Override
+    public void showTables(String[] params) {
+      if (params.length < 2) 
+      {
+	        HelpInfo.promptHelp("showTables");
+	        return;
+	    }
+	    if (params.length > 2) 
+	    {
+	        HelpInfo.promptHelp("showTables");
+	        return;
+	    }
+	    String item = params[1];
+	    if ("-h".equals(item) || "--help".equals(item))
+	    {
+	        HelpInfo.showTablesHelp();
+	        return;
+	    }
+	    if(!"tables".equals(item))
+	    {
+        HelpInfo.promptHelp("showTables");
+        return;
+	    }
+	    try {
+				List<Map<String, String>> tableNames = getTableNames();
+				System.out.println(tableNames);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+				System.out.println();
+			}
+    
+    }
+    @Override
     public void createTable(String sql) {
 			Table table = new Table();
 			try {
@@ -343,7 +375,7 @@ public class PrecompiledImpl implements PrecompiledFace {
   		CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
     	Table table = new Table();
     	table.setTableName("_sys_tables_");
-    	table.setKey("_user_" +tableName);
+    	table.setKey("_user_" + tableName);
     	Condition condition = table.getCondition();
   		List<Map<String, String>> userTable = crudSerivce.select(table, condition);
   		if(userTable.size() != 0)
@@ -354,5 +386,16 @@ public class PrecompiledImpl implements PrecompiledFace {
   		{
   			throw new ConsoleMessageException("The table " + tableName + " does not exist.");
   		}
+  	}
+  	
+  	private List<Map<String, String>> getTableNames() throws Exception
+  	{
+  		CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+  		Table table = new Table();
+  		table.setTableName("_sys_tables_");
+  		table.setKey("table_name");
+  		Condition condition = table.getCondition();
+  		List<Map<String, String>> userTable = crudSerivce.select(table, condition);
+  		return userTable;
   	}
 }
