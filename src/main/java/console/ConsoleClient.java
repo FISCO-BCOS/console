@@ -13,11 +13,15 @@ import org.fisco.bcos.web3j.protocol.core.Response;
 import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Completer;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Attributes;
+import org.jline.terminal.Attributes.ControlChar;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 
@@ -102,8 +106,17 @@ public class ConsoleClient {
       completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
       completers.add(new ArgumentCompleter(new StringsCompleter("exit")));
 
-      Terminal terminal = TerminalBuilder.terminal();
-      lineReader =
+      Terminal terminal = TerminalBuilder.builder()
+          .nativeSignals(true)
+          .signalHandler(Terminal.SignalHandler.SIG_IGN)
+          .build();
+    Attributes termAttribs = terminal.getAttributes();
+    // enable CTRL+D shortcut
+    termAttribs.setControlChar(ControlChar.VEOF, 4);
+    // enable CTRL+C shortcut
+    termAttribs.setControlChar(ControlChar.VINTR, 4);
+    terminal.setAttributes(termAttribs);
+    lineReader =
           LineReaderBuilder.builder()
               .terminal(terminal)
               .completer(new AggregateCompleter(completers))
@@ -329,6 +342,12 @@ public class ConsoleClient {
     		System.out.println("Contract call failed.");
     		System.out.println();
     	}
+      catch (UserInterruptException e) {
+        console.close();
+      }
+      catch (EndOfFileException e) {
+      	console.close();
+      }
       catch (Exception e) {
       	if(e.getMessage().contains("MessageDecodingException"))
       	{
