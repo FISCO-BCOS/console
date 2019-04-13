@@ -2,33 +2,32 @@ package console;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Collection;
 import java.util.Iterator;
-
-import java.lang.reflect.Method;
+import java.util.List;
 
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.Response;
 import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.jline.builtins.Completers.FilesCompleter;
+import org.jline.reader.Buffer;
+import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.Candidate;
 import org.jline.reader.ParsedLine;
-import org.jline.reader.Buffer;
-import org.jline.utils.AttributedString;
 import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.AttributedString;
 
 import console.common.Common;
 import console.common.ConsoleUtils;
@@ -102,7 +101,7 @@ public class ConsoleClient {
       commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
 
       for (String command : commands) {
-        completers.add(new ArgumentCompleter(new StringsCompleterIgnoreCase(command), new FilesCompleter(path)));
+        completers.add(new ArgumentCompleter(new StringsCompleter(command), new FilesCompleter(path)));
       }
 
       commands = Arrays.asList("setSystemConfigByKey", "getSystemConfigByKey");
@@ -152,14 +151,14 @@ public class ConsoleClient {
         if ("h".equals(command) || "help".equals(command)) {
           console.help(params);
         } else {
-          if ("s".equals(command) || "swith".equals(command)) {
+          if ("s".equals(command) || "switch".equals(command)) {
             console.switchGroupID(params);
           } else {
             Class<?> consoleClass = console.getClass();
             try {
               Method method = consoleClass.getDeclaredMethod(params[0].trim(), String[].class);
               method.invoke(console, (Object) params);
-            } catch (Exception e) {
+            } catch (NoSuchMethodException e) {
               System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
             }
           }
@@ -183,16 +182,29 @@ public class ConsoleClient {
         }
         System.out.println();
       } catch (InvocationTargetException e) {
-        System.out.println("Contract call failed.");
+      	Throwable targetException = e.getTargetException();
+      	if(targetException.getMessage().contains("\"status\":\"0x1a\""))
+      	{
+      		System.out.println("The contract address is incorrect.");
+      	}
+      	else
+      	{
+      		System.out.println("Contract call failed.");
+      	}
         System.out.println();
       } catch (Exception e) {
         if (e.getMessage().contains("MessageDecodingException")) {
           pringMessageDecodeingException(
               new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
-        } else {
-          System.out.println(e.getMessage());
-          System.out.println();
         }
+      	if(e.getMessage().contains("\"status\":\"0x1a\""))
+      	{
+      		System.out.println("The contract address is incorrect.");
+      	}
+        else {
+          System.out.println(e.getMessage());
+        }
+      	System.out.println();
       }
     }
   }
