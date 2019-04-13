@@ -114,7 +114,9 @@ public class ConsoleClient {
       }
 
       Terminal terminal = TerminalBuilder.terminal();
-      lineReader = LineReaderBuilder.builder().terminal(terminal).completer(new AggregateCompleter(completers)).build();
+      lineReader = LineReaderBuilder.builder().terminal(terminal).
+      		completer(new AggregateCompleter(completers)).
+      		build().option(LineReader.Option.HISTORY_IGNORE_SPACE, false);
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return;
