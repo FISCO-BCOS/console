@@ -19,12 +19,16 @@ import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.ParsedLine;
+import org.jline.reader.UserInterruptException;
 import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Attributes;
+import org.jline.terminal.Attributes.ControlChar;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
@@ -113,10 +117,20 @@ public class ConsoleClient {
             new StringsCompleterIgnoreCase(Common.TxGasLimit)));
       }
 
-      Terminal terminal = TerminalBuilder.terminal();
-      lineReader = LineReaderBuilder.builder().terminal(terminal).
+    Terminal terminal = TerminalBuilder.builder()
+          .nativeSignals(true)
+          .signalHandler(Terminal.SignalHandler.SIG_IGN)
+          .build();
+    Attributes termAttribs = terminal.getAttributes();
+    // enable CTRL+D shortcut
+    termAttribs.setControlChar(ControlChar.VEOF, 4);
+    // enable CTRL+C shortcut
+    termAttribs.setControlChar(ControlChar.VINTR, 4);
+    terminal.setAttributes(termAttribs);
+    lineReader = LineReaderBuilder.builder().terminal(terminal).
       		completer(new AggregateCompleter(completers)).
-      		build().option(LineReader.Option.HISTORY_IGNORE_SPACE, false);
+      		build().option(LineReader.Option.HISTORY_IGNORE_SPACE, false)
+      		.option(LineReader.Option.HISTORY_REDUCE_BLANKS, false);
     } catch (Exception e) {
       System.out.println(e.getMessage());
       return;
@@ -165,7 +179,8 @@ public class ConsoleClient {
             }
           }
         }
-      } catch (ResponseExcepiton e) {
+      } 
+      catch (ResponseExcepiton e) {
         ConsoleUtils.printJson("{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
         System.out.println();
       } catch (ClassNotFoundException e) {
@@ -183,8 +198,9 @@ public class ConsoleClient {
           System.out.println(e.getMessage());
         }
         System.out.println();
-      } catch (InvocationTargetException e) {
-      	Throwable targetException = e.getTargetException();
+      } 
+    	catch (InvocationTargetException e) {
+    		Throwable targetException = e.getTargetException();
       	if(targetException.getMessage().contains("\"status\":\"0x1a\""))
       	{
       		System.out.println("The contract address is incorrect.");
@@ -194,6 +210,12 @@ public class ConsoleClient {
       		System.out.println("Contract call failed.");
       	}
         System.out.println();
+    	}
+      catch (UserInterruptException e) {
+        console.close();
+      }
+      catch (EndOfFileException e) {
+      	console.close();
       } catch (Exception e) {
         if (e.getMessage().contains("MessageDecodingException")) {
           pringMessageDecodeingException(
