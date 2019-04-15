@@ -217,8 +217,14 @@ public class PrecompiledImpl implements PrecompiledFace {
 			Table table = new Table();
 			try {
 				CRUDParseUtils.parseCreateTable(sql, table);
-			} catch (JSQLParserException e) {
+			} 			
+			catch (ConsoleMessageException e) {
 				System.out.println(e.getMessage());
+				System.out.println();
+				return;
+			}
+			catch (JSQLParserException e) {
+				System.out.println("Could not parse SQL statement.");
 				System.out.println();
 				return;
 			}
@@ -324,7 +330,13 @@ public class PrecompiledImpl implements PrecompiledFace {
       List<String> selectColumns = new ArrayList<>();
 			try {
 				CRUDParseUtils.parseSelect(sql, table, condition, selectColumns);
-			} catch (JSQLParserException e) {
+			} 
+			catch (ConsoleMessageException e) {
+				System.out.println(e.getMessage());
+				System.out.println();
+				return;
+			}
+			catch (JSQLParserException e) {
 				System.out.println("Could not parse SQL statement.");
 				System.out.println();
 				return;
