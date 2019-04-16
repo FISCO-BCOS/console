@@ -59,7 +59,6 @@ public class CRUDParseUtils {
 			{
 				throw new ConsoleMessageException("Please provide a key for the table.");
 			}
-			
 			// parese value fields
 			List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
 			StringBuffer fields = new StringBuffer();
@@ -124,33 +123,7 @@ public class CRUDParseUtils {
 				throw new ConsoleMessageException("The distinct clause is not supported.");
 			}
 			Expression expr = selectBody.getWhere();
-			if(expr instanceof BinaryExpression){
-				condition = getWhereClause((BinaryExpression)(expr), condition);
-			}
-			if(expr instanceof OrExpression)
-			{
-				throw new ConsoleMessageException("The OrExpression is not supported.");
-			}
-			if(expr instanceof NotExpression)
-			{
-				throw new ConsoleMessageException("The NotExpression is not supported.");
-			}
-			if(expr instanceof InExpression)
-			{
-				throw new ConsoleMessageException("The InExpression is not supported.");
-			}
-			if(expr instanceof LikeExpression)
-			{
-				throw new ConsoleMessageException("The LikeExpression is not supported.");
-			}
-			if(expr instanceof SubSelect)
-			{
-				throw new ConsoleMessageException("The SubSelect is not supported.");
-			}
-			if(expr instanceof IsNullExpression)
-			{
-				throw new ConsoleMessageException("The IsNullExpression is not supported.");
-			}
+			condition = handleExpression(condition, expr);
 			Limit limit = selectBody.getLimit();
 			if(limit != null)
 			{
@@ -172,8 +145,39 @@ public class CRUDParseUtils {
 				selectColumns.add(item.toString());
 			}
 	}
+
+	private static Condition handleExpression(Condition condition, Expression expr) throws ConsoleMessageException {
+		if(expr instanceof BinaryExpression){
+			condition = getWhereClause((BinaryExpression)(expr), condition);
+		}
+		if(expr instanceof OrExpression)
+		{
+			throw new ConsoleMessageException("The OrExpression is not supported.");
+		}
+		if(expr instanceof NotExpression)
+		{
+			throw new ConsoleMessageException("The NotExpression is not supported.");
+		}
+		if(expr instanceof InExpression)
+		{
+			throw new ConsoleMessageException("The InExpression is not supported.");
+		}
+		if(expr instanceof LikeExpression)
+		{
+			throw new ConsoleMessageException("The LikeExpression is not supported.");
+		}
+		if(expr instanceof SubSelect)
+		{
+			throw new ConsoleMessageException("The SubSelect is not supported.");
+		}
+		if(expr instanceof IsNullExpression)
+		{
+			throw new ConsoleMessageException("The IsNullExpression is not supported.");
+		}
+		return condition;
+	}
 	
-	public static void parseUpdate(String sql, Table table, Entry entry, Condition condition) throws JSQLParserException {
+	public static void parseUpdate(String sql, Table table, Entry entry, Condition condition) throws JSQLParserException, ConsoleMessageException {
 			Statement statement = CCJSqlParserUtil.parse(sql);
 			Update update = (Update)statement;
 			
@@ -193,12 +197,17 @@ public class CRUDParseUtils {
 			
 			// parse where clause
 		  Expression where = update.getWhere();
-			getWhereClause((BinaryExpression)(where), condition);
+		  if(where != null)
+		  {
+		  	BinaryExpression expr2 = (BinaryExpression)(where);
+		  	handleExpression(condition, expr2);
+		  	getWhereClause(expr2, condition);
+		  }
 			Limit limit = update.getLimit();
 			parseLimit(condition, limit);
 	}
 	
-	public static void parseRemove(String sql, Table table, Condition condition) throws JSQLParserException {
+	public static void parseRemove(String sql, Table table, Condition condition) throws JSQLParserException, ConsoleMessageException {
 			Statement statement = CCJSqlParserUtil.parse(sql);
 			Delete delete = (Delete)statement;
 			
@@ -208,7 +217,12 @@ public class CRUDParseUtils {
 			
 			// parse where clause
 			Expression where = delete.getWhere();
-			getWhereClause((BinaryExpression)(where), condition);
+			if(where != null)
+			{
+				BinaryExpression expr = (BinaryExpression)(where);
+				handleExpression(condition, expr);
+				getWhereClause(expr, condition);
+			}
 			Limit limit = delete.getLimit();
 			parseLimit(condition, limit);
 	}

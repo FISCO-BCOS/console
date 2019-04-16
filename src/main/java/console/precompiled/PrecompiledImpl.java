@@ -13,6 +13,7 @@ import org.fisco.bcos.web3j.precompile.consensus.ConsensusService;
 import org.fisco.bcos.web3j.precompile.crud.CRUDSerivce;
 import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
+import org.fisco.bcos.web3j.precompile.crud.EnumOP;
 import org.fisco.bcos.web3j.precompile.crud.Table;
 import org.fisco.bcos.web3j.protocol.Web3j;
 
@@ -233,11 +234,11 @@ public class PrecompiledImpl implements PrecompiledFace {
 					int result = crudSerivce.createTable(table);
 					if(result == 0)
 					{
-						System.out.println("Create table " + table.getTableName() + " successfully.");
+						System.out.println("Create " + table.getTableName() + " Ok.");
 					}
 					else 
 					{
-						System.out.println("Create table " + table.getTableName() + " failure.");
+						System.out.println("Create " + table.getTableName() + " Ok.");
 					}
 					System.out.println();
 			} catch (Exception e) {
@@ -260,11 +261,22 @@ public class PrecompiledImpl implements PrecompiledFace {
 				return;
 			}
     	try {
-    		String key = queryKey(table.getTableName());
-    		table.setKey(key);
-				crudSerivce.insert(table, entry);
-				System.out.println("Insert successfully.");
-				System.out.println();
+  			String keyName = queryKey(table.getTableName());
+  			String keyValue = entry.getFields().get(keyName);
+  			if(keyValue == null)
+  			{
+  				throw new ConsoleMessageException("Please provide a equal condition for the key field(" + keyName + ") in where clause.");
+  			}
+				int insertResult = crudSerivce.insert(table, entry);
+    		if(insertResult <= 1)
+    		{
+    			System.out.println("Insert OK, " + insertResult + " row affected.");
+    		}
+    		else 
+    		{
+    			System.out.println("Insert OK, " + insertResult + " rows affected.");
+    		}
+    		System.out.println();
     	} catch (Exception e) {
     		System.out.println(e.getMessage());
 				System.out.println();
@@ -280,16 +292,28 @@ public class PrecompiledImpl implements PrecompiledFace {
     	Condition condition = table.getCondition();
     	try {
     		CRUDParseUtils.parseUpdate(sql, table, entry, condition);
-    	} catch (JSQLParserException e) {
+    	} 
+			catch (ConsoleMessageException e) {
+				System.out.println(e.getMessage());
+				System.out.println();
+				return;
+			}
+    	catch (JSQLParserException e) {
     		System.out.println("Could not parse SQL statement.");
     		System.out.println();
     		return;
     	}
     	try {
-    		String key = queryKey(table.getTableName());
-    		table.setKey(key);
-    		crudSerivce.update(table, entry, condition);
-    		System.out.println("Update successfully.");
+    		handleKey(table, condition);
+    		int updateResult = crudSerivce.update(table, entry, condition);
+    		if(updateResult <= 1)
+    		{
+    			System.out.println("Update OK, " + updateResult + " row affected.");
+    		}
+    		else 
+    		{
+    			System.out.println("Update OK, " + updateResult + " rows affected.");
+    		}
     		System.out.println();
     	} catch (Exception e) {
     		System.out.println(e.getMessage());
@@ -305,16 +329,28 @@ public class PrecompiledImpl implements PrecompiledFace {
     	Condition condition = table.getCondition();
     	try {
     		CRUDParseUtils.parseRemove(sql, table, condition);
-    	} catch (JSQLParserException e) {
+    	}
+			catch (ConsoleMessageException e) {
+				System.out.println(e.getMessage());
+				System.out.println();
+				return;
+			}
+    	catch (JSQLParserException e) {
     		System.out.println("Could not parse SQL statement.");
     		System.out.println();
     		return;
     	}
     	try {
-    		String key = queryKey(table.getTableName());
-    		table.setKey(key);
-    		crudSerivce.remove(table, condition);
-    		System.out.println("Remove successfully.");
+    		handleKey(table, condition);
+    		int removeResult = crudSerivce.remove(table, condition);
+    		if(removeResult <= 1)
+    		{
+    			System.out.println("Insert OK, " + removeResult + " row affected.");
+    		}
+    		else 
+    		{
+    			System.out.println("Insert OK, " + removeResult + " rows affected.");
+    		}
     		System.out.println();
     	} catch (Exception e) {
     		System.out.println(e.getMessage());
@@ -343,15 +379,13 @@ public class PrecompiledImpl implements PrecompiledFace {
 			}
 			CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
     	try {
-    		String key = queryKey(table.getTableName());
-    		table.setKey(key);
+    		handleKey(table, condition);
     		List<Map<String, String>> result = crudSerivce.select(table, condition);
     		if (result.size() == 0) {
 					System.out.println("Empty set.");
 					System.out.println();
 					return;
 				}
-    		
     		if("*".equals(selectColumns.get(0)))
     		{
     			result.stream().forEach(System.out::println);
@@ -373,6 +407,15 @@ public class PrecompiledImpl implements PrecompiledFace {
     				selectedResult.add(selectedRecords);
     			}
     			selectedResult.stream().forEach(System.out::println);
+    			int rows = selectedResult.size();
+					if(rows == 1)
+    			{
+    				System.out.println(rows + " row in set.");
+    			}
+    			else 
+    			{
+    				System.out.println(rows + " rows in set.");
+    			}
     		}
     	} catch (Exception e) {
     		System.out.println(e.getMessage());
@@ -381,6 +424,33 @@ public class PrecompiledImpl implements PrecompiledFace {
     	}
     	System.out.println();
     }
+    
+		private void handleKey(Table table, Condition condition) throws Exception{
+			String keyName = queryKey(table.getTableName());
+			String keyValue = "";
+			Map<EnumOP, String> keyMap = condition.getConditions().get(keyName);
+			if(keyMap == null)
+			{
+				throw new ConsoleMessageException("Please provide a equal condition for the key field(" + keyName + ") in where clause.");
+			}
+			else 
+			{
+				Set<EnumOP> keySet = keyMap.keySet();
+				for (EnumOP enumOP : keySet) 
+				{
+					if (enumOP != EnumOP.eq) 
+					{
+						throw new ConsoleMessageException("Please provide a equal condition for the key field(" + keyName + ") in where clause.");
+					}
+					else 
+					{
+						keyValue = keyMap.get(enumOP);
+					}
+				}
+			}
+			table.setKey(keyValue);
+			condition.getConditions().remove(keyName);
+		}
     
   	private String queryKey(String tableName) throws Exception
   	{
