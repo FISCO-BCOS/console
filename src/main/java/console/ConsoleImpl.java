@@ -130,6 +130,11 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
             credentials = GenCredential.create(privateKey);
+            if(credentials == null)
+            {
+            	System.out.println("Please provide a valid private key.");
+            	close();
+            }
         } catch (NumberFormatException e) {
             System.out.println("Please provide private key by hex format.");
             close();
@@ -269,7 +274,7 @@ public class ConsoleImpl implements ConsoleFace {
 				sb.append("revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
 				sb.append("revokeUserTableManager                   Revoke permission for user table by table name and address.\n");
 				sb.append("setSystemConfigByKey                     Set a system config.\n");
-				sb.append("switch(s)                                Switch to a specific group by group ID.\n");
+				sb.append("switch(s)                                Switch to a specific group by group ID.");
         System.out.println(sb.toString());
         ConsoleUtils.singleLine();
         System.out.println();
@@ -816,7 +821,8 @@ public class ConsoleImpl implements ConsoleFace {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
             } else {
-                throw e;
+            	System.out.println(e.getMessage());
+            	System.out.println();
             }
         }
 
@@ -1044,7 +1050,7 @@ public class ConsoleImpl implements ConsoleFace {
 					}
 					if(!"0x0".equals(receipt.getStatus()))
 					{
-						System.out.println("The transation executed failed.");
+						System.out.println(receipt.getStatus());
 						System.out.println();
 						return;
 					}
@@ -1157,8 +1163,10 @@ public class ConsoleImpl implements ConsoleFace {
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
-            } else {
-                throw e;
+            } 
+            else {
+            	System.out.println(e.getMessage());
+            	System.out.println();
             }
         }
 
@@ -1306,7 +1314,7 @@ public class ConsoleImpl implements ConsoleFace {
 					TransactionReceipt receipt = (TransactionReceipt)result;
 					if(!"0x0".equals(receipt.getStatus()))
 					{
-						System.out.println("Call failed.");
+						System.out.println(receipt.getStatus());
 						System.out.println();
 						return;
 					}

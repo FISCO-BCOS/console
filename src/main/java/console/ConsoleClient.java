@@ -206,8 +206,8 @@ public class ConsoleClient {
       		System.out.println("The contract address is incorrect.");
       	}
       	else
-      	{
-      		System.out.println("Contract call failed.");
+      	{	
+      		System.out.println(targetException.getMessage());
       	}
         System.out.println();
     	}
