@@ -6,12 +6,19 @@ import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
 import org.fisco.bcos.web3j.precompile.crud.Table;
 
+import console.exception.ConsoleMessageException;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
+import net.sf.jsqlparser.expression.operators.relational.InExpression;
+import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
+import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
@@ -23,14 +30,15 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectExpressionItem;
 import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 
 public class CRUDParseUtils {
 	
-	public static void  parseCreateTable(String sql, Table table) throws JSQLParserException {
+	public static void  parseCreateTable(String sql, Table table) throws JSQLParserException, ConsoleMessageException {
 			Statement statement = CCJSqlParserUtil.parse(sql);
 			CreateTable createTable = (CreateTable)statement;
 			
@@ -40,10 +48,17 @@ public class CRUDParseUtils {
 			
 			// parse key
 			List<Index> indexes = createTable.getIndexes();
-			for (Index index : indexes) {
-				table.setKey(index.getColumnsNames().get(0));
+			if(indexes != null)
+			{
+				for (Index index : indexes) {
+					table.setKey(index.getColumnsNames().get(0));
+					break;
+				}
 			}
-			
+			else 
+			{
+				throw new ConsoleMessageException("Please provide a key for the table.");
+			}
 			// parese value fields
 			List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
 			StringBuffer fields = new StringBuffer();
@@ -74,7 +89,7 @@ public class CRUDParseUtils {
 			}
 	}
 	
-	public static void parseSelect(String sql, Table table, Condition condition, List<String> selectColumns) throws JSQLParserException{
+	public static void parseSelect(String sql, Table table, Condition condition, List<String> selectColumns) throws JSQLParserException, ConsoleMessageException{
 		  Statement statement;
 			statement = CCJSqlParserUtil.parse(sql);
 			Select selectStatement = (Select) statement;
@@ -82,28 +97,87 @@ public class CRUDParseUtils {
 			// parse table name
 			TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
 			List<String> tableList = tablesNamesFinder.getTableList(selectStatement);
+			if (tableList.size() != 1) {
+				throw new ConsoleMessageException("Please provide only one table name.");
+			}
 			table.setTableName(tableList.get(0));
 			
 			// parse where clause
-			SelectBody selectBody = selectStatement.getSelectBody();
-			Expression expr = ((PlainSelect) selectBody).getWhere();
-			if(expr instanceof BinaryExpression){
-				condition = getWhereClause((BinaryExpression)(expr), condition);
+			PlainSelect selectBody = (PlainSelect)selectStatement.getSelectBody();
+			if (selectBody.getOrderByElements() != null) {
+				throw new ConsoleMessageException("The order clause is not supported.");
 			}
-			Limit limit = ((PlainSelect) selectBody).getLimit();
+			if (selectBody.getGroupBy() != null) {
+				throw new ConsoleMessageException("The group clause is not supported.");
+			}
+			if (selectBody.getHaving() != null) {
+				throw new ConsoleMessageException("The having clause is not supported.");
+			}
+			if (selectBody.getJoins() != null) {
+				throw new ConsoleMessageException("The join clause is not supported.");
+			}
+			if (selectBody.getTop() != null) {
+				throw new ConsoleMessageException("The top clause is not supported.");
+			}
+			if (selectBody.getDistinct() != null) {
+				throw new ConsoleMessageException("The distinct clause is not supported.");
+			}
+			Expression expr = selectBody.getWhere();
+			condition = handleExpression(condition, expr);
+			Limit limit = selectBody.getLimit();
 			if(limit != null)
 			{
 				parseLimit(condition, limit);
 			}
 			
 			// parse select item
-			List<SelectItem> selectItems = ((PlainSelect) selectBody).getSelectItems();
+			List<SelectItem> selectItems = selectBody.getSelectItems();
 			for (SelectItem item : selectItems) {
+				if (item instanceof SelectExpressionItem) {
+					SelectExpressionItem selectExpressionItem = (SelectExpressionItem)item;
+					Expression expression = selectExpressionItem.getExpression();
+					if(expression instanceof Function)
+					{
+						Function func = (Function)expression;
+						throw new ConsoleMessageException("The " + func.getName() + " function is not supported.");
+					}
+				}
 				selectColumns.add(item.toString());
 			}
 	}
+
+	private static Condition handleExpression(Condition condition, Expression expr) throws ConsoleMessageException {
+		if(expr instanceof BinaryExpression){
+			condition = getWhereClause((BinaryExpression)(expr), condition);
+		}
+		if(expr instanceof OrExpression)
+		{
+			throw new ConsoleMessageException("The OrExpression is not supported.");
+		}
+		if(expr instanceof NotExpression)
+		{
+			throw new ConsoleMessageException("The NotExpression is not supported.");
+		}
+		if(expr instanceof InExpression)
+		{
+			throw new ConsoleMessageException("The InExpression is not supported.");
+		}
+		if(expr instanceof LikeExpression)
+		{
+			throw new ConsoleMessageException("The LikeExpression is not supported.");
+		}
+		if(expr instanceof SubSelect)
+		{
+			throw new ConsoleMessageException("The SubSelect is not supported.");
+		}
+		if(expr instanceof IsNullExpression)
+		{
+			throw new ConsoleMessageException("The IsNullExpression is not supported.");
+		}
+		return condition;
+	}
 	
-	public static void parseUpdate(String sql, Table table, Entry entry, Condition condition) throws JSQLParserException {
+	public static void parseUpdate(String sql, Table table, Entry entry, Condition condition) throws JSQLParserException, ConsoleMessageException {
 			Statement statement = CCJSqlParserUtil.parse(sql);
 			Update update = (Update)statement;
 			
@@ -123,12 +197,17 @@ public class CRUDParseUtils {
 			
 			// parse where clause
 		  Expression where = update.getWhere();
-			getWhereClause((BinaryExpression)(where), condition);
+		  if(where != null)
+		  {
+		  	BinaryExpression expr2 = (BinaryExpression)(where);
+		  	handleExpression(condition, expr2);
+		  	getWhereClause(expr2, condition);
+		  }
 			Limit limit = update.getLimit();
 			parseLimit(condition, limit);
 	}
 	
-	public static void parseRemove(String sql, Table table, Condition condition) throws JSQLParserException {
+	public static void parseRemove(String sql, Table table, Condition condition) throws JSQLParserException, ConsoleMessageException {
 			Statement statement = CCJSqlParserUtil.parse(sql);
 			Delete delete = (Delete)statement;
 			
@@ -138,7 +217,12 @@ public class CRUDParseUtils {
 			
 			// parse where clause
 			Expression where = delete.getWhere();
-			getWhereClause((BinaryExpression)(where), condition);
+			if(where != null)
+			{
+				BinaryExpression expr = (BinaryExpression)(where);
+				handleExpression(condition, expr);
+				getWhereClause(expr, condition);
+			}
 			Limit limit = delete.getLimit();
 			parseLimit(condition, limit);
 	}
