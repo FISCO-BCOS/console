@@ -34,6 +34,7 @@ function check_java(){
    version=${version:1:len}
 
    IFS='.' arr=($version)
+   IFS=' '
    if [ -z ${arr[0]} ];then
       LOG_ERROR "At least Java8 is required."
       exit 1
