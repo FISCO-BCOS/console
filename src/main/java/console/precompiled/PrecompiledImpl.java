@@ -1,6 +1,7 @@
 package console.precompiled;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -236,9 +237,17 @@ public class PrecompiledImpl implements PrecompiledFace {
 					{
 						System.out.println("Create " + table.getTableName() + " Ok.");
 					}
+					else if(result == PrecompiledCommon.TableExist)
+					{
+						System.out.println("The table " + table.getTableName() + " already exists.");
+					}
+					else if(result == PrecompiledCommon.PermissionDenied)
+					{
+						System.out.println(Common.PermissionDenied);
+					}
 					else 
 					{
-						System.out.println("Create " + table.getTableName() + " Ok.");
+						System.out.println("Create " + table.getTableName() + " failed.");
 					}
 					System.out.println();
 			} catch (Exception e) {
@@ -261,20 +270,35 @@ public class PrecompiledImpl implements PrecompiledFace {
 				return;
 			}
     	try {
-  			String keyName = queryKey(table.getTableName());
-  			String keyValue = entry.getFields().get(keyName);
+  			String tableName = table.getTableName();
+				String keyName = queryKey(tableName);
+  			String fields = queryFields(tableName);
+  			List<String> fieldsList = Arrays.asList(fields.split(","));
+  			Set<String> entryFields = entry.getFields().keySet();
+  			for (String entryField : entryFields) {
+					if(!fieldsList.contains(entryField))
+					{
+						throw new ConsoleMessageException("Unknown column " + entryField + " in field list");
+					}
+				}
+  			String keyValue = entry.get(keyName);
   			if(keyValue == null)
   			{
   				throw new ConsoleMessageException("Please provide a equal condition for the key field(" + keyName + ") in where clause.");
   			}
+  			table.setKey(keyValue);
 				int insertResult = crudSerivce.insert(table, entry);
-    		if(insertResult <= 1)
+    		if(insertResult == 0 || insertResult == 1)
     		{
     			System.out.println("Insert OK, " + insertResult + " row affected.");
     		}
-    		else 
+				else if(insertResult == PrecompiledCommon.PermissionDenied)
+				{
+					System.out.println(Common.PermissionDenied);
+				}
+				else
     		{
-    			System.out.println("Insert OK, " + insertResult + " rows affected.");
+    			System.out.println("Insert failed.");
     		}
     		System.out.println();
     	} catch (Exception e) {
@@ -306,10 +330,14 @@ public class PrecompiledImpl implements PrecompiledFace {
     	try {
     		handleKey(table, condition);
     		int updateResult = crudSerivce.update(table, entry, condition);
-    		if(updateResult <= 1)
+    		if(updateResult == 0 || updateResult == 1)
     		{
     			System.out.println("Update OK, " + updateResult + " row affected.");
     		}
+				else if(updateResult == PrecompiledCommon.PermissionDenied)
+				{
+					System.out.println(Common.PermissionDenied);
+				}
     		else 
     		{
     			System.out.println("Update OK, " + updateResult + " rows affected.");
@@ -343,13 +371,17 @@ public class PrecompiledImpl implements PrecompiledFace {
     	try {
     		handleKey(table, condition);
     		int removeResult = crudSerivce.remove(table, condition);
-    		if(removeResult <= 1)
+    		if(removeResult == 0 || removeResult == 1)
     		{
-    			System.out.println("Insert OK, " + removeResult + " row affected.");
+    			System.out.println("Remove OK, " + removeResult + " row affected.");
     		}
+				else if(removeResult == PrecompiledCommon.PermissionDenied)
+				{
+					System.out.println(Common.PermissionDenied);
+				}
     		else 
     		{
-    			System.out.println("Insert OK, " + removeResult + " rows affected.");
+    			System.out.println("Remove OK, " + removeResult + " rows affected.");
     		}
     		System.out.println();
     	} catch (Exception e) {
@@ -463,6 +495,24 @@ public class PrecompiledImpl implements PrecompiledFace {
   		if(userTable.size() != 0)
   		{
   			return userTable.get(0).get("key_field");
+  		}
+  		else 
+  		{
+  			throw new ConsoleMessageException("The table " + tableName + " does not exist.");
+  		}
+  	}
+  	
+  	private String queryFields(String tableName) throws Exception
+  	{
+  		CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+  		Table table = new Table();
+  		table.setTableName("_sys_tables_");
+  		table.setKey("_user_" + tableName);
+  		Condition condition = table.getCondition();
+  		List<Map<String, String>> userTable = crudSerivce.select(table, condition);
+  		if(userTable.size() != 0)
+  		{
+  			return queryKey(tableName) + "," + userTable.get(0).get("value_field");
   		}
   		else 
   		{

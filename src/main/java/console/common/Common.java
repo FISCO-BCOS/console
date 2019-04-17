@@ -16,4 +16,6 @@ public class Common {
 	public static final String TxGasLimitRange = "from 100000 to 2147483647";
 	public static final int TxGasLimitMin = 10000;
 	
+	public static final String PermissionDenied = "Permission denied.";
+	
 }
