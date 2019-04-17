@@ -3,6 +3,7 @@ package console.precompiled;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -235,11 +236,11 @@ public class PrecompiledImpl implements PrecompiledFace {
 					int result = crudSerivce.createTable(table);
 					if(result == 0)
 					{
-						System.out.println("Create " + table.getTableName() + " Ok.");
+						System.out.println("Create '" + table.getTableName() + "' Ok.");
 					}
 					else if(result == PrecompiledCommon.TableExist)
 					{
-						System.out.println("The table " + table.getTableName() + " already exists.");
+						System.out.println("The table '" + table.getTableName() + "' already exists.");
 					}
 					else if(result == PrecompiledCommon.PermissionDenied)
 					{
@@ -247,7 +248,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 					}
 					else 
 					{
-						System.out.println("Create " + table.getTableName() + " failed.");
+						System.out.println("Create '" + table.getTableName() + "' failed.");
 					}
 					System.out.println();
 			} catch (Exception e) {
@@ -278,13 +279,13 @@ public class PrecompiledImpl implements PrecompiledFace {
   			for (String entryField : entryFields) {
 					if(!fieldsList.contains(entryField))
 					{
-						throw new ConsoleMessageException("Unknown column " + entryField + " in field list");
+						throw new ConsoleMessageException("Unknown field '" + entryField + "' in field list");
 					}
 				}
   			String keyValue = entry.get(keyName);
   			if(keyValue == null)
   			{
-  				throw new ConsoleMessageException("Please provide a equal condition for the key field(" + keyName + ") in where clause.");
+  				throw new ConsoleMessageException("Please provide a equal condition for the key field '" + keyName + "' in where clause.");
   			}
   			table.setKey(keyValue);
 				int insertResult = crudSerivce.insert(table, entry);
@@ -329,6 +330,19 @@ public class PrecompiledImpl implements PrecompiledFace {
     	}
     	try {
     		handleKey(table, condition);
+  			String fields = queryFields(table.getTableName());
+  			List<String> fieldsList = Arrays.asList(fields.split(","));
+  			Set<String> entryFields = entry.getFields().keySet();
+  			Set<String> conditonFields = condition.getConditions().keySet();
+  			Set<String> allFields = new HashSet<>();
+  			allFields.addAll(entryFields);
+  			allFields.addAll(conditonFields);
+  			for (String entryField : allFields) {
+					if(!fieldsList.contains(entryField))
+					{
+						throw new ConsoleMessageException("Unknown field '" + entryField + "' in field list");
+					}
+				}
     		int updateResult = crudSerivce.update(table, entry, condition);
     		if(updateResult == 0 || updateResult == 1)
     		{
@@ -463,7 +477,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 			Map<EnumOP, String> keyMap = condition.getConditions().get(keyName);
 			if(keyMap == null)
 			{
-				throw new ConsoleMessageException("Please provide a equal condition for the key field(" + keyName + ") in where clause.");
+				throw new ConsoleMessageException("Please provide a equal condition for the key field '" + keyName + "' in where clause.");
 			}
 			else 
 			{
@@ -472,7 +486,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 				{
 					if (enumOP != EnumOP.eq) 
 					{
-						throw new ConsoleMessageException("Please provide a equal condition for the key field(" + keyName + ") in where clause.");
+						throw new ConsoleMessageException("Please provide a equal condition for the key field '" + keyName + "' in where clause.");
 					}
 					else 
 					{
@@ -498,7 +512,7 @@ public class PrecompiledImpl implements PrecompiledFace {
   		}
   		else 
   		{
-  			throw new ConsoleMessageException("The table " + tableName + " does not exist.");
+  			throw new ConsoleMessageException("The table '" + tableName + "' does not exist.");
   		}
   	}
   	
@@ -516,7 +530,7 @@ public class PrecompiledImpl implements PrecompiledFace {
   		}
   		else 
   		{
-  			throw new ConsoleMessageException("The table " + tableName + " does not exist.");
+  			throw new ConsoleMessageException("The table '" + tableName + "' does not exist.");
   		}
   	}
   	
