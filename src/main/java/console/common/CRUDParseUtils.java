@@ -62,16 +62,21 @@ public class CRUDParseUtils {
 			// parese value fields
 			List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
 			StringBuffer fields = new StringBuffer();
-			for (ColumnDefinition columnDefinition : columnDefinitions) {
-				if(!columnDefinition.getColumnName().equals(table.getKey()))
+			for (int i = 0; i < columnDefinitions.size(); i++) 
+			{
+				if(!columnDefinitions.get(i).getColumnName().equals(table.getKey()))
 				{
-					fields.append(columnDefinition.getColumnName() + ",");
+					fields.append(columnDefinitions.get(i).getColumnName());
+					if(i != columnDefinitions.size() - 1)
+					{
+						fields.append(",");
+					}
 				}
 			}
 			table.setValueFields(fields.toString());
 	}
 	
-	public static void parseInsert(String sql, Table table, Entry entry) throws JSQLParserException {
+	public static boolean parseInsert(String sql, Table table, Entry entry) throws JSQLParserException {
 			Statement statement = CCJSqlParserUtil.parse(sql);
 			Insert insert = (Insert)statement;
 			
@@ -83,9 +88,20 @@ public class CRUDParseUtils {
 			List<Column> columns = insert.getColumns();
 			ItemsList itemsList = insert.getItemsList();
 			String items = itemsList.toString();
-			String[] split = items.substring(1, items.length() -1 ).split(",");
-			for (int i = 0; i < columns.size(); i++) {
-				entry.put(columns.get(i).toString(), split[i].trim());
+			String[] itemArr = items.substring(1, items.length() -1 ).split(",");
+			if(columns != null)
+			{
+				for (int i = 0; i < itemArr.length; i++) {
+					entry.put(columns.get(i).toString(), itemArr[i].trim());
+				}
+				return false;
+			}
+			else 
+			{
+				for (int i = 0; i < itemArr.length; i++) {
+					entry.put(i+"", itemArr[i].trim());
+				}
+				return true;
 			}
 	}
 	

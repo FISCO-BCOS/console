@@ -263,8 +263,9 @@ public class PrecompiledImpl implements PrecompiledFace {
     	CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
     	Table table = new Table();
     	Entry entry = table.getEntry();
+    	boolean useValues = false;
     	try {
-				CRUDParseUtils.parseInsert(sql, table, entry);
+				useValues = CRUDParseUtils.parseInsert(sql, table, entry);
 			} catch (JSQLParserException e) {
 				System.out.println("Could not parse SQL statement.");
 				System.out.println();
@@ -275,19 +276,50 @@ public class PrecompiledImpl implements PrecompiledFace {
 				String keyName = queryKey(tableName);
   			String fields = queryFields(tableName);
   			List<String> fieldsList = Arrays.asList(fields.split(","));
-  			Set<String> entryFields = entry.getFields().keySet();
-  			for (String entryField : entryFields) {
-					if(!fieldsList.contains(entryField))
-					{
-						throw new ConsoleMessageException("Unknown field '" + entryField + "' in field list");
-					}
-				}
-  			String keyValue = entry.get(keyName);
-  			if(keyValue == null)
+				Set<String> entryFields = entry.getFields().keySet();
+				// insert into t_test values (fruit, 1, apple)
+  			if(useValues)
   			{
-  				throw new ConsoleMessageException("Please provide a equal condition for the key field '" + keyName + "' in where clause.");
+  				if (entry.getFields().size() != fieldsList.size()) 
+  				{
+						throw new ConsoleMessageException("Column count doesn't match value count.");
+					}
+  				else 
+  				{
+  					Entry entryValue = table.getEntry();
+  					for (int i = 0; i < entry.getFields().size(); i++) 
+  					{
+							for (String entryField : entryFields) 
+							{
+								if((i+"").equals(entryField))
+								{
+									entryValue.put(fieldsList.get(i), entry.get(i+""));
+									if(keyName.equals(fieldsList.get(i)))
+									{
+										table.setKey( entry.get(i+""));
+									}
+								}
+							}
+						}
+  					entry = entryValue;
+  				}
   			}
-  			table.setKey(keyValue);
+  			// insert into t_test (name, item_id, item_name) values (fruit, 1, apple)
+  			else 
+  			{
+  				for (String entryField : entryFields) {
+  					if(!fieldsList.contains(entryField))
+  					{
+  						throw new ConsoleMessageException("Unknown field '" + entryField + "' in field list.");
+  					}
+  				}
+  				String keyValue = entry.get(keyName);
+  				if(keyValue == null)
+  				{
+  					throw new ConsoleMessageException("Please insert the key field '" + keyName + "'.");
+  				}
+  				table.setKey(keyValue);
+  			}
 				int insertResult = crudSerivce.insert(table, entry);
     		if(insertResult == 0 || insertResult == 1)
     		{
@@ -329,6 +361,11 @@ public class PrecompiledImpl implements PrecompiledFace {
     		return;
     	}
     	try {
+    		String keyName = queryKey(table.getTableName());
+    		if(entry.getFields().containsKey(keyName))
+    		{
+    			throw new ConsoleMessageException("Please don't set the key field '"+ keyName +"'.");
+    		}
     		handleKey(table, condition);
   			String fields = queryFields(table.getTableName());
   			List<String> fieldsList = Arrays.asList(fields.split(","));
@@ -340,7 +377,7 @@ public class PrecompiledImpl implements PrecompiledFace {
   			for (String entryField : allFields) {
 					if(!fieldsList.contains(entryField))
 					{
-						throw new ConsoleMessageException("Unknown field '" + entryField + "' in field list");
+						throw new ConsoleMessageException("Unknown field '" + entryField + "' in field list.");
 					}
 				}
     		int updateResult = crudSerivce.update(table, entry, condition);
@@ -495,7 +532,6 @@ public class PrecompiledImpl implements PrecompiledFace {
 				}
 			}
 			table.setKey(keyValue);
-			condition.getConditions().remove(keyName);
 		}
     
   	private String queryKey(String tableName) throws Exception
