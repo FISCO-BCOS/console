@@ -98,23 +98,23 @@ public class ConsoleClient {
           "listCNSManager", "grantSysConfigManager", "revokeSysConfigManager", "listSysConfigManager", "quit", "exit");
 
       for (String command : commands) {
-        completers.add(new ArgumentCompleter(new StringsCompleterIgnoreCase(command)));
+        completers.add(new ArgumentCompleter(new StringsCompleterIgnoreCase(command), new StringsCompleterIgnoreCase()));
       }
 
       Path path = FileSystems.getDefault().getPath("solidity/contracts/", "");
       commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
 
       for (String command : commands) {
-        completers.add(new ArgumentCompleter(new StringsCompleter(command), new FilesCompleter(path)));
+        completers.add(new ArgumentCompleter(new StringsCompleter(command), new FilesCompleter(path), new StringsCompleterIgnoreCase()));
       }
 
       commands = Arrays.asList("setSystemConfigByKey", "getSystemConfigByKey");
 
       for (String command : commands) {
-        completers.add(new ArgumentCompleter(new StringsCompleterIgnoreCase(command),
-            new StringsCompleterIgnoreCase(Common.TxCountLimit)));
-        completers.add(new ArgumentCompleter(new StringsCompleterIgnoreCase(command),
-            new StringsCompleterIgnoreCase(Common.TxGasLimit)));
+        completers.add(new ArgumentCompleter(new StringsCompleter(command),
+            new StringsCompleter(Common.TxCountLimit), new StringsCompleterIgnoreCase()));
+        completers.add(new ArgumentCompleter(new StringsCompleter(command),
+            new StringsCompleter(Common.TxGasLimit), new StringsCompleterIgnoreCase()));
       }
 
     Terminal terminal = TerminalBuilder.builder()
