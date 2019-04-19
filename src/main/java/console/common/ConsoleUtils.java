@@ -158,24 +158,8 @@ public class ConsoleUtils {
   			}
 
   		}else {
-  			if(!addressStr.matches("^[a-f0-9]+$"))
-  			{
   				address.setValid(false);
   				address.setAddress(addressStr);
-  			}
-  			else 
-  			{
-    			if(addressStr.length() > Address.ValidLen - 2 )
-    			{
-    				address.setValid(false);
-    				address.setAddress(addressStr);
-    			}
-    			else
-    			{
-    				getAddress(address, addressStr, Address.ValidLen - 2);
-    			}
-  			}
-
   		}
   	}
   	if(!address.isValid())
@@ -240,6 +224,10 @@ public class ConsoleUtils {
     File solFileList = new File("solidity/contracts/");
     if(!solFileList.exists()){
       throw new IOException("Please checkout solidity/contracts/ is exist");
+    }
+    File solFile = new File("solidity/contracts/"+name);
+    if(!solFile.exists()){
+      throw new IOException("There is no " + name + " in the directory of solidity/contracts");
     }
     String tempDirPath = new File("solidity/java").getAbsolutePath();
     compileSolToJava(name, tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");

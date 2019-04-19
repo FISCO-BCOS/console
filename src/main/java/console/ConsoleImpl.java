@@ -60,7 +60,6 @@ import console.common.ConsoleUtils;
 import console.common.ConsoleVersion;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
-import console.exception.CompileSolidityException;
 import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
@@ -131,6 +130,11 @@ public class ConsoleImpl implements ConsoleFace {
         }
         try {
             credentials = GenCredential.create(privateKey);
+            if(credentials == null)
+            {
+            	System.out.println("Please provide a valid private key.");
+            	close();
+            }
         } catch (NumberFormatException e) {
             System.out.println("Please provide private key by hex format.");
             close();
@@ -216,88 +220,61 @@ public class ConsoleImpl implements ConsoleFace {
         }
         ConsoleUtils.singleLine();
         StringBuilder sb = new StringBuilder();
-        sb.append("help(h)                                  Provide help information.\n");
-        sb.append("switch(s)                                Switch to a specific group by group ID.\n");
-        sb.append("getBlockNumber                           Query the number of most recent block.\n");
-        sb.append("getPbftView                              Query the pbft view of node.\n");
-        sb.append("getSealerList                            Query nodeId list for sealer nodes.\n");
-        sb.append("getObserverList                          Query nodeId list for observer nodes.\n");
-        sb.append(
-                "getNodeIDList                            Query nodeId list for all connected nodes.\n");
-        sb.append(
-                "getGroupPeers                            Query nodeId list for sealer and observer nodes.\n");
-        sb.append(
-                "getPeers                                 Query peers currently connected to the client.\n");
-        sb.append("getConsensusStatus                       Query consensus status.\n");
-        sb.append("getSyncStatus                            Query sync status.\n");
-        sb.append("getNodeVersion                           Query the current node version.\n");
-        sb.append("getGroupList                             Query group list.\n");
-        sb.append(
-                "getBlockByHash                           Query information about a block by hash.\n");
-        sb.append(
-                "getBlockByNumber                         Query information about a block by block number.\n");
-        sb.append("getBlockHashByNumber                     Query block hash by block number.\n");
-        sb.append(
-                "getTransactionByHash                     Query information about a transaction requested by transaction hash.\n");
-        sb.append(
-                "getTransactionByBlockHashAndIndex        Query information about a transaction by block hash and transaction index position.\n");
-        sb.append(
-                "getTransactionByBlockNumberAndIndex      Query information about a transaction by block number and transaction index position.\n");
-        sb.append(
-                "getTransactionReceipt                    Query the receipt of a transaction by transaction hash.\n");
-        sb.append("getPendingTransactions                   Query pending transactions.\n");
-        sb.append("getPendingTxSize                         Query pending transactions size.\n");
-        sb.append("getCode                                  Query code at a given address.\n");
-        sb.append("getTotalTransactionCount                 Query total transaction count.\n");
-        sb.append("deploy                                   Deploy a contract on blockchain.\n");
-        sb.append("getDeployLog                             Query the log of deployed contracts.\n");
-        sb.append(
-                "call                                     Call a contract by a function and paramters.\n");
-        sb.append("deployByCNS                              Deploy a contract on blockchain by CNS.\n");
-        sb.append(
-            "queryCNS                                 Query CNS information by contract name and contract version.\n");
-        sb.append(
-                "callByCNS                                Call a contract by a function and paramters by CNS.\n");
-        sb.append("addSealer                                Add a sealer node.\n");
-        sb.append("addObserver                              Add an observer node.\n");
-        sb.append("removeNode                               Remove a node.\n");
-        sb.append("setSystemConfigByKey                     Set a system config.\n");
-        sb.append("getSystemConfigByKey                     Query a system config value by key.\n");
-        sb.append(
-                "grantPermissionManager                   Grant permission for permission configuration by address.\n");
-        sb.append(
-                "revokePermissionManager                  Revoke permission for permission configuration by address.\n");
-        sb.append(
-                "listPermissionManager                    Query permission information for permission configuration.\n");
-        sb.append(
-                "grantUserTableManager                    Grant permission for user table by table name and address.\n");
-        sb.append(
-                "revokeUserTableManager                   Revoke permission for user table by table name and address.\n");
-        sb.append(
-                "listUserTableManager                     Query permission for user table information.\n");
-        sb.append(
-                "grantDeployAndCreateManager              Grant permission for deploy contract and create user table by address.\n");
-        sb.append(
-                "revokeDeployAndCreateManager             Revoke permission for deploy contract and create user table by address.\n");
-        sb.append(
-                "listDeployAndCreateManager               Query permission information for deploy contract and create user table.\n");
-        sb.append(
-                "grantNodeManager                         Grant permission for node configuration by address.\n");
-        sb.append(
-                "revokeNodeManager                        Revoke permission for node configuration by address.\n");
-        sb.append(
-                "listNodeManager                          Query permission information for node configuration.\n");
-        sb.append("grantCNSManager                          Grant permission for CNS by address.\n");
-        sb.append("revokeCNSManager                         Revoke permission for CNS by address.\n");
-        sb.append("listCNSManager                           Query permission information for CNS.\n");
-        sb.append(
-                "grantSysConfigManager                    Grant permission for system configuration by address.\n");
-        sb.append(
-                "revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
-        sb.append(
-                "listSysConfigManager                     Query permission information for system configuration.\n");
-        sb.append("quit(q)                                  Quit console.\n");
-        sb.append("exit                                     Quit console.");
+			  sb.append("addObserver                              Add an observer node.\n");
+			  sb.append("addSealer                                Add a sealer node.\n");		
+				sb.append("call                                     Call a contract by a function and paramters.\n");
+				sb.append("callByCNS                                Call a contract by a function and paramters by CNS.\n");
+				sb.append("deploy                                   Deploy a contract on blockchain.\n");
+				sb.append("deployByCNS                              Deploy a contract on blockchain by CNS.\n");
+				sb.append("exit                                     Quit console.\n");
+				sb.append("getBlockByHash                           Query information about a block by hash.\n");
+				sb.append("getBlockByNumber                         Query information about a block by block number.\n");
+				sb.append("getBlockHashByNumber                     Query block hash by block number.\n");
+				sb.append("getBlockNumber                           Query the number of most recent block.\n");
+				sb.append("getCode                                  Query code at a given address.\n");
+				sb.append("getConsensusStatus                       Query consensus status.\n");
+				sb.append("getDeployLog                             Query the log of deployed contracts.\n");
+				sb.append("getGroupList                             Query group list.\n");
+				sb.append("getGroupPeers                            Query nodeId list for sealer and observer nodes.\n");
+				sb.append("getNodeIDList                            Query nodeId list for all connected nodes.\n");
+				sb.append("getNodeVersion                           Query the current node version.\n");
+				sb.append("getObserverList                          Query nodeId list for observer nodes.\n");
+				sb.append("getPbftView                              Query the pbft view of node.\n");
+				sb.append("getPeers                                 Query peers currently connected to the client.\n");
+				sb.append("getPendingTransactions                   Query pending transactions.\n");
+				sb.append("getPendingTxSize                         Query pending transactions size.\n");
+				sb.append("getSealerList                            Query nodeId list for sealer nodes.\n");
+				sb.append("getSyncStatus                            Query sync status.\n");
+				sb.append("getSystemConfigByKey                     Query a system config value by key.\n");
+				sb.append("getTotalTransactionCount                 Query total transaction count.\n");
+				sb.append("getTransactionByBlockHashAndIndex        Query information about a transaction by block hash and transaction index position.\n");
+				sb.append("getTransactionByBlockNumberAndIndex      Query information about a transaction by block number and transaction index position.\n");
+				sb.append("getTransactionByHash                     Query information about a transaction requested by transaction hash.\n");
+				sb.append("getTransactionReceipt                    Query the receipt of a transaction by transaction hash.\n");
+				sb.append("grantCNSManager                          Grant permission for CNS by address.\n");
+				sb.append("grantDeployAndCreateManager              Grant permission for deploy contract and create user table by address.\n");
+				sb.append("grantNodeManager                         Grant permission for node configuration by address.\n");
+				sb.append("grantPermissionManager                   Grant permission for permission configuration by address.\n");
+				sb.append("grantSysConfigManager                    Grant permission for system configuration by address.\n");
+				sb.append("grantUserTableManager                    Grant permission for user table by table name and address.\n");
+				sb.append("help(h)                                  Provide help information.\n");
+				sb.append("listCNSManager                           Query permission information for CNS.\n");
+				sb.append("listDeployAndCreateManager               Query permission information for deploy contract and create user table.\n");
+				sb.append("listNodeManager                          Query permission information for node configuration.\n");
+				sb.append("listPermissionManager                    Query permission information for permission configuration.\n");
+				sb.append("listSysConfigManager                     Query permission information for system configuration.\n");
+				sb.append("listUserTableManager                     Query permission for user table information.\n");
+				sb.append("queryCNS                                 Query CNS information by contract name and contract version.\n");
+				sb.append("quit(q)                                  Quit console.\n");
+				sb.append("removeNode                               Remove a node.\n");
+				sb.append("revokeCNSManager                         Revoke permission for CNS by address.\n");
+				sb.append("revokeDeployAndCreateManager             Revoke permission for deploy contract and create user table by address.\n");
+				sb.append("revokeNodeManager                        Revoke permission for node configuration by address.\n");
+				sb.append("revokePermissionManager                  Revoke permission for permission configuration by address.\n");
+				sb.append("revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
+				sb.append("revokeUserTableManager                   Revoke permission for user table by table name and address.\n");
+				sb.append("setSystemConfigByKey                     Set a system config.\n");
+				sb.append("switch(s)                                Switch to a specific group by group ID.");
         System.out.println(sb.toString());
         ConsoleUtils.singleLine();
         System.out.println();
@@ -820,25 +797,12 @@ public class ConsoleImpl implements ConsoleFace {
             name = name.substring(0, name.length() - 4);
         }
         try {
-        	ConsoleUtils.dynamicCompileSolFilesToJava(name);
-        }catch (CompileSolidityException e) {
-        	System.out.println(e.getMessage());
-        	return;
-        }catch (IOException e) {
-        	System.out.println(e.getMessage());
-        	System.out.println();
-        	return;
-        }
-        ConsoleUtils.dynamicCompileJavaToClass(name);
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
-        try {
-            contractClass = getContractClass(contractName);
-        } catch (Exception e) {
-            System.out.println(
-                    "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
-            System.out.println();
-            return;
-        }
+					compileContract(name);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         try {
 					handleDeployParameters(params, 2);
 				} catch (ConsoleMessageException e) {
@@ -849,7 +813,7 @@ public class ConsoleImpl implements ConsoleFace {
         try {
         	Contract contract = (Contract) remoteCall.send();
       	  contractAddress = contract.getContractAddress();
-          System.out.println(contractAddress);
+          System.out.println("contract address:" + contractAddress);
           System.out.println();
           contractAddress = contract.getContractAddress();
           writeLog();
@@ -857,7 +821,8 @@ public class ConsoleImpl implements ConsoleFace {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
             } else {
-                throw e;
+            	System.out.println(e.getMessage());
+            	System.out.println();
             }
         }
 
@@ -1016,18 +981,13 @@ public class ConsoleImpl implements ConsoleFace {
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
         }
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
         try {
-            contractClass = getContractClass(contractName);
-        } catch (Exception e) {
-            System.out.println(
-                    "There is no "
-                            + name
-                            + ".class"
-                            + " in the directory of java/classes/org/fisco/bcos/temp");
-            System.out.println();
-            return;
-        }
+					compileContract(name);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         Method load =
                 contractClass.getMethod(
                         "load",
@@ -1049,7 +1009,7 @@ public class ConsoleImpl implements ConsoleFace {
         Method[] methods = contractClass.getDeclaredMethods();
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
         if(method == null) {
-        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println("Cannot find the method " + funcName + ", please checkout the method name.");
         	System.out.println();
         	return;
         }
@@ -1082,11 +1042,33 @@ public class ConsoleImpl implements ConsoleFace {
 				if(result instanceof TransactionReceipt)
 				{
 					TransactionReceipt receipt = (TransactionReceipt)result;
-					if(!"0x0".equals(receipt.getStatus()))
+					if("0x1a".equals(receipt.getStatus()))
 					{
-						System.out.println("Call failed.");
+						System.out.println("The contract address is incorrect.");
 						System.out.println();
 						return;
+					}
+					if(!"0x0".equals(receipt.getStatus()))
+					{
+						System.out.println(receipt.getStatus());
+						System.out.println();
+						return;
+					}
+					String output = receipt.getOutput();
+					if (!"0x".equals(output)) {
+						int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
+						if(code == PrecompiledCommon.TableExist)
+						{
+							System.out.println("The table already exist.");
+							System.out.println();
+							return;
+						}
+						if(code == PrecompiledCommon.PermissionDenied)
+						{
+							System.out.println("Permission denied.");
+							System.out.println();
+							return;
+						}
 					}
 				}
         String returnObject =
@@ -1145,25 +1127,12 @@ public class ConsoleImpl implements ConsoleFace {
             return;
         }
         try {
-            ConsoleUtils.dynamicCompileSolFilesToJava(name);
-        } catch (CompileSolidityException e) {
-        	System.out.println(e.getMessage());
-        	return;
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
-        ConsoleUtils.dynamicCompileJavaToClass(name);
-        try {
-            contractClass = getContractClass(contractName);
-        } catch (Exception e) {
-        	  System.out.println(
-               "There is no " + name + ".class" + " in the directory of solidity/java/classes/org/fisco/bcos/temp/.");
-            System.out.println();
-            return;
-        }
+					compileContract(name);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         try {
 					handleDeployParameters(params, 3);
 				} catch (ConsoleMessageException e) {
@@ -1187,15 +1156,17 @@ public class ConsoleImpl implements ConsoleFace {
             contractAddress = contract.getContractAddress();
             // register cns
             String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
-            System.out.println(contractAddress);
+            System.out.println("contract address:" + contractAddress);
             contractName = contractName+":"+contractVersion;
             writeLog();
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
-            } else {
-                throw e;
+            } 
+            else {
+            	System.out.println(e.getMessage());
+            	System.out.println();
             }
         }
 
@@ -1234,26 +1205,67 @@ public class ConsoleImpl implements ConsoleFace {
             HelpInfo.callByCNSHelp();
             return;
         }
-        if (params.length < 4) {
+        if (params.length < 3) {
             HelpInfo.promptHelp("callByCNS");
             return;
         }
+        String contractNameAndVersion = params[1];
         String name = params[1];
+        String contractVersion = null;
+        if (contractNameAndVersion.contains(":")) {
+        	String[] nameAndVersion = contractNameAndVersion.split(":");
+        	if(nameAndVersion.length == 2)
+        	{
+        		name = nameAndVersion[0].trim();
+        		contractVersion = nameAndVersion[1].trim();
+        	}
+        	else 
+        	{
+        		System.out.println("Contract name and version has incorrect format. For example, contractName:contractVersion");
+        		System.out.println();
+        		return;
+        	}
+				}
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
+            if(contractVersion != null)
+            {
+              if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
+                System.out.println();
+                return;
+              }
+              if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
+      					System.out.println("Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
+      					System.out.println();
+      					return;
+      				}
+            	contractNameAndVersion = name + ":" + contractVersion;
+            }
+            else 
+            {
+            	contractNameAndVersion = name;
+            }
         }
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
+        // get address from cns
+        String contractAddress = "";
+        CnsService cnsResolver = new CnsService(web3j, credentials);
         try {
-            contractClass = getContractClass(contractName);
+            contractAddress =
+                    cnsResolver.getAddressByContractNameAndVersion(contractNameAndVersion);
         } catch (Exception e) {
             System.out.println(
-                    "There is no "
-                            + name
-                            + ".class"
-                            + " in the directory of java/classes/org/fisco/bcos/temp");
+                    "The contract " + contractNameAndVersion + " doesn't exsit.");
             System.out.println();
             return;
         }
+        try {
+					compileContract(name);
+				} catch (Exception e) {
+					System.out.println(e.getMessage());
+					System.out.println();
+					return;
+				}
         Method load =
                 contractClass.getMethod(
                         "load",
@@ -1262,38 +1274,12 @@ public class ConsoleImpl implements ConsoleFace {
                         Credentials.class,
                         BigInteger.class,
                         BigInteger.class);
-        Object contractObject;
-
-        // get address from cns
-        contractName = name;
-        contractVersion = params[2];
-        if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
-          ConsoleUtils.printJson(PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
-          System.out.println();
-          return;
-        }
-        if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
-					System.out.println("Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
-					System.out.println();
-					return;
-				}
-        CnsService cnsResolver = new CnsService(web3j, credentials);
-        try {
-            contractAddress =
-                    cnsResolver.getAddressByContractNameAndVersion(contractName + ":" + contractVersion);
-        } catch (Exception e) {
-            System.out.println(
-                    "The contract " + contractName + " for version " + contractVersion + " doesn't exsit.");
-            System.out.println();
-            return;
-        }
-        contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
-        String funcName = params[3];
+        Object contractObject = load.invoke(null, contractAddress, web3j, credentials, gasPrice, gasLimit);
+        String funcName = params[2];
         Method[] methods = contractClass.getMethods();
-        Class[] type = null;
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
         if(method == null) {
-        	System.out.println("Cannot find the method. Please checkout the method name.");
+        	System.out.println("Cannot find the method " + funcName + ", please checkout the method name.");
         	System.out.println();
         	return;
         }
@@ -1309,14 +1295,14 @@ public class ConsoleImpl implements ConsoleFace {
             classList[i] = clazz;
         }
         Class[] parameterType =
-                ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
+                ContractClassFactory.getParameterType(contractClass, funcName, params.length - 3);
         if (parameterType == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
+            HelpInfo.promptNoFunc(params[1], funcName, params.length - 3);
             return;
         }
         Method func = contractClass.getMethod(funcName, parameterType);
-        String[] newParams = new String[params.length - 4];
-        System.arraycopy(params, 4, newParams, 0, params.length - 4);
+        String[] newParams = new String[params.length - 3];
+        System.arraycopy(params, 3, newParams, 0, params.length - 3);
         Object[] argobj = ContractClassFactory.getPrametersObject(funcName, parameterType, newParams, generic);
         if (argobj == null) {
             return;
@@ -1328,7 +1314,7 @@ public class ConsoleImpl implements ConsoleFace {
 					TransactionReceipt receipt = (TransactionReceipt)result;
 					if(!"0x0".equals(receipt.getStatus()))
 					{
-						System.out.println("Call failed.");
+						System.out.println(receipt.getStatus());
 						System.out.println();
 						return;
 					}
@@ -1336,12 +1322,34 @@ public class ConsoleImpl implements ConsoleFace {
         String returnObject =
                 ContractClassFactory.getReturnObject(contractClass, funcName, parameterType, result);
         if (returnObject == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
+            HelpInfo.promptNoFunc(params[1], funcName, params.length - 3);
             return;
         }
         System.out.println(returnObject);
         System.out.println();
     }
+
+		private void compileContract(String name) throws Exception {
+      try {
+      	ConsoleUtils.dynamicCompileSolFilesToJava(name);
+      }catch (IOException e) {
+      	throw new IOException(e.getMessage());
+      }
+			try {
+				ConsoleUtils.dynamicCompileJavaToClass(name);
+			} catch (Exception e1) {
+				throw new Exception("Compile " + name + ".java failed.");
+			}
+			contractName = ConsoleUtils.PACKAGENAME + "." + name;
+			try {
+			    contractClass = getContractClass(contractName);
+			} catch (Exception e) {
+				throw new Exception("There is no "
+			                    + name
+			                    + ".class"
+			                    + " in the directory of java/classes/org/fisco/bcos/temp");
+			}
+		}
 
     @SuppressWarnings("rawtypes")
     @Override
