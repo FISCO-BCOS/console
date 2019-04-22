@@ -462,9 +462,10 @@ public class HelpInfo {
     System.out.println();
   }
   
-  public static void showTablesHelp() {
-  	System.out.println("Show table name.");
-  	System.out.println("Usage: show tables");
+  public static void showDescHelp() {
+  	System.out.println("Description table information.");
+  	System.out.println("Usage: desc tableName");
+    System.out.println("tableName -- The name of the table.");
   	System.out.println();
   }
 
@@ -492,4 +493,5 @@ public class HelpInfo {
     }
     System.out.println();
   }
+
 }

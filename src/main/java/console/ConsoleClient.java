@@ -180,10 +180,6 @@ public class ConsoleClient {
           case "setSystemConfigByKey":
           	precompiledFace.setSystemConfigByKey(params);
             break;
-          case "show":
-          case "SHOW":
-          	precompiledFace.showTables(params);
-          	break;
           case "create":
           case "CREATE":
           	precompiledFace.createTable(request);
@@ -203,6 +199,10 @@ public class ConsoleClient {
           case "delete":
           case "DELETE":
           	precompiledFace.remove(request);
+          	break;
+          case "desc":
+          case "DESC":
+          	precompiledFace.desc(params);
           	break;
           case "grantUserTableManager":
           	permissionFace.grantUserTableManager(params);

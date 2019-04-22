@@ -116,6 +116,7 @@ public class WelcomeInfo {
       sb.append("[select sql]                             Select records by sql.\n");
       sb.append("[update sql]                             Update records by sql.\n");
       sb.append("[delete sql]                             Remove records by sql.\n");
+      sb.append("desc                                     Description table information.\n");
       sb.append("quit(q)                                  Quit console.");
       System.out.println(sb.toString());
       ConsoleUtils.singleLine();

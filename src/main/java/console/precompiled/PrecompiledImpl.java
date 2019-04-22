@@ -17,12 +17,16 @@ import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
 import org.fisco.bcos.web3j.precompile.crud.EnumOP;
 import org.fisco.bcos.web3j.precompile.crud.Table;
+import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import console.common.CRUDParseUtils;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
+import console.common.TableInfo;
 import console.exception.ConsoleMessageException;
 import net.sf.jsqlparser.JSQLParserException;
 
@@ -184,31 +188,30 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
     
     @Override
-    public void showTables(String[] params) {
+    public void desc(String[] params) {
       if (params.length < 2) 
       {
-	        HelpInfo.promptHelp("showTables");
+	        HelpInfo.promptHelp("desc");
 	        return;
 	    }
 	    if (params.length > 2) 
 	    {
-	        HelpInfo.promptHelp("showTables");
+	        HelpInfo.promptHelp("desc");
 	        return;
 	    }
-	    String item = params[1];
-	    if ("-h".equals(item) || "--help".equals(item))
+	    String tableName = params[1];
+	    if ("-h".equals(tableName) || "--help".equals(tableName))
 	    {
-	        HelpInfo.showTablesHelp();
+	        HelpInfo.showDescHelp();
 	        return;
-	    }
-	    if(!"tables".equals(item))
-	    {
-        HelpInfo.promptHelp("showTables");
-        return;
 	    }
 	    try {
-				List<Map<String, String>> tableNames = getTableNames();
-				System.out.println(tableNames);
+				String key = queryKey(tableName);
+				String valueFields = queryFields(tableName, true);
+				ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
+				String tableInfo = objectMapper.writeValueAsString(new TableInfo(key, valueFields));
+				ConsoleUtils.printJson(tableInfo);
+				System.out.println();
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
 				System.out.println();
@@ -274,7 +277,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     	try {
   			String tableName = table.getTableName();
 				String keyName = queryKey(tableName);
-  			String fields = queryFields(tableName);
+  			String fields = queryFields(tableName, false);
   			List<String> fieldsList = Arrays.asList(fields.split(","));
 				Set<String> entryFields = entry.getFields().keySet();
 				// insert into t_test values (fruit, 1, apple)
@@ -367,7 +370,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     			throw new ConsoleMessageException("Please don't set the key field '"+ keyName +"'.");
     		}
     		handleKey(table, condition);
-  			String fields = queryFields(table.getTableName());
+  			String fields = queryFields(table.getTableName(), false);
   			List<String> fieldsList = Arrays.asList(fields.split(","));
   			Set<String> entryFields = entry.getFields().keySet();
   			Set<String> conditonFields = condition.getConditions().keySet();
@@ -552,7 +555,7 @@ public class PrecompiledImpl implements PrecompiledFace {
   		}
   	}
   	
-  	private String queryFields(String tableName) throws Exception
+  	private String queryFields(String tableName, boolean valueFlag) throws Exception
   	{
   		CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
   		Table table = new Table();
@@ -561,8 +564,15 @@ public class PrecompiledImpl implements PrecompiledFace {
   		Condition condition = table.getCondition();
   		List<Map<String, String>> userTable = crudSerivce.select(table, condition);
   		if(userTable.size() != 0)
-  		{
-  			return queryKey(tableName) + "," + userTable.get(0).get("value_field");
+  		{	
+  			if(valueFlag)
+  			{
+  				return userTable.get(0).get("value_field");
+  			}
+  			else 
+  			{
+  				return queryKey(tableName) + "," + userTable.get(0).get("value_field");
+  			}
   		}
   		else 
   		{

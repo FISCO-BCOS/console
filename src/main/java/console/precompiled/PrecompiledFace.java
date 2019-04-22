@@ -29,6 +29,6 @@ public interface PrecompiledFace {
   
   void select(String sql);
   
-  void showTables(String[] params);
+  void desc(String[] params);
   
 }

@@ -86,6 +86,7 @@ public class JlineUtils {
 			completers.add(new ArgumentCompleter(new StringsCompleter("select")));
 			completers.add(new ArgumentCompleter(new StringsCompleter("update")));
 			completers.add(new ArgumentCompleter(new StringsCompleter("delete")));
+			completers.add(new ArgumentCompleter(new StringsCompleter("desc")));
 			completers.add(new ArgumentCompleter(new StringsCompleter("")));
 
 			Terminal terminal = TerminalBuilder.terminal();
