@@ -21,52 +21,53 @@ List alibaba = [
 ]
 
 List logger = [
-	'org.slf4j:slf4j-log4j12:1.7.25'
+        'org.slf4j:slf4j-log4j12:1.7.25'
 ]
 
-def spring_version="4.1.8.RELEASE"
-List spring =[ 
-	"org.springframework:spring-core:$spring_version", 
-	"org.springframework:spring-beans:$spring_version", 
-	"org.springframework:spring-context:$spring_version", 
-	"org.springframework:spring-tx:$spring_version", 
-	"org.springframework:spring-jdbc:$spring_version", 
-	"org.springframework:spring-test:$spring_version"
+def spring_version = "4.1.8.RELEASE"
+List spring = [
+        "org.springframework:spring-core:$spring_version",
+        "org.springframework:spring-beans:$spring_version",
+        "org.springframework:spring-context:$spring_version",
+        "org.springframework:spring-tx:$spring_version",
+        "org.springframework:spring-jdbc:$spring_version",
+        "org.springframework:spring-test:$spring_version"
 ]
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-	compile logger,spring
-	runtime logger,spring
-    
-	compile group:"org.fisco-bcos", name:"web3sdk", version:"2.0.3-SNAPSHOT", changing: true
-//	compile	'org.fisco-bcos:web3sdk:2.0.0-rc1'
-	compile 'org.jline:jline:3.10.0'
-	compile 'io.bretty:console-table-builder:1.2'
-	testCompile 'junit:junit:4.12'
+    compile logger, spring
+    runtime logger, spring
+
+    compile group: "org.fisco-bcos", name: "web3sdk", version: "2.0.3-SNAPSHOT", changing: true
+//	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.0-rc1'
+    compile group: 'org.jline', name: 'jline', version: '3.10.0'
+    compile group: 'io.bretty', name: 'console-table-builder', version: '1.2'
+    compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.0'
+    testCompile group: 'junit', name: 'junit', version: '4.1'
 }
 
 configurations.all {
-	resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
 sourceSets {
-	main {
-		java {
-	        srcDir 'src/main/java'
-		}
-        resources  {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
             srcDir 'src/main/resources'
         }
-	}
+    }
 }
 
 jar {
-	destinationDir file('dist/apps')
-	archiveName project.name + '.jar'
-	exclude '**/*.xml'
-	exclude '**/*.properties'
-	exclude '**/*.crt'
-	exclude '**/*.key'
+    destinationDir file('dist/apps')
+    archiveName project.name + '.jar'
+    exclude '**/*.xml'
+    exclude '**/*.properties'
+    exclude '**/*.crt'
+    exclude '**/*.key'
 
     doLast {
 		copy {

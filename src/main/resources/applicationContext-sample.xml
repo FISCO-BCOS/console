@@ -27,6 +27,14 @@
 						</list>
 					</property>
 				</bean>
+				<bean id="group2"  class="org.fisco.bcos.channel.handler.ChannelConnections">
+					<property name="groupId" value="2" />
+					<property name="connectionsStr">
+						<list>
+							<value>127.0.0.1:20200</value>
+						</list>
+					</property>
+				</bean>
 			</list>
 		</property>
 	</bean>

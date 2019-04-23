@@ -476,6 +476,13 @@ public class HelpInfo {
         "key -- The name of system config(tx_count_limit/tx_gas_limit supported currently).");
     System.out.println();
   }
+  
+  public static void showDescHelp() {
+  	System.out.println("Description table information.");
+  	System.out.println("Usage: desc tableName");
+    System.out.println("tableName -- The name of the table.");
+  	System.out.println();
+  }
 
   public static void promptNoFunc(String contractName, String funcName, int lenParams) {
     if (lenParams <= 1) {
@@ -501,4 +508,5 @@ public class HelpInfo {
     }
     System.out.println();
   }
+
 }
