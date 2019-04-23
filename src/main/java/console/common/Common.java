@@ -2,6 +2,8 @@ package console.common;
 
 public class Common {
 	
+	public static final String  ContractLogFileName = "deploylog.txt";
+	
 	// SystemConfig key
 	public static final String  TxCountLimit = "tx_count_limit";
 	public static final String TxGasLimit = "tx_gas_limit";

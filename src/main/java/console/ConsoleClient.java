@@ -28,18 +28,18 @@ public class ConsoleClient {
 	
   @SuppressWarnings("resource")
   public static void main(String[] args) {
-  	 
-		 ConsoleInitializer consoleInitializer = new ConsoleInitializer();
-		 consoleInitializer.init(args);
-		 web3jFace = consoleInitializer.getWeb3jFace();
-		 precompiledFace = consoleInitializer.getPrecompiledFace();
-		 permissionFace = consoleInitializer.getPermissionFace();
-		 contractFace = consoleInitializer.getContractFace();
-  	 
-  	 LineReader lineReader;
+  	
+  	 LineReader lineReader = null;
+  	 ConsoleInitializer consoleInitializer = null;
 		 try {
+			 consoleInitializer = new ConsoleInitializer();
+			 consoleInitializer.init(args);
+			 web3jFace = consoleInitializer.getWeb3jFace();
+			 precompiledFace = consoleInitializer.getPrecompiledFace();
+			 permissionFace = consoleInitializer.getPermissionFace();
+			 contractFace = consoleInitializer.getContractFace();
 			 lineReader = JlineUtils.getLineReader();
-		 } catch (IOException e) {
+		 } catch (Exception e) {
 			 System.out.println(e.getMessage());
 			 return;
 		 }
@@ -64,7 +64,7 @@ public class ConsoleClient {
 	        System.out.print("");
 	        continue;
 	      }
-	      if ("quit".equals(params[0]) || "q".equals(params[0])) {
+	      if ("quit".equals(params[0]) || "q".equals(params[0]) || "exit".equals(params[0])) {
 	        if (HelpInfo.promptNoParams(params, "q")) {
 	          continue;
 	        } else if (params.length > 2) {
@@ -272,7 +272,15 @@ public class ConsoleClient {
         System.out.println(e.getMessage() + " does not exist.");
         System.out.println();
       } catch (MessageDecodingException e) {
-      	ConsoleExceptionUtils.pringMessageDecodeingException(e);
+      	if(e.getMessage().contains("\"status\":\"0x1a\""))
+      	{
+      		System.out.println("The contract address is incorrect.");
+      		System.out.println();
+      	}
+      	else 
+      	{
+      		ConsoleExceptionUtils.pringMessageDecodeingException(e);
+      	}
       }catch (IOException e) {
         if (e.getMessage().startsWith("activeConnections")) {
           System.out.println(
@@ -286,15 +294,7 @@ public class ConsoleClient {
       } 
     	catch (InvocationTargetException e) {
     		Throwable targetException = e.getTargetException();
-      	if(targetException.getMessage().contains("\"status\":\"0x1a\""))
-      	{
-     // 		ConsoleExceptionUtils.pringMessageDecodeingException(new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
-      		System.out.println("The contract address is incorrect.");
-      	}
-      	else
-      	{	
-      		System.out.println(targetException.getMessage());
-      	}
+      	System.out.println(targetException.getMessage());
         System.out.println();
     	}
       catch (UserInterruptException e) {
@@ -303,17 +303,7 @@ public class ConsoleClient {
       catch (EndOfFileException e) {
       	consoleInitializer.close();
       } catch (Exception e) {
-        if (e.getMessage().contains("MessageDecodingException")) {
-        ConsoleExceptionUtils.pringMessageDecodeingException(
-              new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
-        }
-      	if(e.getMessage().contains("\"status\":\"0x1a\""))
-      	{
-      		System.out.println("The contract address is incorrect.");
-      	}
-        else {
-          System.out.println(e.getMessage());
-        }
+        System.out.println(e.getMessage());
       	System.out.println();
       }
     }

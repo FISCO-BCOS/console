@@ -4,92 +4,114 @@ import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.jline.builtins.Completers.FilesCompleter;
+import org.jline.reader.Buffer;
+import org.jline.reader.Candidate;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.ParsedLine;
 import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
+import org.jline.terminal.Attributes;
+import org.jline.terminal.Attributes.ControlChar;
 import org.jline.terminal.Terminal;
 import org.jline.terminal.TerminalBuilder;
+import org.jline.utils.AttributedString;
+
+class StringsCompleterIgnoreCase implements Completer {
+  protected final Collection<Candidate> candidates = new ArrayList<>();
+
+  public StringsCompleterIgnoreCase() {
+  }
+
+  public StringsCompleterIgnoreCase(String... strings) {
+    this(Arrays.asList(strings));
+  }
+
+  public StringsCompleterIgnoreCase(Iterable<String> strings) {
+    assert strings != null;
+    for (String string : strings) {
+      candidates.add(new Candidate(AttributedString.stripAnsi(string), string, null, null, null, null, true));
+    }
+  }
+
+  public void complete(LineReader reader, final ParsedLine commandLine, final List<Candidate> candidates) {
+    assert commandLine != null;
+    assert candidates != null;
+
+    Buffer buffer = reader.getBuffer();
+    String start = (buffer == null) ? "" : buffer.toString();
+    int index = start.lastIndexOf(" ");
+    String tmp = start.substring(index + 1, start.length()).toLowerCase();
+
+    for (Iterator<Candidate> iter = this.candidates.iterator(); iter.hasNext();) {
+      Candidate candidate = iter.next();
+      String candidateStr = candidate.value().toLowerCase();
+      if (candidateStr.startsWith(tmp)) {
+        candidates.add(candidate);
+      }
+    }
+  }
+}
 
 public class JlineUtils {
 
 	public static LineReader getLineReader() throws IOException {
+			
 			List<Completer> completers = new ArrayList<Completer>();
-			completers.add(new ArgumentCompleter(new StringsCompleter("help")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("switch")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getBlockNumber")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getPbftView")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getSealerList")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getObserverList")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getConsensusStatus")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getSyncStatus")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getNodeVersion")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getPeers")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getNodeIDList")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getGroupPeers")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getGroupList")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getBlockByHash")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getBlockByNumber")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getBlockHashByNumber")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getTransactionByHash")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getTransactionByBlockHashAndIndex")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getTransactionByBlockNumberAndIndex")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getTransactionReceipt")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getPendingTransactions")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getPendingTxSize")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getCode")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getTotalTransactionCount")));
-			Path path = FileSystems.getDefault().getPath("solidity/contracts/", "");
-			completers.add(new ArgumentCompleter(new StringsCompleter("deploy"), new FilesCompleter(path)));
-			completers.add(new ArgumentCompleter(new StringsCompleter("call"), new FilesCompleter(path)));
-			completers.add(new ArgumentCompleter(new StringsCompleter("deployByCNS"), new FilesCompleter(path)));
-			completers.add(new ArgumentCompleter(new StringsCompleter("callByCNS"), new FilesCompleter(path)));
-			completers.add(new ArgumentCompleter(new StringsCompleter("queryCNS"), new FilesCompleter(path)));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getDeployLog")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("addSealer")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("addObserver")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("removeNode")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("grantUserTableManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("revokeUserTableManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("listUserTableManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("grantDeployAndCreateManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("revokeDeployAndCreateManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("listDeployAndCreateManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("grantPermissionManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("revokePermissionManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("listPermissionManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("grantNodeManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("revokeNodeManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("listNodeManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("grantCNSManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("revokeCNSManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("listCNSManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("grantSysConfigManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("revokeSysConfigManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("listSysConfigManager")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"),
-					new StringsCompleter(Common.TxCountLimit)));
-			completers.add(
-					new ArgumentCompleter(new StringsCompleter("setSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
-			completers.add(new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"),
-					new StringsCompleter(Common.TxCountLimit)));
-			completers.add(
-					new ArgumentCompleter(new StringsCompleter("getSystemConfigByKey"), new StringsCompleter(Common.TxGasLimit)));
-			completers.add(new ArgumentCompleter(new StringsCompleter("quit")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("create")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("insert")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("select")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("update")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("delete")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("desc")));
-			completers.add(new ArgumentCompleter(new StringsCompleter("")));
 
-			Terminal terminal = TerminalBuilder.terminal();
-			return LineReaderBuilder.builder().terminal(terminal).completer(new AggregateCompleter(completers)).build();
+	    List<String> commands = Arrays.asList("help", "switch", "getBlockNumber", "getPbftView", "getSealerList",
+	        "getObserverList", "getConsensusStatus", "getSyncStatus", "getNodeVersion", "getPeers", "getNodeIDList",
+	        "getGroupPeers", "getGroupList", "getBlockByHash", "getBlockByNumber", "getBlockHashByNumber",
+	        "getTransactionByHash", "getTransactionByBlockHashAndIndex", "getTransactionByBlockNumberAndIndex",
+	        "getTransactionReceipt", "getPendingTransactions", "getPendingTxSize", "getCode", "getTotalTransactionCount",
+	        "getDeployLog", "addSealer", "addObserver", "removeNode", "grantUserTableManager", "revokeUserTableManager",
+	        "listUserTableManager", "grantDeployAndCreateManager", "revokeDeployAndCreateManager",
+	        "listDeployAndCreateManager", "grantPermissionManager", "revokePermissionManager", "listPermissionManager",
+	        "grantNodeManager", "revokeNodeManager", "listNodeManager", "grantCNSManager", "revokeCNSManager",
+	        "listCNSManager", "grantSysConfigManager", "revokeSysConfigManager", "listSysConfigManager", "quit", "exit", "desc",
+	        "create", "select", "insert", "update", "delete");
+	    
+	    for (String command : commands) {
+	      completers.add(new ArgumentCompleter(new StringsCompleterIgnoreCase(command), new StringsCompleterIgnoreCase()));
+	    }
+	
+	    Path path = FileSystems.getDefault().getPath("solidity/contracts/", "");
+	    commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
+	
+	    for (String command : commands) {
+	      completers.add(new ArgumentCompleter(new StringsCompleter(command), new FilesCompleter(path), new StringsCompleterIgnoreCase()));
+	    }
+	
+	    commands = Arrays.asList("setSystemConfigByKey", "getSystemConfigByKey");
+	
+	    for (String command : commands) {
+	      completers.add(new ArgumentCompleter(new StringsCompleter(command),
+	          new StringsCompleter(Common.TxCountLimit), new StringsCompleterIgnoreCase()));
+	      completers.add(new ArgumentCompleter(new StringsCompleter(command),
+	          new StringsCompleter(Common.TxGasLimit), new StringsCompleterIgnoreCase()));
+	    }
+    
+	    Terminal terminal = TerminalBuilder.builder()
+          .nativeSignals(true)
+          .signalHandler(Terminal.SignalHandler.SIG_IGN)
+          .build();
+	    Attributes termAttribs = terminal.getAttributes();
+	    // enable CTRL+D shortcut
+	    termAttribs.setControlChar(ControlChar.VEOF, 4);
+	    // enable CTRL+C shortcut
+	    termAttribs.setControlChar(ControlChar.VINTR, 4);
+	    terminal.setAttributes(termAttribs);
+	    return LineReaderBuilder.builder().terminal(terminal).
+	      		completer(new AggregateCompleter(completers)).
+	      		build().option(LineReader.Option.HISTORY_IGNORE_SPACE, false)
+	      		.option(LineReader.Option.HISTORY_REDUCE_BLANKS, false);
 	}
 }
