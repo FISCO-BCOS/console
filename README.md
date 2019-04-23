@@ -3,8 +3,7 @@ English / [中文](doc/README_CN.md)
 # console
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Build Status](https://travis-ci.org/FISCO-BCOS/console.svg?branch=master)](https://travis-ci.org/FISCO-BCOS/console)
-[![CircleCI](https://circleci.com/gh/FISCO-BCOS/console/tree/master.svg?style=shield)](https://circleci.com/gh/FISCO-BCOS/console/tree/master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/1bbdd693ef534bc58da3f28aee3911b5)](https://www.codacy.com/app/fqliao/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2a6c2eb499e42739d066ff775d1b288)](https://www.codacy.com/app/fisco/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
 ---
 
 The console is an important interactive client tool of [FISCO BCOS 2.0](https://fisco-bcos-documentation.readthedocs.io/zh_CN/release-2.0/). The console has a wealth of commands, including querying blockchain status, managing blockchain nodes, deploying and invoking contracts. 

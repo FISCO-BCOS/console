@@ -70,32 +70,32 @@ jar {
     exclude '**/*.key'
 
     doLast {
-        copy {
-            from configurations.runtime
-            into 'dist/lib'
-        }
-        copy {
-            from file('src/main/resources/')
-            into 'dist/conf'
-        }
-        copy {
-            from file('tools/start.sh')
-            from file('tools/replace_solc_jar.sh')
-            into 'dist/'
-        }
-        copy {
-            from file('tools/sol2java.sh')
-            into 'dist/tools/'
-        }
-        copy {
-            from file('src/main/resources/contract/HelloWorld.sol')
-            from file('src/main/resources/contract/Table.sol')
-            from file('src/main/resources/contract/TableTest.sol')
-            into 'dist/solidity/contracts'
-        }
-        copy {
-            from file('src/main/resources/contract/Table.sol')
-            into 'dist/tools/contracts'
-        }
-    }
+		copy {
+			from configurations.runtime
+			into 'dist/lib'
+		}
+		copy {
+			from file('src/main/resources/applicationContext-sample.xml')
+      from file('src/main/resources/log4j.properties')
+      from file('src/main/resources/privateKey.properties')
+			into 'dist/conf'
+		}
+		copy {
+			from file('tools/start.sh')
+			from file('tools/replace_solc_jar.sh')
+			into 'dist/'
+		}
+		copy {
+			from file('tools/sol2java.sh')
+			into 'dist/tools/'
+		}
+		copy {
+			from file('src/main/resources/contract/')
+			into 'dist/solidity/contracts/'
+		}
+		copy {
+			from file('src/main/resources/contract/Table.sol')
+			into 'dist/tools/contracts/'
+		}
+	}
 }

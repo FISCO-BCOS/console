@@ -5,7 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
+import org.jline.reader.UserInterruptException;
 
 import console.common.ConsoleExceptionUtils;
 import console.common.ConsoleUtils;
@@ -262,10 +264,9 @@ public class ConsoleClient {
             System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
             break;
         }
-	  
-			}catch (ResponseExcepiton e) {
-        ConsoleUtils.printJson(
-            "{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
+      } 
+      catch (ResponseExcepiton e) {
+        ConsoleUtils.printJson("{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
         System.out.println();
       } catch (ClassNotFoundException e) {
         System.out.println(e.getMessage() + " does not exist.");
@@ -274,31 +275,48 @@ public class ConsoleClient {
       	ConsoleExceptionUtils.pringMessageDecodeingException(e);
       }catch (IOException e) {
         if (e.getMessage().startsWith("activeConnections")) {
-					System.out.println("Lost the connection to the node. " 
-							+ "Please check the connection between the console and the node.");
-        } else if (e.getMessage().startsWith("No value")) {
           System.out.println(
-              "The groupID is not configured in dist/conf/applicationContext.xml file.");
+              "Lost the connection to the node. " + "Please check the connection between the console and the node.");
+        } else if (e.getMessage().startsWith("No value")) {
+          System.out.println("The groupID is not configured in dist/conf/applicationContext.xml file.");
         } else {
           System.out.println(e.getMessage());
         }
         System.out.println();
       } 
     	catch (InvocationTargetException e) {
-    		System.out.println("Contract call failed.");
-    		System.out.println();
-    	}
-      catch (Exception e) {
-      	if(e.getMessage().contains("MessageDecodingException"))
+    		Throwable targetException = e.getTargetException();
+      	if(targetException.getMessage().contains("\"status\":\"0x1a\""))
       	{
-      		ConsoleExceptionUtils.pringMessageDecodeingException(new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
+     // 		ConsoleExceptionUtils.pringMessageDecodeingException(new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
+      		System.out.println("The contract address is incorrect.");
       	}
-      	else {
-      		System.out.println(e.getMessage());
-      		System.out.println();
+      	else
+      	{	
+      		System.out.println(targetException.getMessage());
       	}
-      } 
-     }
+        System.out.println();
+    	}
+      catch (UserInterruptException e) {
+      	consoleInitializer.close();
+      }
+      catch (EndOfFileException e) {
+      	consoleInitializer.close();
+      } catch (Exception e) {
+        if (e.getMessage().contains("MessageDecodingException")) {
+        ConsoleExceptionUtils.pringMessageDecodeingException(
+              new MessageDecodingException(e.getMessage().split("MessageDecodingException: ")[1]));
+        }
+      	if(e.getMessage().contains("\"status\":\"0x1a\""))
+      	{
+      		System.out.println("The contract address is incorrect.");
+      	}
+        else {
+          System.out.println(e.getMessage());
+        }
+      	System.out.println();
+      }
+    }
   }
 
 	public static void setWeb3jFace(Web3jFace web3jFace) {
