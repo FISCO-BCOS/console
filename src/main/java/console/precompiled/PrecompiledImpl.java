@@ -2,8 +2,8 @@ package console.precompiled;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -488,8 +488,9 @@ public class PrecompiledImpl implements PrecompiledFace {
     		{	
     			int size = result.size();
 					List<Map<String, String>> selectedResult = new ArrayList<>(size);
-					Map<String, String> selectedRecords = new HashMap<>();
+					Map<String, String> selectedRecords;
     			for (Map<String, String> records : result) {
+    				selectedRecords = new LinkedHashMap<>();
   					for (String column : selectColumns) {
   						Set<String> recordKeys = records.keySet();
   						for (String recordKey : recordKeys) {
