@@ -76,10 +76,14 @@ public class CRUDParseUtils {
 			table.setValueFields(fields.toString());
 	}
 	
-	public static boolean parseInsert(String sql, Table table, Entry entry) throws JSQLParserException {
+	public static boolean parseInsert(String sql, Table table, Entry entry) throws JSQLParserException, ConsoleMessageException {
 			Statement statement = CCJSqlParserUtil.parse(sql);
 			Insert insert = (Insert)statement;
 			
+			if (insert.getSelect() != null) 
+			{
+				throw new ConsoleMessageException("The insert select clause is not supported.");
+			}
 			// parse table name
 			String tableName = insert.getTable().getName();
 			table.setTableName(tableName);
