@@ -46,32 +46,63 @@ public class CRUDParseUtils {
 			String tableName = createTable.getTable().getName();
 			table.setTableName(tableName);
 			
-			// parse key
+			// parse key from index
+			boolean keyFlag = false;
 			List<Index> indexes = createTable.getIndexes();
 			if(indexes != null)
 			{
 				for (Index index : indexes) {
+					keyFlag = true;
 					table.setKey(index.getColumnsNames().get(0));
 					break;
 				}
 			}
-			else 
+			List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
+		  // parse key from ColumnDefinition
+			for (int i = 0; i < columnDefinitions.size(); i++) 
+			{	
+				List<String> columnSpecStrings = columnDefinitions.get(i).getColumnSpecStrings();
+				if (columnSpecStrings == null) 
+				{
+					continue;
+				}
+				else 
+				{
+					if(columnSpecStrings.size() == 2 && "primary".equals(columnSpecStrings.get(0)) && "key".equals(columnSpecStrings.get(1)))
+					{
+						String key = columnDefinitions.get(i).getColumnName();
+						if(keyFlag)
+						{
+							if(!table.getKey().equals(key))
+							{
+								throw new ConsoleMessageException("Please don't provide two different key names.");
+							}
+						}
+						else 
+						{
+							keyFlag = true;
+							table.setKey(key);
+						}
+						break;
+					}
+				}
+			}
+			if(!keyFlag)
 			{
 				throw new ConsoleMessageException("Please provide a key for the table.");
 			}
-			// parese value fields
-			List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
+			// parse value field
 			StringBuffer fields = new StringBuffer();
 			for (int i = 0; i < columnDefinitions.size(); i++) 
-			{
-				if(!columnDefinitions.get(i).getColumnName().equals(table.getKey()))
-				{
-					fields.append(columnDefinitions.get(i).getColumnName());
-					if(i != columnDefinitions.size() - 1)
+			{	
+					if(!columnDefinitions.get(i).getColumnName().equals(table.getKey()))
 					{
-						fields.append(",");
+						fields.append(columnDefinitions.get(i).getColumnName());
+						if(i != columnDefinitions.size() - 1)
+						{
+							fields.append(",");
+						}
 					}
-				}
 			}
 			table.setValueFields(fields.toString());
 	}
