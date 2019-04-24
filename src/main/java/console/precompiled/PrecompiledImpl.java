@@ -473,6 +473,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     	try {
     		handleKey(table, condition);
     		List<Map<String, String>> result = crudSerivce.select(table, condition);
+    		int rows = 0;
     		if (result.size() == 0) {
 					System.out.println("Empty set.");
 					System.out.println();
@@ -481,6 +482,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     		if("*".equals(selectColumns.get(0)))
     		{
     			result.stream().forEach(System.out::println);
+    			rows = result.size();
     		}
     		else
     		{	
@@ -499,15 +501,15 @@ public class PrecompiledImpl implements PrecompiledFace {
     				selectedResult.add(selectedRecords);
     			}
     			selectedResult.stream().forEach(System.out::println);
-    			int rows = selectedResult.size();
-					if(rows == 1)
-    			{
-    				System.out.println(rows + " row in set.");
-    			}
-    			else 
-    			{
-    				System.out.println(rows + " rows in set.");
-    			}
+    			rows = selectedResult.size();
+    		}
+    		if(rows == 1)
+    		{
+    			System.out.println(rows + " row in set.");
+    		}
+    		else 
+    		{
+    			System.out.println(rows + " rows in set.");
     		}
     	} catch (Exception e) {
     		System.out.println(e.getMessage());
