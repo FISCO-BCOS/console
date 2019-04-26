@@ -2,8 +2,8 @@ package console.precompiled;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -269,7 +269,13 @@ public class PrecompiledImpl implements PrecompiledFace {
     	boolean useValues = false;
     	try {
 				useValues = CRUDParseUtils.parseInsert(sql, table, entry);
-			} catch (JSQLParserException e) {
+			}
+			catch (ConsoleMessageException e) {
+				System.out.println(e.getMessage());
+				System.out.println();
+				return;
+			}
+    	catch (JSQLParserException e) {
 				System.out.println("Could not parse SQL statement.");
 				System.out.println();
 				return;
@@ -467,6 +473,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     	try {
     		handleKey(table, condition);
     		List<Map<String, String>> result = crudSerivce.select(table, condition);
+    		int rows = 0;
     		if (result.size() == 0) {
 					System.out.println("Empty set.");
 					System.out.println();
@@ -475,13 +482,15 @@ public class PrecompiledImpl implements PrecompiledFace {
     		if("*".equals(selectColumns.get(0)))
     		{
     			result.stream().forEach(System.out::println);
+    			rows = result.size();
     		}
     		else
     		{	
     			int size = result.size();
 					List<Map<String, String>> selectedResult = new ArrayList<>(size);
-					Map<String, String> selectedRecords = new HashMap<>();
+					Map<String, String> selectedRecords;
     			for (Map<String, String> records : result) {
+    				selectedRecords = new LinkedHashMap<>();
   					for (String column : selectColumns) {
   						Set<String> recordKeys = records.keySet();
   						for (String recordKey : recordKeys) {
@@ -493,15 +502,15 @@ public class PrecompiledImpl implements PrecompiledFace {
     				selectedResult.add(selectedRecords);
     			}
     			selectedResult.stream().forEach(System.out::println);
-    			int rows = selectedResult.size();
-					if(rows == 1)
-    			{
-    				System.out.println(rows + " row in set.");
-    			}
-    			else 
-    			{
-    				System.out.println(rows + " rows in set.");
-    			}
+    			rows = selectedResult.size();
+    		}
+    		if(rows == 1)
+    		{
+    			System.out.println(rows + " row in set.");
+    		}
+    		else 
+    		{
+    			System.out.println(rows + " rows in set.");
     		}
     	} catch (Exception e) {
     		System.out.println(e.getMessage());

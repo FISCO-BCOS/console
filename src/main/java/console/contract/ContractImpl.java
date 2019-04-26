@@ -24,9 +24,11 @@ import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
 import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tx.Contract;
+import org.fisco.bcos.web3j.tx.exceptions.ContractCallException;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 
@@ -329,15 +331,19 @@ public class ContractImpl implements ContractFace {
 				if(result instanceof TransactionReceipt)
 				{
 					TransactionReceipt receipt = (TransactionReceipt)result;
-					if("0x1a".equals(receipt.getStatus()))
+        	if(StatusCode.RevertInstruction.equals(receipt.getStatus()))
+        	{
+        		throw new ContractCallException("The execution of the contract rolled back.");
+        	}
+					if(StatusCode.CallAddressError.equals(receipt.getStatus()))
 					{
 						System.out.println("The contract address is incorrect.");
 						System.out.println();
 						return;
 					}
-					if(!"0x0".equals(receipt.getStatus()))
+					if(!StatusCode.Success.equals(receipt.getStatus()))
 					{
-						System.out.println(receipt.getStatus());
+						System.out.println("Receipt status:" +receipt.getStatus());
 						System.out.println();
 						return;
 					}
