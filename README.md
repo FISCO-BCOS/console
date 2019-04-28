@@ -15,16 +15,20 @@ The console is an important interactive client tool of [FISCO BCOS 2.0](https://
 - Provide some commands which can manage blockchain node.
 - Providea a contract compilation tool that allows users to easily and quickly compile Solidity contract files into Java contract files.
 
-## Installation
+## Usage
+
+- You can download a tar file and decompress it to enjoy console. See [console manual](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html) for more details.
+
+## Source Installation
 ```
 $ git clone https://github.com/FISCO-BCOS/console.git
 $ cd console
-$ ./gradlew assemble
+$ ./gradlew jar
 ```
+If you install successfully, it produces the `dist` directory.
 
-## Usage
-
-- See [console manual](https://fisco-bcos-documentation.readthedocs.io/zh_CN/release-2.0/docs/manual/console.html) for more details.
+## Configuration
+Please see the [documentation](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html#id7) about configurating for the console. Have fun.
 
 ## Developing & Contributing
 - Star our Github.

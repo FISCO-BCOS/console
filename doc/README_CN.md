@@ -16,15 +16,19 @@
  - 提供一些可以管理区块链节点的命令。
  - 提供一个合约编译工具，用户可以方便快捷的将Solidity合约文件编译为Java合约文件。
 
-## 安装
+## 使用
+- 可以直接下载控制台压缩包，然后解压控制台压缩包使用控制台。具体参考 [控制台手册](https://fisco-bcos-documentation.readthedocs.io/zh_CN/release-2.0/docs/manual/console.html)。
+
+## 源码安装
 ```
 $ git clone https://github.com/FISCO-BCOS/console.git
 $ cd console
-$ ./gradlew assemble
+$ ./gradlew jar
 ```
+如果安装成功，将在当前目录生成一个`dist`目录。
 
-## 使用
-- 参考 [控制台手册](https://fisco-bcos-documentation.readthedocs.io/zh_CN/release-2.0/docs/manual/console.html)。
+## 配置
+控制台具体配置参考[这里](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html#id7)。
 
 ## 贡献代码
 欢迎参与FISCO BCOS的社区建设：
