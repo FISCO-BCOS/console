@@ -1,3 +1,6 @@
+plugins {
+  id 'com.github.sherter.google-java-format' version '0.8'
+}
 apply plugin: 'maven'
 apply plugin: 'java'
 apply plugin: 'eclipse'
@@ -23,6 +26,8 @@ List alibaba = [
 List logger = [
         'org.slf4j:slf4j-log4j12:1.7.25'
 ]
+
+check.dependsOn -= tasks['verifyGoogleJavaFormat']
 
 def spring_version = "4.1.8.RELEASE"
 List spring = [
