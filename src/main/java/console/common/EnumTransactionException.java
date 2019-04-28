@@ -1,5 +1,3 @@
 package console.common;
 
-public enum EnumTransactionException {
-	
-}
+public enum EnumTransactionException {}

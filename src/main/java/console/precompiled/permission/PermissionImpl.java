@@ -1,36 +1,33 @@
 package console.precompiled.permission;
 
-import java.util.List;
-
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
-import org.fisco.bcos.web3j.precompile.permission.PermissionService;
-import org.fisco.bcos.web3j.protocol.Web3j;
-
 import console.common.Address;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
+import java.util.List;
+import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
+import org.fisco.bcos.web3j.precompile.permission.PermissionService;
+import org.fisco.bcos.web3j.protocol.Web3j;
 
 public class PermissionImpl implements PermissionFace {
-		
-	  private Web3j web3j;
-	  private Credentials credentials;
-	  
-		@Override
-		public void setWeb3j(Web3j web3j)
-		{
-			this.web3j = web3j;
-		}
-		@Override
-		public void setCredentials(Credentials credentials)
-		{
-			this.credentials = credentials;
-		}
 
-		@Override
+    private Web3j web3j;
+    private Credentials credentials;
+
+    @Override
+    public void setWeb3j(Web3j web3j) {
+        this.web3j = web3j;
+    }
+
+    @Override
+    public void setCredentials(Credentials credentials) {
+        this.credentials = credentials;
+    }
+
+    @Override
     public void grantUserTableManager(String[] params) throws Exception {
         if (params.length < 2) {
             HelpInfo.promptHelp("grantUserTableManager");
