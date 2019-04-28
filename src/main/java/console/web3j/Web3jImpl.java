@@ -1,37 +1,34 @@
 package console.web3j;
 
+import com.alibaba.fastjson.JSONObject;
+import console.common.Address;
+import console.common.Common;
+import console.common.ConsoleUtils;
+import console.common.HelpInfo;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
-
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
 import org.fisco.bcos.web3j.utils.Numeric;
 
-import com.alibaba.fastjson.JSONObject;
-
-import console.common.Address;
-import console.common.Common;
-import console.common.ConsoleUtils;
-import console.common.HelpInfo;
-
 public class Web3jImpl implements Web3jFace {
-	
-	  private Web3j web3j;
-	  
+
+    private Web3j web3j;
+
     @Override
     public void setWeb3j(Web3j web3j) {
-			this.web3j = web3j;
-		}
+        this.web3j = web3j;
+    }
 
-		@Override
+    @Override
     public void getNodeVersion(String[] params) throws IOException {
         if (HelpInfo.promptNoParams(params, "getNodeVersion")) {
             return;
         }
-        
+
         String nodeVersion = web3j.getNodeVersion().sendForReturnString();
         ConsoleUtils.printJson(nodeVersion);
         System.out.println();
@@ -196,8 +193,8 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
-        if(blockNumber == Common.InvalidReturnNumber){
-        	return;
+        if (blockNumber == Common.InvalidReturnNumber) {
+            return;
         }
         BigInteger blockNumber1 = new BigInteger(blockNumberStr1);
         String blockNumberStr2 = web3j.getBlockNumber().sendForReturnString();
@@ -220,8 +217,7 @@ public class Web3jImpl implements Web3jFace {
             }
         }
         String block =
-                web3j
-                        .getBlockByNumber(DefaultBlockParameter.valueOf(blockNumber1), flag)
+                web3j.getBlockByNumber(DefaultBlockParameter.valueOf(blockNumber1), flag)
                         .sendForReturnString();
         ConsoleUtils.printJson(block);
         System.out.println();
@@ -243,9 +239,8 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         int blockNumberi = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
-        if(blockNumberi == Common.InvalidReturnNumber)
-        {
-        	return;
+        if (blockNumberi == Common.InvalidReturnNumber) {
+            return;
         }
         BigInteger blockNumber = BigInteger.valueOf(blockNumberi);
         BigInteger getBlockNumber =
@@ -256,8 +251,7 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         String blockHash =
-                web3j
-                        .getBlockHashByNumber(DefaultBlockParameter.valueOf(blockNumber))
+                web3j.getBlockHashByNumber(DefaultBlockParameter.valueOf(blockNumber))
                         .sendForReturnString();
         ConsoleUtils.printJson(blockHash);
         System.out.println();
@@ -307,25 +301,24 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
             return;
         }
-        if (ConsoleUtils.isInvalidHash(blockHash)) 
-        {
-        	return;
+        if (ConsoleUtils.isInvalidHash(blockHash)) {
+            return;
         }
         String indexStr = params[2];
         int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
-					return;
-				}
+            return;
+        }
         BcosBlock bcosBlock = web3j.getBlockByHash(blockHash, false).send();
-				int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
-				if(index > maxIndex)
-				{
-	        System.out.println("The index is out of range.");
-	        System.out.println();
-	        return;
-				}
+        int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
+        if (index > maxIndex) {
+            System.out.println("The index is out of range.");
+            System.out.println();
+            return;
+        }
         String transaction =
-                web3j.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index)).sendForReturnString();
+                web3j.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index))
+                        .sendForReturnString();
         ConsoleUtils.printJson(transaction);
         System.out.println();
     }
@@ -350,34 +343,39 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
-        if(blockNumber == Common.InvalidReturnNumber){
-        	return;
+        if (blockNumber == Common.InvalidReturnNumber) {
+            return;
         }
         BigInteger getBlockNumber =
-            Numeric.decodeQuantity(web3j.getBlockNumber().sendForReturnString());
-		    if (BigInteger.valueOf(blockNumber).compareTo(getBlockNumber) > 0) {
-		        System.out.println("The block number doesn't exsit.");
-		        System.out.println();
-		        return;
-		    }
+                Numeric.decodeQuantity(web3j.getBlockNumber().sendForReturnString());
+        if (BigInteger.valueOf(blockNumber).compareTo(getBlockNumber) > 0) {
+            System.out.println("The block number doesn't exsit.");
+            System.out.println();
+            return;
+        }
         String indexStr = params[2];
         int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
-					return;
-				}
-        BcosBlock bcosBlock = web3j.getBlockByNumber(DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), false).send();
-				int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
-				if(index > maxIndex)
-				{
-	        System.out.println("The index is out of range.");
-	        System.out.println();
-	        return;
-				}
-        String transaction = web3j
-						.getTransactionByBlockNumberAndIndex(DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)), BigInteger.valueOf(index))
-						.sendForReturnString();
-				ConsoleUtils.printJson(transaction);
-				System.out.println();
+            return;
+        }
+        BcosBlock bcosBlock =
+                web3j.getBlockByNumber(
+                                DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)),
+                                false)
+                        .send();
+        int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
+        if (index > maxIndex) {
+            System.out.println("The index is out of range.");
+            System.out.println();
+            return;
+        }
+        String transaction =
+                web3j.getTransactionByBlockNumberAndIndex(
+                                DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)),
+                                BigInteger.valueOf(index))
+                        .sendForReturnString();
+        ConsoleUtils.printJson(transaction);
+        System.out.println();
     }
 
     @Override
@@ -396,7 +394,8 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-        String transactionReceipt = web3j.getTransactionReceipt(transactionHash).sendForReturnString();
+        String transactionReceipt =
+                web3j.getTransactionReceipt(transactionHash).sendForReturnString();
         if ("null".equals(transactionReceipt)) {
             System.out.println("This transaction hash doesn't exist.");
             System.out.println();
@@ -447,7 +446,8 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         address = convertAddr.getAddress();
-        String code = web3j.getCode(address, DefaultBlockParameterName.LATEST).sendForReturnString();
+        String code =
+                web3j.getCode(address, DefaultBlockParameterName.LATEST).sendForReturnString();
         if ("0x".equals(code)) {
             System.out.println("This address doesn't exist.");
             System.out.println();
@@ -469,7 +469,7 @@ public class Web3jImpl implements Web3jFace {
         ConsoleUtils.printJson(jo.toJSONString());
         System.out.println();
     }
-    
+
     @Override
     public void getSystemConfigByKey(String[] params) throws Exception {
         if (params.length < 2) {
@@ -485,14 +485,17 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getSystemConfigByKeyHelp();
             return;
         }
-      	if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
-      		String value = web3j.getSystemConfigByKey(key).sendForReturnString();
-      		System.out.println(value);
-      	}
-      	else 
-      	{
-      		System.out.println("Please provide a valid key, for example: " + Common.TxCountLimit +" or " + Common.TxGasLimit +".");
-      	}
-      	System.out.println();
+        if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
+            String value = web3j.getSystemConfigByKey(key).sendForReturnString();
+            System.out.println(value);
+        } else {
+            System.out.println(
+                    "Please provide a valid key, for example: "
+                            + Common.TxCountLimit
+                            + " or "
+                            + Common.TxGasLimit
+                            + ".");
+        }
+        System.out.println();
     }
 }

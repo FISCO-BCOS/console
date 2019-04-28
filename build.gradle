@@ -27,6 +27,10 @@ List logger = [
         'org.slf4j:slf4j-log4j12:1.7.25'
 ]
 
+googleJavaFormat {
+  options style: 'AOSP'
+}
+
 check.dependsOn -= tasks['verifyGoogleJavaFormat']
 
 def spring_version = "4.1.8.RELEASE"
