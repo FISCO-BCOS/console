@@ -1057,7 +1057,7 @@ public class ConsoleImpl implements ConsoleFace {
 					String output = receipt.getOutput();
 					if (!"0x".equals(output)) {
 						int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
-						if(code == 50001)
+						if(code == PrecompiledCommon.TableExist)
 						{
 							System.out.println("The table already exist.");
 							System.out.println();
