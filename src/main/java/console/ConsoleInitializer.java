@@ -106,7 +106,7 @@ public class ConsoleInitializer {
             service.run();
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect to the node. Please check the node status and the console configruation.");
+                    "Failed to connect to the node. Please check the node status and the console configuration.");
             close();
         }
         channelEthereumService = new ChannelEthereumService();
@@ -142,7 +142,7 @@ public class ConsoleInitializer {
             close();
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect to the node. Please check the node status and the console configruation.");
+                    "Failed to connect to the node. Please check the node status and the console configuration.");
             close();
         }
     }
@@ -190,7 +190,7 @@ public class ConsoleInitializer {
             System.out.println(
                     "Switch to group "
                             + toGroupID
-                            + " failed! Please check the node status and the console configruation.");
+                            + " failed! Please check the node status and the console configuration.");
             System.out.println();
             service.setGroupId(groupID);
             try {
