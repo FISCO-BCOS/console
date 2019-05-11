@@ -205,7 +205,7 @@ public class ConsoleInitializer {
         web3j = Web3j.build(channelEthereumService, groupID);
 
         web3jFace.setWeb3j(web3j);
-        precompiledFace.setCredentials(credentials);
+        precompiledFace.setWeb3j(web3j);
         permissionFace.setWeb3j(web3j);
         contractFace.setWeb3j(web3j);
         contractFace.setGroupID(groupID);
