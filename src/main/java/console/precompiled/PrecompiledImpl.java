@@ -212,15 +212,23 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
-            String key = queryKey(tableName);
-            String valueFields = queryFields(tableName, true);
+            CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+            Table descTable = crudSerivce.desc(tableName);
+            if (descTable.getKey() == null) {
+                System.out.println("The table '" + tableName + "' does not exist.");
+                System.out.println();
+                return;
+            }
             ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
-            String tableInfo = objectMapper.writeValueAsString(new TableInfo(key, valueFields));
+            String tableInfo =
+                    objectMapper.writeValueAsString(
+                            new TableInfo(descTable.getKey(), descTable.getValueFields()));
             ConsoleUtils.printJson(tableInfo);
             System.out.println();
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.out.println();
+            return;
         }
     }
 
@@ -245,8 +253,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
             } else if (result == PrecompiledCommon.TableExist) {
                 System.out.println("The table '" + table.getTableName() + "' already exists.");
-            } else if (result == PrecompiledCommon.PermissionDenied) {
-                System.out.println(Common.PermissionDenied);
+            } else if (result == Common.PermissionCode) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println("Create '" + table.getTableName() + "' failed.");
             }
@@ -277,8 +285,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             String tableName = table.getTableName();
-            String keyName = queryKey(tableName);
-            String fields = queryFields(tableName, false);
+            Table descTable = crudSerivce.desc(tableName);
+            String keyName = descTable.getKey();
+            String fields = keyName + "," + descTable.getValueFields();
             List<String> fieldsList = Arrays.asList(fields.split(","));
             Set<String> entryFields = entry.getFields().keySet();
             // insert into t_test values (fruit, 1, apple)
@@ -318,8 +327,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             int insertResult = crudSerivce.insert(table, entry);
             if (insertResult == 0 || insertResult == 1) {
                 System.out.println("Insert OK, " + insertResult + " row affected.");
-            } else if (insertResult == PrecompiledCommon.PermissionDenied) {
-                System.out.println(Common.PermissionDenied);
+            } else if (insertResult == Common.PermissionCode) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println("Insert failed.");
             }
@@ -349,13 +358,16 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
-            String keyName = queryKey(table.getTableName());
+            String tableName = table.getTableName();
+            Table descTable = crudSerivce.desc(tableName);
+            String keyName = descTable.getKey();
             if (entry.getFields().containsKey(keyName)) {
                 throw new ConsoleMessageException(
                         "Please don't set the key field '" + keyName + "'.");
             }
+            table.setKey(descTable.getKey());
             handleKey(table, condition);
-            String fields = queryFields(table.getTableName(), false);
+            String fields = descTable.getKey() + "," + descTable.getValueFields();
             List<String> fieldsList = Arrays.asList(fields.split(","));
             Set<String> entryFields = entry.getFields().keySet();
             Set<String> conditonFields = condition.getConditions().keySet();
@@ -371,8 +383,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             int updateResult = crudSerivce.update(table, entry, condition);
             if (updateResult == 0 || updateResult == 1) {
                 System.out.println("Update OK, " + updateResult + " row affected.");
-            } else if (updateResult == PrecompiledCommon.PermissionDenied) {
-                System.out.println(Common.PermissionDenied);
+            } else if (updateResult == Common.PermissionCode) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println("Update OK, " + updateResult + " rows affected.");
             }
@@ -401,12 +413,14 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
+            Table descTable = crudSerivce.desc(table.getTableName());
+            table.setKey(descTable.getKey());
             handleKey(table, condition);
             int removeResult = crudSerivce.remove(table, condition);
             if (removeResult == 0 || removeResult == 1) {
                 System.out.println("Remove OK, " + removeResult + " row affected.");
-            } else if (removeResult == PrecompiledCommon.PermissionDenied) {
-                System.out.println(Common.PermissionDenied);
+            } else if (removeResult == Common.PermissionCode) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println("Remove OK, " + removeResult + " rows affected.");
             }
@@ -436,6 +450,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         try {
+            Table descTable = crudSerivce.desc(table.getTableName());
+            table.setKey(descTable.getKey());
             handleKey(table, condition);
             List<Map<String, String>> result = crudSerivce.select(table, condition);
             int rows = 0;
@@ -480,7 +496,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     private void handleKey(Table table, Condition condition) throws Exception {
-        String keyName = queryKey(table.getTableName());
+
+        String keyName = table.getKey();
         String keyValue = "";
         Map<EnumOP, String> keyMap = condition.getConditions().get(keyName);
         if (keyMap == null) {
@@ -502,38 +519,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         table.setKey(keyValue);
-    }
-
-    private String queryKey(String tableName) throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-        Table table = new Table();
-        table.setTableName("_sys_tables_");
-        table.setKey("_user_" + tableName);
-        Condition condition = table.getCondition();
-        List<Map<String, String>> userTable = crudSerivce.select(table, condition);
-        if (userTable.size() != 0) {
-            return userTable.get(0).get("key_field");
-        } else {
-            throw new ConsoleMessageException("The table '" + tableName + "' does not exist.");
-        }
-    }
-
-    private String queryFields(String tableName, boolean valueFlag) throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-        Table table = new Table();
-        table.setTableName("_sys_tables_");
-        table.setKey("_user_" + tableName);
-        Condition condition = table.getCondition();
-        List<Map<String, String>> userTable = crudSerivce.select(table, condition);
-        if (userTable.size() != 0) {
-            if (valueFlag) {
-                return userTable.get(0).get("value_field");
-            } else {
-                return queryKey(tableName) + "," + userTable.get(0).get("value_field");
-            }
-        } else {
-            throw new ConsoleMessageException("The table '" + tableName + "' does not exist.");
-        }
     }
 
     private List<Map<String, String>> getTableNames() throws Exception {

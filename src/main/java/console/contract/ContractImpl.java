@@ -110,8 +110,7 @@ public class ContractImpl implements ContractFace {
             writeLog();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
-                ConsoleUtils.printJson(
-                        PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println(e.getMessage());
                 System.out.println();
@@ -361,7 +360,7 @@ public class ContractImpl implements ContractFace {
                     System.out.println();
                     return;
                 }
-                if (code == PrecompiledCommon.PermissionDenied) {
+                if (code == Common.PermissionCode) {
                     System.out.println("Permission denied.");
                     System.out.println();
                     return;
@@ -407,8 +406,7 @@ public class ContractImpl implements ContractFace {
             }
         }
         if (!flag) {
-            ConsoleUtils.printJson(
-                    PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
+            ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             System.out.println();
             return;
         }
@@ -464,8 +462,7 @@ public class ContractImpl implements ContractFace {
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
-                ConsoleUtils.printJson(
-                        PrecompiledCommon.transferToJson(PrecompiledCommon.PermissionDenied));
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println(e.getMessage());
                 System.out.println();
