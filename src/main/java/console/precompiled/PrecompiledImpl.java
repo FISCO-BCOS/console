@@ -260,7 +260,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println("Could not parse SQL statement.");
+            System.out.println(e.getMessage());
             System.out.println();
             return;
         }
