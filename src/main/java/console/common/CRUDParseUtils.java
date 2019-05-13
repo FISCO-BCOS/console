@@ -259,15 +259,24 @@ public class CRUDParseUtils {
         parseLimit(condition, limit);
     }
 
-    private static void parseLimit(Condition condition, Limit limit) {
+    private static void parseLimit(Condition condition, Limit limit)
+            throws ConsoleMessageException {
         if (limit != null) {
             Expression offset = limit.getOffset();
             Expression count = limit.getRowCount();
-            if (offset != null) {
-                condition.Limit(
-                        Integer.parseInt(offset.toString()), Integer.parseInt(count.toString()));
-            } else {
-                condition.Limit(Integer.parseInt(count.toString()));
+            try {
+                if (offset != null) {
+                    condition.Limit(
+                            Integer.parseInt(offset.toString()),
+                            Integer.parseInt(count.toString()));
+                } else {
+                    condition.Limit(Integer.parseInt(count.toString()));
+                }
+            } catch (NumberFormatException e) {
+                throw new ConsoleMessageException(
+                        "Please provide limit parameters by non-negative integer mode, "
+                                + Common.NonNegativeIntegerRange
+                                + ".");
             }
         }
     }

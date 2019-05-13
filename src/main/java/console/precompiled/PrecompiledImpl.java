@@ -460,26 +460,12 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println();
                 return;
             }
+            result = filterSystemColum(result);
             if ("*".equals(selectColumns.get(0))) {
                 result.stream().forEach(System.out::println);
                 rows = result.size();
             } else {
-                int size = result.size();
-                List<Map<String, String>> selectedResult = new ArrayList<>(size);
-                Map<String, String> selectedRecords;
-                for (Map<String, String> records : result) {
-                    selectedRecords = new LinkedHashMap<>();
-                    for (String column : selectColumns) {
-                        Set<String> recordKeys = records.keySet();
-                        for (String recordKey : recordKeys) {
-                            if (recordKey.equals(column)) {
-                                selectedRecords.put(recordKey, records.get(recordKey));
-                            }
-                        }
-                    }
-                    selectedResult.add(selectedRecords);
-                }
-                selectedResult.stream().forEach(System.out::println);
+                List<Map<String, String>> selectedResult = getSeletedColumn(selectColumns, result);
                 rows = selectedResult.size();
             }
             if (rows == 1) {
@@ -493,6 +479,44 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         System.out.println();
+    }
+
+    private List<Map<String, String>> getSeletedColumn(
+            List<String> selectColumns, List<Map<String, String>> result) {
+        List<Map<String, String>> selectedResult = new ArrayList<>(result.size());
+        Map<String, String> selectedRecords;
+        for (Map<String, String> records : result) {
+            selectedRecords = new LinkedHashMap<>();
+            for (String column : selectColumns) {
+                Set<String> recordKeys = records.keySet();
+                for (String recordKey : recordKeys) {
+                    if (recordKey.equals(column)) {
+                        selectedRecords.put(recordKey, records.get(recordKey));
+                    }
+                }
+            }
+            selectedResult.add(selectedRecords);
+        }
+        selectedResult.stream().forEach(System.out::println);
+        return selectedResult;
+    }
+
+    private List<Map<String, String>> filterSystemColum(List<Map<String, String>> result) {
+
+        List<String> filteredColumns = Arrays.asList("_hash_", "_status_");
+        List<Map<String, String>> filteredResult = new ArrayList<>(result.size());
+        Map<String, String> filteredRecords;
+        for (Map<String, String> records : result) {
+            filteredRecords = new LinkedHashMap<>();
+            Set<String> recordKeys = records.keySet();
+            for (String recordKey : recordKeys) {
+                if (!filteredColumns.contains(recordKey)) {
+                    filteredRecords.put(recordKey, records.get(recordKey));
+                }
+            }
+            filteredResult.add(filteredRecords);
+        }
+        return filteredResult;
     }
 
     private void handleKey(Table table, Condition condition) throws Exception {
