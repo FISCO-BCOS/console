@@ -22,9 +22,11 @@ import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.crypto.gm.GenCredential;
+import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
+import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion.Version;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractRefreshableApplicationContext;
@@ -116,6 +118,15 @@ public class ConsoleInitializer {
         try {
             web3j.getBlockNumber().sendForReturnString();
 
+            Version nodeVersion = web3j.getNodeVersion().send().getNodeVersion();
+            String version = nodeVersion.getSupportedVersion();
+            if (version == null || PrecompiledCommon.BCOS_RC1.equals(version)) {
+                Common.PermissionCode = 80;
+            } else if (PrecompiledCommon.BCOS_RC2.equals(version)) {
+                Common.PermissionCode = 50000;
+            } else {
+                Common.PermissionCode = -50000;
+            }
             web3jFace = new Web3jImpl();
             web3jFace.setWeb3j(web3j);
 
@@ -205,7 +216,7 @@ public class ConsoleInitializer {
         web3j = Web3j.build(channelEthereumService, groupID);
 
         web3jFace.setWeb3j(web3j);
-        precompiledFace.setCredentials(credentials);
+        precompiledFace.setWeb3j(web3j);
         permissionFace.setWeb3j(web3j);
         contractFace.setWeb3j(web3j);
         contractFace.setGroupID(groupID);
