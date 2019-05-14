@@ -117,12 +117,14 @@ public class CRUDParseUtils {
         String[] itemArr = items.substring(1, items.length() - 1).split(",");
         if (columns != null) {
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(columns.get(i).toString(), itemArr[i].trim());
+                entry.put(
+                        trimQuotes(columns.get(i).toString().trim()),
+                        trimQuotes(itemArr[i].trim()));
             }
             return false;
         } else {
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(i + "", itemArr[i].trim());
+                entry.put(i + "", trimQuotes(itemArr[i].trim()));
             }
             return true;
         }
@@ -252,10 +254,13 @@ public class CRUDParseUtils {
         // parse cloumns
         List<Column> columns = update.getColumns();
         List<Expression> expressions = update.getExpressions();
-        String expr = expressions.toString();
-        String[] values = expr.substring(1, expr.length() - 1).split(",");
+        int size = expressions.size();
+        String[] values = new String[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = expressions.get(i).toString();
+        }
         for (int i = 0; i < columns.size(); i++) {
-            entry.put(columns.get(i).toString(), values[i].trim());
+            entry.put(trimQuotes(columns.get(i).toString().trim()), trimQuotes(values[i].trim()));
         }
 
         // parse where clause
