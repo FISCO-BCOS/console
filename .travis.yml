@@ -34,5 +34,6 @@ script: |
   ./nodes/127.0.0.1/start_all.sh
   cp nodes/127.0.0.1/sdk/* src/main/resources/
   mv src/main/resources/applicationContext-sample.xml src/main/resources/applicationContext.xml
-  ./gradlew verGJF
+  ./gradlew verifyGoogleJavaFormat
   ./gradlew build
+  ./gradlew test
