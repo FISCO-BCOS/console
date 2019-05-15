@@ -2,6 +2,8 @@ package console.common;
 
 import console.exception.ConsoleMessageException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
@@ -32,6 +34,7 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
+import org.fisco.bcos.web3j.precompile.crud.EnumOP;
 import org.fisco.bcos.web3j.precompile.crud.Table;
 
 public class CRUDParseUtils {
@@ -114,12 +117,14 @@ public class CRUDParseUtils {
         String[] itemArr = items.substring(1, items.length() - 1).split(",");
         if (columns != null) {
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(columns.get(i).toString(), itemArr[i].trim());
+                entry.put(
+                        trimQuotes(columns.get(i).toString().trim()),
+                        trimQuotes(itemArr[i].trim()));
             }
             return false;
         } else {
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(i + "", itemArr[i].trim());
+                entry.put(i + "", trimQuotes(itemArr[i].trim()));
             }
             return true;
         }
@@ -162,6 +167,7 @@ public class CRUDParseUtils {
         }
         Expression expr = selectBody.getWhere();
         condition = handleExpression(condition, expr);
+
         Limit limit = selectBody.getLimit();
         if (limit != null) {
             parseLimit(condition, limit);
@@ -206,7 +212,33 @@ public class CRUDParseUtils {
         if (expr instanceof IsNullExpression) {
             throw new ConsoleMessageException("The IsNullExpression is not supported.");
         }
+        Map<String, Map<EnumOP, String>> conditions = condition.getConditions();
+        Set<String> keys = conditions.keySet();
+        for (String key : keys) {
+            Map<EnumOP, String> value = conditions.get(key);
+            EnumOP operation = value.keySet().iterator().next();
+            String itemValue = value.values().iterator().next().trim();
+            String newValue = trimQuotes(itemValue);
+            value.put(operation, newValue);
+            conditions.put(key, value);
+        }
+        condition.setConditions(conditions);
         return condition;
+    }
+
+    public static String trimQuotes(String str) {
+        char[] value = str.toCharArray();
+        int len = value.length;
+        int st = 0;
+        char[] val = value; /* avoid getfield opcode */
+
+        while ((st < len) && (val[st] <= '"' || val[st] <= '\'')) {
+            st++;
+        }
+        while ((st < len) && (val[len - 1] <= '"' || val[len - 1] <= '\'')) {
+            len--;
+        }
+        return ((st > 0) || (len < value.length)) ? str.substring(st, len) : str;
     }
 
     public static void parseUpdate(String sql, Table table, Entry entry, Condition condition)
@@ -222,10 +254,13 @@ public class CRUDParseUtils {
         // parse cloumns
         List<Column> columns = update.getColumns();
         List<Expression> expressions = update.getExpressions();
-        String expr = expressions.toString();
-        String[] values = expr.substring(1, expr.length() - 1).split(",");
+        int size = expressions.size();
+        String[] values = new String[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = expressions.get(i).toString();
+        }
         for (int i = 0; i < columns.size(); i++) {
-            entry.put(columns.get(i).toString(), values[i].trim());
+            entry.put(trimQuotes(columns.get(i).toString().trim()), trimQuotes(values[i].trim()));
         }
 
         // parse where clause
