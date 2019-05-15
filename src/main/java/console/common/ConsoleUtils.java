@@ -97,7 +97,7 @@ public class ConsoleUtils {
     }
 
     public static boolean isInvalidHash(String hash) {
-        if (hash.startsWith("0x") && hash.length() == 66) {
+        if (hash.matches("^0x[0-9a-fA-F]{64}$")) {
             return false;
         } else {
             System.out.println("Please provide a valid hash.");
