@@ -713,14 +713,33 @@ public class ContractImpl implements ContractFace {
                 }
             } else if (type[i + 3] == BigInteger.class) {
                 try {
-                    obj[i + 3] = new BigInteger(params[i]);
+                    BigInteger param = new BigInteger(params[i]);
+                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) == 1
+                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) == -1) {
+                        throw new ConsoleMessageException(
+                                "The "
+                                        + (i + 1)
+                                        + "th parameter of "
+                                        + funcName
+                                        + " needs integer("
+                                        + Integer.MIN_VALUE
+                                        + " ~ "
+                                        + Integer.MAX_VALUE
+                                        + ") value in the console.");
+                    } else {
+                        obj[i + 3] = param;
+                    }
                 } catch (Exception e) {
                     throw new ConsoleMessageException(
                             "The "
                                     + (i + 1)
                                     + "th parameter of "
                                     + funcName
-                                    + " needs integer value.");
+                                    + " needs integer("
+                                    + Integer.MIN_VALUE
+                                    + " ~ "
+                                    + Integer.MAX_VALUE
+                                    + ") value in the console.");
                 }
             } else if (type[i + 3] == byte[].class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
