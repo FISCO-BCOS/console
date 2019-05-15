@@ -1,5 +1,6 @@
 package console.common;
 
+import console.exception.ConsoleMessageException;
 import java.io.File;
 import java.io.FileFilter;
 import java.lang.reflect.InvocationTargetException;
@@ -112,7 +113,8 @@ public class ContractClassFactory {
 
     @SuppressWarnings("rawtypes")
     public static Object[] getPrametersObject(
-            String funcName, Class[] type, String[] params, String[] generics) {
+            String funcName, Class[] type, String[] params, String[] generics)
+            throws ConsoleMessageException {
         Object[] obj = new Object[params.length];
         for (int i = 0; i < obj.length; i++) {
             if (type[i] == String.class) {
@@ -145,16 +147,33 @@ public class ContractClassFactory {
                 }
             } else if (type[i] == BigInteger.class) {
                 try {
-                    obj[i] = new BigInteger(params[i]);
+                    BigInteger param = new BigInteger(params[i]);
+                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) == 1
+                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) == -1) {
+                        throw new ConsoleMessageException(
+                                "The "
+                                        + (i + 1)
+                                        + "th parameter of "
+                                        + funcName
+                                        + " needs integer("
+                                        + Integer.MIN_VALUE
+                                        + " ~ "
+                                        + Integer.MAX_VALUE
+                                        + ") value in the console.");
+                    } else {
+                        obj[i] = param;
+                    }
                 } catch (Exception e) {
-                    System.out.println(
+                    throw new ConsoleMessageException(
                             "The "
                                     + (i + 1)
                                     + "th parameter of "
                                     + funcName
-                                    + " needs integer value.");
-                    System.out.println();
-                    return null;
+                                    + " needs integer("
+                                    + Integer.MIN_VALUE
+                                    + " ~ "
+                                    + Integer.MAX_VALUE
+                                    + ") value in the console.");
                 }
             } else if (type[i] == byte[].class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
