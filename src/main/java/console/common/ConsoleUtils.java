@@ -14,6 +14,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import org.apache.commons.io.FileUtils;
@@ -325,10 +326,17 @@ public class ConsoleUtils {
     }
 
     public static String[] tokenizeCommand(String command) throws Exception {
-        List<String> tokens = new ArrayList<>();
-
+        // example: callByCNS HelloWorld.sol set"Hello" parse [callByCNS, HelloWorld.sol,
+        // set"Hello"]
+        List<String> tokens1 = new ArrayList<>();
+        StringTokenizer stringTokenizer = new StringTokenizer(command, " ");
+        while (stringTokenizer.hasMoreTokens()) {
+            tokens1.add(stringTokenizer.nextToken());
+        }
+        // example: callByCNS HelloWorld.sol set"Hello" parse [callByCNS, HelloWorld.sol, set,
+        // "Hello"]
+        List<String> tokens2 = new ArrayList<>();
         StreamTokenizer tokenizer = new CommandTokenizer(new StringReader(command));
-
         int token = tokenizer.nextToken();
         while (token != StreamTokenizer.TT_EOF) {
             switch (token) {
@@ -336,17 +344,17 @@ public class ConsoleUtils {
                     // Ignore \n character.
                     break;
                 case StreamTokenizer.TT_WORD:
-                    tokens.add(tokenizer.sval);
+                    tokens2.add(tokenizer.sval);
                     break;
                 case '\'':
                     // If the tailing ' is missing, it will add a tailing ' to it.
                     // E.g. 'abc -> 'abc'
-                    tokens.add(String.format("'%s'", tokenizer.sval));
+                    tokens2.add(String.format("'%s'", tokenizer.sval));
                     break;
                 case '"':
                     // If the tailing " is missing, it will add a tailing ' to it.
                     // E.g. "abc -> "abc"
-                    tokens.add(String.format("\"%s\"", tokenizer.sval));
+                    tokens2.add(String.format("\"%s\"", tokenizer.sval));
                     break;
                 default:
                     // Ignore all other unknown characters.
@@ -354,7 +362,9 @@ public class ConsoleUtils {
             }
             token = tokenizer.nextToken();
         }
-        return tokens.toArray(new String[tokens.size()]);
+        return tokens1.size() <= tokens2.size()
+                ? tokens1.toArray(new String[tokens1.size()])
+                : tokens2.toArray(new String[tokens2.size()]);
     }
 
     public static void singleLine() {
