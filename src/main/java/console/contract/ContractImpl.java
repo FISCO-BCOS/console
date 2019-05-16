@@ -439,16 +439,7 @@ public class ContractImpl implements ContractFace {
             return;
         }
         contractVersion = params[2];
-        if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
-            ConsoleUtils.printJson(
-                    PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
-            System.out.println();
-            return;
-        }
-        if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
-            System.out.println(
-                    "Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
-            System.out.println();
+        if (!checkVersion(contractVersion)) {
             return;
         }
         try {
@@ -468,6 +459,22 @@ public class ContractImpl implements ContractFace {
                 System.out.println();
             }
         }
+    }
+
+    private boolean checkVersion(String version) throws IOException {
+        if (version.length() > CnsService.MAX_VERSION_LENGTH) {
+            ConsoleUtils.printJson(
+                    PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
+            System.out.println();
+            return false;
+        }
+        if (!version.matches("^[A-Za-z0-9.]+$")) {
+            System.out.println(
+                    "Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
+            System.out.println();
+            return false;
+        }
+        return true;
     }
 
     private void handleDeployParameters(String[] params, int num)
@@ -526,16 +533,7 @@ public class ContractImpl implements ContractFace {
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
             if (contractVersion != null) {
-                if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
-                    ConsoleUtils.printJson(
-                            PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
-                    System.out.println();
-                    return;
-                }
-                if (!contractVersion.matches("^[A-Za-z0-9.]+$")) {
-                    System.out.println(
-                            "Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
-                    System.out.println();
+                if (!checkVersion(contractVersion)) {
                     return;
                 }
                 contractNameAndVersion = name + ":" + contractVersion;
@@ -649,10 +647,7 @@ public class ContractImpl implements ContractFace {
         }
         if (params.length == 3) {
             contractVersion = params[2];
-            if (contractVersion.length() > CnsService.MAX_VERSION_LENGTH) {
-                ConsoleUtils.printJson(
-                        PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
-                System.out.println();
+            if (!checkVersion(contractVersion)) {
                 return;
             }
             cnsInfos = cnsService.queryCnsByNameAndVersion(contractName, contractVersion);
