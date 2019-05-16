@@ -97,10 +97,9 @@ public class ConsoleInitializer {
                 privateKey = args[1];
                 break;
         }
-        try {
-            credentials = GenCredential.create(privateKey);
-        } catch (NumberFormatException e) {
-            System.out.println("Please provide private key by hex format.");
+        credentials = GenCredential.create(privateKey);
+        if (credentials == null) {
+            System.out.println("Please provide a valid account.");
             close();
         }
         service.setGroupId(groupID);

@@ -1,5 +1,6 @@
 package console.common;
 
+import console.exception.ConsoleMessageException;
 import java.io.File;
 import java.io.FileFilter;
 import java.lang.reflect.InvocationTargetException;
@@ -12,11 +13,8 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
-
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tuples.Tuple;
-
-import console.exception.ConsoleMessageException;
 
 public class ContractClassFactory {
     public static final String TARGETCLASSPATH = "solidity/java/classes";
@@ -288,7 +286,7 @@ public class ContractClassFactory {
 
                 } else if (typeName.contains("TransactionReceipt")) {
                     TransactionReceipt resultTx = (TransactionReceipt) result;
-                    return "transaction hash:" +resultTx.getTransactionHash();
+                    return "transaction hash:" + resultTx.getTransactionHash();
                 } else {
                     return result.toString();
                 }
