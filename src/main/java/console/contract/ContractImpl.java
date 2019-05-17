@@ -738,9 +738,8 @@ public class ContractImpl implements ContractFace {
                 }
             } else if (type[i + 3] == byte[].class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    byte[] bytes2 =
-                            params[i + 3].substring(1, params[i + 3].length() - 1).getBytes();
-                    byte[] bytes1 = new byte[bytes2.length];
+                    byte[] bytes2 = params[i].substring(1, params[i].length() - 1).getBytes();
+                    byte[] bytes1 = new byte[32];
                     for (int j = 0; j < bytes2.length; j++) {
                         bytes1[j] = bytes2[j];
                     }
@@ -763,19 +762,19 @@ public class ContractImpl implements ContractFace {
                         jlist[k] = ilist[k].trim();
                     }
                     List paramsList = new ArrayList();
-                    if (generic[i].contains("String")) {
+                    if (generic[i + 3].contains("String")) {
                         paramsList = new ArrayList<String>();
                         for (int j = 0; j < jlist.length; j++) {
                             paramsList.add(jlist[j].substring(1, jlist[j].length() - 1));
                         }
 
-                    } else if (generic[i].contains("BigInteger")) {
+                    } else if (generic[i + 3].contains("BigInteger")) {
                         paramsList = new ArrayList<BigInteger>();
                         for (int j = 0; j < jlist.length; j++) {
                             paramsList.add(new BigInteger(jlist[j]));
                         }
 
-                    } else if (generic[i].contains("byte[]")) {
+                    } else if (generic[i + 3].contains("byte[]")) {
                         paramsList = new ArrayList<byte[]>();
                         for (int j = 0; j < jlist.length; j++) {
                             if (jlist[j].startsWith("\"") && jlist[j].endsWith("\"")) {
