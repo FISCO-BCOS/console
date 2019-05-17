@@ -59,5 +59,5 @@ elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
-   java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $1 $2
+   java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $@
 fi
