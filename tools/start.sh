@@ -36,6 +36,7 @@ function check_java(){
    version=${version:1:len}
 
    IFS='.' arr=($version)
+   IFS=' '
    if [ -z ${arr[0]} ];then
       LOG_ERROR "At least Java8 is required."
       exit 1
@@ -52,12 +53,11 @@ function check_java(){
        exit 1
    fi
 }
-
 if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
 elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
-   java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $@
+   java -cp "apps/*:conf/:lib/*:classes/:accounts/" console.ConsoleClient $@
 fi

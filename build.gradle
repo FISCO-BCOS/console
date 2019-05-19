@@ -65,13 +65,17 @@ jar {
 		}
 		copy {
 			from file('src/main/resources/applicationContext-sample.xml')
-      from file('src/main/resources/log4j.properties')
-      from file('src/main/resources/privateKey.properties')
+      		from file('src/main/resources/log4j.properties')
 			into 'dist/conf'
+		}
+		copy {
+			from file('tools/accounts/')
+			into 'dist/accounts/'
 		}
 		copy {
 			from file('tools/start.sh')
 			from file('tools/replace_solc_jar.sh')
+			from file('tools/get_account.sh')
 			into 'dist/'
 		}
 		copy {
