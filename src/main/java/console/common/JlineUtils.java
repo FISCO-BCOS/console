@@ -139,7 +139,14 @@ public class JlineUtils {
         }
 
         Path path = FileSystems.getDefault().getPath("solidity/contracts/", "");
-        commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
+        commands =
+                Arrays.asList(
+                        "deploy",
+                        "call",
+                        "deployByCNS",
+                        "callByCNS",
+                        "queryCNS",
+                        "getTxReceiptEvents");
 
         for (String command : commands) {
             completers.add(

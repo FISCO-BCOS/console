@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.StringTokenizer;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import org.apache.commons.io.FileUtils;
+import org.fisco.bcos.web3j.abi.datatypes.Bytes;
 import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
 import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
 import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
@@ -302,6 +304,35 @@ public class ConsoleUtils {
                                     "-p", packageName,
                                     "-o", tempDirPath)
                             .toArray(new String[0]));
+        }
+    }
+
+    public static void printEventLog(int index, List<Object> result) throws IllegalAccessException {
+        Object obj = result.get(index);
+        Field[] fields = obj.getClass().getFields();
+        System.out.println("event index: " + index);
+        for (Field field : fields) {
+            String varName = field.getName();
+            if (!"log".equals(varName)) {
+                Object varObj = field.get(obj);
+                if (varObj instanceof ArrayList<?>) {
+                    ArrayList<Object> listObjs = (ArrayList<Object>) varObj;
+                    ArrayList<Object> resultList = new ArrayList<>();
+                    for (Object listObj : listObjs) {
+
+                        String simpleName = listObj.getClass().getSimpleName();
+                        if (simpleName.contains("Bytes")) {
+                            Bytes b = (Bytes) listObj;
+                            resultList.add(new String(b.getValue()).trim());
+                        } else {
+                            resultList.add(listObj);
+                        }
+                    }
+                    System.out.println(varName + " = " + resultList);
+                } else {
+                    System.out.println(varName + " = " + varObj);
+                }
+            }
         }
     }
 

@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.cns.CnsInfo;
 import org.fisco.bcos.web3j.precompile.cns.CnsService;
@@ -824,5 +825,100 @@ public class ContractImpl implements ContractFace {
                             + ".class"
                             + " in the directory of java/classes/org/fisco/bcos/temp");
         }
+    }
+
+    @Override
+    public void getTxReceiptEvents(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("getTxReceiptEvents");
+            return;
+        }
+        if (params.length > 6) {
+            HelpInfo.promptHelp("getTxReceiptEvents");
+            return;
+        }
+        String contractName = params[1];
+        if ("-h".equals(contractName) || "--help".equals(contractName)) {
+            HelpInfo.getTxReceiptEventsHelp();
+            return;
+        }
+        if (params.length < 5) {
+            HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
+            return;
+        }
+        String contractAddress = params[2];
+        Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+        String transactionHash = params[3];
+        if (ConsoleUtils.isInvalidHash(transactionHash)) return;
+        String eventName = params[4];
+        int index = -1;
+        if (params.length == 6) {
+            index = ConsoleUtils.proccessNonNegativeNumber("index", params[5]);
+            if (index == Common.InvalidReturnNumber) {
+                return;
+            }
+        }
+        // query txReceipt
+        TransactionReceipt transactionReceipt;
+        try {
+            transactionReceipt =
+                    web3j.getTransactionReceipt(transactionHash)
+                            .send()
+                            .getTransactionReceipt()
+                            .get();
+        } catch (NoSuchElementException e) {
+            System.out.println("This transaction hash doesn't exist.");
+            System.out.println();
+            return;
+        }
+        // parse txReceipt
+        try {
+            compileContract(contractName);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            System.out.println();
+            return;
+        }
+        Method load =
+                contractClass.getMethod(
+                        "load",
+                        String.class,
+                        Web3j.class,
+                        Credentials.class,
+                        ContractGasProvider.class);
+        contractAddress = convertAddr.getAddress();
+        Object contractObject = load.invoke(null, contractAddress, web3j, credentials, gasProvider);
+        Method[] methods = contractClass.getDeclaredMethods();
+        String funcName =
+                "get" + eventName.substring(0, 1).toUpperCase() + eventName.substring(1) + "Events";
+        Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        if (method == null) {
+            System.out.println(
+                    "Cannot find the event " + funcName + ", please checkout the event name.");
+            System.out.println();
+            return;
+        }
+        List<Object> result = (ArrayList<Object>) method.invoke(contractObject, transactionReceipt);
+        if (result.size() == 0) {
+            System.out.println("The event is empty.");
+            System.out.println();
+            return;
+        }
+        if (index == -1) {
+            for (int i = 0; i < result.size(); i++) {
+                ConsoleUtils.printEventLog(i, result);
+            }
+        } else {
+            if (index > result.size()) {
+                System.out.println("The event index is greater event size.");
+                System.out.println();
+                return;
+            }
+            ConsoleUtils.printEventLog(index, result);
+        }
+        System.out.println();
     }
 }

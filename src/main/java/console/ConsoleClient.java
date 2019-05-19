@@ -96,6 +96,9 @@ public class ConsoleClient {
                     case "queryCNS":
                         contractFace.queryCNS(params);
                         break;
+                    case "getTxReceiptEvents":
+                        contractFace.getTxReceiptEvents(params);
+                        break;
                     case "switch":
                     case "s":
                         consoleInitializer.switchGroupID(params);

@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.Properties;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
@@ -52,10 +55,13 @@ public class ConsoleInitializer {
     private PermissionFace permissionFace;
     private ContractFace contractFace;
 
-    public void init(String[] args) {
+    public void init(String[] args)
+            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+                    NoSuchProviderException {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
+
         if (args.length < 2) {
             InputStream is = null;
             OutputStream os = null;
@@ -90,10 +96,10 @@ public class ConsoleInitializer {
             case 0:
                 break;
             case 1:
-                groupID = setGroupID(args, groupID);
+                groupID = setGroupID(args[0]);
                 break;
             default:
-                groupID = setGroupID(args, groupID);
+                groupID = setGroupID(args[0]);
                 privateKey = args[1];
                 break;
         }
@@ -224,9 +230,9 @@ public class ConsoleInitializer {
         System.out.println();
     }
 
-    private int setGroupID(String[] args, int groupID) {
+    private int setGroupID(String groupIDStr) {
         try {
-            groupID = Integer.parseInt(args[0]);
+            groupID = Integer.parseInt(groupIDStr);
         } catch (NumberFormatException e) {
             System.out.println("Please provide groupID by integer format.");
             close();

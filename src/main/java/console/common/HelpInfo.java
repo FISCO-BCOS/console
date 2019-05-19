@@ -99,6 +99,18 @@ public class HelpInfo {
         }
     }
 
+    public static void startHelp() {
+        System.out.println("Please provide one of the following ways to start the console.");
+        System.out.println("Usage: ");
+        System.out.println("bash start.sh");
+        System.out.println("bash start.sh groupID");
+        System.out.println("bash start.sh -p pem_path");
+        System.out.println("bash start.sh groupID -p pem_path");
+        System.out.println("bash start.sh -k keystore_path password");
+        System.out.println("bash start.sh groupID -k keystore_path password");
+        System.out.println();
+    }
+
     public static void help() {
         System.out.println("Provide help information.");
         System.out.println("Usage: help");
@@ -545,6 +557,18 @@ public class HelpInfo {
                             + contractName
                             + ".");
         }
+        System.out.println();
+    }
+
+    public static void getTxReceiptEventsHelp() {
+        System.out.println("Query transaction receipt events information.");
+        System.out.println(
+                "Usage: getTxReceiptEvents contractName contractAddress transactionHash eventName [eventIndex]");
+        System.out.println("contractName -- The name of a contract.");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
+        System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
+        System.out.println("eventName -- The name of an event.");
+        System.out.println("[eventIndex] -- (optional) The index of an event.");
         System.out.println();
     }
 }
