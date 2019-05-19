@@ -25,9 +25,19 @@ function LOG_INFO()
 }
 
 function Usage() {
-    LOG_INFO "Usage"
-    LOG_INFO "start console: \t./start.sh [groupID] [privateKey]"
-    LOG_INFO "print console version: \t./start.sh --version"
+    LOG_INFO "Usage:start the console"
+    LOG_INFO "./start.sh"
+    LOG_INFO "./start.sh groupID"
+    LOG_INFO "./start.sh -pem"
+    LOG_INFO "./start.sh groupID -pem"
+    LOG_INFO "./start.sh -pem pemName"
+    LOG_INFO "./start.sh groupID -pem pemName"
+    LOG_INFO "./start.sh -p12"
+    LOG_INFO "./start.sh groupID -p12"
+    LOG_INFO "./start.sh -p12 p12Name name password"
+    LOG_INFO "./start.sh groupID -p12 p12Name name password"
+    LOG_INFO "print console version:"
+    LOG_INFO "./start.sh --version or -v"
 }
 
 function check_java(){
