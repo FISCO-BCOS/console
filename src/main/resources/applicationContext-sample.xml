@@ -27,14 +27,6 @@
 						</list>
 					</property>
 				</bean>
-				<bean id="group2"  class="org.fisco.bcos.channel.handler.ChannelConnections">
-					<property name="groupId" value="2" />
-					<property name="connectionsStr">
-						<list>
-							<value>127.0.0.1:20200</value>
-						</list>
-					</property>
-				</bean>
 			</list>
 		</property>
 	</bean>
@@ -43,6 +35,16 @@
 		<property name="groupId" value="1" />
 		<property name="agencyName" value="fisco" />
 		<property name="allChannelConnections" ref="groupChannelConnectionsConfig"></property>
+	</bean>
+	
+	<!-- account config -->
+	<bean id="keyStore" name="keyStore" class="org.fisco.bcos.channel.client.KeyStoreManager" init-method="load" >
+		<property name="name" value="alice" />
+		<property name="password" value="123456" />
+		<property name="keyStoreFile" value="classpath:c3f70a3cca6a952f6efee95a611b2ae1811b81cb.p12" />
+	</bean>
+	<bean id="pem" class="org.fisco.bcos.channel.client.PEMLoader" init-method="load" >
+		<property name="pemFile" value="classpath:c3f70a3cca6a952f6efee95a611b2ae1811b81cb.pem" />
 	</bean>
 
 </beans>

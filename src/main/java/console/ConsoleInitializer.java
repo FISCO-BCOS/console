@@ -10,13 +10,16 @@ import console.precompiled.permission.PermissionFace;
 import console.precompiled.permission.PermissionImpl;
 import console.web3j.Web3jFace;
 import console.web3j.Web3jImpl;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
-import java.util.Properties;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.spec.InvalidKeySpecException;
+import org.fisco.bcos.channel.client.KeyStoreManager;
+import org.fisco.bcos.channel.client.PEMLoader;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
@@ -31,8 +34,6 @@ import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 public class ConsoleInitializer {
 
@@ -46,62 +47,172 @@ public class ConsoleInitializer {
     private String privateKey = "";
     private int groupID;
     public static final int InvalidRequest = 40009;
+    public static final String ACCOUNT_DIR1 = "accounts/";
+    public static final String ACCOUNT_DIR2 = "./accounts/";
 
     private Web3jFace web3jFace;
     private PrecompiledFace precompiledFace;
     private PermissionFace permissionFace;
     private ContractFace contractFace;
 
-    public void init(String[] args) {
+    public void init(String[] args)
+            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+                    NoSuchProviderException, UnrecoverableKeyException, KeyStoreException,
+                    InvalidKeySpecException {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
+        KeyStoreManager ks = context.getBean(KeyStoreManager.class);
+        PEMLoader pem = context.getBean(PEMLoader.class);
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
-        if (args.length < 2) {
-            InputStream is = null;
-            OutputStream os = null;
-            try {
-                // read private key from privateKey.properties
-                Properties prop = new Properties();
-                Resource keyResource = new ClassPathResource("privateKey.properties");
-                if (!keyResource.exists()) {
-                    File privateKeyDir = new File("conf/privateKey.properties");
-                    privateKeyDir.createNewFile();
-                    keyResource = new ClassPathResource("privateKey.properties");
-                }
-                is = keyResource.getInputStream();
-                prop.load(is);
-                privateKey = prop.getProperty("privateKey");
-                is.close();
-                if (privateKey == null) {
-                    // save private key in privateKey.properties
-                    keyPair = Keys.createEcKeyPair();
-                    privateKey = keyPair.getPrivateKey().toString(16);
-                    prop.setProperty("privateKey", privateKey);
-                    os = new FileOutputStream(keyResource.getFile());
-                    prop.store(os, "private key");
-                    os.close();
-                }
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                close();
-            }
-        }
+
         switch (args.length) {
-            case 0:
+            case 0: // bash start.sh
+                useDefaultCredentials();
                 break;
             case 1:
-                groupID = setGroupID(args, groupID);
+                // pem: ./start.sh -pem
+                if ("-pem".equals(args[0])) {
+                    ECKeyPair keyPair = pem.getECKeyPair();
+                    System.out.println("pem privateKey = " + keyPair.getPrivateKey().toString(16));
+                    credentials = Credentials.create(keyPair);
+                    System.out.println("pem address =" + credentials.getAddress());
+                }
+                // p12: ./start.sh -p12
+                else if ("-p12".equals(args[0])) {
+                    ECKeyPair keyPair = null;
+                    try {
+                        keyPair = ks.getECKeyPair(ks.getName(), ks.getPassword());
+                    } catch (Exception e) {
+                        System.out.println("The name for p12 account is error.");
+                        close();
+                    }
+                    if (keyPair != null) {
+                        credentials = Credentials.create(keyPair);
+                    } else {
+                        System.out.println("The name for p12 account is error.");
+                        close();
+                    }
+                } else { // bash start.sh groupID
+                    groupID = setGroupID(args[0]);
+                    useDefaultCredentials();
+                }
+                break;
+            case 2:
+                // ./start.sh -pem pemName
+                if ("-pem".equals(args[0])) {
+                    String pemName = args[1];
+                    pemName = handlPemFileName(pemName);
+                    pem.setPemFile("classpath:" + pemName);
+                    try {
+                        pem.load();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        close();
+                    }
+                    ECKeyPair keyPair = pem.getECKeyPair();
+                    credentials = Credentials.create(keyPair);
+                }
+                // ./start.sh groupID -pem
+                else if ("-pem".equals(args[1])) {
+                    groupID = setGroupID(args[0]);
+                    ECKeyPair keyPair = pem.getECKeyPair();
+                    credentials = Credentials.create(keyPair);
+                }
+                // ./start.sh groupID -p12
+                else if ("-p12".equals(args[1])) {
+                    groupID = setGroupID(args[0]);
+                    ECKeyPair keyPair = ks.getECKeyPair(ks.getName(), ks.getPassword());
+                    credentials = Credentials.create(keyPair);
+                } else {
+                    HelpInfo.startHelp();
+                    close();
+                }
+                break;
+            case 3: // ./start.sh groupID -pem pem_path
+                if ("-pem".equals(args[1])) {
+                    groupID = setGroupID(args[0]);
+                    String pemName = args[2];
+                    pemName = handlPemFileName(pemName);
+                    pem.setPemFile("classpath:" + pemName);
+                    try {
+                        pem.load();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        close();
+                    }
+                    ECKeyPair keyPair = pem.getECKeyPair();
+                    credentials = Credentials.create(keyPair);
+                } else {
+                    HelpInfo.startHelp();
+                    close();
+                }
+                break;
+            case 4: // ./start.sh -p12 p12_path name password
+                if ("-p12".equals(args[0])) {
+                    String p12Name = args[1];
+                    p12Name = handleP12FileName(p12Name);
+                    ks.setKeyStoreFile("classpath:" + p12Name);
+                    String name = args[2];
+                    String password = args[3];
+                    ks.setName(name);
+                    ks.setPassword(password);
+                    try {
+                        ks.load();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        close();
+                    }
+                    ECKeyPair keyPair;
+                    try {
+                        keyPair = ks.getECKeyPair(name, password);
+                        credentials = Credentials.create(keyPair);
+                    } catch (Exception e) {
+                        System.out.println("The name for p12 account is error.");
+                        close();
+                    }
+                } else {
+                    HelpInfo.startHelp();
+                    close();
+                }
+                break;
+            case 5: // ./start.sh groupID -p12 p12_path name password
+                if ("-p12".equals(args[1])) {
+                    groupID = setGroupID(args[0]);
+                    String p12Name = args[2];
+                    p12Name = handleP12FileName(p12Name);
+                    String name = args[3];
+                    String password = args[4];
+                    ks.setName(name);
+                    ks.setPassword(password);
+                    ks.setKeyStoreFile("classpath:" + p12Name);
+                    try {
+                        ks.load();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        close();
+                    }
+                    ECKeyPair keyPair;
+                    try {
+                        keyPair = ks.getECKeyPair(name, password);
+                        credentials = Credentials.create(keyPair);
+                    } catch (Exception e) {
+                        System.out.println("The name for p12 account is error.");
+                        close();
+                    }
+                } else {
+                    HelpInfo.startHelp();
+                    close();
+                }
                 break;
             default:
-                groupID = setGroupID(args, groupID);
-                privateKey = args[1];
-                break;
+                HelpInfo.startHelp();
+                close();
         }
-        credentials = GenCredential.create(privateKey);
         if (credentials == null) {
             System.out.println("Please provide a valid account.");
             close();
         }
+
         service.setGroupId(groupID);
         try {
             service.run();
@@ -155,6 +266,40 @@ public class ConsoleInitializer {
                     "Failed to connect to the node. Please check the node status and the console configuration.");
             close();
         }
+    }
+
+    private String handlPemFileName(String pemName) {
+        if (pemName.startsWith(ACCOUNT_DIR1)) {
+            pemName = pemName.substring(ACCOUNT_DIR1.length());
+        }
+        if (pemName.startsWith(ACCOUNT_DIR2)) {
+            pemName = pemName.substring(ACCOUNT_DIR2.length());
+        }
+        if (!pemName.endsWith(".pem")) {
+            pemName = pemName + ".pem";
+        }
+        return pemName;
+    }
+
+    private String handleP12FileName(String p12Name) {
+        if (p12Name.startsWith(ACCOUNT_DIR1)) {
+            p12Name = p12Name.substring(ACCOUNT_DIR1.length());
+        }
+        if (p12Name.startsWith(ACCOUNT_DIR2)) {
+            p12Name = p12Name.substring(ACCOUNT_DIR2.length());
+        }
+        if (!p12Name.endsWith(".p12")) {
+            p12Name = p12Name + ".p12";
+        }
+        return p12Name;
+    }
+
+    private void useDefaultCredentials()
+            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+                    NoSuchProviderException {
+        keyPair = Keys.createEcKeyPair();
+        privateKey = keyPair.getPrivateKey().toString(16);
+        credentials = GenCredential.create(privateKey);
     }
 
     public void switchGroupID(String[] params) throws IOException {
@@ -224,9 +369,9 @@ public class ConsoleInitializer {
         System.out.println();
     }
 
-    private int setGroupID(String[] args, int groupID) {
+    private int setGroupID(String groupIDStr) {
         try {
-            groupID = Integer.parseInt(args[0]);
+            groupID = Integer.parseInt(groupIDStr);
         } catch (NumberFormatException e) {
             System.out.println("Please provide groupID by integer format.");
             close();
