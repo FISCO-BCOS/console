@@ -18,8 +18,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
 import java.security.spec.InvalidKeySpecException;
-import org.fisco.bcos.channel.client.KeyStoreManager;
-import org.fisco.bcos.channel.client.PEMLoader;
+import org.fisco.bcos.channel.client.P12Manager;
+import org.fisco.bcos.channel.client.PEMManager;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
@@ -60,8 +60,8 @@ public class ConsoleInitializer {
                     NoSuchProviderException, UnrecoverableKeyException, KeyStoreException,
                     InvalidKeySpecException {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
-        KeyStoreManager ks = context.getBean(KeyStoreManager.class);
-        PEMLoader pem = context.getBean(PEMLoader.class);
+        //        KeyStoreManager ks = context.getBean(KeyStoreManager.class);
+        //        PEMLoader pem = context.getBean(PEMLoader.class);
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
 
@@ -70,69 +70,15 @@ public class ConsoleInitializer {
                 useDefaultCredentials();
                 break;
             case 1:
-                // pem: ./start.sh -pem
-                if ("-pem".equals(args[0])) {
-                    ECKeyPair keyPair = pem.getECKeyPair();
-                    System.out.println("pem privateKey = " + keyPair.getPrivateKey().toString(16));
-                    credentials = Credentials.create(keyPair);
-                    System.out.println("pem address =" + credentials.getAddress());
-                }
-                // p12: ./start.sh -p12
-                else if ("-p12".equals(args[0])) {
-                    ECKeyPair keyPair = null;
-                    try {
-                        keyPair = ks.getECKeyPair(ks.getName(), ks.getPassword());
-                    } catch (Exception e) {
-                        System.out.println("The name for p12 account is error.");
-                        close();
-                    }
-                    if (keyPair != null) {
-                        credentials = Credentials.create(keyPair);
-                    } else {
-                        System.out.println("The name for p12 account is error.");
-                        close();
-                    }
-                } else { // bash start.sh groupID
-                    groupID = setGroupID(args[0]);
-                    useDefaultCredentials();
-                }
+                groupID = setGroupID(args[0]);
+                useDefaultCredentials();
                 break;
-            case 2:
-                // ./start.sh -pem pemName
-                if ("-pem".equals(args[0])) {
-                    String pemName = args[1];
-                    pemName = handlPemFileName(pemName);
-                    pem.setPemFile("classpath:" + pemName);
-                    try {
-                        pem.load();
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                        close();
-                    }
-                    ECKeyPair keyPair = pem.getECKeyPair();
-                    credentials = Credentials.create(keyPair);
-                }
-                // ./start.sh groupID -pem
-                else if ("-pem".equals(args[1])) {
-                    groupID = setGroupID(args[0]);
-                    ECKeyPair keyPair = pem.getECKeyPair();
-                    credentials = Credentials.create(keyPair);
-                }
-                // ./start.sh groupID -p12
-                else if ("-p12".equals(args[1])) {
-                    groupID = setGroupID(args[0]);
-                    ECKeyPair keyPair = ks.getECKeyPair(ks.getName(), ks.getPassword());
-                    credentials = Credentials.create(keyPair);
-                } else {
-                    HelpInfo.startHelp();
-                    close();
-                }
-                break;
-            case 3: // ./start.sh groupID -pem pem_path
+            case 3: // ./start.sh groupID -pem pemName
                 if ("-pem".equals(args[1])) {
                     groupID = setGroupID(args[0]);
                     String pemName = args[2];
                     pemName = handlPemFileName(pemName);
+                    PEMManager pem = new PEMManager();
                     pem.setPemFile("classpath:" + pemName);
                     try {
                         pem.load();
@@ -147,53 +93,24 @@ public class ConsoleInitializer {
                     close();
                 }
                 break;
-            case 4: // ./start.sh -p12 p12_path name password
-                if ("-p12".equals(args[0])) {
-                    String p12Name = args[1];
-                    p12Name = handleP12FileName(p12Name);
-                    ks.setKeyStoreFile("classpath:" + p12Name);
-                    String name = args[2];
-                    String password = args[3];
-                    ks.setName(name);
-                    ks.setPassword(password);
-                    try {
-                        ks.load();
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                        close();
-                    }
-                    ECKeyPair keyPair;
-                    try {
-                        keyPair = ks.getECKeyPair(name, password);
-                        credentials = Credentials.create(keyPair);
-                    } catch (Exception e) {
-                        System.out.println("The name for p12 account is error.");
-                        close();
-                    }
-                } else {
-                    HelpInfo.startHelp();
-                    close();
-                }
-                break;
-            case 5: // ./start.sh groupID -p12 p12_path name password
+            case 4: // ./start.sh groupID -p12 p12Name password
                 if ("-p12".equals(args[1])) {
                     groupID = setGroupID(args[0]);
                     String p12Name = args[2];
                     p12Name = handleP12FileName(p12Name);
-                    String name = args[3];
-                    String password = args[4];
-                    ks.setName(name);
-                    ks.setPassword(password);
-                    ks.setKeyStoreFile("classpath:" + p12Name);
+                    String password = args[3];
+                    P12Manager p12Manager = new P12Manager();
+                    p12Manager.setPassword(password);
+                    p12Manager.setKeyStoreFile("classpath:" + p12Name);
                     try {
-                        ks.load();
+                        p12Manager.load();
                     } catch (Exception e) {
                         System.out.println(e.getMessage());
                         close();
                     }
                     ECKeyPair keyPair;
                     try {
-                        keyPair = ks.getECKeyPair(name, password);
+                        keyPair = p12Manager.getECKeyPair(password);
                         credentials = Credentials.create(keyPair);
                     } catch (Exception e) {
                         System.out.println("The name for p12 account is error.");
@@ -212,7 +129,6 @@ public class ConsoleInitializer {
             System.out.println("Please provide a valid account.");
             close();
         }
-
         service.setGroupId(groupID);
         try {
             service.run();
