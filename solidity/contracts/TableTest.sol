@@ -1,7 +1,8 @@
 import "./Table.sol";
+pragma experimental ABIEncoderV2;
 
 contract TableTest {
-    event selectResult(bytes32 name, int item_id, bytes32 item_name);
+    event selectResult(string name, int item_id, string item_name);
     event insertResult(int count);
     event updateResult(int count);
     event removeResult(int count);
@@ -15,7 +16,7 @@ contract TableTest {
     }
 
     //select records
-    function select(string name) public constant returns(bytes32[], int[], bytes32[]){
+    function select(string name) public constant returns(string[], int[], string[]){
         TableFactory tf = TableFactory(0x1001);
         Table table = tf.openTable("t_test");
         
@@ -23,16 +24,16 @@ contract TableTest {
         //condition.EQ("name", name);
         
         Entries entries = table.select(name, condition);
-        bytes32[] memory user_name_bytes_list = new bytes32[](uint256(entries.size()));
+        string[] memory user_name_bytes_list = new string[](uint256(entries.size()));
         int[] memory item_id_list = new int[](uint256(entries.size()));
-        bytes32[] memory item_name_bytes_list = new bytes32[](uint256(entries.size()));
+        string[] memory item_name_bytes_list = new string[](uint256(entries.size()));
         
         for(int i=0; i<entries.size(); ++i) {
             Entry entry = entries.get(i);
             
-            user_name_bytes_list[uint256(i)] = entry.getBytes32("name");
+            user_name_bytes_list[uint256(i)] = entry.getString("name");
             item_id_list[uint256(i)] = entry.getInt("item_id");
-            item_name_bytes_list[uint256(i)] = entry.getBytes32("item_name");
+            item_name_bytes_list[uint256(i)] = entry.getString("item_name");
             selectResult(user_name_bytes_list[uint256(i)], item_id_list[uint256(i)], item_name_bytes_list[uint256(i)]);
         }
  
