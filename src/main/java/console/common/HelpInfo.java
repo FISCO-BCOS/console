@@ -553,13 +553,7 @@ public class HelpInfo {
         System.out.println("Usage: ");
         System.out.println("./start.sh");
         System.out.println("./start.sh groupID");
-        System.out.println("./start.sh -pem");
-        System.out.println("./start.sh groupID -pem");
-        System.out.println("./start.sh -pem pemName");
         System.out.println("./start.sh groupID -pem pemName");
-        System.out.println("./start.sh -p12");
-        System.out.println("./start.sh groupID -p12");
-        System.out.println("./start.sh -p12 p12Name name password");
-        System.out.println("./start.sh groupID -p12 p12Name name password");
+        System.out.println("./start.sh groupID -p12 p12Name password");
     }
 }

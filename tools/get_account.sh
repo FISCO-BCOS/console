@@ -90,16 +90,18 @@ main()
     done
     check_env
     prepare_keccak256
-    openssl ecparam -name secp256k1 -genkey -noout -out ${output_path}/ecprivkey.pem 2>/dev/null
+    openssl ecparam -out /tmp/secp256k1.param -name secp256k1
+    openssl genpkey -paramfile /tmp/secp256k1.param -out ${output_path}/ecprivkey.pem
     calculate_address_pem ${output_path}/ecprivkey.pem
     if [ -z "$pkcs12_passwd" ];then
-        mv ${output_path}/ecprivkey.pem ${output_path}/${accountAddress}.private.pem
-        LOG_INFO "Private Key (pem) : ${output_path}/${accountAddress}.private.pem"
+        mv ${output_path}/ecprivkey.pem ${output_path}/${accountAddress}.pem
+        LOG_INFO "Private Key (pem) : ${output_path}/${accountAddress}.pem"
         # echo "0x${privKey}" > ${output_path}/${accountAddress}.private.hex
         # openssl ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/${accountAddress}.public.pem 2>/dev/null
         # LOG_INFO "Public  Key (pem) : ${output_path}/${accountAddress}.publick.pem"
     else
-        openssl pkcs12 -export -name client -nocerts -passout "pass:${pkcs12_passwd}" -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/${accountAddress}.p12"
+        openssl pkcs12 -export -name key -nocerts -passout "pass:${pkcs12_passwd}" -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/${accountAddress}.p12"
+        rm ${output_path}/ecprivkey.pem
         LOG_INFO "Private Key (p12) : ${output_path}/${accountAddress}.p12"
     fi
     # LOG_INFO "Private Key (hex) : 0x${privKey}"
