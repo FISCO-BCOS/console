@@ -268,7 +268,6 @@ public class CRUDParseUtils {
         if (where != null) {
             BinaryExpression expr2 = (BinaryExpression) (where);
             handleExpression(condition, expr2);
-            getWhereClause(expr2, condition);
         }
         Limit limit = update.getLimit();
         parseLimit(condition, limit);
@@ -288,7 +287,6 @@ public class CRUDParseUtils {
         if (where != null) {
             BinaryExpression expr = (BinaryExpression) (where);
             handleExpression(condition, expr);
-            getWhereClause(expr, condition);
         }
         Limit limit = delete.getLimit();
         parseLimit(condition, limit);
@@ -324,9 +322,9 @@ public class CRUDParseUtils {
                     @Override
                     protected void visitBinaryExpression(BinaryExpression expr) {
                         if (expr instanceof ComparisonOperator) {
-                            String key = expr.getLeftExpression().toString();
+                            String key = trimQuotes(expr.getLeftExpression().toString());
                             String operation = expr.getStringExpression();
-                            String value = expr.getRightExpression().toString();
+                            String value = trimQuotes(expr.getRightExpression().toString());
                             switch (operation) {
                                 case "=":
                                     condition.EQ(key, value);
