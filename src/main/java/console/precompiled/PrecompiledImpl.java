@@ -469,6 +469,14 @@ public class PrecompiledImpl implements PrecompiledFace {
             Table descTable = crudSerivce.desc(table.getTableName());
             table.setKey(descTable.getKey());
             handleKey(table, condition);
+            String fields = descTable.getKey() + "," + descTable.getValueFields();
+            List<String> fieldsList = Arrays.asList(fields.split(","));
+            for (String column : selectColumns) {
+                if (!fieldsList.contains(column) && !"*".equals(column)) {
+                    throw new ConsoleMessageException(
+                            "Unknown field '" + column + "' in field list.");
+                }
+            }
             List<Map<String, String>> result = crudSerivce.select(table, condition);
             int rows = 0;
             if (result.size() == 0) {
@@ -519,7 +527,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     private List<Map<String, String>> filterSystemColum(List<Map<String, String>> result) {
 
-        List<String> filteredColumns = Arrays.asList("_hash_", "_status_");
+        List<String> filteredColumns = Arrays.asList("_id_", "_hash_", "_status_", "_num_");
         List<Map<String, String>> filteredResult = new ArrayList<>(result.size());
         Map<String, String> filteredRecords;
         for (Map<String, String> records : result) {
