@@ -85,9 +85,6 @@ public class ContractImpl implements ContractFace {
             return;
         }
         String name = params[1];
-        if (name.endsWith(".sol")) {
-            name = name.substring(0, name.length() - 4);
-        }
         try {
             compileContract(name);
         } catch (Exception e) {
@@ -275,9 +272,6 @@ public class ContractImpl implements ContractFace {
             return;
         }
         String name = params[1];
-        if (name.endsWith(".sol")) {
-            name = name.substring(0, name.length() - 4);
-        }
         try {
             compileContract(name);
         } catch (Exception e) {
@@ -315,16 +309,10 @@ public class ContractImpl implements ContractFace {
         for (int i = 0; i < classType.length; i++) {
             generic[i] = method.getGenericParameterTypes()[i].getTypeName();
         }
-        Class[] classList = new Class[classType.length];
+        Class[] parameterType = new Class[classType.length];
         for (int i = 0; i < classType.length; i++) {
             Class clazz = (Class) classType[i];
-            classList[i] = clazz;
-        }
-        Class[] parameterType =
-                ContractClassFactory.getParameterType(contractClass, funcName, params.length - 4);
-        if (parameterType == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
-            return;
+            parameterType[i] = clazz;
         }
         Method func = contractClass.getMethod(funcName, parameterType);
         String[] newParams = new String[params.length - 4];
@@ -375,6 +363,7 @@ public class ContractImpl implements ContractFace {
             HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
             return;
         }
+
         System.out.println(returnObject);
         System.out.println();
     }
@@ -413,9 +402,6 @@ public class ContractImpl implements ContractFace {
         }
 
         String name = params[1];
-        if (name.endsWith(".sol")) {
-            name = name.substring(0, name.length() - 4);
-        }
         CnsService cnsService = new CnsService(web3j, credentials);
         List<CnsInfo> qcns = cnsService.queryCnsByNameAndVersion(name, params[2]);
         if (qcns.size() != 0) {
@@ -583,16 +569,10 @@ public class ContractImpl implements ContractFace {
             generic[i] = method.getGenericParameterTypes()[i].getTypeName();
         }
 
-        Class[] classList = new Class[classType.length];
+        Class[] parameterType = new Class[classType.length];
         for (int i = 0; i < classType.length; i++) {
             Class clazz = (Class) classType[i];
-            classList[i] = clazz;
-        }
-        Class[] parameterType =
-                ContractClassFactory.getParameterType(contractClass, funcName, params.length - 3);
-        if (parameterType == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 3);
-            return;
+            parameterType[i] = clazz;
         }
         Method func = contractClass.getMethod(funcName, parameterType);
         String[] newParams = new String[params.length - 3];
@@ -806,6 +786,9 @@ public class ContractImpl implements ContractFace {
 
     private void compileContract(String name) throws Exception {
         try {
+            if (name.endsWith(".sol")) {
+                name = name.substring(0, name.length() - ".sol".length());
+            }
             ConsoleUtils.dynamicCompileSolFilesToJava(name);
         } catch (IOException e) {
             throw new IOException(e.getMessage());

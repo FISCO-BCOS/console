@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileFilter;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -86,29 +85,6 @@ public class ContractClassFactory {
             }
         }
         return null;
-    }
-
-    @SuppressWarnings("rawtypes")
-    public static Class[] getParameterType(Class clazz, String methodName, int paramsLen)
-            throws ClassNotFoundException, IllegalAccessException, MalformedURLException,
-                    InstantiationException {
-        Method[] methods = clazz.getDeclaredMethods();
-        Class[] type = null;
-        for (Method method : methods) {
-            if (methodName.equals(method.getName())
-                    && (method.getParameters()).length == paramsLen) {
-                Parameter[] params = method.getParameters();
-                type = new Class[params.length];
-                for (int i = 0; i < params.length; i++) {
-                    String typeName = params[i].getParameterizedType().getTypeName();
-                    if ("byte[]".equals(typeName)) type[i] = byte[].class;
-                    else type[i] = Class.forName(typeName);
-                }
-                break;
-            }
-        }
-
-        return type;
     }
 
     @SuppressWarnings("rawtypes")

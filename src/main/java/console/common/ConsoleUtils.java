@@ -329,6 +329,9 @@ public class ConsoleUtils {
                         }
                     }
                     System.out.println(varName + " = " + resultList);
+                } else if (varObj.getClass() == byte[].class) {
+                    byte[] b = (byte[]) varObj;
+                    System.out.println(varName + " = " + new String(b).trim());
                 } else {
                     System.out.println(varName + " = " + varObj);
                 }
