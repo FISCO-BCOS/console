@@ -30,7 +30,7 @@ dependencies {
     compile group: "org.fisco-bcos", name: "web3sdk", version: "2.0.31-SNAPSHOT", changing: true
 //	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.0-rc1'
     compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.25'
-    compile group: 'org.jline', name: 'jline', version: '3.10.0'
+    compile group: 'org.jline', name: 'jline', version: '3.9.0'
     compile group: 'io.bretty', name: 'console-table-builder', version: '1.2'
     compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.0'
     testCompile group: 'junit', name: 'junit', version: '4.1'
@@ -65,13 +65,13 @@ jar {
 		}
 		copy {
 			from file('src/main/resources/applicationContext-sample.xml')
-      from file('src/main/resources/log4j.properties')
-      from file('src/main/resources/privateKey.properties')
+      		from file('src/main/resources/log4j.properties')
 			into 'dist/conf'
 		}
 		copy {
 			from file('tools/start.sh')
 			from file('tools/replace_solc_jar.sh')
+			from file('tools/get_account.sh')
 			into 'dist/'
 		}
 		copy {
