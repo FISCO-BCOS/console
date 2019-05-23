@@ -197,7 +197,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void desc(String[] params) {
+    public void desc(String[] params) throws Exception {
         if (params.length < 2) {
             HelpInfo.promptHelp("desc");
             return;
@@ -226,14 +226,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(tableInfo);
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void createTable(String sql) {
+    public void createTable(String sql) throws Exception {
         Table table = new Table();
         try {
             CRUDParseUtils.parseCreateTable(sql, table);
@@ -260,14 +258,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void insert(String sql) {
+    public void insert(String sql) throws Exception {
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -350,14 +346,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void update(String sql) {
+    public void update(String sql) throws Exception {
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -406,14 +400,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void remove(String sql) {
+    public void remove(String sql) throws Exception {
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Condition condition = table.getCondition();
@@ -442,14 +434,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void select(String sql) {
+    public void select(String sql) throws Exception {
         Table table = new Table();
         Condition condition = table.getCondition();
         List<String> selectColumns = new ArrayList<>();
@@ -498,9 +488,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println(rows + " rows in set.");
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
         System.out.println();
     }
