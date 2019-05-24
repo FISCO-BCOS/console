@@ -197,7 +197,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void desc(String[] params) {
+    public void desc(String[] params) throws Exception {
         if (params.length < 2) {
             HelpInfo.promptHelp("desc");
             return;
@@ -226,14 +226,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(tableInfo);
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void createTable(String sql) {
+    public void createTable(String sql) throws Exception {
         Table table = new Table();
         try {
             CRUDParseUtils.parseCreateTable(sql, table);
@@ -260,14 +258,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void insert(String sql) {
+    public void insert(String sql) throws Exception {
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -316,6 +312,22 @@ public class PrecompiledImpl implements PrecompiledFace {
                         throw new ConsoleMessageException(
                                 "Unknown field '" + entryField + "' in field list.");
                     }
+                    if (fieldsList.size() != entryFields.size()) {
+                        List<String> listString = new ArrayList<String>(fieldsList);
+                        for (String entryItem : entryFields) {
+                            listString.remove(entryItem);
+                        }
+                        StringBuilder strBuilder = new StringBuilder("Please provide field '");
+                        for (int i = 0; i < listString.size(); i++) {
+                            if (i == listString.size() - 1) {
+                                strBuilder.append(listString.get(i)).append("' ");
+                            } else {
+                                strBuilder.append(listString.get(i)).append("', ");
+                            }
+                        }
+                        strBuilder.append("in field list.");
+                        throw new ConsoleMessageException(strBuilder.toString());
+                    }
                 }
                 String keyValue = entry.get(keyName);
                 if (keyValue == null) {
@@ -334,14 +346,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void update(String sql) {
+    public void update(String sql) throws Exception {
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -390,14 +400,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void remove(String sql) {
+    public void remove(String sql) throws Exception {
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Condition condition = table.getCondition();
@@ -426,14 +434,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void select(String sql) {
+    public void select(String sql) throws Exception {
         Table table = new Table();
         Condition condition = table.getCondition();
         List<String> selectColumns = new ArrayList<>();
@@ -453,6 +459,14 @@ public class PrecompiledImpl implements PrecompiledFace {
             Table descTable = crudSerivce.desc(table.getTableName());
             table.setKey(descTable.getKey());
             handleKey(table, condition);
+            String fields = descTable.getKey() + "," + descTable.getValueFields();
+            List<String> fieldsList = Arrays.asList(fields.split(","));
+            for (String column : selectColumns) {
+                if (!fieldsList.contains(column) && !"*".equals(column)) {
+                    throw new ConsoleMessageException(
+                            "Unknown field '" + column + "' in field list.");
+                }
+            }
             List<Map<String, String>> result = crudSerivce.select(table, condition);
             int rows = 0;
             if (result.size() == 0) {
@@ -474,9 +488,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println(rows + " rows in set.");
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
         System.out.println();
     }
@@ -503,7 +515,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     private List<Map<String, String>> filterSystemColum(List<Map<String, String>> result) {
 
-        List<String> filteredColumns = Arrays.asList("_hash_", "_status_");
+        List<String> filteredColumns = Arrays.asList("_id_", "_hash_", "_status_", "_num_");
         List<Map<String, String>> filteredResult = new ArrayList<>(result.size());
         Map<String, String> filteredRecords;
         for (Map<String, String> records : result) {
