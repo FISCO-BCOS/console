@@ -110,8 +110,7 @@ public class ContractImpl implements ContractFace {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
-                System.out.println(e.getMessage());
-                System.out.println();
+                throw e;
             }
         }
     }
@@ -442,8 +441,7 @@ public class ContractImpl implements ContractFace {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
-                System.out.println(e.getMessage());
-                System.out.println();
+                throw e;
             }
         }
     }
