@@ -381,6 +381,9 @@ public class ContractImpl implements ContractFace {
         }
 
         String name = params[1];
+        if (name.endsWith(".sol")) {
+            name = name.substring(0, name.length() - ".sol".length());
+        }
         CnsService cnsService = new CnsService(web3j, credentials);
         List<CnsInfo> qcns = cnsService.queryCnsByNameAndVersion(name, params[2]);
         if (qcns.size() != 0) {
@@ -391,9 +394,6 @@ public class ContractImpl implements ContractFace {
             return;
         }
         try {
-            if (name.endsWith(".sol")) {
-                name = name.substring(0, name.length() - ".sol".length());
-            }
             Class<?> contractClass = ContractClassFactory.compileContract(name);
             RemoteCall<?> remoteCall =
                     ContractClassFactory.handleDeployParameters(
@@ -405,10 +405,10 @@ public class ContractImpl implements ContractFace {
             Contract contract = (Contract) remoteCall.send();
             String contractAddress = contract.getContractAddress();
             // register cns
-            String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
+            cnsService.registerCns(name, contractVersion, contractAddress, "");
             System.out.println("contract address:" + contractAddress);
             String contractName = name + ":" + contractVersion;
-            writeLog(name, contractAddress);
+            writeLog(contractName, contractAddress);
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
