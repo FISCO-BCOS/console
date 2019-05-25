@@ -115,10 +115,10 @@ public class CRUDParseUtils {
         ItemsList itemsList = insert.getItemsList();
         String items = itemsList.toString();
         String[] itemArr = items.substring(1, items.length() - 1).split(",");
-        if (columns.size() != itemArr.length) {
-            throw new ConsoleMessageException("Column count doesn't match value count.");
-        }
         if (columns != null) {
+            if (columns.size() != itemArr.length) {
+                throw new ConsoleMessageException("Column count doesn't match value count.");
+            }
             for (int i = 0; i < itemArr.length; i++) {
                 entry.put(
                         trimQuotes(columns.get(i).toString().trim()),
