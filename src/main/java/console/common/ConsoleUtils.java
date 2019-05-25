@@ -11,25 +11,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 import org.apache.commons.io.FileUtils;
-import org.fisco.bcos.web3j.abi.datatypes.Bytes;
 import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
 import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
 import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
 
 public class ConsoleUtils {
-
-    public static final String JAVAPATH = "solidity/java/org/fisco/bcos/temp";
-    public static final String CLASSPATH = "solidity/java/classes/org/fisco/bcos/temp";
-    public static final String TARGETCLASSPATH = "solidity/java/classes";
-    public static final String PACKAGENAME = "org.fisco.bcos.temp";
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
@@ -183,58 +174,6 @@ public class ConsoleUtils {
         address.setAddress(newAddessStr);
     }
 
-    // dynamic compile target java code
-    public static void dynamicCompileJavaToClass(String name) throws Exception {
-
-        File sourceDir = new File(JAVAPATH);
-        if (!sourceDir.exists()) {
-            sourceDir.mkdirs();
-        }
-
-        File distDir = new File(TARGETCLASSPATH);
-        if (!distDir.exists()) {
-            distDir.mkdirs();
-        }
-        File[] javaFiles = sourceDir.listFiles();
-        for (File javaFile : javaFiles) {
-            if (!javaFile.getName().equals(name + ".java")) {
-                continue;
-            }
-            JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-            int compileResult =
-                    javac.run(
-                            null,
-                            null,
-                            null,
-                            "-d",
-                            distDir.getAbsolutePath(),
-                            javaFile.getAbsolutePath());
-            if (compileResult != 0) {
-                System.err.println("compile failed!!");
-                System.out.println();
-                return;
-            }
-        }
-    }
-
-    public static void dynamicCompileSolFilesToJava(String name) throws IOException {
-        if (!name.endsWith(".sol")) {
-            name = name + ".sol";
-        }
-        File solFileList = new File("solidity/contracts/");
-        if (!solFileList.exists()) {
-            throw new IOException("Please checkout solidity/contracts/ is exist");
-        }
-        File solFile = new File("solidity/contracts/" + name);
-        if (!solFile.exists()) {
-            throw new IOException(
-                    "There is no " + name + " in the directory of solidity/contracts");
-        }
-        String tempDirPath = new File("solidity/java").getAbsolutePath();
-        compileSolToJava(
-                name, tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
-    }
-
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Please provide a package name.");
@@ -252,7 +191,7 @@ public class ConsoleUtils {
         }
     }
 
-    private static void compileSolToJava(
+    public static void compileSolToJava(
             String solName,
             String tempDirPath,
             String packageName,
@@ -304,38 +243,6 @@ public class ConsoleUtils {
                                     "-p", packageName,
                                     "-o", tempDirPath)
                             .toArray(new String[0]));
-        }
-    }
-
-    public static void printEventLog(int index, List<Object> result) throws IllegalAccessException {
-        Object obj = result.get(index);
-        Field[] fields = obj.getClass().getFields();
-        System.out.println("event index: " + index);
-        for (Field field : fields) {
-            String varName = field.getName();
-            if (!"log".equals(varName)) {
-                Object varObj = field.get(obj);
-                if (varObj instanceof ArrayList<?>) {
-                    ArrayList<Object> listObjs = (ArrayList<Object>) varObj;
-                    ArrayList<Object> resultList = new ArrayList<>();
-                    for (Object listObj : listObjs) {
-
-                        String simpleName = listObj.getClass().getSimpleName();
-                        if (simpleName.contains("Bytes")) {
-                            Bytes b = (Bytes) listObj;
-                            resultList.add(new String(b.getValue()).trim());
-                        } else {
-                            resultList.add(listObj);
-                        }
-                    }
-                    System.out.println(varName + " = " + resultList);
-                } else if (varObj.getClass() == byte[].class) {
-                    byte[] b = (byte[]) varObj;
-                    System.out.println(varName + " = " + new String(b).trim());
-                } else {
-                    System.out.println(varName + " = " + varObj);
-                }
-            }
         }
     }
 
@@ -403,16 +310,11 @@ public class ConsoleUtils {
 
     public static void singleLine() {
         System.out.println(
-                "-------------------------------------------------------------------------------------");
-    }
-
-    public static void singleLineForTable() {
-        System.out.println(
                 "---------------------------------------------------------------------------------------------");
     }
 
     public static void doubleLine() {
         System.out.println(
-                "=====================================================================================");
+                "=============================================================================================");
     }
 }

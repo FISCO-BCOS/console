@@ -1,7 +1,9 @@
 package console.web3j;
 
 import java.io.IOException;
+import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 
 public interface Web3jFace {
 
@@ -41,7 +43,7 @@ public interface Web3jFace {
 
     void getTransactionByBlockNumberAndIndex(String[] params) throws IOException;
 
-    void getTransactionReceipt(String[] params) throws IOException;
+    void getTransactionReceipt(String[] params) throws Exception;
 
     void getPendingTxSize(String[] params) throws IOException;
 
@@ -52,4 +54,8 @@ public interface Web3jFace {
     void getTotalTransactionCount(String[] params) throws IOException;
 
     void getSystemConfigByKey(String[] params) throws Exception;
+
+    void setCredentials(Credentials credentials);
+
+    void setGasProvider(StaticGasProvider gasProvider);
 }

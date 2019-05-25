@@ -155,6 +155,8 @@ public class ConsoleInitializer {
             }
             web3jFace = new Web3jImpl();
             web3jFace.setWeb3j(web3j);
+            web3jFace.setGasProvider(gasProvider);
+            web3jFace.setCredentials(credentials);
 
             precompiledFace = new PrecompiledImpl();
             precompiledFace.setWeb3j(web3j);

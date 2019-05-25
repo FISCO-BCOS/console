@@ -95,7 +95,6 @@ public class JlineUtils {
                         "getTransactionByHash",
                         "getTransactionByBlockHashAndIndex",
                         "getTransactionByBlockNumberAndIndex",
-                        "getTransactionReceipt",
                         "getPendingTransactions",
                         "getPendingTxSize",
                         "getCode",
@@ -139,14 +138,7 @@ public class JlineUtils {
         }
 
         Path path = FileSystems.getDefault().getPath("solidity/contracts/", "");
-        commands =
-                Arrays.asList(
-                        "deploy",
-                        "call",
-                        "deployByCNS",
-                        "callByCNS",
-                        "queryCNS",
-                        "getTxReceiptEvents");
+        commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
 
         for (String command : commands) {
             completers.add(
@@ -155,7 +147,14 @@ public class JlineUtils {
                             new FilesCompleter(path),
                             new StringsCompleterIgnoreCase()));
         }
-
+        commands = Arrays.asList("getTransactionReceipt");
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter("0x"),
+                            new FilesCompleter(path)));
+        }
         commands = Arrays.asList("setSystemConfigByKey", "getSystemConfigByKey");
 
         for (String command : commands) {

@@ -437,7 +437,7 @@ public class PermissionImpl implements PermissionFace {
             System.out.println();
             return;
         }
-        ConsoleUtils.singleLineForTable();
+        ConsoleUtils.singleLine();
         String[] headers = {"address", "enable_num"};
         int size = permissionInfos.size();
         String[][] data = new String[size][2];
@@ -448,7 +448,7 @@ public class PermissionImpl implements PermissionFace {
         ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 45);
         Table table = Table.of(headers, data, cf);
         System.out.println(table);
-        ConsoleUtils.singleLineForTable();
+        ConsoleUtils.singleLine();
         System.out.println();
     }
 }

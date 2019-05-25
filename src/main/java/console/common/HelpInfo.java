@@ -257,8 +257,12 @@ public class HelpInfo {
 
     public static void getTransactionReceiptHelp() {
         System.out.println("Query the receipt of a transaction by transaction hash.");
-        System.out.println("Usage: getTransactionReceipt transactionHash");
+        System.out.println(
+                "Usage: getTransactionReceipt transactionHash [contractName] [eventName] [eventIndex]");
         System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
+        System.out.println("[contractName] -- (optional) The name of a contract.");
+        System.out.println("[eventName] --  (optional) The name of an event.");
+        System.out.println("[eventIndex] -- (optional) The index of an event.");
         System.out.println();
     }
 
@@ -545,18 +549,6 @@ public class HelpInfo {
                             + contractName
                             + ".");
         }
-        System.out.println();
-    }
-
-    public static void getTxReceiptEventsHelp() {
-        System.out.println("Query transaction receipt events information.");
-        System.out.println(
-                "Usage: getTxReceiptEvents contractName contractAddress transactionHash eventName [eventIndex]");
-        System.out.println("contractName -- The name of a contract.");
-        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
-        System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
-        System.out.println("eventName -- The name of an event.");
-        System.out.println("[eventIndex] -- (optional) The index of an event.");
         System.out.println();
     }
 

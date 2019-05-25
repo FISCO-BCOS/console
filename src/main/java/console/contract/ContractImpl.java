@@ -1,13 +1,10 @@
 package console.contract;
 
-import static console.common.ContractClassFactory.getContractClass;
-
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
-import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
@@ -17,7 +14,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.math.BigInteger;
@@ -25,7 +21,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.cns.CnsInfo;
 import org.fisco.bcos.web3j.precompile.cns.CnsService;
@@ -48,11 +43,11 @@ public class ContractImpl implements ContractFace {
     private StaticGasProvider gasProvider;
     private Web3j web3j;
 
-    private String contractAddress;
-    private String contractName;
-    private String contractVersion;
-    private Class<?> contractClass;
-    private RemoteCall<?> remoteCall;
+    //    private String contractAddress;
+    //    private String contractName;
+    //    private String contractVersion;
+    //    private Class<?> contractClass;
+    //    private RemoteCall<?> remoteCall;
 
     @Override
     public void setGroupID(int groupID) {
@@ -86,26 +81,16 @@ public class ContractImpl implements ContractFace {
         }
         String name = params[1];
         try {
-            compileContract(name);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
-        try {
-            handleDeployParameters(params, 2);
-        } catch (ConsoleMessageException e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
-        try {
+            Class<?> contractClass = ContractClassFactory.compileContract(name);
+            RemoteCall<?> remoteCall =
+                    ContractClassFactory.handleDeployParameters(
+                            web3j, credentials, gasProvider, contractClass, params, 2);
             Contract contract = (Contract) remoteCall.send();
-            contractAddress = contract.getContractAddress();
+            String contractAddress = contract.getContractAddress();
             System.out.println("contract address:" + contractAddress);
             System.out.println();
             contractAddress = contract.getContractAddress();
-            writeLog();
+            writeLog(name, contractAddress);
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
@@ -115,8 +100,10 @@ public class ContractImpl implements ContractFace {
         }
     }
 
-    private synchronized void writeLog() {
-
+    private synchronized void writeLog(String contractName, String contractAddress) {
+        if (contractName.endsWith(".sol")) {
+            contractName = contractName.substring(0, contractName.length() - ".sol".length());
+        }
         BufferedReader reader = null;
         try {
             File logFile = new File(Common.ContractLogFileName);
@@ -156,16 +143,15 @@ public class ContractImpl implements ContractFace {
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-        String name = contractName.substring(20);
-        while (name.length() < 20) {
-            name = name + " ";
+        while (contractName.length() < 20) {
+            contractName = contractName + " ";
         }
         String log =
                 LocalDateTime.now().format(formatter)
                         + "  [group:"
                         + groupID
                         + "]  "
-                        + name
+                        + contractName
                         + "  "
                         + contractAddress;
         try {
@@ -271,13 +257,7 @@ public class ContractImpl implements ContractFace {
             return;
         }
         String name = params[1];
-        try {
-            compileContract(name);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
+        Class<?> contractClass = ContractClassFactory.compileContract(name);
         Method load =
                 contractClass.getMethod(
                         "load",
@@ -285,15 +265,13 @@ public class ContractImpl implements ContractFace {
                         Web3j.class,
                         Credentials.class,
                         ContractGasProvider.class);
-        Object contractObject;
-
-        contractAddress = params[2];
+        String contractAddress = params[2];
         Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
         if (!convertAddr.isValid()) {
             return;
         }
         contractAddress = convertAddr.getAddress();
-        contractObject = load.invoke(null, contractAddress, web3j, credentials, gasProvider);
+        Object contractObject = load.invoke(null, contractAddress, web3j, credentials, gasProvider);
         String funcName = params[3];
         Method[] methods = contractClass.getDeclaredMethods();
         Method method = ContractClassFactory.getMethodByName(funcName, methods);
@@ -322,9 +300,8 @@ public class ContractImpl implements ContractFace {
         if (argobj == null) {
             return;
         }
-        remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
-        Object result;
-        result = remoteCall.send();
+        RemoteCall<?> remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
+        Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
             TransactionReceipt receipt = (TransactionReceipt) result;
             if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
@@ -362,8 +339,11 @@ public class ContractImpl implements ContractFace {
             HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
             return;
         }
-
         System.out.println(returnObject);
+        if (result instanceof TransactionReceipt) {
+            ContractClassFactory.printEventLogs(
+                    contractObject, methods, (TransactionReceipt) result);
+        }
         System.out.println();
     }
 
@@ -411,31 +391,24 @@ public class ContractImpl implements ContractFace {
             return;
         }
         try {
-            compileContract(name);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
-        try {
-            handleDeployParameters(params, 3);
-        } catch (ConsoleMessageException e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
-        contractVersion = params[2];
-        if (!checkVersion(contractVersion)) {
-            return;
-        }
-        try {
+            if (name.endsWith(".sol")) {
+                name = name.substring(0, name.length() - ".sol".length());
+            }
+            Class<?> contractClass = ContractClassFactory.compileContract(name);
+            RemoteCall<?> remoteCall =
+                    ContractClassFactory.handleDeployParameters(
+                            web3j, credentials, gasProvider, contractClass, params, 3);
+            String contractVersion = params[2];
+            if (!ContractClassFactory.checkVersion(contractVersion)) {
+                return;
+            }
             Contract contract = (Contract) remoteCall.send();
-            contractAddress = contract.getContractAddress();
+            String contractAddress = contract.getContractAddress();
             // register cns
             String result = cnsService.registerCns(name, contractVersion, contractAddress, "");
             System.out.println("contract address:" + contractAddress);
-            contractName = contractName + ":" + contractVersion;
-            writeLog();
+            String contractName = name + ":" + contractVersion;
+            writeLog(name, contractAddress);
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
@@ -444,45 +417,6 @@ public class ContractImpl implements ContractFace {
                 throw e;
             }
         }
-    }
-
-    private boolean checkVersion(String version) throws IOException {
-        if (version.length() > CnsService.MAX_VERSION_LENGTH) {
-            ConsoleUtils.printJson(
-                    PrecompiledCommon.transferToJson(PrecompiledCommon.VersionExceeds));
-            System.out.println();
-            return false;
-        }
-        if (!version.matches("^[A-Za-z0-9.]+$")) {
-            System.out.println(
-                    "Contract version should only contains 'A-Z' or 'a-z' or '0-9' or dot mark.");
-            System.out.println();
-            return false;
-        }
-        return true;
-    }
-
-    private void handleDeployParameters(String[] params, int num)
-            throws IllegalAccessException, InvocationTargetException, ConsoleMessageException {
-        Method method = ContractClassFactory.getDeployFunction(contractClass);
-        Type[] classType = method.getParameterTypes();
-        if (classType.length - 3 != params.length - num) {
-            throw new ConsoleMessageException("The number of paramters does not match!");
-        }
-        String[] generic = new String[method.getParameterCount()];
-        for (int i = 0; i < classType.length; i++) {
-            generic[i] = method.getGenericParameterTypes()[i].getTypeName();
-        }
-        Class[] classList = new Class[classType.length];
-        for (int i = 0; i < classType.length; i++) {
-            Class clazz = (Class) classType[i];
-            classList[i] = clazz;
-        }
-
-        String[] newParams = new String[params.length - num];
-        System.arraycopy(params, num, newParams, 0, params.length - num);
-        Object[] obj = getDeployPrametersObject("deploy", classList, newParams, generic);
-        remoteCall = (RemoteCall<?>) method.invoke(null, obj);
     }
 
     @SuppressWarnings("rawtypes")
@@ -518,7 +452,7 @@ public class ContractImpl implements ContractFace {
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
             if (contractVersion != null) {
-                if (!checkVersion(contractVersion)) {
+                if (!ContractClassFactory.checkVersion(contractVersion)) {
                     return;
                 }
                 contractNameAndVersion = name + ":" + contractVersion;
@@ -537,13 +471,7 @@ public class ContractImpl implements ContractFace {
             System.out.println();
             return;
         }
-        try {
-            compileContract(name);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
+        Class<?> contractClass = ContractClassFactory.compileContract(name);
         Method load =
                 contractClass.getMethod(
                         "load",
@@ -581,7 +509,7 @@ public class ContractImpl implements ContractFace {
         if (argobj == null) {
             return;
         }
-        remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
+        RemoteCall<?> remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
         Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
             TransactionReceipt receipt = (TransactionReceipt) result;
@@ -599,6 +527,10 @@ public class ContractImpl implements ContractFace {
             return;
         }
         System.out.println(returnObject);
+        if (result instanceof TransactionReceipt) {
+            ContractClassFactory.printEventLogs(
+                    contractObject, methods, (TransactionReceipt) result);
+        }
         System.out.println();
     }
 
@@ -620,13 +552,13 @@ public class ContractImpl implements ContractFace {
 
         CnsService cnsService = new CnsService(web3j, credentials);
         List<CnsInfo> cnsInfos = new ArrayList<>();
-        contractName = params[1];
+        String contractName = params[1];
         if (contractName.endsWith(".sol")) {
             contractName = contractName.substring(0, contractName.length() - 4);
         }
         if (params.length == 3) {
-            contractVersion = params[2];
-            if (!checkVersion(contractVersion)) {
+            String contractVersion = params[2];
+            if (!ContractClassFactory.checkVersion(contractVersion)) {
                 return;
             }
             cnsInfos = cnsService.queryCnsByNameAndVersion(contractName, contractVersion);
@@ -639,7 +571,7 @@ public class ContractImpl implements ContractFace {
             System.out.println();
             return;
         }
-        ConsoleUtils.singleLineForTable();
+        ConsoleUtils.singleLine();
         String[] headers = {"version", "address"};
         int size = cnsInfos.size();
         String[][] data = new String[size][2];
@@ -650,256 +582,7 @@ public class ContractImpl implements ContractFace {
         ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 45);
         Table table = Table.of(headers, data, cf);
         System.out.println(table);
-        ConsoleUtils.singleLineForTable();
-        System.out.println();
-    }
-
-    public Object[] getDeployPrametersObject(
-            String funcName, Class[] type, String[] params, String[] generic)
-            throws ConsoleMessageException {
-        Object[] obj = new Object[params.length + 3];
-        obj[0] = web3j;
-        obj[1] = credentials;
-        obj[2] = gasProvider;
-
-        for (int i = 0; i < params.length; i++) {
-            if (type[i + 3] == String.class) {
-                if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    obj[i + 3] = params[i].substring(1, params[i].length() - 1);
-                } else {
-                    throw new ConsoleMessageException(
-                            "The "
-                                    + (i + 1)
-                                    + "th parameter of "
-                                    + funcName
-                                    + " needs string value.");
-                }
-            } else if (type[i + 3] == Boolean.class) {
-                try {
-                    obj[i + 3] = Boolean.parseBoolean(params[i]);
-                } catch (Exception e) {
-                    throw new ConsoleMessageException(
-                            "The "
-                                    + (i + 1)
-                                    + "th parameter of "
-                                    + funcName
-                                    + " needs boolean value.");
-                }
-            } else if (type[i + 3] == BigInteger.class) {
-                try {
-                    BigInteger param = new BigInteger(params[i]);
-                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) == 1
-                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) == -1) {
-                        throw new ConsoleMessageException(
-                                "The "
-                                        + (i + 1)
-                                        + "th parameter of "
-                                        + funcName
-                                        + " needs integer("
-                                        + Integer.MIN_VALUE
-                                        + " ~ "
-                                        + Integer.MAX_VALUE
-                                        + ") value in the console.");
-                    } else {
-                        obj[i + 3] = param;
-                    }
-                } catch (Exception e) {
-                    throw new ConsoleMessageException(
-                            "The "
-                                    + (i + 1)
-                                    + "th parameter of "
-                                    + funcName
-                                    + " needs integer("
-                                    + Integer.MIN_VALUE
-                                    + " ~ "
-                                    + Integer.MAX_VALUE
-                                    + ") value in the console.");
-                }
-            } else if (type[i + 3] == byte[].class) {
-                if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    byte[] bytes2 = params[i].substring(1, params[i].length() - 1).getBytes();
-                    byte[] bytes1 = new byte[32];
-                    for (int j = 0; j < bytes2.length; j++) {
-                        bytes1[j] = bytes2[j];
-                    }
-                    obj[i + 3] = bytes1;
-                } else {
-                    throw new ConsoleMessageException(
-                            "The "
-                                    + (i + 1)
-                                    + "th parameter of "
-                                    + funcName
-                                    + " needs byte string value.");
-                }
-            } else if (type[i + 3] == List.class) {
-
-                if (params[i].startsWith("[") && params[i].endsWith("]")) {
-                    String listParams = params[i].substring(1, params[i].length() - 1);
-                    String[] ilist = listParams.split(",");
-                    String[] jlist = new String[ilist.length];
-                    for (int k = 0; k < jlist.length; k++) {
-                        jlist[k] = ilist[k].trim();
-                    }
-                    List paramsList = new ArrayList();
-                    if (generic[i + 3].contains("String")) {
-                        paramsList = new ArrayList<String>();
-                        for (int j = 0; j < jlist.length; j++) {
-                            paramsList.add(jlist[j].substring(1, jlist[j].length() - 1));
-                        }
-
-                    } else if (generic[i + 3].contains("BigInteger")) {
-                        paramsList = new ArrayList<BigInteger>();
-                        for (int j = 0; j < jlist.length; j++) {
-                            paramsList.add(new BigInteger(jlist[j]));
-                        }
-
-                    } else if (generic[i + 3].contains("byte[]")) {
-                        paramsList = new ArrayList<byte[]>();
-                        for (int j = 0; j < jlist.length; j++) {
-                            if (jlist[j].startsWith("\"") && jlist[j].endsWith("\"")) {
-                                byte[] bytes =
-                                        jlist[j].substring(1, jlist[j].length() - 1).getBytes();
-                                byte[] bytes1 = new byte[32];
-                                byte[] bytes2 = bytes;
-                                for (int k = 0; k < bytes2.length; k++) {
-                                    bytes1[k] = bytes2[k];
-                                }
-                                paramsList.add(bytes1);
-                            }
-                        }
-                    }
-                    obj[i + 3] = paramsList;
-                } else {
-                    throw new ConsoleMessageException(
-                            "The "
-                                    + (i + 1)
-                                    + "th parameter of "
-                                    + funcName
-                                    + " needs array value.");
-                }
-            }
-        }
-        return obj;
-    }
-
-    private void compileContract(String name) throws Exception {
-        try {
-            if (name.endsWith(".sol")) {
-                name = name.substring(0, name.length() - ".sol".length());
-            }
-            ConsoleUtils.dynamicCompileSolFilesToJava(name);
-        } catch (IOException e) {
-            throw new IOException(e.getMessage());
-        }
-        try {
-            ConsoleUtils.dynamicCompileJavaToClass(name);
-        } catch (Exception e1) {
-            throw new Exception("Compile " + name + ".java failed.");
-        }
-        contractName = ConsoleUtils.PACKAGENAME + "." + name;
-        try {
-            contractClass = getContractClass(contractName);
-        } catch (Exception e) {
-            throw new Exception(
-                    "There is no "
-                            + name
-                            + ".class"
-                            + " in the directory of java/classes/org/fisco/bcos/temp");
-        }
-    }
-
-    @Override
-    public void getTxReceiptEvents(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getTxReceiptEvents");
-            return;
-        }
-        if (params.length > 6) {
-            HelpInfo.promptHelp("getTxReceiptEvents");
-            return;
-        }
-        String contractName = params[1];
-        if ("-h".equals(contractName) || "--help".equals(contractName)) {
-            HelpInfo.getTxReceiptEventsHelp();
-            return;
-        }
-        if (params.length < 5) {
-            HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
-            return;
-        }
-        String contractAddress = params[2];
-        Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
-        if (!convertAddr.isValid()) {
-            return;
-        }
-        String transactionHash = params[3];
-        if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-        String eventName = params[4];
-        int index = -1;
-        if (params.length == 6) {
-            index = ConsoleUtils.proccessNonNegativeNumber("index", params[5]);
-            if (index == Common.InvalidReturnNumber) {
-                return;
-            }
-        }
-        // query txReceipt
-        TransactionReceipt transactionReceipt;
-        try {
-            transactionReceipt =
-                    web3j.getTransactionReceipt(transactionHash)
-                            .send()
-                            .getTransactionReceipt()
-                            .get();
-        } catch (NoSuchElementException e) {
-            System.out.println("This transaction hash doesn't exist.");
-            System.out.println();
-            return;
-        }
-        // parse txReceipt
-        try {
-            compileContract(contractName);
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
-        }
-        Method load =
-                contractClass.getMethod(
-                        "load",
-                        String.class,
-                        Web3j.class,
-                        Credentials.class,
-                        ContractGasProvider.class);
-        contractAddress = convertAddr.getAddress();
-        Object contractObject = load.invoke(null, contractAddress, web3j, credentials, gasProvider);
-        Method[] methods = contractClass.getDeclaredMethods();
-        String funcName =
-                "get" + eventName.substring(0, 1).toUpperCase() + eventName.substring(1) + "Events";
-        Method method = ContractClassFactory.getMethodByName(funcName, methods);
-        if (method == null) {
-            System.out.println(
-                    "Cannot find the event " + funcName + ", please checkout the event name.");
-            System.out.println();
-            return;
-        }
-        List<Object> result = (ArrayList<Object>) method.invoke(contractObject, transactionReceipt);
-        if (result.size() == 0) {
-            System.out.println("The event is empty.");
-            System.out.println();
-            return;
-        }
-        if (index == -1) {
-            for (int i = 0; i < result.size(); i++) {
-                ConsoleUtils.printEventLog(i, result);
-            }
-        } else {
-            if (index > result.size()) {
-                System.out.println("The event index is greater event size.");
-                System.out.println();
-                return;
-            }
-            ConsoleUtils.printEventLog(index, result);
-        }
+        ConsoleUtils.singleLine();
         System.out.println();
     }
 }

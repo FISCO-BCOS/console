@@ -25,6 +25,4 @@ public interface ContractFace {
     void queryCNS(String[] params) throws Exception;
 
     void getDeployLog(String[] params) throws Exception;
-
-    void getTxReceiptEvents(String[] params) throws Exception;
 }
