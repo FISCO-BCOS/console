@@ -94,6 +94,7 @@ public class ContractImpl implements ContractFace {
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
+                System.out.println();
             } else {
                 throw e;
             }
@@ -313,7 +314,7 @@ public class ContractImpl implements ContractFace {
                 return;
             }
             if (!StatusCode.Success.equals(receipt.getStatus())) {
-                System.out.println("Receipt status:" + receipt.getStatus());
+                System.out.println(StatusCode.getStatusMessage(receipt.getStatus()));
                 System.out.println();
                 return;
             }
@@ -321,12 +322,13 @@ public class ContractImpl implements ContractFace {
             if (!"0x".equals(output)) {
                 int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
                 if (code == PrecompiledCommon.TableExist) {
-                    System.out.println("The table already exist.");
+                    ConsoleUtils.printJson(
+                            PrecompiledCommon.transferToJson(PrecompiledCommon.TableExist));
                     System.out.println();
                     return;
                 }
                 if (code == Common.PermissionCode) {
-                    System.out.println("Permission denied.");
+                    ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
                     System.out.println();
                     return;
                 }
@@ -413,6 +415,7 @@ public class ContractImpl implements ContractFace {
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
+                System.out.println();
             } else {
                 throw e;
             }
@@ -513,10 +516,33 @@ public class ContractImpl implements ContractFace {
         Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
             TransactionReceipt receipt = (TransactionReceipt) result;
-            if (!"0x0".equals(receipt.getStatus())) {
-                System.out.println(receipt.getStatus());
+            if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
+                throw new ContractCallException("The execution of the contract rolled back.");
+            }
+            if (StatusCode.CallAddressError.equals(receipt.getStatus())) {
+                System.out.println("The contract address is incorrect.");
                 System.out.println();
                 return;
+            }
+            if (!StatusCode.Success.equals(receipt.getStatus())) {
+                System.out.println(StatusCode.getStatusMessage(receipt.getStatus()));
+                System.out.println();
+                return;
+            }
+            String output = receipt.getOutput();
+            if (!"0x".equals(output)) {
+                int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
+                if (code == PrecompiledCommon.TableExist) {
+                    ConsoleUtils.printJson(
+                            PrecompiledCommon.transferToJson(PrecompiledCommon.TableExist));
+                    System.out.println();
+                    return;
+                }
+                if (code == Common.PermissionCode) {
+                    ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
+                    System.out.println();
+                    return;
+                }
             }
         }
         String returnObject =
