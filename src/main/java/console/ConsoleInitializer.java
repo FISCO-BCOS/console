@@ -61,8 +61,6 @@ public class ConsoleInitializer {
                     NoSuchProviderException, UnrecoverableKeyException, KeyStoreException,
                     InvalidKeySpecException {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
-        //        KeyStoreManager ks = context.getBean(KeyStoreManager.class);
-        //        PEMLoader pem = context.getBean(PEMLoader.class);
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
 
@@ -96,7 +94,7 @@ public class ConsoleInitializer {
                     System.out.print("Enter Export Password:");
                     Console cons = System.console();
                     char[] passwd = cons.readPassword();
-                    String password = new String(passwd).trim();
+                    String password = new String(passwd);
                     P12Manager p12Manager = new P12Manager();
                     p12Manager.setPassword(password);
                     p12Manager.setP12File("classpath:" + p12Name);
