@@ -4,23 +4,44 @@ import com.alibaba.fastjson.JSONObject;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
+import console.common.ContractClassFactory;
 import console.common.HelpInfo;
+import console.exception.ConsoleMessageException;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
+import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
+import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.fisco.bcos.web3j.utils.Numeric;
 
 public class Web3jImpl implements Web3jFace {
 
     private Web3j web3j;
+    private Credentials credentials;
+    private StaticGasProvider gasProvider;
 
     @Override
     public void setWeb3j(Web3j web3j) {
         this.web3j = web3j;
+    }
+
+    @Override
+    public void setCredentials(Credentials credentials) {
+        this.credentials = credentials;
+    }
+
+    @Override
+    public void setGasProvider(StaticGasProvider gasProvider) {
+        this.gasProvider = gasProvider;
     }
 
     @Override
@@ -379,12 +400,12 @@ public class Web3jImpl implements Web3jFace {
     }
 
     @Override
-    public void getTransactionReceipt(String[] params) throws IOException {
+    public void getTransactionReceipt(String[] params) throws Exception {
         if (params.length < 2) {
             HelpInfo.promptHelp("getTransactionReceipt");
             return;
         }
-        if (params.length > 2) {
+        if (params.length > 5) {
             HelpInfo.promptHelp("getTransactionReceipt");
             return;
         }
@@ -394,14 +415,78 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-        String transactionReceipt =
-                web3j.getTransactionReceipt(transactionHash).sendForReturnString();
-        if ("null".equals(transactionReceipt)) {
+        String receiptStr = web3j.getTransactionReceipt(transactionHash).sendForReturnString();
+        if ("null".equals(receiptStr)) {
             System.out.println("This transaction hash doesn't exist.");
             System.out.println();
             return;
         }
-        ConsoleUtils.printJson(transactionReceipt);
+        ConsoleUtils.printJson(receiptStr);
+        TransactionReceipt receipt =
+                ObjectMapperFactory.getObjectMapper()
+                        .readValue(receiptStr, TransactionReceipt.class);
+        if (params.length >= 3) {
+            String contractName = params[2];
+            Class<?> contractClass = ContractClassFactory.compileContract(contractName);
+            Method load =
+                    contractClass.getMethod(
+                            "load",
+                            String.class,
+                            Web3j.class,
+                            Credentials.class,
+                            ContractGasProvider.class);
+            String contractAddress =
+                    receipt.getTo() != null ? receipt.getTo() : receipt.getContractAddress();
+            Object contractObject =
+                    load.invoke(null, contractAddress, web3j, credentials, gasProvider);
+            Method[] methods = contractClass.getDeclaredMethods();
+            if (params.length >= 4) {
+                String eventName = params[3];
+                int index = -1;
+                if (params.length == 5) {
+                    index = ConsoleUtils.proccessNonNegativeNumber("index", params[4]);
+                    if (index == Common.InvalidReturnNumber) {
+                        return;
+                    }
+                }
+                String funcName =
+                        "get"
+                                + eventName.substring(0, 1).toUpperCase()
+                                + eventName.substring(1)
+                                + "Events";
+                Method method = ContractClassFactory.getMethodByName(funcName, methods);
+                if (method == null) {
+                    throw new ConsoleMessageException(
+                            "Cannot find the event "
+                                    + eventName
+                                    + ", please checkout the event name.");
+                }
+                List<Object> result = (ArrayList<Object>) method.invoke(contractObject, receipt);
+                if (result.size() == 0) {
+                    throw new ConsoleMessageException("The event is empty.");
+                }
+                if (index == -1) {
+                    ConsoleUtils.singleLine();
+                    System.out.println("Event logs");
+                    ConsoleUtils.singleLine();
+                    for (int i = 0; i < result.size(); i++) {
+                        ContractClassFactory.printEventLogByNameAndIndex(i, eventName, result);
+                    }
+                    ConsoleUtils.singleLine();
+                } else {
+                    if (index >= result.size()) {
+                        throw new ConsoleMessageException("The event index is greater event size.");
+                    }
+                    ConsoleUtils.singleLine();
+                    System.out.println("Event logs");
+                    ConsoleUtils.singleLine();
+                    ContractClassFactory.printEventLogByNameAndIndex(index, eventName, result);
+                    ConsoleUtils.singleLine();
+                }
+            } else {
+                ContractClassFactory.printEventLogs(contractObject, methods, receipt);
+            }
+        }
         System.out.println();
     }
 

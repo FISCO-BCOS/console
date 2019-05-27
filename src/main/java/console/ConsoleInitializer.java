@@ -69,7 +69,7 @@ public class ConsoleInitializer {
             case 0: // bash start.sh
                 useDefaultCredentials();
                 break;
-            case 1:
+            case 1: // bash start.sh groupID
                 groupID = setGroupID(args[0]);
                 useDefaultCredentials();
                 break;
@@ -155,6 +155,8 @@ public class ConsoleInitializer {
             }
             web3jFace = new Web3jImpl();
             web3jFace.setWeb3j(web3j);
+            web3jFace.setGasProvider(gasProvider);
+            web3jFace.setCredentials(credentials);
 
             precompiledFace = new PrecompiledImpl();
             precompiledFace.setWeb3j(web3j);

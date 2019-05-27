@@ -95,7 +95,6 @@ public class JlineUtils {
                         "getTransactionByHash",
                         "getTransactionByBlockHashAndIndex",
                         "getTransactionByBlockNumberAndIndex",
-                        "getTransactionReceipt",
                         "getPendingTransactions",
                         "getPendingTxSize",
                         "getCode",
@@ -148,7 +147,14 @@ public class JlineUtils {
                             new FilesCompleter(path),
                             new StringsCompleterIgnoreCase()));
         }
-
+        commands = Arrays.asList("getTransactionReceipt");
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter("0x"),
+                            new FilesCompleter(path)));
+        }
         commands = Arrays.asList("setSystemConfigByKey", "getSystemConfigByKey");
 
         for (String command : commands) {
