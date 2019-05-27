@@ -17,7 +17,7 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
-import org.fisco.bcos.web3j.precompile.config.SystemConfigSerivce;
+import org.fisco.bcos.web3j.precompile.config.SystemConfigService;
 import org.fisco.bcos.web3j.precompile.consensus.ConsensusService;
 import org.fisco.bcos.web3j.precompile.crud.CRUDSerivce;
 import org.fisco.bcos.web3j.precompile.crud.Condition;
@@ -166,8 +166,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                         return;
                     }
                 }
-                SystemConfigSerivce systemConfigSerivce =
-                        new SystemConfigSerivce(web3j, credentials);
+                SystemConfigService systemConfigSerivce =
+                        new SystemConfigService(web3j, credentials);
                 String result = systemConfigSerivce.setValueByKey(key, value + "");
                 ConsoleUtils.printJson(result);
             } catch (NumberFormatException e) {

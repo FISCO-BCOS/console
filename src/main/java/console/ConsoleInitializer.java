@@ -10,6 +10,7 @@ import console.precompiled.permission.PermissionFace;
 import console.precompiled.permission.PermissionImpl;
 import console.web3j.Web3jFace;
 import console.web3j.Web3jImpl;
+import java.io.Console;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -88,17 +89,14 @@ public class ConsoleInitializer {
                     }
                     ECKeyPair keyPair = pem.getECKeyPair();
                     credentials = Credentials.create(keyPair);
-                } else {
-                    HelpInfo.startHelp();
-                    close();
-                }
-                break;
-            case 4: // ./start.sh groupID -p12 p12Name password
-                if ("-p12".equals(args[1])) {
+                } else if ("-p12".equals(args[1])) {
                     groupID = setGroupID(args[0]);
                     String p12Name = args[2];
                     p12Name = handleP12FileName(p12Name);
-                    String password = args[3];
+                    System.out.print("Enter Export Password:");
+                    Console cons = System.console();
+                    char[] passwd = cons.readPassword();
+                    String password = new String(passwd).trim();
                     P12Manager p12Manager = new P12Manager();
                     p12Manager.setPassword(password);
                     p12Manager.setP12File("classpath:" + p12Name);

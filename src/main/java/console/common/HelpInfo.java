@@ -558,6 +558,6 @@ public class HelpInfo {
         System.out.println("./start.sh");
         System.out.println("./start.sh groupID");
         System.out.println("./start.sh groupID -pem pemName");
-        System.out.println("./start.sh groupID -p12 p12Name password");
+        System.out.println("./start.sh groupID -p12 p12Name");
     }
 }
