@@ -101,7 +101,7 @@ public class ConsoleInitializer {
                     String password = args[3];
                     P12Manager p12Manager = new P12Manager();
                     p12Manager.setPassword(password);
-                    p12Manager.setKeyStoreFile("classpath:" + p12Name);
+                    p12Manager.setP12File("classpath:" + p12Name);
                     try {
                         p12Manager.load();
                     } catch (Exception e) {
