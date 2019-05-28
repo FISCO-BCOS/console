@@ -1,3 +1,15 @@
+### v1.0.3
+
+(2019-05-28)
+
+* Add
+
+1. 增加操作用户表的sql命令，包括`create`, `insert` , `update`, `delete`, `select`, `desc`命令。
+2. 增加账号生成脚本`get_accounts.sh`，支持账号文件加载登录控制台。
+3. 支持`call`, `callByCNS`，`getTransactionReceipt`对event log进行解析输出。
+4. 发送交易后，交易哈希值前面加`transaction hash:`。
+
+
 ### v1.0.2
 
 (2019-04-19)
