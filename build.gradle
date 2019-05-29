@@ -23,6 +23,7 @@ googleJavaFormat {
 }
 
 check.dependsOn.remove(test)
+check.dependsOn.remove(verifyGoogleJavaFormat)
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
