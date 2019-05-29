@@ -43,12 +43,6 @@ public class ContractImpl implements ContractFace {
     private StaticGasProvider gasProvider;
     private Web3j web3j;
 
-    //    private String contractAddress;
-    //    private String contractName;
-    //    private String contractVersion;
-    //    private Class<?> contractClass;
-    //    private RemoteCall<?> remoteCall;
-
     @Override
     public void setGroupID(int groupID) {
         this.groupID = groupID;

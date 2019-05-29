@@ -357,6 +357,15 @@ public class ContractClassFactory {
     public static Object[] getPrametersObject(
             String funcName, Class[] type, String[] params, String[] generics)
             throws ConsoleMessageException {
+        if (type.length != params.length) {
+            throw new ConsoleMessageException(
+                    "The method "
+                            + funcName
+                            + " with "
+                            + params.length
+                            + " parameter"
+                            + " is undefined of the contract.");
+        }
         Object[] obj = new Object[params.length];
         for (int i = 0; i < obj.length; i++) {
             if (type[i] == String.class) {
