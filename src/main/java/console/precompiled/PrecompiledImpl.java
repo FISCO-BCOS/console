@@ -239,7 +239,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             System.out.println();
             return;
@@ -274,7 +274,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             System.out.println();
             return;
@@ -362,7 +362,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             System.out.println();
             return;
@@ -415,7 +415,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             System.out.println();
             return;
@@ -449,7 +449,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             System.out.println();
             return;
