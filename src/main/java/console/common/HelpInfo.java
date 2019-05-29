@@ -535,9 +535,7 @@ public class HelpInfo {
                             + " with "
                             + lenParams
                             + " parameter"
-                            + " is undefined of the contract "
-                            + contractName
-                            + ".");
+                            + " is undefined of the contract.");
         } else {
             System.out.println(
                     "The method "
@@ -545,9 +543,7 @@ public class HelpInfo {
                             + " with "
                             + lenParams
                             + " parameters"
-                            + " is undefined of the contract "
-                            + contractName
-                            + ".");
+                            + " is undefined of the contract.");
         }
         System.out.println();
     }
