@@ -25,13 +25,9 @@ function LOG_INFO()
 }
 
 function Usage() {
-    LOG_INFO "Usage:start the console"
-    LOG_INFO "./start.sh"
-    LOG_INFO "./start.sh groupID"
-    LOG_INFO "./start.sh groupID -pem pemName"
-    LOG_INFO "./start.sh groupID -p12 p12Name"
-    LOG_INFO "print console version:"
-    LOG_INFO "./start.sh --version or -v"
+    LOG_INFO "Usage"
+    LOG_INFO "start console: \t./start.sh [groupID] [privateKey]"
+    LOG_INFO "print console version: \t./start.sh --version"
 }
 
 function check_java(){
@@ -40,7 +36,6 @@ function check_java(){
    version=${version:1:len}
 
    IFS='.' arr=($version)
-   IFS=' '
    if [ -z ${arr[0]} ];then
       LOG_ERROR "At least Java8 is required."
       exit 1
@@ -57,11 +52,12 @@ function check_java(){
        exit 1
    fi
 }
+
 if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
 elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
-   java -cp "apps/*:conf/:lib/*:classes/:accounts/" console.ConsoleClient $@
+   java -cp "apps/*:conf/:lib/*:classes/" console.ConsoleClient $1 $2
 fi
