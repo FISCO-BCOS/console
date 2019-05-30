@@ -40,6 +40,8 @@ import org.fisco.bcos.web3j.precompile.crud.Table;
 
 public class CRUDParseUtils {
 
+    public static final String PRIMARY_KEY = "primary key";
+
     public static void parseCreateTable(String sql, Table table)
             throws JSQLParserException, ConsoleMessageException {
         Statement statement = CCJSqlParserUtil.parse(sql);
@@ -60,7 +62,7 @@ public class CRUDParseUtils {
             keyFlag = true;
             Index index = indexes.get(0);
             String type = index.getType().toLowerCase();
-            if ("primary key".equals(type)) {
+            if (PRIMARY_KEY.equals(type)) {
                 table.setKey(index.getColumnsNames().get(0));
             } else {
                 throw new ConsoleMessageException(
