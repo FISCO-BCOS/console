@@ -22,6 +22,11 @@ import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
 
 public class ConsoleUtils {
 
+    public static final String SOLIDITY_PATH = "contracts/solidity/";
+    public static final String JAVA_PATH = "contracts/sdk/java/";
+    public static final String ABI_PATH = "contracts/sdk/abi/";
+    public static final String BIN_PATH = "contracts/sdk/bin/";
+
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
     }
@@ -180,10 +185,10 @@ public class ConsoleUtils {
             return;
         }
 
-        File solFileList = new File("contracts");
-        String tempDirPath = new File("java").getAbsolutePath();
+        File solFileList = new File(SOLIDITY_PATH);
+        String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
         try {
-            compileSolToJava("*", tempDirPath, args[0], solFileList, "abi/", "bin/");
+            compileSolToJava("*", tempDirPath, args[0], solFileList, ABI_PATH, BIN_PATH);
             System.out.println(
                     "\nCompile solidity contract files to java contract files successfully!");
         } catch (IOException e) {

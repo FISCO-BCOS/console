@@ -72,19 +72,12 @@ jar {
 			from file('tools/start.sh')
 			from file('tools/replace_solc_jar.sh')
 			from file('tools/get_account.sh')
+			from file('tools/sol2java.sh')
 			into 'dist/'
 		}
 		copy {
-			from file('tools/sol2java.sh')
-			into 'dist/tools/'
-		}
-		copy {
 			from file('src/main/resources/contract/')
-			into 'dist/solidity/contracts/'
-		}
-		copy {
-			from file('src/main/resources/contract/Table.sol')
-			into 'dist/tools/contracts/'
+			into 'dist/contracts/solidity/'
 		}
 	}
 }
