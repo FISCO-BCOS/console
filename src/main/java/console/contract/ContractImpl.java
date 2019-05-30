@@ -81,7 +81,7 @@ public class ContractImpl implements ContractFace {
                             web3j, credentials, gasProvider, contractClass, params, 2);
             Contract contract = (Contract) remoteCall.send();
             String contractAddress = contract.getContractAddress();
-            System.out.println("contract address:" + contractAddress);
+            System.out.println("contract address: " + contractAddress);
             System.out.println();
             contractAddress = contract.getContractAddress();
             writeLog(name, contractAddress);
@@ -402,7 +402,7 @@ public class ContractImpl implements ContractFace {
             String contractAddress = contract.getContractAddress();
             // register cns
             cnsService.registerCns(name, contractVersion, contractAddress, "");
-            System.out.println("contract address:" + contractAddress);
+            System.out.println("contract address: " + contractAddress);
             String contractName = name + ":" + contractVersion;
             writeLog(contractName, contractAddress);
             System.out.println();

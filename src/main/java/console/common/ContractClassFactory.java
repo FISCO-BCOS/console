@@ -535,7 +535,7 @@ public class ContractClassFactory {
 
                 } else if (typeName.contains("TransactionReceipt")) {
                     TransactionReceipt resultTx = (TransactionReceipt) result;
-                    return "transaction hash:" + resultTx.getTransactionHash();
+                    return "transaction hash: " + resultTx.getTransactionHash();
                 } else {
                     return result.toString();
                 }
