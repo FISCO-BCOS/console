@@ -60,7 +60,7 @@ public class CRUDParseUtils {
             keyFlag = true;
             Index index = indexes.get(0);
             String type = index.getType().toLowerCase();
-            if (type.equals("primary key")) {
+            if ("primary key".equals(type)) {
                 table.setKey(index.getColumnsNames().get(0));
             } else {
                 throw new ConsoleMessageException(
