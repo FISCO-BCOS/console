@@ -5,6 +5,7 @@ import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
+import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
@@ -273,10 +274,13 @@ public class ContractImpl implements ContractFace {
         System.arraycopy(params, 4, newParams, 0, params.length - 4);
         Method method = ContractClassFactory.getMethodByName(methods, funcName, newParams);
         if (method == null) {
-            System.out.println(
-                    "Cannot find the method " + funcName + ", please checkout the method name.");
-            System.out.println();
-            return;
+            throw new ConsoleMessageException(
+                    "The method "
+                            + funcName
+                            + " with "
+                            + newParams.length
+                            + " parameter"
+                            + " is undefined of the contract.");
         }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
@@ -483,10 +487,13 @@ public class ContractImpl implements ContractFace {
         System.arraycopy(params, 3, newParams, 0, params.length - 3);
         Method method = ContractClassFactory.getMethodByName(methods, funcName, newParams);
         if (method == null) {
-            System.out.println(
-                    "Cannot find the method " + funcName + ", please checkout the method name.");
-            System.out.println();
-            return;
+            throw new ConsoleMessageException(
+                    "The method "
+                            + funcName
+                            + " with "
+                            + newParams.length
+                            + " parameter"
+                            + " is undefined of the contract.");
         }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
