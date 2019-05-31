@@ -137,7 +137,7 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase()));
         }
 
-        Path path = FileSystems.getDefault().getPath("solidity/contracts/", "");
+        Path path = FileSystems.getDefault().getPath("contracts/solidity/", "");
         commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
 
         for (String command : commands) {

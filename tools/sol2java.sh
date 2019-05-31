@@ -56,7 +56,7 @@ if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     exit 0
 else
      check_java
-     java -cp "../apps/*:../lib/*:../conf/" console.common.ConsoleUtils $1    
+     java -cp "apps/*:lib/*:conf/" console.common.ConsoleUtils $1    
 fi
 
 

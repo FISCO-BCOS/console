@@ -36,10 +36,12 @@ import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 
 public class ContractClassFactory {
 
-    public static final String JAVAPATH = "solidity/java/org/fisco/bcos/temp";
-    public static final String CLASSPATH = "solidity/java/classes/org/fisco/bcos/temp";
-    public static final String TARGETCLASSPATH = "solidity/java/classes";
-    public static final String PACKAGENAME = "org.fisco.bcos.temp";
+    public static final String SOLIDITY_PATH = "contracts/solidity/";
+    public static final String JAVA_PATH = "contracts/console/java/";
+    public static final String ABI_PATH = "contracts/console/abi/";
+    public static final String BIN_PATH = "contracts/console/bin/";
+    public static final String PACKAGE_NAME = "temp";
+    public static final String TAR_GET_CLASSPATH = "contracts/console/java/classes/";
 
     public static Class<?> compileContract(String name) throws Exception {
         try {
@@ -55,27 +57,24 @@ public class ContractClassFactory {
         } catch (Exception e1) {
             throw new Exception("Compile " + name + ".java failed.");
         }
-        String contractName = PACKAGENAME + "." + name;
+        String contractName = PACKAGE_NAME + "." + name;
         try {
             return getContractClass(contractName);
         } catch (Exception e) {
             throw new Exception(
-                    "There is no "
-                            + name
-                            + ".class"
-                            + " in the directory of java/classes/org/fisco/bcos/temp");
+                    "There is no " + name + ".class" + " in the directory of java/classes/temp");
         }
     }
 
     // dynamic compile target java code
     public static void dynamicCompileJavaToClass(String name) throws Exception {
 
-        File sourceDir = new File(JAVAPATH);
+        File sourceDir = new File(JAVA_PATH + "temp/");
         if (!sourceDir.exists()) {
             sourceDir.mkdirs();
         }
 
-        File distDir = new File(TARGETCLASSPATH);
+        File distDir = new File(TAR_GET_CLASSPATH);
         if (!distDir.exists()) {
             distDir.mkdirs();
         }
@@ -105,24 +104,23 @@ public class ContractClassFactory {
         if (!name.endsWith(".sol")) {
             name = name + ".sol";
         }
-        File solFileList = new File("solidity/contracts/");
+        File solFileList = new File(SOLIDITY_PATH);
         if (!solFileList.exists()) {
-            throw new IOException("Please checkout solidity/contracts/ is exist");
+            throw new IOException("Please checkout the directory " + SOLIDITY_PATH + " is exist.");
         }
-        File solFile = new File("solidity/contracts/" + name);
+        File solFile = new File(SOLIDITY_PATH + "/" + name);
         if (!solFile.exists()) {
-            throw new IOException(
-                    "There is no " + name + " in the directory of solidity/contracts");
+            throw new IOException("There is no " + name + " in the directory of " + SOLIDITY_PATH);
         }
-        String tempDirPath = new File("solidity/java").getAbsolutePath();
+        String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
         ConsoleUtils.compileSolToJava(
-                name, tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
+                name, tempDirPath, PACKAGE_NAME, solFileList, ABI_PATH, BIN_PATH);
     }
 
     public static Class<?> getContractClass(String contractName)
             throws ClassNotFoundException, MalformedURLException {
 
-        File clazzPath = new File(TARGETCLASSPATH);
+        File clazzPath = new File(TAR_GET_CLASSPATH);
 
         if (clazzPath.exists() && clazzPath.isDirectory()) {
             URL[] urls = new URL[1];
@@ -537,7 +535,7 @@ public class ContractClassFactory {
 
                 } else if (typeName.contains("TransactionReceipt")) {
                     TransactionReceipt resultTx = (TransactionReceipt) result;
-                    return "transaction hash:" + resultTx.getTransactionHash();
+                    return "transaction hash: " + resultTx.getTransactionHash();
                 } else {
                     return result.toString();
                 }

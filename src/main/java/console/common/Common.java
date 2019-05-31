@@ -19,5 +19,4 @@ public class Common {
     public static final int TxGasLimitMin = 10000;
 
     public static int PermissionCode = 0;
-    public static final String PermissionDenied = "Permission denied.";
 }
