@@ -536,6 +536,10 @@ public class ContractClassFactory {
                 } else if (typeName.contains("TransactionReceipt")) {
                     TransactionReceipt resultTx = (TransactionReceipt) result;
                     return "transaction hash: " + resultTx.getTransactionHash();
+                } else if ("org.fisco.bcos.web3j.protocol.core.RemoteCall<byte[]>"
+                        .equals(typeName)) {
+                    byte[] bresult = (byte[]) result;
+                    return new String(bresult);
                 } else {
                     return result.toString();
                 }
@@ -544,7 +548,29 @@ public class ContractClassFactory {
         return null;
     }
 
-    public static Method getMethodByName(String funcName, Method[] methods) {
+    public static Method getMethodByName(Method[] methods, String funcName, String[] params) {
+        Method method = null;
+        for (Method method1 : methods) {
+            if (funcName.equals(method1.getName())) {
+                Class[] paramsType = method1.getParameterTypes();
+                if (paramsType.length != params.length) {
+                    continue;
+                }
+                List<String> ilist = new ArrayList<>();
+                for (Class param : paramsType) {
+                    ilist.add(param.getCanonicalName());
+                }
+
+                if (!ilist.contains("org.fisco.bcos.channel.client.TransactionSucCallback")) {
+                    method = method1;
+                    break;
+                }
+            }
+        }
+        return method;
+    }
+
+    public static Method getEventByName(String funcName, Method[] methods) {
         Method method = null;
         for (Method method1 : methods) {
             if (funcName.equals(method1.getName())) {
@@ -555,7 +581,6 @@ public class ContractClassFactory {
                 }
 
                 if (!ilist.contains("org.fisco.bcos.channel.client.TransactionSucCallback")) {
-
                     method = method1;
                     break;
                 }
@@ -647,7 +672,7 @@ public class ContractClassFactory {
                                 + eventName.substring(0, 1).toUpperCase()
                                 + eventName.substring(1)
                                 + "Events";
-                Method eventMethod = ContractClassFactory.getMethodByName(funcEventName, methods);
+                Method eventMethod = ContractClassFactory.getEventByName(funcEventName, methods);
                 if (eventMethod == null) {
                     throw new ConsoleMessageException(
                             "Cannot find the event "

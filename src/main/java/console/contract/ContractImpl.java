@@ -269,7 +269,9 @@ public class ContractImpl implements ContractFace {
         Object contractObject = load.invoke(null, contractAddress, web3j, credentials, gasProvider);
         String funcName = params[3];
         Method[] methods = contractClass.getDeclaredMethods();
-        Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        String[] newParams = new String[params.length - 4];
+        System.arraycopy(params, 4, newParams, 0, params.length - 4);
+        Method method = ContractClassFactory.getMethodByName(methods, funcName, newParams);
         if (method == null) {
             System.out.println(
                     "Cannot find the method " + funcName + ", please checkout the method name.");
@@ -287,8 +289,6 @@ public class ContractImpl implements ContractFace {
             parameterType[i] = clazz;
         }
         Method func = contractClass.getMethod(funcName, parameterType);
-        String[] newParams = new String[params.length - 4];
-        System.arraycopy(params, 4, newParams, 0, params.length - 4);
         Object[] argobj =
                 ContractClassFactory.getPrametersObject(
                         funcName, parameterType, newParams, generic);
@@ -479,7 +479,9 @@ public class ContractImpl implements ContractFace {
         Object contractObject = load.invoke(null, contractAddress, web3j, credentials, gasProvider);
         String funcName = params[2];
         Method[] methods = contractClass.getMethods();
-        Method method = ContractClassFactory.getMethodByName(funcName, methods);
+        String[] newParams = new String[params.length - 3];
+        System.arraycopy(params, 3, newParams, 0, params.length - 3);
+        Method method = ContractClassFactory.getMethodByName(methods, funcName, newParams);
         if (method == null) {
             System.out.println(
                     "Cannot find the method " + funcName + ", please checkout the method name.");
@@ -498,8 +500,6 @@ public class ContractImpl implements ContractFace {
             parameterType[i] = clazz;
         }
         Method func = contractClass.getMethod(funcName, parameterType);
-        String[] newParams = new String[params.length - 3];
-        System.arraycopy(params, 3, newParams, 0, params.length - 3);
         Object[] argobj =
                 ContractClassFactory.getPrametersObject(
                         funcName, parameterType, newParams, generic);
