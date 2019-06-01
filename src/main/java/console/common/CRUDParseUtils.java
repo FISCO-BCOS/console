@@ -100,14 +100,18 @@ public class CRUDParseUtils {
         List<String> fieldsList = new ArrayList<>();
         for (int i = 0; i < columnDefinitions.size(); i++) {
             String columnName = columnDefinitions.get(i).getColumnName();
-            if (!columnName.equals(table.getKey())) {
-                if (fieldsList.contains(columnName)) {
-                    throw new ConsoleMessageException(
-                            "Please provide the field '" + columnName + "' only once.");
-                } else {
-                    fieldsList.add(columnName);
-                }
+            if (fieldsList.contains(columnName)) {
+                throw new ConsoleMessageException(
+                        "Please provide the field '" + columnName + "' only once.");
+            } else {
+                fieldsList.add(columnName);
             }
+        }
+        if (!fieldsList.contains(table.getKey())) {
+            throw new ConsoleMessageException(
+                    "Please provide the field '" + table.getKey() + "' in column definition.");
+        } else {
+            fieldsList.remove(table.getKey());
         }
         StringBuffer fields = new StringBuffer();
         for (int i = 0; i < fieldsList.size(); i++) {
