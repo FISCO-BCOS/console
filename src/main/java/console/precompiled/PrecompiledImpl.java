@@ -211,6 +211,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.showDescHelp();
             return;
         }
+        CRUDParseUtils.invalidSymbol(tableName);
+        if (tableName.endsWith(";")) {
+            tableName = tableName.substring(0, tableName.length() - 1);
+        }
         try {
             CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
             Table descTable = crudSerivce.desc(tableName);

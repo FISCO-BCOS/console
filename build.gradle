@@ -79,5 +79,7 @@ jar {
 			from file('src/main/resources/contract/')
 			into 'dist/contracts/solidity/'
 		}
+		new File('dist/contracts/console').mkdirs()
+		new File('dist/contracts/sdk').mkdirs()
 	}
 }

@@ -454,7 +454,7 @@ public class Web3jImpl implements Web3jFace {
                                 + eventName.substring(0, 1).toUpperCase()
                                 + eventName.substring(1)
                                 + "Events";
-                Method method = ContractClassFactory.getMethodByName(funcName, methods);
+                Method method = ContractClassFactory.getEventByName(funcName, methods);
                 if (method == null) {
                     throw new ConsoleMessageException(
                             "Cannot find the event "
