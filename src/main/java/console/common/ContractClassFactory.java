@@ -176,7 +176,11 @@ public class ContractClassFactory {
         Method method = ContractClassFactory.getDeployFunction(contractClass);
         Type[] classType = method.getParameterTypes();
         if (classType.length - 3 != params.length - num) {
-            throw new ConsoleMessageException("The number of paramters does not match!");
+            throw new ConsoleMessageException(
+                    "The method constructor with "
+                            + (params.length - num)
+                            + " parameter"
+                            + " is undefined of the contract.");
         }
         String[] generic = new String[method.getParameterCount()];
         for (int i = 0; i < classType.length; i++) {
