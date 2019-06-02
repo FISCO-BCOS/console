@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
@@ -291,7 +292,7 @@ public class JlineUtils {
         // enable CTRL+D shortcut to exit
         // disable CTRL+C shortcut
         termAttribs.setControlChar(ControlChar.VEOF, 4);
-        termAttribs.setControlChar(ControlChar.VINTR, 5);
+        termAttribs.setControlChar(ControlChar.VINTR, -1);
         terminal.setAttributes(termAttribs);
         return LineReaderBuilder.builder()
                 .terminal(terminal)
