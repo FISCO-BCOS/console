@@ -288,10 +288,10 @@ public class JlineUtils {
                         .signalHandler(Terminal.SignalHandler.SIG_IGN)
                         .build();
         Attributes termAttribs = terminal.getAttributes();
-        // enable CTRL+D shortcut
+        // enable CTRL+D shortcut to exit
+        // disable CTRL+C shortcut
         termAttribs.setControlChar(ControlChar.VEOF, 4);
-        // enable CTRL+C shortcut
-        termAttribs.setControlChar(ControlChar.VINTR, 4);
+        termAttribs.setControlChar(ControlChar.VINTR, 5);
         terminal.setAttributes(termAttribs);
         return LineReaderBuilder.builder()
                 .terminal(terminal)
