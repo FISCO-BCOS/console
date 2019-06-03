@@ -145,14 +145,12 @@ public class CRUDParseUtils {
                 throw new ConsoleMessageException("Column count doesn't match value count.");
             }
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(
-                        trimQuotes(columns.get(i).toString().trim()),
-                        trimQuotes(itemArr[i].trim()));
+                entry.put(trimQuotes(columns.get(i).toString()), trimQuotes(itemArr[i]));
             }
             return false;
         } else {
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(i + "", trimQuotes(itemArr[i].trim()));
+                entry.put(i + "", trimQuotes(itemArr[i]));
             }
             return true;
         }
@@ -245,7 +243,7 @@ public class CRUDParseUtils {
         for (String key : keys) {
             Map<EnumOP, String> value = conditions.get(key);
             EnumOP operation = value.keySet().iterator().next();
-            String itemValue = value.values().iterator().next().trim();
+            String itemValue = value.values().iterator().next();
             String newValue = trimQuotes(itemValue);
             value.put(operation, newValue);
             conditions.put(key, value);
@@ -257,16 +255,17 @@ public class CRUDParseUtils {
     public static String trimQuotes(String str) {
         char[] value = str.toCharArray();
         int len = value.length;
-        int st = 0;
+        int st = 1;
         char[] val = value; /* avoid getfield opcode */
 
-        while ((st < len) && (val[st] <= '"' || val[st] <= '\'')) {
+        while ((st < len) && (val[st] == '"' || val[st] == '\'')) {
             st++;
         }
-        while ((st < len) && (val[len - 1] <= '"' || val[len - 1] <= '\'')) {
+        while ((st < len) && (val[len - 1] == '"' || val[len - 1] == '\'')) {
             len--;
         }
-        return ((st > 0) || (len < value.length)) ? str.substring(st, len) : str;
+        String string = ((st > 1) || (len < value.length)) ? str.substring(st, len) : str;
+        return string;
     }
 
     public static void parseUpdate(String sql, Table table, Entry entry, Condition condition)
@@ -288,7 +287,7 @@ public class CRUDParseUtils {
             values[i] = expressions.get(i).toString();
         }
         for (int i = 0; i < columns.size(); i++) {
-            entry.put(trimQuotes(columns.get(i).toString().trim()), trimQuotes(values[i].trim()));
+            entry.put(trimQuotes(columns.get(i).toString()), trimQuotes(values[i]));
         }
 
         // parse where clause
