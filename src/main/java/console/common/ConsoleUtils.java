@@ -217,11 +217,11 @@ public class ConsoleUtils {
                 if (!solFile.getName().equals(solName)) {
                     continue;
                 }
-                if (solFile.getName().contains("Lib")) {
+                if (solFile.getName().startsWith("Lib")) {
                     throw new IOException("Don't deploy the library: " + solFile.getName());
                 }
             } else {
-                if (solFile.getName().contains("Lib")) {
+                if (solFile.getName().startsWith("Lib")) {
                     continue;
                 }
             }
