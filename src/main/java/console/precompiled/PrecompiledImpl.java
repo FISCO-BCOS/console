@@ -329,7 +329,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                             if (i == listString.size() - 1) {
                                 strBuilder.append(listString.get(i)).append("' ");
                             } else {
-                                strBuilder.append(listString.get(i)).append("', ");
+                                strBuilder.append(listString.get(i)).append("', '");
                             }
                         }
                         strBuilder.append("in field list.");
@@ -486,7 +486,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             result = filterSystemColum(result);
             if ("*".equals(selectColumns.get(0))) {
-                result.stream().forEach(System.out::println);
+                selectColumns.clear();
+                selectColumns.add(descTable.getKey());
+                String[] valueArr = descTable.getValueFields().split(",");
+                selectColumns.addAll(Arrays.asList(valueArr));
+                result = getSeletedColumn(selectColumns, result);
                 rows = result.size();
             } else {
                 List<Map<String, String>> selectedResult = getSeletedColumn(selectColumns, result);
@@ -565,15 +569,5 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         table.setKey(keyValue);
-    }
-
-    private List<Map<String, String>> getTableNames() throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-        Table table = new Table();
-        table.setTableName("_sys_tables_");
-        table.setKey("table_name");
-        Condition condition = table.getCondition();
-        List<Map<String, String>> userTable = crudSerivce.select(table, condition);
-        return userTable;
     }
 }
