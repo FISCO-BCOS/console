@@ -211,6 +211,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.showDescHelp();
             return;
         }
+        CRUDParseUtils.invalidSymbol(tableName);
+        if (tableName.endsWith(";")) {
+            tableName = tableName.substring(0, tableName.length() - 1);
+        }
         try {
             CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
             Table descTable = crudSerivce.desc(tableName);
@@ -241,6 +245,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
@@ -264,6 +269,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void insert(String sql) throws Exception {
+
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -276,6 +282,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
@@ -364,6 +371,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
@@ -417,6 +425,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
@@ -451,6 +460,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }

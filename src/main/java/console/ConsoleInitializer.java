@@ -286,8 +286,18 @@ public class ConsoleInitializer {
     private int setGroupID(String groupIDStr) {
         try {
             groupID = Integer.parseInt(groupIDStr);
+            if (groupID <= 0 || groupID > Integer.MAX_VALUE) {
+                System.out.println(
+                        "Please provide groupID by non-negative integer mode, "
+                                + Common.NonNegativeIntegerRange
+                                + ".");
+                close();
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Please provide groupID by integer format.");
+            System.out.println(
+                    "Please provide groupID by non-negative integer mode, "
+                            + Common.NonNegativeIntegerRange
+                            + ".");
             close();
         }
         return groupID;

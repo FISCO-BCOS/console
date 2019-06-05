@@ -1,6 +1,7 @@
 package console.common;
 
 import console.exception.ConsoleMessageException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,8 @@ import org.fisco.bcos.web3j.precompile.crud.Table;
 
 public class CRUDParseUtils {
 
+    public static final String PRIMARY_KEY = "primary key";
+
     public static void parseCreateTable(String sql, Table table)
             throws JSQLParserException, ConsoleMessageException {
         Statement statement = CCJSqlParserUtil.parse(sql);
@@ -52,10 +55,18 @@ public class CRUDParseUtils {
         boolean keyFlag = false;
         List<Index> indexes = createTable.getIndexes();
         if (indexes != null) {
-            for (Index index : indexes) {
-                keyFlag = true;
+            if (indexes.size() > 1) {
+                throw new ConsoleMessageException(
+                        "Please provide only one primary key for the table.");
+            }
+            keyFlag = true;
+            Index index = indexes.get(0);
+            String type = index.getType().toLowerCase();
+            if (PRIMARY_KEY.equals(type)) {
                 table.setKey(index.getColumnsNames().get(0));
-                break;
+            } else {
+                throw new ConsoleMessageException(
+                        "Please provide only one primary key for the table.");
             }
         }
         List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
@@ -72,7 +83,7 @@ public class CRUDParseUtils {
                     if (keyFlag) {
                         if (!table.getKey().equals(key)) {
                             throw new ConsoleMessageException(
-                                    "Please don't provide two different key names.");
+                                    "Please provide only one primary key for the table.");
                         }
                     } else {
                         keyFlag = true;
@@ -83,16 +94,30 @@ public class CRUDParseUtils {
             }
         }
         if (!keyFlag) {
-            throw new ConsoleMessageException("Please provide a key for the table.");
+            throw new ConsoleMessageException("Please provide a primary key for the table.");
         }
         // parse value field
-        StringBuffer fields = new StringBuffer();
+        List<String> fieldsList = new ArrayList<>();
         for (int i = 0; i < columnDefinitions.size(); i++) {
-            if (!columnDefinitions.get(i).getColumnName().equals(table.getKey())) {
-                fields.append(columnDefinitions.get(i).getColumnName());
-                if (i != columnDefinitions.size() - 1) {
-                    fields.append(",");
-                }
+            String columnName = columnDefinitions.get(i).getColumnName();
+            if (fieldsList.contains(columnName)) {
+                throw new ConsoleMessageException(
+                        "Please provide the field '" + columnName + "' only once.");
+            } else {
+                fieldsList.add(columnName);
+            }
+        }
+        if (!fieldsList.contains(table.getKey())) {
+            throw new ConsoleMessageException(
+                    "Please provide the field '" + table.getKey() + "' in column definition.");
+        } else {
+            fieldsList.remove(table.getKey());
+        }
+        StringBuffer fields = new StringBuffer();
+        for (int i = 0; i < fieldsList.size(); i++) {
+            fields.append(fieldsList.get(i));
+            if (i != fieldsList.size() - 1) {
+                fields.append(",");
             }
         }
         table.setValueFields(fields.toString());
@@ -120,14 +145,12 @@ public class CRUDParseUtils {
                 throw new ConsoleMessageException("Column count doesn't match value count.");
             }
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(
-                        trimQuotes(columns.get(i).toString().trim()),
-                        trimQuotes(itemArr[i].trim()));
+                entry.put(trimQuotes(columns.get(i).toString()), trimQuotes(itemArr[i]));
             }
             return false;
         } else {
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(i + "", trimQuotes(itemArr[i].trim()));
+                entry.put(i + "", trimQuotes(itemArr[i]));
             }
             return true;
         }
@@ -220,7 +243,7 @@ public class CRUDParseUtils {
         for (String key : keys) {
             Map<EnumOP, String> value = conditions.get(key);
             EnumOP operation = value.keySet().iterator().next();
-            String itemValue = value.values().iterator().next().trim();
+            String itemValue = value.values().iterator().next();
             String newValue = trimQuotes(itemValue);
             value.put(operation, newValue);
             conditions.put(key, value);
@@ -232,16 +255,17 @@ public class CRUDParseUtils {
     public static String trimQuotes(String str) {
         char[] value = str.toCharArray();
         int len = value.length;
-        int st = 0;
+        int st = 1;
         char[] val = value; /* avoid getfield opcode */
 
-        while ((st < len) && (val[st] <= '"' || val[st] <= '\'')) {
+        while ((st < len) && (val[st] == '"' || val[st] == '\'')) {
             st++;
         }
-        while ((st < len) && (val[len - 1] <= '"' || val[len - 1] <= '\'')) {
+        while ((st < len) && (val[len - 1] == '"' || val[len - 1] == '\'')) {
             len--;
         }
-        return ((st > 0) || (len < value.length)) ? str.substring(st, len) : str;
+        String string = ((st > 1) || (len < value.length)) ? str.substring(st, len) : str;
+        return string;
     }
 
     public static void parseUpdate(String sql, Table table, Entry entry, Condition condition)
@@ -263,7 +287,7 @@ public class CRUDParseUtils {
             values[i] = expressions.get(i).toString();
         }
         for (int i = 0; i < columns.size(); i++) {
-            entry.put(trimQuotes(columns.get(i).toString().trim()), trimQuotes(values[i].trim()));
+            entry.put(trimQuotes(columns.get(i).toString()), trimQuotes(values[i]));
         }
 
         // parse where clause
@@ -355,5 +379,18 @@ public class CRUDParseUtils {
                     }
                 });
         return condition;
+    }
+
+    public static void invalidSymbol(String sql) throws ConsoleMessageException {
+        if (sql.contains("；")) {
+            throw new ConsoleMessageException("SyntaxError: Unexpected Chinese semicolon.");
+        } else if (sql.contains("“")
+                || sql.contains("”")
+                || sql.contains("‘")
+                || sql.contains("’")) {
+            throw new ConsoleMessageException("SyntaxError: Unexpected Chinese quotes.");
+        } else if (sql.contains("，")) {
+            throw new ConsoleMessageException("SyntaxError: Unexpected Chinese comma.");
+        }
     }
 }

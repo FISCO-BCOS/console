@@ -36,10 +36,12 @@ import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 
 public class ContractClassFactory {
 
-    public static final String JAVAPATH = "solidity/java/org/fisco/bcos/temp";
-    public static final String CLASSPATH = "solidity/java/classes/org/fisco/bcos/temp";
-    public static final String TARGETCLASSPATH = "solidity/java/classes";
-    public static final String PACKAGENAME = "org.fisco.bcos.temp";
+    public static final String SOLIDITY_PATH = "contracts/solidity/";
+    public static final String JAVA_PATH = "contracts/console/java/";
+    public static final String ABI_PATH = "contracts/console/abi/";
+    public static final String BIN_PATH = "contracts/console/bin/";
+    public static final String PACKAGE_NAME = "temp";
+    public static final String TAR_GET_CLASSPATH = "contracts/console/java/classes/";
 
     public static Class<?> compileContract(String name) throws Exception {
         try {
@@ -55,27 +57,24 @@ public class ContractClassFactory {
         } catch (Exception e1) {
             throw new Exception("Compile " + name + ".java failed.");
         }
-        String contractName = PACKAGENAME + "." + name;
+        String contractName = PACKAGE_NAME + "." + name;
         try {
             return getContractClass(contractName);
         } catch (Exception e) {
             throw new Exception(
-                    "There is no "
-                            + name
-                            + ".class"
-                            + " in the directory of java/classes/org/fisco/bcos/temp");
+                    "There is no " + name + ".class" + " in the directory of java/classes/temp");
         }
     }
 
     // dynamic compile target java code
     public static void dynamicCompileJavaToClass(String name) throws Exception {
 
-        File sourceDir = new File(JAVAPATH);
+        File sourceDir = new File(JAVA_PATH + "temp/");
         if (!sourceDir.exists()) {
             sourceDir.mkdirs();
         }
 
-        File distDir = new File(TARGETCLASSPATH);
+        File distDir = new File(TAR_GET_CLASSPATH);
         if (!distDir.exists()) {
             distDir.mkdirs();
         }
@@ -105,24 +104,23 @@ public class ContractClassFactory {
         if (!name.endsWith(".sol")) {
             name = name + ".sol";
         }
-        File solFileList = new File("solidity/contracts/");
+        File solFileList = new File(SOLIDITY_PATH);
         if (!solFileList.exists()) {
-            throw new IOException("Please checkout solidity/contracts/ is exist");
+            throw new IOException("Please checkout the directory " + SOLIDITY_PATH + " is exist.");
         }
-        File solFile = new File("solidity/contracts/" + name);
+        File solFile = new File(SOLIDITY_PATH + "/" + name);
         if (!solFile.exists()) {
-            throw new IOException(
-                    "There is no " + name + " in the directory of solidity/contracts");
+            throw new IOException("There is no " + name + " in the directory of " + SOLIDITY_PATH);
         }
-        String tempDirPath = new File("solidity/java").getAbsolutePath();
+        String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
         ConsoleUtils.compileSolToJava(
-                name, tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
+                name, tempDirPath, PACKAGE_NAME, solFileList, ABI_PATH, BIN_PATH);
     }
 
     public static Class<?> getContractClass(String contractName)
             throws ClassNotFoundException, MalformedURLException {
 
-        File clazzPath = new File(TARGETCLASSPATH);
+        File clazzPath = new File(TAR_GET_CLASSPATH);
 
         if (clazzPath.exists() && clazzPath.isDirectory()) {
             URL[] urls = new URL[1];
@@ -178,7 +176,11 @@ public class ContractClassFactory {
         Method method = ContractClassFactory.getDeployFunction(contractClass);
         Type[] classType = method.getParameterTypes();
         if (classType.length - 3 != params.length - num) {
-            throw new ConsoleMessageException("The number of paramters does not match!");
+            throw new ConsoleMessageException(
+                    "The method constructor with "
+                            + (params.length - num)
+                            + " parameter"
+                            + " is undefined of the contract.");
         }
         String[] generic = new String[method.getParameterCount()];
         for (int i = 0; i < classType.length; i++) {
@@ -537,7 +539,11 @@ public class ContractClassFactory {
 
                 } else if (typeName.contains("TransactionReceipt")) {
                     TransactionReceipt resultTx = (TransactionReceipt) result;
-                    return "transaction hash:" + resultTx.getTransactionHash();
+                    return "transaction hash: " + resultTx.getTransactionHash();
+                } else if ("org.fisco.bcos.web3j.protocol.core.RemoteCall<byte[]>"
+                        .equals(typeName)) {
+                    byte[] bresult = (byte[]) result;
+                    return new String(bresult);
                 } else {
                     return result.toString();
                 }
@@ -546,7 +552,29 @@ public class ContractClassFactory {
         return null;
     }
 
-    public static Method getMethodByName(String funcName, Method[] methods) {
+    public static Method getMethodByName(Method[] methods, String funcName, String[] params) {
+        Method method = null;
+        for (Method method1 : methods) {
+            if (funcName.equals(method1.getName())) {
+                Class[] paramsType = method1.getParameterTypes();
+                if (paramsType.length != params.length) {
+                    continue;
+                }
+                List<String> ilist = new ArrayList<>();
+                for (Class param : paramsType) {
+                    ilist.add(param.getCanonicalName());
+                }
+
+                if (!ilist.contains("org.fisco.bcos.channel.client.TransactionSucCallback")) {
+                    method = method1;
+                    break;
+                }
+            }
+        }
+        return method;
+    }
+
+    public static Method getEventByName(String funcName, Method[] methods) {
         Method method = null;
         for (Method method1 : methods) {
             if (funcName.equals(method1.getName())) {
@@ -557,7 +585,6 @@ public class ContractClassFactory {
                 }
 
                 if (!ilist.contains("org.fisco.bcos.channel.client.TransactionSucCallback")) {
-
                     method = method1;
                     break;
                 }
@@ -649,7 +676,7 @@ public class ContractClassFactory {
                                 + eventName.substring(0, 1).toUpperCase()
                                 + eventName.substring(1)
                                 + "Events";
-                Method eventMethod = ContractClassFactory.getMethodByName(funcEventName, methods);
+                Method eventMethod = ContractClassFactory.getEventByName(funcEventName, methods);
                 if (eventMethod == null) {
                     throw new ConsoleMessageException(
                             "Cannot find the event "
