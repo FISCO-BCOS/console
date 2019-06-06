@@ -148,8 +148,18 @@ public class CRUDParseUtils {
             if (columns.size() != itemArr.length) {
                 throw new ConsoleMessageException("Column count doesn't match value count.");
             }
-            for (int i = 0; i < itemArr.length; i++) {
-                entry.put(trimQuotes(columns.get(i).toString()), trimQuotes(itemArr[i]));
+            List<String> columnNames = new ArrayList<>();
+            for (Column column : columns) {
+                String columnName = trimQuotes(column.toString());
+                if (columnNames.contains(columnName)) {
+                    throw new ConsoleMessageException(
+                            "Please provide the field '" + columnName + "' only once.");
+                } else {
+                    columnNames.add(columnName);
+                }
+            }
+            for (int i = 0; i < columnNames.size(); i++) {
+                entry.put(columnNames.get(i), trimQuotes(itemArr[i]));
             }
             return false;
         } else {
