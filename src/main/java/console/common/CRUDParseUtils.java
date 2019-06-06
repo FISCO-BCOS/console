@@ -139,7 +139,11 @@ public class CRUDParseUtils {
         List<Column> columns = insert.getColumns();
         ItemsList itemsList = insert.getItemsList();
         String items = itemsList.toString();
-        String[] itemArr = items.substring(1, items.length() - 1).split(",");
+        String[] rawItem = items.substring(1, items.length() - 1).split(",");
+        String[] itemArr = new String[rawItem.length];
+        for (int i = 0; i < rawItem.length; i++) {
+            itemArr[i] = rawItem[i].trim();
+        }
         if (columns != null) {
             if (columns.size() != itemArr.length) {
                 throw new ConsoleMessageException("Column count doesn't match value count.");
