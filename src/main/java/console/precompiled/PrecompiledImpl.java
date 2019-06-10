@@ -211,6 +211,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.showDescHelp();
             return;
         }
+        if (tableName.length() > Common.SYS_TABLE_KEY_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table name length is greater than "
+                            + Common.SYS_TABLE_KEY_MAX_LENGTH
+                            + ".");
+        }
         CRUDParseUtils.invalidSymbol(tableName);
         if (tableName.endsWith(";")) {
             tableName = tableName.substring(0, tableName.length() - 1);
@@ -250,6 +256,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
+            CRUDParseUtils.checkTableParams(table);
             CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
             int result = crudSerivce.createTable(table);
             if (result == 0) {
@@ -329,7 +336,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                             if (i == listString.size() - 1) {
                                 strBuilder.append(listString.get(i)).append("' ");
                             } else {
-                                strBuilder.append(listString.get(i)).append("', ");
+                                strBuilder.append(listString.get(i)).append("', '");
                             }
                         }
                         strBuilder.append("in field list.");
@@ -343,6 +350,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 }
                 table.setKey(keyValue);
             }
+            CRUDParseUtils.checkUserTableParam(entry, descTable);
             int insertResult = crudSerivce.insert(table, entry);
             if (insertResult == 0 || insertResult == 1) {
                 System.out.println("Insert OK, " + insertResult + " row affected.");
@@ -398,6 +406,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                             "Unknown field '" + entryField + "' in field list.");
                 }
             }
+            CRUDParseUtils.checkUserTableParam(entry, descTable);
             int updateResult = crudSerivce.update(table, entry, condition);
             if (updateResult == 0 || updateResult == 1) {
                 System.out.println("Update OK, " + updateResult + " row affected.");
@@ -486,7 +495,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             result = filterSystemColum(result);
             if ("*".equals(selectColumns.get(0))) {
-                result.stream().forEach(System.out::println);
+                selectColumns.clear();
+                selectColumns.add(descTable.getKey());
+                String[] valueArr = descTable.getValueFields().split(",");
+                selectColumns.addAll(Arrays.asList(valueArr));
+                result = getSeletedColumn(selectColumns, result);
                 rows = result.size();
             } else {
                 List<Map<String, String>> selectedResult = getSeletedColumn(selectColumns, result);
@@ -565,15 +578,5 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         table.setKey(keyValue);
-    }
-
-    private List<Map<String, String>> getTableNames() throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-        Table table = new Table();
-        table.setTableName("_sys_tables_");
-        table.setKey("table_name");
-        Condition condition = table.getCondition();
-        List<Map<String, String>> userTable = crudSerivce.select(table, condition);
-        return userTable;
     }
 }

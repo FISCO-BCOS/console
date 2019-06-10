@@ -139,13 +139,27 @@ public class CRUDParseUtils {
         List<Column> columns = insert.getColumns();
         ItemsList itemsList = insert.getItemsList();
         String items = itemsList.toString();
-        String[] itemArr = items.substring(1, items.length() - 1).split(",");
+        String[] rawItem = items.substring(1, items.length() - 1).split(",");
+        String[] itemArr = new String[rawItem.length];
+        for (int i = 0; i < rawItem.length; i++) {
+            itemArr[i] = rawItem[i].trim();
+        }
         if (columns != null) {
             if (columns.size() != itemArr.length) {
                 throw new ConsoleMessageException("Column count doesn't match value count.");
             }
-            for (int i = 0; i < itemArr.length; i++) {
-                entry.put(trimQuotes(columns.get(i).toString()), trimQuotes(itemArr[i]));
+            List<String> columnNames = new ArrayList<>();
+            for (Column column : columns) {
+                String columnName = trimQuotes(column.toString());
+                if (columnNames.contains(columnName)) {
+                    throw new ConsoleMessageException(
+                            "Please provide the field '" + columnName + "' only once.");
+                } else {
+                    columnNames.add(columnName);
+                }
+            }
+            for (int i = 0; i < columnNames.size(); i++) {
+                entry.put(columnNames.get(i), trimQuotes(itemArr[i]));
             }
             return false;
         } else {
@@ -391,6 +405,52 @@ public class CRUDParseUtils {
             throw new ConsoleMessageException("SyntaxError: Unexpected Chinese quotes.");
         } else if (sql.contains("，")) {
             throw new ConsoleMessageException("SyntaxError: Unexpected Chinese comma.");
+        }
+    }
+
+    public static void checkTableParams(Table table) throws ConsoleMessageException {
+        if (table.getTableName().length() > Common.SYS_TABLE_KEY_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table name length is greater than "
+                            + Common.SYS_TABLE_KEY_MAX_LENGTH
+                            + ".");
+        }
+        if (table.getKey().length() > Common.USER_TABLE_KEY_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table primary key length is greater than "
+                            + Common.USER_TABLE_KEY_MAX_LENGTH
+                            + ".");
+        }
+        if (table.getValueFields().length() > Common.SYS_TABLE_FIELD_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table name value field length is greater than "
+                            + Common.SYS_TABLE_FIELD_MAX_LENGTH
+                            + ".");
+        }
+    }
+
+    public static void checkUserTableParam(Entry entry, Table descTable)
+            throws ConsoleMessageException {
+        Map<String, String> fieldsMap = entry.getFields();
+        Set<String> keys = fieldsMap.keySet();
+        for (String key : keys) {
+            if (key.equals(descTable.getKey())) {
+                if (fieldsMap.get(key).length() > Common.USER_TABLE_KEY_MAX_LENGTH) {
+                    throw new ConsoleMessageException(
+                            "The table primary key value length is greater than "
+                                    + Common.USER_TABLE_KEY_MAX_LENGTH
+                                    + ".");
+                }
+            } else {
+                if (fieldsMap.get(key).length() > Common.USER_TABLE_FIELD_MAX_LENGTH) {
+                    throw new ConsoleMessageException(
+                            "The table field '"
+                                    + key
+                                    + "' value length is greater than "
+                                    + Common.USER_TABLE_FIELD_MAX_LENGTH
+                                    + ".");
+                }
+            }
         }
     }
 }
