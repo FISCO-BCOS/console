@@ -407,4 +407,50 @@ public class CRUDParseUtils {
             throw new ConsoleMessageException("SyntaxError: Unexpected Chinese comma.");
         }
     }
+
+    public static void checkTableParams(Table table) throws ConsoleMessageException {
+        if (table.getTableName().length() > Common.SYS_TABLE_KEY_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table name length is greater than "
+                            + Common.SYS_TABLE_KEY_MAX_LENGTH
+                            + ".");
+        }
+        if (table.getKey().length() > Common.USER_TABLE_KEY_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table primary key length is greater than "
+                            + Common.USER_TABLE_KEY_MAX_LENGTH
+                            + ".");
+        }
+        if (table.getValueFields().length() > Common.SYS_TABLE_FIELD_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table name value field length is greater than "
+                            + Common.SYS_TABLE_FIELD_MAX_LENGTH
+                            + ".");
+        }
+    }
+
+    public static void checkUserTableParam(Entry entry, Table descTable)
+            throws ConsoleMessageException {
+        Map<String, String> fieldsMap = entry.getFields();
+        Set<String> keys = fieldsMap.keySet();
+        for (String key : keys) {
+            if (key.equals(descTable.getKey())) {
+                if (fieldsMap.get(key).length() > Common.USER_TABLE_KEY_MAX_LENGTH) {
+                    throw new ConsoleMessageException(
+                            "The table primary key value length is greater than "
+                                    + Common.USER_TABLE_KEY_MAX_LENGTH
+                                    + ".");
+                }
+            } else {
+                if (fieldsMap.get(key).length() > Common.USER_TABLE_FIELD_MAX_LENGTH) {
+                    throw new ConsoleMessageException(
+                            "The table field '"
+                                    + key
+                                    + "' value length is greater than "
+                                    + Common.USER_TABLE_FIELD_MAX_LENGTH
+                                    + ".");
+                }
+            }
+        }
+    }
 }
