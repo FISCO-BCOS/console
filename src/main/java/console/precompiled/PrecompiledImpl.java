@@ -262,7 +262,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (result == 0) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
             } else if (result == Common.TableExist) {
-                System.out.println("The table '" + table.getTableName() + "' already exists.");
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.TableExist));
             } else if (result == Common.PermissionCode) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
