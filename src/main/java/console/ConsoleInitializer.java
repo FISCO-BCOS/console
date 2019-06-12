@@ -142,6 +142,7 @@ public class ConsoleInitializer {
 
             Version nodeVersion = web3j.getNodeVersion().send().getNodeVersion();
             String version = nodeVersion.getSupportedVersion();
+            PrecompiledCommon.BCOS_VERSION = version;
             if (version == null || PrecompiledCommon.BCOS_RC1.equals(version)) {
                 Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC1;
             } else if (PrecompiledCommon.BCOS_RC2.equals(version)) {
