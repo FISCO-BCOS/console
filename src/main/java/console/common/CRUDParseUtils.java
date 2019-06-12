@@ -415,16 +415,25 @@ public class CRUDParseUtils {
                             + Common.SYS_TABLE_KEY_MAX_LENGTH
                             + ".");
         }
-        if (table.getKey().length() > Common.USER_TABLE_KEY_MAX_LENGTH) {
+        if (table.getKey().length() > Common.SYS_TABLE_KEY_FIELD_NAME_MAX_LENGTH) {
             throw new ConsoleMessageException(
-                    "The table primary key length is greater than "
-                            + Common.USER_TABLE_KEY_MAX_LENGTH
+                    "The table primary key name length is greater than "
+                            + Common.SYS_TABLE_KEY_FIELD_NAME_MAX_LENGTH
                             + ".");
         }
-        if (table.getValueFields().length() > Common.SYS_TABLE_FIELD_MAX_LENGTH) {
+        String[] valueFields = table.getValueFields().split(",");
+        for (String valueField : valueFields) {
+            if (valueField.length() > Common.USER_TABLE_FIELD_NAME_MAX_LENGTH) {
+                throw new ConsoleMessageException(
+                        "The table field name length is greater than "
+                                + Common.USER_TABLE_FIELD_NAME_MAX_LENGTH
+                                + ".");
+            }
+        }
+        if (table.getValueFields().length() > Common.SYS_TABLE_VALUE_FIELD_MAX_LENGTH) {
             throw new ConsoleMessageException(
-                    "The table name value field length is greater than "
-                            + Common.SYS_TABLE_FIELD_MAX_LENGTH
+                    "The table total field name length is greater than "
+                            + Common.SYS_TABLE_VALUE_FIELD_MAX_LENGTH
                             + ".");
         }
     }
@@ -435,19 +444,19 @@ public class CRUDParseUtils {
         Set<String> keys = fieldsMap.keySet();
         for (String key : keys) {
             if (key.equals(descTable.getKey())) {
-                if (fieldsMap.get(key).length() > Common.USER_TABLE_KEY_MAX_LENGTH) {
+                if (fieldsMap.get(key).length() > Common.USER_TABLE_KEY_VALUE_MAX_LENGTH) {
                     throw new ConsoleMessageException(
                             "The table primary key value length is greater than "
-                                    + Common.USER_TABLE_KEY_MAX_LENGTH
+                                    + Common.USER_TABLE_KEY_VALUE_MAX_LENGTH
                                     + ".");
                 }
             } else {
-                if (fieldsMap.get(key).length() > Common.USER_TABLE_FIELD_MAX_LENGTH) {
+                if (fieldsMap.get(key).length() > Common.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
                     throw new ConsoleMessageException(
                             "The table field '"
                                     + key
                                     + "' value length is greater than "
-                                    + Common.USER_TABLE_FIELD_MAX_LENGTH
+                                    + Common.USER_TABLE_FIELD_VALUE_MAX_LENGTH
                                     + ".");
                 }
             }

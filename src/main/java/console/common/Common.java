@@ -19,9 +19,12 @@ public class Common {
     public static final int TxGasLimitMin = 10000;
 
     public static int PermissionCode = 0;
+    public static int TableExist = 0;
 
-    public static int SYS_TABLE_KEY_MAX_LENGTH = 128;
-    public static int SYS_TABLE_FIELD_MAX_LENGTH = 1024;
-    public static int USER_TABLE_KEY_MAX_LENGTH = 255;
-    public static int USER_TABLE_FIELD_MAX_LENGTH = 65535;
+    public static int SYS_TABLE_KEY_MAX_LENGTH = 58; // 64- "_user_".length
+    public static int SYS_TABLE_KEY_FIELD_NAME_MAX_LENGTH = 64;
+    public static int SYS_TABLE_VALUE_FIELD_MAX_LENGTH = 1024;
+    public static int USER_TABLE_KEY_VALUE_MAX_LENGTH = 128;
+    public static int USER_TABLE_FIELD_NAME_MAX_LENGTH = 64;
+    public static int USER_TABLE_FIELD_VALUE_MAX_LENGTH = 65535;
 }
