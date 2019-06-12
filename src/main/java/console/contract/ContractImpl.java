@@ -319,9 +319,8 @@ public class ContractImpl implements ContractFace {
             String output = receipt.getOutput();
             if (!"0x".equals(output)) {
                 int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
-                if (code == PrecompiledCommon.TableExist) {
-                    ConsoleUtils.printJson(
-                            PrecompiledCommon.transferToJson(PrecompiledCommon.TableExist));
+                if (code == Common.TableExist) {
+                    ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.TableExist));
                     System.out.println();
                     return;
                 }
@@ -533,9 +532,8 @@ public class ContractImpl implements ContractFace {
             String output = receipt.getOutput();
             if (!"0x".equals(output)) {
                 int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
-                if (code == PrecompiledCommon.TableExist) {
-                    ConsoleUtils.printJson(
-                            PrecompiledCommon.transferToJson(PrecompiledCommon.TableExist));
+                if (code == Common.TableExist) {
+                    ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.TableExist));
                     System.out.println();
                     return;
                 }

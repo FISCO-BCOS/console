@@ -143,11 +143,13 @@ public class ConsoleInitializer {
             Version nodeVersion = web3j.getNodeVersion().send().getNodeVersion();
             String version = nodeVersion.getSupportedVersion();
             if (version == null || PrecompiledCommon.BCOS_RC1.equals(version)) {
-                Common.PermissionCode = 80;
+                Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC1;
             } else if (PrecompiledCommon.BCOS_RC2.equals(version)) {
-                Common.PermissionCode = 50000;
+                Common.PermissionCode = PrecompiledCommon.PermissionDenied;
+                Common.TableExist = PrecompiledCommon.TableExist;
             } else {
-                Common.PermissionCode = -50000;
+                Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC3;
+                Common.TableExist = PrecompiledCommon.TableExist_RC3;
             }
             web3jFace = new Web3jImpl();
             web3jFace.setWeb3j(web3j);
