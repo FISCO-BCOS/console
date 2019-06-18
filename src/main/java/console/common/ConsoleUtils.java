@@ -14,8 +14,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
+import java.util.StringTokenizer;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
 import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
@@ -23,10 +22,10 @@ import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
 
 public class ConsoleUtils {
 
-    public static final String JAVAPATH = "solidity/java/org/fisco/bcos/temp";
-    public static final String CLASSPATH = "solidity/java/classes/org/fisco/bcos/temp";
-    public static final String TARGETCLASSPATH = "solidity/java/classes";
-    public static final String PACKAGENAME = "org.fisco.bcos.temp";
+    public static final String SOLIDITY_PATH = "contracts/solidity/";
+    public static final String JAVA_PATH = "contracts/sdk/java/";
+    public static final String ABI_PATH = "contracts/sdk/abi/";
+    public static final String BIN_PATH = "contracts/sdk/bin/";
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
@@ -97,7 +96,7 @@ public class ConsoleUtils {
     }
 
     public static boolean isInvalidHash(String hash) {
-        if (hash.startsWith("0x") && hash.length() == 66) {
+        if (hash.matches("^0x[0-9a-fA-F]{64}$")) {
             return false;
         } else {
             System.out.println("Please provide a valid hash.");
@@ -180,68 +179,16 @@ public class ConsoleUtils {
         address.setAddress(newAddessStr);
     }
 
-    // dynamic compile target java code
-    public static void dynamicCompileJavaToClass(String name) throws Exception {
-
-        File sourceDir = new File(JAVAPATH);
-        if (!sourceDir.exists()) {
-            sourceDir.mkdirs();
-        }
-
-        File distDir = new File(TARGETCLASSPATH);
-        if (!distDir.exists()) {
-            distDir.mkdirs();
-        }
-        File[] javaFiles = sourceDir.listFiles();
-        for (File javaFile : javaFiles) {
-            if (!javaFile.getName().equals(name + ".java")) {
-                continue;
-            }
-            JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-            int compileResult =
-                    javac.run(
-                            null,
-                            null,
-                            null,
-                            "-d",
-                            distDir.getAbsolutePath(),
-                            javaFile.getAbsolutePath());
-            if (compileResult != 0) {
-                System.err.println("compile failed!!");
-                System.out.println();
-                return;
-            }
-        }
-    }
-
-    public static void dynamicCompileSolFilesToJava(String name) throws IOException {
-        if (!name.endsWith(".sol")) {
-            name = name + ".sol";
-        }
-        File solFileList = new File("solidity/contracts/");
-        if (!solFileList.exists()) {
-            throw new IOException("Please checkout solidity/contracts/ is exist");
-        }
-        File solFile = new File("solidity/contracts/" + name);
-        if (!solFile.exists()) {
-            throw new IOException(
-                    "There is no " + name + " in the directory of solidity/contracts");
-        }
-        String tempDirPath = new File("solidity/java").getAbsolutePath();
-        compileSolToJava(
-                name, tempDirPath, PACKAGENAME, solFileList, "solidity/abi/", "solidity/bin/");
-    }
-
     public static void main(String[] args) {
         if (args.length < 1) {
             System.out.println("Please provide a package name.");
             return;
         }
 
-        File solFileList = new File("contracts");
-        String tempDirPath = new File("java").getAbsolutePath();
+        File solFileList = new File(SOLIDITY_PATH);
+        String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
         try {
-            compileSolToJava("*", tempDirPath, args[0], solFileList, "abi/", "bin/");
+            compileSolToJava("*", tempDirPath, args[0], solFileList, ABI_PATH, BIN_PATH);
             System.out.println(
                     "\nCompile solidity contract files to java contract files successfully!");
         } catch (IOException e) {
@@ -249,7 +196,7 @@ public class ConsoleUtils {
         }
     }
 
-    private static void compileSolToJava(
+    public static void compileSolToJava(
             String solName,
             String tempDirPath,
             String packageName,
@@ -270,11 +217,11 @@ public class ConsoleUtils {
                 if (!solFile.getName().equals(solName)) {
                     continue;
                 }
-                if (solFile.getName().contains("Lib")) {
+                if (solFile.getName().startsWith("Lib")) {
                     throw new IOException("Don't deploy the library: " + solFile.getName());
                 }
             } else {
-                if (solFile.getName().contains("Lib")) {
+                if (solFile.getName().startsWith("Lib")) {
                     continue;
                 }
             }
@@ -325,10 +272,17 @@ public class ConsoleUtils {
     }
 
     public static String[] tokenizeCommand(String command) throws Exception {
-        List<String> tokens = new ArrayList<>();
-
+        // example: callByCNS HelloWorld.sol set"Hello" parse [callByCNS, HelloWorld.sol,
+        // set"Hello"]
+        List<String> tokens1 = new ArrayList<>();
+        StringTokenizer stringTokenizer = new StringTokenizer(command, " ");
+        while (stringTokenizer.hasMoreTokens()) {
+            tokens1.add(stringTokenizer.nextToken());
+        }
+        // example: callByCNS HelloWorld.sol set"Hello" parse [callByCNS, HelloWorld.sol, set,
+        // "Hello"]
+        List<String> tokens2 = new ArrayList<>();
         StreamTokenizer tokenizer = new CommandTokenizer(new StringReader(command));
-
         int token = tokenizer.nextToken();
         while (token != StreamTokenizer.TT_EOF) {
             switch (token) {
@@ -336,17 +290,17 @@ public class ConsoleUtils {
                     // Ignore \n character.
                     break;
                 case StreamTokenizer.TT_WORD:
-                    tokens.add(tokenizer.sval);
+                    tokens2.add(tokenizer.sval);
                     break;
                 case '\'':
                     // If the tailing ' is missing, it will add a tailing ' to it.
                     // E.g. 'abc -> 'abc'
-                    tokens.add(String.format("'%s'", tokenizer.sval));
+                    tokens2.add(String.format("'%s'", tokenizer.sval));
                     break;
                 case '"':
                     // If the tailing " is missing, it will add a tailing ' to it.
                     // E.g. "abc -> "abc"
-                    tokens.add(String.format("\"%s\"", tokenizer.sval));
+                    tokens2.add(String.format("\"%s\"", tokenizer.sval));
                     break;
                 default:
                     // Ignore all other unknown characters.
@@ -354,21 +308,18 @@ public class ConsoleUtils {
             }
             token = tokenizer.nextToken();
         }
-        return tokens.toArray(new String[tokens.size()]);
+        return tokens1.size() <= tokens2.size()
+                ? tokens1.toArray(new String[tokens1.size()])
+                : tokens2.toArray(new String[tokens2.size()]);
     }
 
     public static void singleLine() {
-        System.out.println(
-                "-------------------------------------------------------------------------------------");
-    }
-
-    public static void singleLineForTable() {
         System.out.println(
                 "---------------------------------------------------------------------------------------------");
     }
 
     public static void doubleLine() {
         System.out.println(
-                "=====================================================================================");
+                "=============================================================================================");
     }
 }

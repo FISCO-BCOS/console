@@ -17,7 +17,7 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
-import org.fisco.bcos.web3j.precompile.config.SystemConfigSerivce;
+import org.fisco.bcos.web3j.precompile.config.SystemConfigService;
 import org.fisco.bcos.web3j.precompile.consensus.ConsensusService;
 import org.fisco.bcos.web3j.precompile.crud.CRUDSerivce;
 import org.fisco.bcos.web3j.precompile.crud.Condition;
@@ -166,8 +166,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                         return;
                     }
                 }
-                SystemConfigSerivce systemConfigSerivce =
-                        new SystemConfigSerivce(web3j, credentials);
+                SystemConfigService systemConfigSerivce =
+                        new SystemConfigService(web3j, credentials);
                 String result = systemConfigSerivce.setValueByKey(key, value + "");
                 ConsoleUtils.printJson(result);
             } catch (NumberFormatException e) {
@@ -197,7 +197,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void desc(String[] params) {
+    public void desc(String[] params) throws Exception {
         if (params.length < 2) {
             HelpInfo.promptHelp("desc");
             return;
@@ -211,21 +211,37 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.showDescHelp();
             return;
         }
+        if (tableName.length() > Common.SYS_TABLE_KEY_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table name length is greater than "
+                            + Common.SYS_TABLE_KEY_MAX_LENGTH
+                            + ".");
+        }
+        CRUDParseUtils.invalidSymbol(tableName);
+        if (tableName.endsWith(";")) {
+            tableName = tableName.substring(0, tableName.length() - 1);
+        }
         try {
-            String key = queryKey(tableName);
-            String valueFields = queryFields(tableName, true);
+            CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+            Table descTable = crudSerivce.desc(tableName);
+            if (descTable.getKey() == null) {
+                System.out.println("The table '" + tableName + "' does not exist.");
+                System.out.println();
+                return;
+            }
             ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
-            String tableInfo = objectMapper.writeValueAsString(new TableInfo(key, valueFields));
+            String tableInfo =
+                    objectMapper.writeValueAsString(
+                            new TableInfo(descTable.getKey(), descTable.getValueFields()));
             ConsoleUtils.printJson(tableInfo);
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
+            throw e;
         }
     }
 
     @Override
-    public void createTable(String sql) {
+    public void createTable(String sql) throws Exception {
         Table table = new Table();
         try {
             CRUDParseUtils.parseCreateTable(sql, table);
@@ -233,33 +249,34 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
         try {
+            CRUDParseUtils.checkTableParams(table);
             CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
             int result = crudSerivce.createTable(table);
             if (result == 0) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
-            } else if (result == PrecompiledCommon.TableExist) {
-                System.out.println("The table '" + table.getTableName() + "' already exists.");
-            } else if (result == PrecompiledCommon.PermissionDenied) {
-                System.out.println(Common.PermissionDenied);
+            } else if (result == Common.TableExist) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.TableExist));
+            } else if (result == Common.PermissionCode) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println("Create '" + table.getTableName() + "' failed.");
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println("Could not parse SQL statement.");
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void insert(String sql) {
+    public void insert(String sql) throws Exception {
+
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -270,15 +287,17 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
         try {
             String tableName = table.getTableName();
-            String keyName = queryKey(tableName);
-            String fields = queryFields(tableName, false);
+            Table descTable = crudSerivce.desc(tableName);
+            String keyName = descTable.getKey();
+            String fields = keyName + "," + descTable.getValueFields();
             List<String> fieldsList = Arrays.asList(fields.split(","));
             Set<String> entryFields = entry.getFields().keySet();
             // insert into t_test values (fruit, 1, apple)
@@ -307,6 +326,22 @@ public class PrecompiledImpl implements PrecompiledFace {
                         throw new ConsoleMessageException(
                                 "Unknown field '" + entryField + "' in field list.");
                     }
+                    if (fieldsList.size() != entryFields.size()) {
+                        List<String> listString = new ArrayList<String>(fieldsList);
+                        for (String entryItem : entryFields) {
+                            listString.remove(entryItem);
+                        }
+                        StringBuilder strBuilder = new StringBuilder("Please provide field '");
+                        for (int i = 0; i < listString.size(); i++) {
+                            if (i == listString.size() - 1) {
+                                strBuilder.append(listString.get(i)).append("' ");
+                            } else {
+                                strBuilder.append(listString.get(i)).append("', '");
+                            }
+                        }
+                        strBuilder.append("in field list.");
+                        throw new ConsoleMessageException(strBuilder.toString());
+                    }
                 }
                 String keyValue = entry.get(keyName);
                 if (keyValue == null) {
@@ -315,24 +350,23 @@ public class PrecompiledImpl implements PrecompiledFace {
                 }
                 table.setKey(keyValue);
             }
+            CRUDParseUtils.checkUserTableParam(entry, descTable);
             int insertResult = crudSerivce.insert(table, entry);
             if (insertResult == 0 || insertResult == 1) {
                 System.out.println("Insert OK, " + insertResult + " row affected.");
-            } else if (insertResult == PrecompiledCommon.PermissionDenied) {
-                System.out.println(Common.PermissionDenied);
+            } else if (insertResult == Common.PermissionCode) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println("Insert failed.");
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void update(String sql) {
+    public void update(String sql) throws Exception {
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -343,19 +377,23 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
         try {
-            String keyName = queryKey(table.getTableName());
+            String tableName = table.getTableName();
+            Table descTable = crudSerivce.desc(tableName);
+            String keyName = descTable.getKey();
             if (entry.getFields().containsKey(keyName)) {
                 throw new ConsoleMessageException(
                         "Please don't set the key field '" + keyName + "'.");
             }
+            table.setKey(descTable.getKey());
             handleKey(table, condition);
-            String fields = queryFields(table.getTableName(), false);
+            String fields = descTable.getKey() + "," + descTable.getValueFields();
             List<String> fieldsList = Arrays.asList(fields.split(","));
             Set<String> entryFields = entry.getFields().keySet();
             Set<String> conditonFields = condition.getConditions().keySet();
@@ -368,24 +406,23 @@ public class PrecompiledImpl implements PrecompiledFace {
                             "Unknown field '" + entryField + "' in field list.");
                 }
             }
+            CRUDParseUtils.checkUserTableParam(entry, descTable);
             int updateResult = crudSerivce.update(table, entry, condition);
             if (updateResult == 0 || updateResult == 1) {
                 System.out.println("Update OK, " + updateResult + " row affected.");
-            } else if (updateResult == PrecompiledCommon.PermissionDenied) {
-                System.out.println(Common.PermissionDenied);
+            } else if (updateResult == Common.PermissionCode) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println("Update OK, " + updateResult + " rows affected.");
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void remove(String sql) {
+    public void remove(String sql) throws Exception {
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         Table table = new Table();
         Condition condition = table.getCondition();
@@ -395,31 +432,32 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
         try {
+            Table descTable = crudSerivce.desc(table.getTableName());
+            table.setKey(descTable.getKey());
             handleKey(table, condition);
             int removeResult = crudSerivce.remove(table, condition);
             if (removeResult == 0 || removeResult == 1) {
                 System.out.println("Remove OK, " + removeResult + " row affected.");
-            } else if (removeResult == PrecompiledCommon.PermissionDenied) {
-                System.out.println(Common.PermissionDenied);
+            } else if (removeResult == Common.PermissionCode) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
                 System.out.println("Remove OK, " + removeResult + " rows affected.");
             }
             System.out.println();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
     }
 
     @Override
-    public void select(String sql) {
+    public void select(String sql) throws Exception {
         Table table = new Table();
         Condition condition = table.getCondition();
         List<String> selectColumns = new ArrayList<>();
@@ -429,14 +467,25 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println(e.getMessage());
             System.out.println();
             return;
-        } catch (JSQLParserException e) {
+        } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
         }
         CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
         try {
+            Table descTable = crudSerivce.desc(table.getTableName());
+            table.setKey(descTable.getKey());
             handleKey(table, condition);
+            String fields = descTable.getKey() + "," + descTable.getValueFields();
+            List<String> fieldsList = Arrays.asList(fields.split(","));
+            for (String column : selectColumns) {
+                if (!fieldsList.contains(column) && !"*".equals(column)) {
+                    throw new ConsoleMessageException(
+                            "Unknown field '" + column + "' in field list.");
+                }
+            }
             List<Map<String, String>> result = crudSerivce.select(table, condition);
             int rows = 0;
             if (result.size() == 0) {
@@ -444,26 +493,16 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println();
                 return;
             }
+            result = filterSystemColum(result);
             if ("*".equals(selectColumns.get(0))) {
-                result.stream().forEach(System.out::println);
+                selectColumns.clear();
+                selectColumns.add(descTable.getKey());
+                String[] valueArr = descTable.getValueFields().split(",");
+                selectColumns.addAll(Arrays.asList(valueArr));
+                result = getSeletedColumn(selectColumns, result);
                 rows = result.size();
             } else {
-                int size = result.size();
-                List<Map<String, String>> selectedResult = new ArrayList<>(size);
-                Map<String, String> selectedRecords;
-                for (Map<String, String> records : result) {
-                    selectedRecords = new LinkedHashMap<>();
-                    for (String column : selectColumns) {
-                        Set<String> recordKeys = records.keySet();
-                        for (String recordKey : recordKeys) {
-                            if (recordKey.equals(column)) {
-                                selectedRecords.put(recordKey, records.get(recordKey));
-                            }
-                        }
-                    }
-                    selectedResult.add(selectedRecords);
-                }
-                selectedResult.stream().forEach(System.out::println);
+                List<Map<String, String>> selectedResult = getSeletedColumn(selectColumns, result);
                 rows = selectedResult.size();
             }
             if (rows == 1) {
@@ -472,15 +511,52 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println(rows + " rows in set.");
             }
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            return;
+            throw e;
         }
         System.out.println();
     }
 
+    private List<Map<String, String>> getSeletedColumn(
+            List<String> selectColumns, List<Map<String, String>> result) {
+        List<Map<String, String>> selectedResult = new ArrayList<>(result.size());
+        Map<String, String> selectedRecords;
+        for (Map<String, String> records : result) {
+            selectedRecords = new LinkedHashMap<>();
+            for (String column : selectColumns) {
+                Set<String> recordKeys = records.keySet();
+                for (String recordKey : recordKeys) {
+                    if (recordKey.equals(column)) {
+                        selectedRecords.put(recordKey, records.get(recordKey));
+                    }
+                }
+            }
+            selectedResult.add(selectedRecords);
+        }
+        selectedResult.stream().forEach(System.out::println);
+        return selectedResult;
+    }
+
+    private List<Map<String, String>> filterSystemColum(List<Map<String, String>> result) {
+
+        List<String> filteredColumns = Arrays.asList("_id_", "_hash_", "_status_", "_num_");
+        List<Map<String, String>> filteredResult = new ArrayList<>(result.size());
+        Map<String, String> filteredRecords;
+        for (Map<String, String> records : result) {
+            filteredRecords = new LinkedHashMap<>();
+            Set<String> recordKeys = records.keySet();
+            for (String recordKey : recordKeys) {
+                if (!filteredColumns.contains(recordKey)) {
+                    filteredRecords.put(recordKey, records.get(recordKey));
+                }
+            }
+            filteredResult.add(filteredRecords);
+        }
+        return filteredResult;
+    }
+
     private void handleKey(Table table, Condition condition) throws Exception {
-        String keyName = queryKey(table.getTableName());
+
+        String keyName = table.getKey();
         String keyValue = "";
         Map<EnumOP, String> keyMap = condition.getConditions().get(keyName);
         if (keyMap == null) {
@@ -502,47 +578,5 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         table.setKey(keyValue);
-    }
-
-    private String queryKey(String tableName) throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-        Table table = new Table();
-        table.setTableName("_sys_tables_");
-        table.setKey("_user_" + tableName);
-        Condition condition = table.getCondition();
-        List<Map<String, String>> userTable = crudSerivce.select(table, condition);
-        if (userTable.size() != 0) {
-            return userTable.get(0).get("key_field");
-        } else {
-            throw new ConsoleMessageException("The table '" + tableName + "' does not exist.");
-        }
-    }
-
-    private String queryFields(String tableName, boolean valueFlag) throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-        Table table = new Table();
-        table.setTableName("_sys_tables_");
-        table.setKey("_user_" + tableName);
-        Condition condition = table.getCondition();
-        List<Map<String, String>> userTable = crudSerivce.select(table, condition);
-        if (userTable.size() != 0) {
-            if (valueFlag) {
-                return userTable.get(0).get("value_field");
-            } else {
-                return queryKey(tableName) + "," + userTable.get(0).get("value_field");
-            }
-        } else {
-            throw new ConsoleMessageException("The table '" + tableName + "' does not exist.");
-        }
-    }
-
-    private List<Map<String, String>> getTableNames() throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-        Table table = new Table();
-        table.setTableName("_sys_tables_");
-        table.setKey("table_name");
-        Condition condition = table.getCondition();
-        List<Map<String, String>> userTable = crudSerivce.select(table, condition);
-        return userTable;
     }
 }

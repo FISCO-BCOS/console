@@ -257,8 +257,12 @@ public class HelpInfo {
 
     public static void getTransactionReceiptHelp() {
         System.out.println("Query the receipt of a transaction by transaction hash.");
-        System.out.println("Usage: getTransactionReceipt transactionHash");
+        System.out.println(
+                "Usage: getTransactionReceipt transactionHash [contractName] [eventName] [eventIndex]");
         System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
+        System.out.println("[contractName] -- (optional) The name of a contract.");
+        System.out.println("[eventName] --  (optional) The name of an event.");
+        System.out.println("[eventIndex] -- (optional) The index of an event.");
         System.out.println();
     }
 
@@ -531,9 +535,7 @@ public class HelpInfo {
                             + " with "
                             + lenParams
                             + " parameter"
-                            + " is undefined of the contract "
-                            + contractName
-                            + ".");
+                            + " is undefined of the contract.");
         } else {
             System.out.println(
                     "The method "
@@ -541,10 +543,17 @@ public class HelpInfo {
                             + " with "
                             + lenParams
                             + " parameters"
-                            + " is undefined of the contract "
-                            + contractName
-                            + ".");
+                            + " is undefined of the contract.");
         }
         System.out.println();
+    }
+
+    public static void startHelp() {
+        System.out.println("Please provide one of the following ways to start the console.");
+        System.out.println("Usage: ");
+        System.out.println("./start.sh");
+        System.out.println("./start.sh groupID");
+        System.out.println("./start.sh groupID -pem pemName");
+        System.out.println("./start.sh groupID -p12 p12Name");
     }
 }

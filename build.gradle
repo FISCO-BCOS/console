@@ -18,37 +18,19 @@ repositories {
     mavenCentral()
 }
 
-List alibaba = [
-        'com.alibaba:druid:1.0.29',
-        'com.alibaba:fastjson:1.2.29'
-]
-
-List logger = [
-        'org.slf4j:slf4j-log4j12:1.7.25'
-]
-
 googleJavaFormat {
   options style: 'AOSP'
 }
 
-check.dependsOn -= tasks['verifyGoogleJavaFormat']
-
-def spring_version = "4.1.8.RELEASE"
-List spring = [
-        "org.springframework:spring-core:$spring_version",
-        "org.springframework:spring-beans:$spring_version",
-        "org.springframework:spring-context:$spring_version",
-        "org.springframework:spring-tx:$spring_version",
-]
+check.dependsOn.remove(test)
+check.dependsOn.remove(verifyGoogleJavaFormat)
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    compile logger, spring
-    runtime logger, spring
-
-    compile group: "org.fisco-bcos", name: "web3sdk", version: "2.0.31-SNAPSHOT", changing: true
-//	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.0-rc1'
-    compile group: 'org.jline', name: 'jline', version: '3.10.0'
+    // compile group: "org.fisco-bcos", name: "web3sdk", version: "2.0.31-SNAPSHOT", changing: true
+	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.3'
+    compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.25'
+    compile group: 'org.jline', name: 'jline', version: '3.11.0'
     compile group: 'io.bretty', name: 'console-table-builder', version: '1.2'
     compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.0'
     testCompile group: 'junit', name: 'junit', version: '4.1'
@@ -83,26 +65,21 @@ jar {
 		}
 		copy {
 			from file('src/main/resources/applicationContext-sample.xml')
-      from file('src/main/resources/log4j.properties')
-      from file('src/main/resources/privateKey.properties')
+      		from file('src/main/resources/log4j.properties')
 			into 'dist/conf'
 		}
 		copy {
 			from file('tools/start.sh')
 			from file('tools/replace_solc_jar.sh')
+			from file('tools/get_account.sh')
+			from file('tools/sol2java.sh')
 			into 'dist/'
 		}
 		copy {
-			from file('tools/sol2java.sh')
-			into 'dist/tools/'
-		}
-		copy {
 			from file('src/main/resources/contract/')
-			into 'dist/solidity/contracts/'
+			into 'dist/contracts/solidity/'
 		}
-		copy {
-			from file('src/main/resources/contract/Table.sol')
-			into 'dist/tools/contracts/'
-		}
+		new File('dist/contracts/console').mkdirs()
+		new File('dist/contracts/sdk').mkdirs()
 	}
 }

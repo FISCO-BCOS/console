@@ -20,15 +20,15 @@ public interface PrecompiledFace {
     void setSystemConfigByKey(String[] params) throws Exception;
 
     // CRUDPrecompiled
-    void createTable(String sql);
+    void createTable(String sql) throws Exception;
 
-    void insert(String sql);
+    void insert(String sql) throws Exception;
 
-    void update(String sql);
+    void update(String sql) throws Exception;
 
-    void remove(String sql);
+    void remove(String sql) throws Exception;
 
-    void select(String sql);
+    void select(String sql) throws Exception;
 
-    void desc(String[] params);
+    void desc(String[] params) throws Exception;
 }

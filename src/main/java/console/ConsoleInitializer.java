@@ -10,27 +10,31 @@ import console.precompiled.permission.PermissionFace;
 import console.precompiled.permission.PermissionImpl;
 import console.web3j.Web3jFace;
 import console.web3j.Web3jImpl;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.Console;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
-import java.util.Properties;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.UnrecoverableKeyException;
+import java.security.spec.InvalidKeySpecException;
+import org.fisco.bcos.channel.client.P12Manager;
+import org.fisco.bcos.channel.client.PEMManager;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.crypto.gm.GenCredential;
+import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
+import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion.Version;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
 public class ConsoleInitializer {
 
@@ -44,61 +48,81 @@ public class ConsoleInitializer {
     private String privateKey = "";
     private int groupID;
     public static final int InvalidRequest = 40009;
+    public static final String ACCOUNT_DIR1 = "accounts/";
+    public static final String ACCOUNT_DIR2 = "./accounts/";
 
     private Web3jFace web3jFace;
     private PrecompiledFace precompiledFace;
     private PermissionFace permissionFace;
     private ContractFace contractFace;
 
-    public void init(String[] args) {
+    public void init(String[] args)
+            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+                    NoSuchProviderException, UnrecoverableKeyException, KeyStoreException,
+                    InvalidKeySpecException {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
-        if (args.length < 2) {
-            InputStream is = null;
-            OutputStream os = null;
-            try {
-                // read private key from privateKey.properties
-                Properties prop = new Properties();
-                Resource keyResource = new ClassPathResource("privateKey.properties");
-                if (!keyResource.exists()) {
-                    File privateKeyDir = new File("conf/privateKey.properties");
-                    privateKeyDir.createNewFile();
-                    keyResource = new ClassPathResource("privateKey.properties");
-                }
-                is = keyResource.getInputStream();
-                prop.load(is);
-                privateKey = prop.getProperty("privateKey");
-                is.close();
-                if (privateKey == null) {
-                    // save private key in privateKey.properties
-                    keyPair = Keys.createEcKeyPair();
-                    privateKey = keyPair.getPrivateKey().toString(16);
-                    prop.setProperty("privateKey", privateKey);
-                    os = new FileOutputStream(keyResource.getFile());
-                    prop.store(os, "private key");
-                    os.close();
-                }
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                close();
-            }
-        }
+
         switch (args.length) {
-            case 0:
+            case 0: // bash start.sh
+                useDefaultCredentials();
                 break;
-            case 1:
-                groupID = setGroupID(args, groupID);
+            case 1: // bash start.sh groupID
+                groupID = setGroupID(args[0]);
+                useDefaultCredentials();
+                break;
+            case 3: // ./start.sh groupID -pem pemName
+                if ("-pem".equals(args[1])) {
+                    groupID = setGroupID(args[0]);
+                    String pemName = args[2];
+                    pemName = handlPemFileName(pemName);
+                    PEMManager pem = new PEMManager();
+                    pem.setPemFile("classpath:" + pemName);
+                    try {
+                        pem.load();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        close();
+                    }
+                    ECKeyPair keyPair = pem.getECKeyPair();
+                    credentials = Credentials.create(keyPair);
+                } else if ("-p12".equals(args[1])) {
+                    groupID = setGroupID(args[0]);
+                    String p12Name = args[2];
+                    p12Name = handleP12FileName(p12Name);
+                    System.out.print("Enter Export Password:");
+                    Console cons = System.console();
+                    char[] passwd = cons.readPassword();
+                    String password = new String(passwd);
+                    P12Manager p12Manager = new P12Manager();
+                    p12Manager.setPassword(password);
+                    p12Manager.setP12File("classpath:" + p12Name);
+                    try {
+                        p12Manager.load();
+                    } catch (Exception e) {
+                        System.out.println(e.getMessage());
+                        close();
+                    }
+                    ECKeyPair keyPair;
+                    try {
+                        keyPair = p12Manager.getECKeyPair(password);
+                        credentials = Credentials.create(keyPair);
+                    } catch (Exception e) {
+                        System.out.println("The name for p12 account is error.");
+                        close();
+                    }
+                } else {
+                    HelpInfo.startHelp();
+                    close();
+                }
                 break;
             default:
-                groupID = setGroupID(args, groupID);
-                privateKey = args[1];
-                break;
+                HelpInfo.startHelp();
+                close();
         }
-        try {
-            credentials = GenCredential.create(privateKey);
-        } catch (NumberFormatException e) {
-            System.out.println("Please provide private key by hex format.");
+        if (credentials == null) {
+            System.out.println("Please provide a valid account.");
             close();
         }
         service.setGroupId(groupID);
@@ -106,7 +130,7 @@ public class ConsoleInitializer {
             service.run();
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect to the node. Please check the node status and the console configruation.");
+                    "Failed to connect to the node. Please check the node status and the console configuration.");
             close();
         }
         channelEthereumService = new ChannelEthereumService();
@@ -116,8 +140,22 @@ public class ConsoleInitializer {
         try {
             web3j.getBlockNumber().sendForReturnString();
 
+            Version nodeVersion = web3j.getNodeVersion().send().getNodeVersion();
+            String version = nodeVersion.getSupportedVersion();
+            PrecompiledCommon.BCOS_VERSION = version;
+            if (version == null || PrecompiledCommon.BCOS_RC1.equals(version)) {
+                Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC1;
+            } else if (PrecompiledCommon.BCOS_RC2.equals(version)) {
+                Common.PermissionCode = PrecompiledCommon.PermissionDenied;
+                Common.TableExist = PrecompiledCommon.TableExist;
+            } else {
+                Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC3;
+                Common.TableExist = PrecompiledCommon.TableExist_RC3;
+            }
             web3jFace = new Web3jImpl();
             web3jFace.setWeb3j(web3j);
+            web3jFace.setGasProvider(gasProvider);
+            web3jFace.setCredentials(credentials);
 
             precompiledFace = new PrecompiledImpl();
             precompiledFace.setWeb3j(web3j);
@@ -142,9 +180,43 @@ public class ConsoleInitializer {
             close();
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect to the node. Please check the node status and the console configruation.");
+                    "Failed to connect to the node. Please check the node status and the console configuration.");
             close();
         }
+    }
+
+    private String handlPemFileName(String pemName) {
+        if (pemName.startsWith(ACCOUNT_DIR1)) {
+            pemName = pemName.substring(ACCOUNT_DIR1.length());
+        }
+        if (pemName.startsWith(ACCOUNT_DIR2)) {
+            pemName = pemName.substring(ACCOUNT_DIR2.length());
+        }
+        if (!pemName.endsWith(".pem")) {
+            pemName = pemName + ".pem";
+        }
+        return pemName;
+    }
+
+    private String handleP12FileName(String p12Name) {
+        if (p12Name.startsWith(ACCOUNT_DIR1)) {
+            p12Name = p12Name.substring(ACCOUNT_DIR1.length());
+        }
+        if (p12Name.startsWith(ACCOUNT_DIR2)) {
+            p12Name = p12Name.substring(ACCOUNT_DIR2.length());
+        }
+        if (!p12Name.endsWith(".p12")) {
+            p12Name = p12Name + ".p12";
+        }
+        return p12Name;
+    }
+
+    private void useDefaultCredentials()
+            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+                    NoSuchProviderException {
+        keyPair = Keys.createEcKeyPair();
+        privateKey = keyPair.getPrivateKey().toString(16);
+        credentials = GenCredential.create(privateKey);
     }
 
     public void switchGroupID(String[] params) throws IOException {
@@ -190,7 +262,7 @@ public class ConsoleInitializer {
             System.out.println(
                     "Switch to group "
                             + toGroupID
-                            + " failed! Please check the node status and the console configruation.");
+                            + " failed! Please check the node status and the console configuration.");
             System.out.println();
             service.setGroupId(groupID);
             try {
@@ -205,7 +277,7 @@ public class ConsoleInitializer {
         web3j = Web3j.build(channelEthereumService, groupID);
 
         web3jFace.setWeb3j(web3j);
-        precompiledFace.setCredentials(credentials);
+        precompiledFace.setWeb3j(web3j);
         permissionFace.setWeb3j(web3j);
         contractFace.setWeb3j(web3j);
         contractFace.setGroupID(groupID);
@@ -214,11 +286,21 @@ public class ConsoleInitializer {
         System.out.println();
     }
 
-    private int setGroupID(String[] args, int groupID) {
+    private int setGroupID(String groupIDStr) {
         try {
-            groupID = Integer.parseInt(args[0]);
+            groupID = Integer.parseInt(groupIDStr);
+            if (groupID <= 0 || groupID > Integer.MAX_VALUE) {
+                System.out.println(
+                        "Please provide groupID by non-negative integer mode, "
+                                + Common.NonNegativeIntegerRange
+                                + ".");
+                close();
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Please provide groupID by integer format.");
+            System.out.println(
+                    "Please provide groupID by non-negative integer mode, "
+                            + Common.NonNegativeIntegerRange
+                            + ".");
             close();
         }
         return groupID;

@@ -1,17 +1,21 @@
+pragma solidity ^0.4.24;
+
 import "./Table.sol";
 
 contract TableTest {
-    event selectResult(bytes32 name, int item_id, bytes32 item_name);
-    event insertResult(int count);
-    event updateResult(int count);
-    event removeResult(int count);
+    event CreateResult(int count);
+    event InsertResult(int count);
+    event UpdateResult(int count);
+    event RemoveResult(int count);
     
     //create table
-    function create() public returns(int) {
+    function create() public returns(int){
         TableFactory tf = TableFactory(0x1001); //The fixed address is 0x1001 for TableFactory
+        
         int count = tf.createTable("t_test", "name", "item_id,item_name");
-        // createResult(count);
-        return count;
+	      emit CreateResult(count);
+
+	      return count;
     }
 
     //select records
@@ -20,7 +24,6 @@ contract TableTest {
         Table table = tf.openTable("t_test");
         
         Condition condition = table.newCondition();
-        //condition.EQ("name", name);
         
         Entries entries = table.select(name, condition);
         bytes32[] memory user_name_bytes_list = new bytes32[](uint256(entries.size()));
@@ -33,7 +36,6 @@ contract TableTest {
             user_name_bytes_list[uint256(i)] = entry.getBytes32("name");
             item_id_list[uint256(i)] = entry.getInt("item_id");
             item_name_bytes_list[uint256(i)] = entry.getBytes32("item_name");
-            selectResult(user_name_bytes_list[uint256(i)], item_id_list[uint256(i)], item_name_bytes_list[uint256(i)]);
         }
  
         return (user_name_bytes_list, item_id_list, item_name_bytes_list);
@@ -49,7 +51,7 @@ contract TableTest {
         entry.set("item_name", item_name);
         
         int count = table.insert(name, entry);
-        insertResult(count);
+        emit InsertResult(count);
         
         return count;
     }
@@ -66,7 +68,7 @@ contract TableTest {
         condition.EQ("item_id", item_id);
         
         int count = table.update(name, entry, condition);
-        updateResult(count);
+        emit UpdateResult(count);
         
         return count;
     }
@@ -80,7 +82,7 @@ contract TableTest {
         condition.EQ("item_id", item_id);
         
         int count = table.remove(name, condition);
-        removeResult(count);
+        emit RemoveResult(count);
         
         return count;
     }

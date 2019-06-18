@@ -1,7 +1,10 @@
 package console.common;
 
 import console.exception.ConsoleMessageException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
@@ -32,9 +35,12 @@ import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
+import org.fisco.bcos.web3j.precompile.crud.EnumOP;
 import org.fisco.bcos.web3j.precompile.crud.Table;
 
 public class CRUDParseUtils {
+
+    public static final String PRIMARY_KEY = "primary key";
 
     public static void parseCreateTable(String sql, Table table)
             throws JSQLParserException, ConsoleMessageException {
@@ -49,10 +55,18 @@ public class CRUDParseUtils {
         boolean keyFlag = false;
         List<Index> indexes = createTable.getIndexes();
         if (indexes != null) {
-            for (Index index : indexes) {
-                keyFlag = true;
+            if (indexes.size() > 1) {
+                throw new ConsoleMessageException(
+                        "Please provide only one primary key for the table.");
+            }
+            keyFlag = true;
+            Index index = indexes.get(0);
+            String type = index.getType().toLowerCase();
+            if (PRIMARY_KEY.equals(type)) {
                 table.setKey(index.getColumnsNames().get(0));
-                break;
+            } else {
+                throw new ConsoleMessageException(
+                        "Please provide only one primary key for the table.");
             }
         }
         List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
@@ -69,7 +83,7 @@ public class CRUDParseUtils {
                     if (keyFlag) {
                         if (!table.getKey().equals(key)) {
                             throw new ConsoleMessageException(
-                                    "Please don't provide two different key names.");
+                                    "Please provide only one primary key for the table.");
                         }
                     } else {
                         keyFlag = true;
@@ -80,16 +94,30 @@ public class CRUDParseUtils {
             }
         }
         if (!keyFlag) {
-            throw new ConsoleMessageException("Please provide a key for the table.");
+            throw new ConsoleMessageException("Please provide a primary key for the table.");
         }
         // parse value field
-        StringBuffer fields = new StringBuffer();
+        List<String> fieldsList = new ArrayList<>();
         for (int i = 0; i < columnDefinitions.size(); i++) {
-            if (!columnDefinitions.get(i).getColumnName().equals(table.getKey())) {
-                fields.append(columnDefinitions.get(i).getColumnName());
-                if (i != columnDefinitions.size() - 1) {
-                    fields.append(",");
-                }
+            String columnName = columnDefinitions.get(i).getColumnName();
+            if (fieldsList.contains(columnName)) {
+                throw new ConsoleMessageException(
+                        "Please provide the field '" + columnName + "' only once.");
+            } else {
+                fieldsList.add(columnName);
+            }
+        }
+        if (!fieldsList.contains(table.getKey())) {
+            throw new ConsoleMessageException(
+                    "Please provide the field '" + table.getKey() + "' in column definition.");
+        } else {
+            fieldsList.remove(table.getKey());
+        }
+        StringBuffer fields = new StringBuffer();
+        for (int i = 0; i < fieldsList.size(); i++) {
+            fields.append(fieldsList.get(i));
+            if (i != fieldsList.size() - 1) {
+                fields.append(",");
             }
         }
         table.setValueFields(fields.toString());
@@ -111,15 +139,32 @@ public class CRUDParseUtils {
         List<Column> columns = insert.getColumns();
         ItemsList itemsList = insert.getItemsList();
         String items = itemsList.toString();
-        String[] itemArr = items.substring(1, items.length() - 1).split(",");
+        String[] rawItem = items.substring(1, items.length() - 1).split(",");
+        String[] itemArr = new String[rawItem.length];
+        for (int i = 0; i < rawItem.length; i++) {
+            itemArr[i] = rawItem[i].trim();
+        }
         if (columns != null) {
-            for (int i = 0; i < itemArr.length; i++) {
-                entry.put(columns.get(i).toString(), itemArr[i].trim());
+            if (columns.size() != itemArr.length) {
+                throw new ConsoleMessageException("Column count doesn't match value count.");
+            }
+            List<String> columnNames = new ArrayList<>();
+            for (Column column : columns) {
+                String columnName = trimQuotes(column.toString());
+                if (columnNames.contains(columnName)) {
+                    throw new ConsoleMessageException(
+                            "Please provide the field '" + columnName + "' only once.");
+                } else {
+                    columnNames.add(columnName);
+                }
+            }
+            for (int i = 0; i < columnNames.size(); i++) {
+                entry.put(columnNames.get(i), trimQuotes(itemArr[i]));
             }
             return false;
         } else {
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(i + "", itemArr[i].trim());
+                entry.put(i + "", trimQuotes(itemArr[i]));
             }
             return true;
         }
@@ -162,6 +207,7 @@ public class CRUDParseUtils {
         }
         Expression expr = selectBody.getWhere();
         condition = handleExpression(condition, expr);
+
         Limit limit = selectBody.getLimit();
         if (limit != null) {
             parseLimit(condition, limit);
@@ -206,7 +252,34 @@ public class CRUDParseUtils {
         if (expr instanceof IsNullExpression) {
             throw new ConsoleMessageException("The IsNullExpression is not supported.");
         }
+        Map<String, Map<EnumOP, String>> conditions = condition.getConditions();
+        Set<String> keys = conditions.keySet();
+        for (String key : keys) {
+            Map<EnumOP, String> value = conditions.get(key);
+            EnumOP operation = value.keySet().iterator().next();
+            String itemValue = value.values().iterator().next();
+            String newValue = trimQuotes(itemValue);
+            value.put(operation, newValue);
+            conditions.put(key, value);
+        }
+        condition.setConditions(conditions);
         return condition;
+    }
+
+    public static String trimQuotes(String str) {
+        char[] value = str.toCharArray();
+        int len = value.length;
+        int st = 1;
+        char[] val = value; /* avoid getfield opcode */
+
+        while ((st < len) && (val[st] == '"' || val[st] == '\'')) {
+            st++;
+        }
+        while ((st < len) && (val[len - 1] == '"' || val[len - 1] == '\'')) {
+            len--;
+        }
+        String string = ((st > 1) || (len < value.length)) ? str.substring(st, len) : str;
+        return string;
     }
 
     public static void parseUpdate(String sql, Table table, Entry entry, Condition condition)
@@ -222,10 +295,13 @@ public class CRUDParseUtils {
         // parse cloumns
         List<Column> columns = update.getColumns();
         List<Expression> expressions = update.getExpressions();
-        String expr = expressions.toString();
-        String[] values = expr.substring(1, expr.length() - 1).split(",");
+        int size = expressions.size();
+        String[] values = new String[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = expressions.get(i).toString();
+        }
         for (int i = 0; i < columns.size(); i++) {
-            entry.put(columns.get(i).toString(), values[i].trim());
+            entry.put(trimQuotes(columns.get(i).toString()), trimQuotes(values[i]));
         }
 
         // parse where clause
@@ -233,7 +309,6 @@ public class CRUDParseUtils {
         if (where != null) {
             BinaryExpression expr2 = (BinaryExpression) (where);
             handleExpression(condition, expr2);
-            getWhereClause(expr2, condition);
         }
         Limit limit = update.getLimit();
         parseLimit(condition, limit);
@@ -253,21 +328,29 @@ public class CRUDParseUtils {
         if (where != null) {
             BinaryExpression expr = (BinaryExpression) (where);
             handleExpression(condition, expr);
-            getWhereClause(expr, condition);
         }
         Limit limit = delete.getLimit();
         parseLimit(condition, limit);
     }
 
-    private static void parseLimit(Condition condition, Limit limit) {
+    private static void parseLimit(Condition condition, Limit limit)
+            throws ConsoleMessageException {
         if (limit != null) {
             Expression offset = limit.getOffset();
             Expression count = limit.getRowCount();
-            if (offset != null) {
-                condition.Limit(
-                        Integer.parseInt(offset.toString()), Integer.parseInt(count.toString()));
-            } else {
-                condition.Limit(Integer.parseInt(count.toString()));
+            try {
+                if (offset != null) {
+                    condition.Limit(
+                            Integer.parseInt(offset.toString()),
+                            Integer.parseInt(count.toString()));
+                } else {
+                    condition.Limit(Integer.parseInt(count.toString()));
+                }
+            } catch (NumberFormatException e) {
+                throw new ConsoleMessageException(
+                        "Please provide limit parameters by non-negative integer mode, "
+                                + Common.NonNegativeIntegerRange
+                                + ".");
             }
         }
     }
@@ -280,9 +363,9 @@ public class CRUDParseUtils {
                     @Override
                     protected void visitBinaryExpression(BinaryExpression expr) {
                         if (expr instanceof ComparisonOperator) {
-                            String key = expr.getLeftExpression().toString();
+                            String key = trimQuotes(expr.getLeftExpression().toString());
                             String operation = expr.getStringExpression();
-                            String value = expr.getRightExpression().toString();
+                            String value = trimQuotes(expr.getRightExpression().toString());
                             switch (operation) {
                                 case "=":
                                     condition.EQ(key, value);
@@ -310,5 +393,73 @@ public class CRUDParseUtils {
                     }
                 });
         return condition;
+    }
+
+    public static void invalidSymbol(String sql) throws ConsoleMessageException {
+        if (sql.contains("；")) {
+            throw new ConsoleMessageException("SyntaxError: Unexpected Chinese semicolon.");
+        } else if (sql.contains("“")
+                || sql.contains("”")
+                || sql.contains("‘")
+                || sql.contains("’")) {
+            throw new ConsoleMessageException("SyntaxError: Unexpected Chinese quotes.");
+        } else if (sql.contains("，")) {
+            throw new ConsoleMessageException("SyntaxError: Unexpected Chinese comma.");
+        }
+    }
+
+    public static void checkTableParams(Table table) throws ConsoleMessageException {
+        if (table.getTableName().length() > Common.SYS_TABLE_KEY_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table name length is greater than "
+                            + Common.SYS_TABLE_KEY_MAX_LENGTH
+                            + ".");
+        }
+        if (table.getKey().length() > Common.SYS_TABLE_KEY_FIELD_NAME_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table primary key name length is greater than "
+                            + Common.SYS_TABLE_KEY_FIELD_NAME_MAX_LENGTH
+                            + ".");
+        }
+        String[] valueFields = table.getValueFields().split(",");
+        for (String valueField : valueFields) {
+            if (valueField.length() > Common.USER_TABLE_FIELD_NAME_MAX_LENGTH) {
+                throw new ConsoleMessageException(
+                        "The table field name length is greater than "
+                                + Common.USER_TABLE_FIELD_NAME_MAX_LENGTH
+                                + ".");
+            }
+        }
+        if (table.getValueFields().length() > Common.SYS_TABLE_VALUE_FIELD_MAX_LENGTH) {
+            throw new ConsoleMessageException(
+                    "The table total field name length is greater than "
+                            + Common.SYS_TABLE_VALUE_FIELD_MAX_LENGTH
+                            + ".");
+        }
+    }
+
+    public static void checkUserTableParam(Entry entry, Table descTable)
+            throws ConsoleMessageException {
+        Map<String, String> fieldsMap = entry.getFields();
+        Set<String> keys = fieldsMap.keySet();
+        for (String key : keys) {
+            if (key.equals(descTable.getKey())) {
+                if (fieldsMap.get(key).length() > Common.USER_TABLE_KEY_VALUE_MAX_LENGTH) {
+                    throw new ConsoleMessageException(
+                            "The table primary key value length is greater than "
+                                    + Common.USER_TABLE_KEY_VALUE_MAX_LENGTH
+                                    + ".");
+                }
+            } else {
+                if (fieldsMap.get(key).length() > Common.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
+                    throw new ConsoleMessageException(
+                            "The table field '"
+                                    + key
+                                    + "' value length is greater than "
+                                    + Common.USER_TABLE_FIELD_VALUE_MAX_LENGTH
+                                    + ".");
+                }
+            }
+        }
     }
 }

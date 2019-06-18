@@ -298,6 +298,14 @@ public class ConsoleClient {
                 consoleInitializer.close();
             } catch (EndOfFileException e) {
                 consoleInitializer.close();
+            } catch (RuntimeException e) {
+                if (e.getCause() instanceof MessageDecodingException) {
+                    ConsoleExceptionUtils.pringMessageDecodeingException(
+                            new MessageDecodingException(e.getMessage()));
+                } else {
+                    System.out.println(e.getMessage());
+                    System.out.println();
+                }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println();

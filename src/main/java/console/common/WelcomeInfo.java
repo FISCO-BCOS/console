@@ -37,14 +37,11 @@ public class WelcomeInfo {
                 "call                                     Call a contract by a function and paramters.\n");
         sb.append(
                 "callByCNS                                Call a contract by a function and paramters by CNS.\n");
-        sb.append("[create sql]                             Create table by sql.\n");
-        sb.append("[delete sql]                             Remove records by sql.\n");
         sb.append("deploy                                   Deploy a contract on blockchain.\n");
         sb.append(
                 "deployByCNS                              Deploy a contract on blockchain by CNS.\n");
         sb.append("desc                                     Description table information.\n");
         sb.append("exit                                     Quit console.\n");
-        sb.append("[insert sql]                             Insert records by sql.\n");
         sb.append(
                 "getBlockByHash                           Query information about a block by hash.\n");
         sb.append(
@@ -122,10 +119,13 @@ public class WelcomeInfo {
                 "revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
         sb.append(
                 "revokeUserTableManager                   Revoke permission for user table by table name and address.\n");
-        sb.append("[select sql]                             Select records by sql.\n");
         sb.append("setSystemConfigByKey                     Set a system config.\n");
         sb.append(
                 "switch(s)                                Switch to a specific group by group ID.\n");
+        sb.append("[create sql]                             Create table by sql.\n");
+        sb.append("[delete sql]                             Remove records by sql.\n");
+        sb.append("[insert sql]                             Insert records by sql.\n");
+        sb.append("[select sql]                             Select records by sql.\n");
         sb.append("[update sql]                             Update records by sql.");
 
         System.out.println(sb.toString());
