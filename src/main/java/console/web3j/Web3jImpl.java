@@ -551,6 +551,7 @@ public class Web3jImpl implements Web3jFace {
         JSONObject jo = JSONObject.parseObject(transactionCount);
         jo.put("txSum", Numeric.decodeQuantity(jo.get("txSum").toString()));
         jo.put("blockNumber", Numeric.decodeQuantity(jo.get("blockNumber").toString()));
+        jo.put("failedTxSum", Numeric.decodeQuantity(jo.get("failedTxSum").toString()));
         ConsoleUtils.printJson(jo.toJSONString());
         System.out.println();
     }
