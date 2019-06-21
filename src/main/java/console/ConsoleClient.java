@@ -13,8 +13,11 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
+import org.jline.keymap.KeyMap;
+import org.jline.reader.Binding;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
+import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
 
 public class ConsoleClient {
@@ -37,6 +40,9 @@ public class ConsoleClient {
             permissionFace = consoleInitializer.getPermissionFace();
             contractFace = consoleInitializer.getContractFace();
             lineReader = JlineUtils.getLineReader();
+            KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
+            keymap.bind(new Reference("beginning-of-line"), "\033[1~");
+            keymap.bind(new Reference("end-of-line"), "\033[4~");
         } catch (Exception e) {
             System.out.println(e.getMessage());
             return;
