@@ -26,5 +26,5 @@ public class Common {
     public static int SYS_TABLE_VALUE_FIELD_MAX_LENGTH = 1024;
     public static int USER_TABLE_KEY_VALUE_MAX_LENGTH = 255;
     public static int USER_TABLE_FIELD_NAME_MAX_LENGTH = 64;
-    public static int USER_TABLE_FIELD_VALUE_MAX_LENGTH = 65535;
+    public static int USER_TABLE_FIELD_VALUE_MAX_LENGTH = 16 * 1024 * 1024 - 1;
 }
