@@ -39,6 +39,21 @@ dependencies {
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
+
+configurations {
+    all*.exclude group: 'org.java-websocket', module: 'Java-WebSocket'
+    all*.exclude group: 'org.antlr', module: '*'
+    all*.exclude group: 'de.vandermeer', module: '*'
+    all*.exclude group: 'net.bytebuddy', module: 'byte-buddy'
+    all*.exclude group: 'commons-configuration', module: 'commons-configuration'
+    all*.exclude group: 'org.apache.commons', module: 'commons-lang'
+    all*.exclude group: 'com.alibaba', module: 'druid'
+    all*.exclude group: 'com.google.guava', module: 'guava'
+    all*.exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    all*.exclude group: 'org.mockito', module: 'mockito-core'
+    all*.exclude group: 'io.reactivex', module: 'rxjava'
+}
+
 sourceSets {
     main {
         java {
