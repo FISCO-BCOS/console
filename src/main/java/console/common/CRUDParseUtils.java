@@ -453,11 +453,7 @@ public class CRUDParseUtils {
             } else {
                 if (fieldsMap.get(key).length() > Common.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
                     throw new ConsoleMessageException(
-                            "The table field '"
-                                    + key
-                                    + "' value length is greater than "
-                                    + Common.USER_TABLE_FIELD_VALUE_MAX_LENGTH
-                                    + ".");
+                            "The table field '" + key + "' value length is greater than 16M - 1.");
                 }
             }
         }
