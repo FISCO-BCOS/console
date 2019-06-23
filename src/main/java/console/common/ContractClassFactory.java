@@ -45,9 +45,7 @@ public class ContractClassFactory {
 
     public static Class<?> compileContract(String name) throws Exception {
         try {
-            if (name.endsWith(".sol")) {
-                name = name.substring(0, name.length() - ".sol".length());
-            }
+            name = removeSolPostfix(name);
             dynamicCompileSolFilesToJava(name);
         } catch (IOException e) {
             throw new IOException(e.getMessage());
@@ -64,6 +62,13 @@ public class ContractClassFactory {
             throw new Exception(
                     "There is no " + name + ".class" + " in the directory of java/classes/temp");
         }
+    }
+
+    public static String removeSolPostfix(String name) {
+        if (name.endsWith(".sol")) {
+            name = name.substring(0, name.length() - ".sol".length());
+        }
+        return name;
     }
 
     // dynamic compile target java code
