@@ -40,6 +40,7 @@ public class ConsoleClient {
             permissionFace = consoleInitializer.getPermissionFace();
             contractFace = consoleInitializer.getContractFace();
             lineReader = JlineUtils.getLineReader();
+            lineReader.unsetOpt(LineReader.Option.DISABLE_HIGHLIGHTER);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
             keymap.bind(new Reference("beginning-of-line"), "\033[1~");
             keymap.bind(new Reference("end-of-line"), "\033[4~");
