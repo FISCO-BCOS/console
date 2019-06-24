@@ -16,13 +16,13 @@ import org.fisco.bcos.web3j.tx.txdecode.TransactionDecoderFactory;
 public class TxDecodeUtil {
 
     public static AbiAndBin readAbiAndBin(String contractName) throws IOException {
-        contractName = ContractClassFactory.removeSolPostfix(contractName);
+        String tempName = ContractClassFactory.removeSolPostfix(contractName);
         BufferedReader abiReader =
                 new BufferedReader(
-                        new FileReader(ContractClassFactory.ABI_PATH + contractName + ".abi"));
+                        new FileReader(ContractClassFactory.ABI_PATH + tempName + ".abi"));
         BufferedReader binReader =
                 new BufferedReader(
-                        new FileReader(ContractClassFactory.BIN_PATH + contractName + ".bin"));
+                        new FileReader(ContractClassFactory.BIN_PATH + tempName + ".bin"));
         StringBuilder abiBuilder = new StringBuilder();
         StringBuilder binBuilder = new StringBuilder();
         String abiStr = "";

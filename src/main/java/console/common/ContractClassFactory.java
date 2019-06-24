@@ -42,6 +42,7 @@ public class ContractClassFactory {
     public static final String BIN_PATH = "contracts/console/bin/";
     public static final String PACKAGE_NAME = "temp";
     public static final String TAR_GET_CLASSPATH = "contracts/console/java/classes/";
+    public static final String SOL_POSTFIX = ".sol";
 
     public static Class<?> compileContract(String name) throws Exception {
         try {
@@ -65,10 +66,13 @@ public class ContractClassFactory {
     }
 
     public static String removeSolPostfix(String name) {
-        if (name.endsWith(".sol")) {
-            name = name.substring(0, name.length() - ".sol".length());
+        String tempName = "";
+        if (name.endsWith(SOL_POSTFIX)) {
+            tempName = name.substring(0, name.length() - SOL_POSTFIX.length());
+        } else {
+            tempName = name;
         }
-        return name;
+        return tempName;
     }
 
     // dynamic compile target java code
@@ -106,8 +110,8 @@ public class ContractClassFactory {
     }
 
     public static void dynamicCompileSolFilesToJava(String name) throws IOException {
-        if (!name.endsWith(".sol")) {
-            name = name + ".sol";
+        if (!name.endsWith(SOL_POSTFIX)) {
+            name = name + SOL_POSTFIX;
         }
         File solFileList = new File(SOLIDITY_PATH);
         if (!solFileList.exists()) {
