@@ -1,8 +1,11 @@
 #!/bin/bash
 version=$(curl -s https://api.github.com/repos/FISCO-BCOS/console/releases | grep "tag_name" | sort -u | tail -n 1 | cut -d \" -f 4 | sed "s/^[vV]//")
-echo "Downloading console version" ${version}
 package_name="console.tar.gz"
+echo "Downloading console ${version}"
 download_link=https://github.com/FISCO-BCOS/console/releases/download/v${version}/${package_name}
-curl -LO ${download_link}
 
+if [ ! $(curl -LO ${download_link} --speed-time 20 --speed-limit 1024 -m 90) ];then 
+    echo -e "\033[32m Download speed is too low, try https://www.fisco.com.cn/cdn/console/releases/download/v${version}/${package_name} \033[0m"
+    curl -LO https://www.fisco.com.cn/cdn/console/releases/download/v${version}/${package_name}
+fi
 tar -zxf ${package_name} && cd console && chmod +x *.sh
