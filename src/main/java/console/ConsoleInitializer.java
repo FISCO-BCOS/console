@@ -200,7 +200,7 @@ public class ConsoleInitializer {
             }
             ECKeyPair keyPair;
             try {
-                keyPair = p12Manager.getECKeyPair(password);
+                keyPair = p12Manager.getECKeyPair();
                 credentials = Credentials.create(keyPair);
             } catch (Exception e) {
                 System.out.println("The name for p12 account is error.");
