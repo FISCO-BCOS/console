@@ -11,6 +11,7 @@ import console.precompiled.permission.PermissionFace;
 import console.web3j.Web3jFace;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Scanner;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.jline.keymap.KeyMap;
@@ -27,10 +28,13 @@ public class ConsoleClient {
     private static PermissionFace permissionFace;
     private static ContractFace contractFace;
 
+    public static int INPUT_FLAG = 0;
+
     @SuppressWarnings("resource")
     public static void main(String[] args) {
 
         LineReader lineReader = null;
+        Scanner sc = null;
         ConsoleInitializer consoleInitializer = null;
         try {
             consoleInitializer = new ConsoleInitializer();
@@ -40,7 +44,7 @@ public class ConsoleClient {
             permissionFace = consoleInitializer.getPermissionFace();
             contractFace = consoleInitializer.getContractFace();
             lineReader = JlineUtils.getLineReader();
-            lineReader.unsetOpt(LineReader.Option.DISABLE_HIGHLIGHTER);
+            sc = new Scanner(System.in);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
             keymap.bind(new Reference("beginning-of-line"), "\033[1~");
             keymap.bind(new Reference("end-of-line"), "\033[4~");
@@ -58,8 +62,16 @@ public class ConsoleClient {
                     System.out.println("Console can not read commands.");
                     break;
                 }
-                String request =
-                        lineReader.readLine("[group:" + consoleInitializer.getGroupID() + "]> ");
+                String request = "";
+                if (INPUT_FLAG == 0) {
+                    request =
+                            lineReader.readLine(
+                                    "[group:" + consoleInitializer.getGroupID() + "]> ");
+                } else {
+                    System.out.print("[group:" + consoleInitializer.getGroupID() + "]> ");
+                    sc = new Scanner(System.in);
+                    request = sc.nextLine();
+                }
                 String[] params = null;
                 params = ConsoleUtils.tokenizeCommand(request);
                 if (params.length < 1) {
