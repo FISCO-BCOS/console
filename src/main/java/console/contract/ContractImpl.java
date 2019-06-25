@@ -343,9 +343,12 @@ public class ContractImpl implements ContractFace {
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
             String abi = abiAndBin.getAbi();
             TransactionReceipt receipt = (TransactionReceipt) result;
-            TxDecodeUtil.decodeInput(abiAndBin, receipt);
-            TxDecodeUtil.decodeOutput(abi, receipt);
-            TxDecodeUtil.decodeEventLog(abi, receipt);
+            if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
+                TxDecodeUtil.decodeOutput(abi, receipt);
+            }
+            if (receipt.getLogs().size() != 0) {
+                TxDecodeUtil.decodeEventLog(abi, receipt);
+            }
         }
         System.out.println();
     }
@@ -558,9 +561,12 @@ public class ContractImpl implements ContractFace {
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
             String abi = abiAndBin.getAbi();
             TransactionReceipt receipt = (TransactionReceipt) result;
-            TxDecodeUtil.decodeInput(abiAndBin, receipt);
-            TxDecodeUtil.decodeOutput(abi, receipt);
-            TxDecodeUtil.decodeEventLog(abi, receipt);
+            if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
+                TxDecodeUtil.decodeOutput(abi, receipt);
+            }
+            if (receipt.getLogs().size() != 0) {
+                TxDecodeUtil.decodeEventLog(abi, receipt);
+            }
         }
         System.out.println();
     }
