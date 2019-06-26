@@ -9,9 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
+import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition.NamedType.Type;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
 import org.fisco.bcos.web3j.tx.txdecode.BaseException;
+import org.fisco.bcos.web3j.tx.txdecode.EventResultEntity;
+import org.fisco.bcos.web3j.tx.txdecode.InputAndOutputResult;
 import org.fisco.bcos.web3j.tx.txdecode.ResultEntity;
 import org.fisco.bcos.web3j.tx.txdecode.TransactionDecoder;
 import org.fisco.bcos.web3j.tx.txdecode.TransactionDecoderFactory;
@@ -47,8 +50,8 @@ public class TxDecodeUtil {
         TransactionDecoder transactionDecoder =
                 TransactionDecoderFactory.buildTransactionDecoder(
                         abiAndBin.getAbi(), abiAndBin.getBin());
-        Map<String, Object> resultMap = transactionDecoder.decodeInputReturnObject(input);
-        List<ResultEntity> resultList = (List<ResultEntity>) resultMap.get("data");
+        InputAndOutputResult result = transactionDecoder.decodeInputReturnObject(input);
+        List<ResultEntity> resultList = result.getResult();
         ConsoleUtils.singleLine();
         System.out.println("Input ");
         StringBuilder resultData = new StringBuilder();
@@ -58,7 +61,7 @@ public class TxDecodeUtil {
         }
         resultData.delete(resultData.length() - 2, resultData.length());
         resultData.append(")");
-        System.out.println("function: " + resultMap.get("function"));
+        System.out.println("function: " + result.getFunction());
         System.out.println("input value: " + resultData);
         ConsoleUtils.singleLine();
     }
@@ -67,10 +70,10 @@ public class TxDecodeUtil {
             throws BaseException, IOException, TransactionException {
         TransactionDecoder transactionDecoder =
                 TransactionDecoderFactory.buildTransactionDecoder(abi, "");
-        Map<String, Object> resultMap =
+        InputAndOutputResult result =
                 transactionDecoder.decodeOutputReturnObject(
                         receipt.getInput(), receipt.getOutput());
-        List<ResultEntity> resultList = (List<ResultEntity>) resultMap.get("data");
+        List<ResultEntity> resultList = result.getResult();
         ConsoleUtils.singleLine();
         System.out.println("Output ");
         StringBuilder resultType = new StringBuilder();
@@ -85,7 +88,7 @@ public class TxDecodeUtil {
         resultData.delete(resultData.length() - 2, resultData.length());
         resultType.append(")");
         resultData.append(")");
-        System.out.println("function: " + resultMap.get("function"));
+        System.out.println("function: " + result.getFunction());
         System.out.println("return type: " + resultType);
         System.out.println("return value: " + resultData);
         ConsoleUtils.singleLine();
@@ -95,19 +98,25 @@ public class TxDecodeUtil {
             throws BaseException, IOException {
         TransactionDecoder transactionDecoder =
                 TransactionDecoderFactory.buildTransactionDecoder(abi, "");
-        Map<String, List<List<ResultEntity>>> eventlog =
+        Map<String, List<List<EventResultEntity>>> eventlog =
                 transactionDecoder.decodeEventReturnObject(receipt.getLogs());
         System.out.println("Event logs");
         Set<String> keySet = eventlog.keySet();
         for (String eventName : keySet) {
-            List<List<ResultEntity>> loglists = eventlog.get(eventName);
+            List<List<EventResultEntity>> loglists = eventlog.get(eventName);
             for (int i = 0; i < loglists.size(); i++) {
                 System.out.println("event signature: " + eventName + " index: " + i);
                 StringBuilder result = new StringBuilder();
                 result.append("(");
-                List<ResultEntity> log = loglists.get(i);
+                List<EventResultEntity> log = loglists.get(i);
                 for (int j = 0; j < log.size(); j++) {
-                    result.append(log.get(j).getData()).append(", ");
+                    if (log.get(j).isIndexed() && isDynamic(log.get(j).getType())) {
+                        byte[] bytes = (byte[]) log.get(j).getTypeObject().getValue();
+                        String data = "0x" + byteToHex(bytes);
+                        result.append(data).append(", ");
+                    } else {
+                        result.append(log.get(j).getData()).append(", ");
+                    }
                 }
                 result.delete(result.length() - 2, result.length());
                 result.append(")");
@@ -115,6 +124,27 @@ public class TxDecodeUtil {
             }
         }
         ConsoleUtils.singleLine();
+    }
+
+    public static String byteToHex(byte[] bytes) {
+        String strHex = "";
+        StringBuilder sb = new StringBuilder("");
+        for (int n = 0; n < bytes.length; n++) {
+            strHex = Integer.toHexString(bytes[n] & 0xFF);
+            sb.append((strHex.length() == 1) ? "0" + strHex : strHex); // 每个字节由两个字符表示，位数不够，高位补0
+        }
+        return sb.toString().trim();
+    }
+
+    public static boolean isDynamic(String typeStr) {
+        Type type = new Type(typeStr);
+        if (type.dynamicArray()) {
+            return true;
+        }
+        if (type.getBaseName().equals("string") || type.getBaseName().equals("bytes")) {
+            return true;
+        }
+        return false;
     }
 
     public static void decdeInputForTransaction(String contractName, String transactionJson)
