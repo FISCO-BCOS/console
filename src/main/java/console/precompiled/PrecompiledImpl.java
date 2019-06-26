@@ -19,7 +19,7 @@ import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.precompile.config.SystemConfigService;
 import org.fisco.bcos.web3j.precompile.consensus.ConsensusService;
-import org.fisco.bcos.web3j.precompile.crud.CRUDSerivce;
+import org.fisco.bcos.web3j.precompile.crud.CRUDService;
 import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
 import org.fisco.bcos.web3j.precompile.crud.EnumOP;
@@ -222,8 +222,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
         try {
-            CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-            Table descTable = crudSerivce.desc(tableName);
+            CRUDService CRUDService = new CRUDService(web3j, credentials);
+            Table descTable = CRUDService.desc(tableName);
             if (descTable.getKey() == null) {
                 System.out.println("The table '" + tableName + "' does not exist.");
                 System.out.println();
@@ -257,8 +257,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             CRUDParseUtils.checkTableParams(table);
-            CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
-            int result = crudSerivce.createTable(table);
+            CRUDService CRUDService = new CRUDService(web3j, credentials);
+            int result = CRUDService.createTable(table);
             if (result == 0) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
             } else if (result == Common.TableExist) {
@@ -277,7 +277,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void insert(String sql) throws Exception {
 
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+        CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
         boolean useValues = false;
@@ -295,7 +295,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             String tableName = table.getTableName();
-            Table descTable = crudSerivce.desc(tableName);
+            Table descTable = CRUDService.desc(tableName);
             String keyName = descTable.getKey();
             String fields = keyName + "," + descTable.getValueFields();
             List<String> fieldsList = Arrays.asList(fields.split(","));
@@ -351,7 +351,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 table.setKey(keyValue);
             }
             CRUDParseUtils.checkUserTableParam(entry, descTable);
-            int insertResult = crudSerivce.insert(table, entry);
+            int insertResult = CRUDService.insert(table, entry);
             if (insertResult == 0 || insertResult == 1) {
                 System.out.println("Insert OK, " + insertResult + " row affected.");
             } else if (insertResult == Common.PermissionCode) {
@@ -367,7 +367,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void update(String sql) throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+        CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
         Condition condition = table.getCondition();
@@ -385,7 +385,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             String tableName = table.getTableName();
-            Table descTable = crudSerivce.desc(tableName);
+            Table descTable = CRUDService.desc(tableName);
             String keyName = descTable.getKey();
             if (entry.getFields().containsKey(keyName)) {
                 throw new ConsoleMessageException(
@@ -407,7 +407,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 }
             }
             CRUDParseUtils.checkUserTableParam(entry, descTable);
-            int updateResult = crudSerivce.update(table, entry, condition);
+            int updateResult = CRUDService.update(table, entry, condition);
             if (updateResult == 0 || updateResult == 1) {
                 System.out.println("Update OK, " + updateResult + " row affected.");
             } else if (updateResult == Common.PermissionCode) {
@@ -423,7 +423,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void remove(String sql) throws Exception {
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+        CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Condition condition = table.getCondition();
         try {
@@ -439,10 +439,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
-            Table descTable = crudSerivce.desc(table.getTableName());
+            Table descTable = CRUDService.desc(table.getTableName());
             table.setKey(descTable.getKey());
             handleKey(table, condition);
-            int removeResult = crudSerivce.remove(table, condition);
+            int removeResult = CRUDService.remove(table, condition);
             if (removeResult == 0 || removeResult == 1) {
                 System.out.println("Remove OK, " + removeResult + " row affected.");
             } else if (removeResult == Common.PermissionCode) {
@@ -473,9 +473,9 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println();
             return;
         }
-        CRUDSerivce crudSerivce = new CRUDSerivce(web3j, credentials);
+        CRUDService CRUDService = new CRUDService(web3j, credentials);
         try {
-            Table descTable = crudSerivce.desc(table.getTableName());
+            Table descTable = CRUDService.desc(table.getTableName());
             table.setKey(descTable.getKey());
             handleKey(table, condition);
             String fields = descTable.getKey() + "," + descTable.getValueFields();
@@ -486,7 +486,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                             "Unknown field '" + column + "' in field list.");
                 }
             }
-            List<Map<String, String>> result = crudSerivce.select(table, condition);
+            List<Map<String, String>> result = CRUDService.select(table, condition);
             int rows = 0;
             if (result.size() == 0) {
                 System.out.println("Empty set.");

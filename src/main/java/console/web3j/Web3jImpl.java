@@ -1,16 +1,14 @@
 package console.web3j;
 
 import com.alibaba.fastjson.JSONObject;
+import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
-import console.common.ContractClassFactory;
 import console.common.HelpInfo;
-import console.exception.ConsoleMessageException;
+import console.common.TxDecodeUtil;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
@@ -19,8 +17,9 @@ import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
+import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.fisco.bcos.web3j.tx.txdecode.BaseException;
 import org.fisco.bcos.web3j.utils.Numeric;
 
 public class Web3jImpl implements Web3jFace {
@@ -279,12 +278,13 @@ public class Web3jImpl implements Web3jFace {
     }
 
     @Override
-    public void getTransactionByHash(String[] params) throws IOException {
+    public void getTransactionByHash(String[] params)
+            throws IOException, BaseException, TransactionException {
         if (params.length < 2) {
             HelpInfo.promptHelp("getTransactionByHash");
             return;
         }
-        if (params.length > 2) {
+        if (params.length > 3) {
             HelpInfo.promptHelp("getTransactionByHash");
             return;
         }
@@ -294,22 +294,26 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-        String transaction = web3j.getTransactionByHash(transactionHash).sendForReturnString();
-        if ("null".equals(transaction)) {
+        String transactionJson = web3j.getTransactionByHash(transactionHash).sendForReturnString();
+        if ("null".equals(transactionJson)) {
             System.out.println("This transaction hash doesn't exist.");
             return;
         }
-        ConsoleUtils.printJson(transaction);
+        ConsoleUtils.printJson(transactionJson);
+        if (params.length == 3) {
+            TxDecodeUtil.decdeInputForTransaction(params[2], transactionJson);
+        }
         System.out.println();
     }
 
     @Override
-    public void getTransactionByBlockHashAndIndex(String[] params) throws IOException {
+    public void getTransactionByBlockHashAndIndex(String[] params)
+            throws IOException, BaseException, TransactionException {
         if (params.length < 2) {
             HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
             return;
         }
-        if (params.length > 3) {
+        if (params.length > 4) {
             HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
             return;
         }
@@ -337,20 +341,24 @@ public class Web3jImpl implements Web3jFace {
             System.out.println();
             return;
         }
-        String transaction =
+        String transactionJson =
                 web3j.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index))
                         .sendForReturnString();
-        ConsoleUtils.printJson(transaction);
+        ConsoleUtils.printJson(transactionJson);
+        if (params.length == 4) {
+            TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
+        }
         System.out.println();
     }
 
     @Override
-    public void getTransactionByBlockNumberAndIndex(String[] params) throws IOException {
+    public void getTransactionByBlockNumberAndIndex(String[] params)
+            throws IOException, BaseException, TransactionException {
         if (params.length < 2) {
             HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
             return;
         }
-        if (params.length > 3) {
+        if (params.length > 4) {
             HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
             return;
         }
@@ -390,12 +398,15 @@ public class Web3jImpl implements Web3jFace {
             System.out.println();
             return;
         }
-        String transaction =
+        String transactionJson =
                 web3j.getTransactionByBlockNumberAndIndex(
                                 DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)),
                                 BigInteger.valueOf(index))
                         .sendForReturnString();
-        ConsoleUtils.printJson(transaction);
+        ConsoleUtils.printJson(transactionJson);
+        if (params.length == 4) {
+            TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
+        }
         System.out.println();
     }
 
@@ -405,7 +416,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.promptHelp("getTransactionReceipt");
             return;
         }
-        if (params.length > 5) {
+        if (params.length > 3) {
             HelpInfo.promptHelp("getTransactionReceipt");
             return;
         }
@@ -422,69 +433,22 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         ConsoleUtils.printJson(receiptStr);
-        TransactionReceipt receipt =
-                ObjectMapperFactory.getObjectMapper()
-                        .readValue(receiptStr, TransactionReceipt.class);
-        if (params.length >= 3) {
-            String contractName = params[2];
-            Class<?> contractClass = ContractClassFactory.compileContract(contractName);
-            Method load =
-                    contractClass.getMethod(
-                            "load",
-                            String.class,
-                            Web3j.class,
-                            Credentials.class,
-                            ContractGasProvider.class);
-            String contractAddress =
-                    receipt.getTo() != null ? receipt.getTo() : receipt.getContractAddress();
-            Object contractObject =
-                    load.invoke(null, contractAddress, web3j, credentials, gasProvider);
-            Method[] methods = contractClass.getDeclaredMethods();
-            if (params.length >= 4) {
-                String eventName = params[3];
-                int index = -1;
-                if (params.length == 5) {
-                    index = ConsoleUtils.proccessNonNegativeNumber("index", params[4]);
-                    if (index == Common.InvalidReturnNumber) {
-                        return;
-                    }
+        if (params.length == 3) {
+            TransactionReceipt receipt =
+                    ObjectMapperFactory.getObjectMapper()
+                            .readValue(receiptStr, TransactionReceipt.class);
+            AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(params[2]);
+            String abi = abiAndBin.getAbi();
+            if (!Common.EMPTY_CONTRACT_ADDRESS.equals(receipt.getTo())) {
+                if (receipt.getInput() != null) {
+                    TxDecodeUtil.decodeInput(abiAndBin, receipt.getInput());
                 }
-                String funcName =
-                        "get"
-                                + eventName.substring(0, 1).toUpperCase()
-                                + eventName.substring(1)
-                                + "Events";
-                Method method = ContractClassFactory.getEventByName(funcName, methods);
-                if (method == null) {
-                    throw new ConsoleMessageException(
-                            "Cannot find the event "
-                                    + eventName
-                                    + ", please checkout the event name.");
-                }
-                List<Object> result = (ArrayList<Object>) method.invoke(contractObject, receipt);
-                if (result.size() == 0) {
-                    throw new ConsoleMessageException("The event is empty.");
-                }
-                if (index == -1) {
-                    ConsoleUtils.singleLine();
-                    System.out.println("Event logs");
-                    ConsoleUtils.singleLine();
-                    for (int i = 0; i < result.size(); i++) {
-                        ContractClassFactory.printEventLogByNameAndIndex(i, eventName, result);
-                    }
-                    ConsoleUtils.singleLine();
-                } else {
-                    if (index >= result.size()) {
-                        throw new ConsoleMessageException("The event index is greater event size.");
-                    }
-                    ConsoleUtils.singleLine();
-                    System.out.println("Event logs");
-                    ConsoleUtils.singleLine();
-                    ContractClassFactory.printEventLogByNameAndIndex(index, eventName, result);
-                    ConsoleUtils.singleLine();
-                }
-            } else {
-                ContractClassFactory.printEventLogs(contractObject, methods, receipt);
+            }
+            if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
+                TxDecodeUtil.decodeOutput(abi, receipt);
+            }
+            if (receipt.getLogs().size() != 0) {
+                TxDecodeUtil.decodeEventLog(abi, receipt);
             }
         }
         System.out.println();
