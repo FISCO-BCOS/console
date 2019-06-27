@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
@@ -445,7 +446,14 @@ public class Web3jImpl implements Web3jFace {
                 }
             }
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
-                TxDecodeUtil.setInputForReceipt(web3j, receipt);
+                String version = PrecompiledCommon.BCOS_VERSION;
+                if (version == null
+                        || PrecompiledCommon.BCOS_RC1.equals(version)
+                        || PrecompiledCommon.BCOS_RC2.equals(version)
+                        || PrecompiledCommon.BCOS_RC3.equals(version)) ;
+                {
+                    TxDecodeUtil.setInputForReceipt(web3j, receipt);
+                }
                 TxDecodeUtil.decodeOutput(abi, receipt);
             }
             if (receipt.getLogs() != null && receipt.getLogs().size() != 0) {
