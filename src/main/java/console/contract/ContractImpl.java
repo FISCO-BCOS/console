@@ -347,8 +347,7 @@ public class ContractImpl implements ContractFace {
             if (version == null
                     || PrecompiledCommon.BCOS_RC1.equals(version)
                     || PrecompiledCommon.BCOS_RC2.equals(version)
-                    || PrecompiledCommon.BCOS_RC3.equals(version)) ;
-            {
+                    || PrecompiledCommon.BCOS_RC3.equals(version)) {
                 TxDecodeUtil.setInputForReceipt(web3j, receipt);
             }
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
@@ -573,8 +572,7 @@ public class ContractImpl implements ContractFace {
             if (version == null
                     || PrecompiledCommon.BCOS_RC1.equals(version)
                     || PrecompiledCommon.BCOS_RC2.equals(version)
-                    || PrecompiledCommon.BCOS_RC3.equals(version)) ;
-            {
+                    || PrecompiledCommon.BCOS_RC3.equals(version)) {
                 TxDecodeUtil.setInputForReceipt(web3j, receipt);
             }
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {

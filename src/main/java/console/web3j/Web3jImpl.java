@@ -450,8 +450,7 @@ public class Web3jImpl implements Web3jFace {
                 if (version == null
                         || PrecompiledCommon.BCOS_RC1.equals(version)
                         || PrecompiledCommon.BCOS_RC2.equals(version)
-                        || PrecompiledCommon.BCOS_RC3.equals(version)) ;
-                {
+                        || PrecompiledCommon.BCOS_RC3.equals(version)) {
                     TxDecodeUtil.setInputForReceipt(web3j, receipt);
                 }
                 TxDecodeUtil.decodeOutput(abi, receipt);
