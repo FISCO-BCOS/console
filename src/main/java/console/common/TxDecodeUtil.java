@@ -9,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
+import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.core.methods.response.AbiDefinition.NamedType.Type;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Transaction;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
 import org.fisco.bcos.web3j.tx.txdecode.BaseException;
@@ -161,5 +163,15 @@ public class TxDecodeUtil {
         if (!Common.EMPTY_CONTRACT_ADDRESS.equals(transacton.getTo())) {
             TxDecodeUtil.decodeInput(abiAndBin, transacton.getInput());
         }
+    }
+
+    public static void setInputForReceipt(Web3j web3j, TransactionReceipt receipt)
+            throws IOException {
+        Transaction transaction =
+                web3j.getTransactionByHash(receipt.getTransactionHash())
+                        .send()
+                        .getTransaction()
+                        .get();
+        receipt.setInput(transaction.getInput());
     }
 }

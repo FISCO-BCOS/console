@@ -198,6 +198,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void desc(String[] params) throws Exception {
+        checkVersionForCRUD();
         if (params.length < 2) {
             HelpInfo.promptHelp("desc");
             return;
@@ -240,8 +241,19 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
+    private void checkVersionForCRUD() throws ConsoleMessageException {
+        String version = PrecompiledCommon.BCOS_VERSION;
+        if (version == null
+                || PrecompiledCommon.BCOS_RC1.equals(version)
+                || PrecompiledCommon.BCOS_RC2.equals(version)) {
+            throw new ConsoleMessageException(
+                    "The version 2.0.0-rc3 or above of FISCO-BCOS can support the command.");
+        }
+    }
+
     @Override
     public void createTable(String sql) throws Exception {
+        checkVersionForCRUD();
         Table table = new Table();
         try {
             CRUDParseUtils.parseCreateTable(sql, table);
@@ -276,7 +288,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void insert(String sql) throws Exception {
-
+        checkVersionForCRUD();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -367,6 +379,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void update(String sql) throws Exception {
+        checkVersionForCRUD();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -423,6 +436,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void remove(String sql) throws Exception {
+        checkVersionForCRUD();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Condition condition = table.getCondition();
@@ -458,6 +472,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void select(String sql) throws Exception {
+        checkVersionForCRUD();
         Table table = new Table();
         Condition condition = table.getCondition();
         List<String> selectColumns = new ArrayList<>();
