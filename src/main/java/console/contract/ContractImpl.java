@@ -343,7 +343,14 @@ public class ContractImpl implements ContractFace {
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
             String abi = abiAndBin.getAbi();
             TransactionReceipt receipt = (TransactionReceipt) result;
-            TxDecodeUtil.setInputForReceipt(web3j, receipt);
+            String version = PrecompiledCommon.BCOS_VERSION;
+            if (version == null
+                    || PrecompiledCommon.BCOS_RC1.equals(version)
+                    || PrecompiledCommon.BCOS_RC2.equals(version)
+                    || PrecompiledCommon.BCOS_RC3.equals(version)) ;
+            {
+                TxDecodeUtil.setInputForReceipt(web3j, receipt);
+            }
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
                 TxDecodeUtil.decodeOutput(abi, receipt);
             }
@@ -562,7 +569,14 @@ public class ContractImpl implements ContractFace {
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
             String abi = abiAndBin.getAbi();
             TransactionReceipt receipt = (TransactionReceipt) result;
-            TxDecodeUtil.setInputForReceipt(web3j, receipt);
+            String version = PrecompiledCommon.BCOS_VERSION;
+            if (version == null
+                    || PrecompiledCommon.BCOS_RC1.equals(version)
+                    || PrecompiledCommon.BCOS_RC2.equals(version)
+                    || PrecompiledCommon.BCOS_RC3.equals(version)) ;
+            {
+                TxDecodeUtil.setInputForReceipt(web3j, receipt);
+            }
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
                 TxDecodeUtil.decodeOutput(abi, receipt);
             }
