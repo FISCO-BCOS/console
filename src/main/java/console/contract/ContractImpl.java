@@ -343,6 +343,7 @@ public class ContractImpl implements ContractFace {
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
             String abi = abiAndBin.getAbi();
             TransactionReceipt receipt = (TransactionReceipt) result;
+            TxDecodeUtil.setInputForReceipt(web3j, receipt);
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
                 TxDecodeUtil.decodeOutput(abi, receipt);
             }
@@ -561,6 +562,7 @@ public class ContractImpl implements ContractFace {
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
             String abi = abiAndBin.getAbi();
             TransactionReceipt receipt = (TransactionReceipt) result;
+            TxDecodeUtil.setInputForReceipt(web3j, receipt);
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
                 TxDecodeUtil.decodeOutput(abi, receipt);
             }

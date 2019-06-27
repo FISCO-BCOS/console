@@ -445,6 +445,7 @@ public class Web3jImpl implements Web3jFace {
                 }
             }
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
+                TxDecodeUtil.setInputForReceipt(web3j, receipt);
                 TxDecodeUtil.decodeOutput(abi, receipt);
             }
             if (receipt.getLogs().size() != 0) {
