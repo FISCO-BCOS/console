@@ -61,7 +61,7 @@ public class TxDecodeUtil {
         for (ResultEntity resultEntity : resultList) {
             resultData.append(resultEntity.getData()).append(", ");
         }
-        if (resultList.size() != 0) {
+        if (!resultList.isEmpty()) {
             resultData.delete(resultData.length() - 2, resultData.length());
         }
         resultData.append(")");
