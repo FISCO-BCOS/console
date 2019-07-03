@@ -61,7 +61,9 @@ public class TxDecodeUtil {
         for (ResultEntity resultEntity : resultList) {
             resultData.append(resultEntity.getData()).append(", ");
         }
-        resultData.delete(resultData.length() - 2, resultData.length());
+        if (resultList.size() != 0) {
+            resultData.delete(resultData.length() - 2, resultData.length());
+        }
         resultData.append(")");
         System.out.println("function: " + result.getFunction());
         System.out.println("input value: " + resultData);
