@@ -28,7 +28,7 @@ check.dependsOn.remove(verifyGoogleJavaFormat)
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // compile group: "org.fisco-bcos", name: "web3sdk", version: "2.0.31-SNAPSHOT", changing: true
-	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.35-SNAPSHOT'
+	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.4'
     compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.25'
   //  compile group: 'org.jline', name: 'jline', version: '3.11.0'
     compile files('lib/jline-3.11.1-SNAPSHOT.jar')
