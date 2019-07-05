@@ -1,3 +1,15 @@
+### v1.0.4
+
+(2019-07-05)
+
+* 增加
+
+1. 添加交易解析功能：`call`、`callCNS`支持解析`output`、`event log`；
+    `getTransactionByHash`、`getTransactionByBlockHashAndIndex`、`getTransactionByBlockHashAndIndex` 支持解析`input`；
+    `getTransactionReceipt`支持解析`input`、`output`、`event log`
+2. 去除无用的jar包依赖
+
+
 ### v1.0.3
 
 (2019-05-28)
