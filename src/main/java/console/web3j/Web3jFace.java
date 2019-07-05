@@ -3,7 +3,9 @@ package console.web3j;
 import java.io.IOException;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.fisco.bcos.web3j.tx.txdecode.BaseException;
 
 public interface Web3jFace {
 
@@ -37,11 +39,14 @@ public interface Web3jFace {
 
     void getBlockHashByNumber(String[] params) throws IOException;
 
-    void getTransactionByHash(String[] params) throws IOException;
+    void getTransactionByHash(String[] params)
+            throws IOException, BaseException, TransactionException;
 
-    void getTransactionByBlockHashAndIndex(String[] params) throws IOException;
+    void getTransactionByBlockHashAndIndex(String[] params)
+            throws IOException, BaseException, TransactionException;
 
-    void getTransactionByBlockNumberAndIndex(String[] params) throws IOException;
+    void getTransactionByBlockNumberAndIndex(String[] params)
+            throws IOException, BaseException, TransactionException;
 
     void getTransactionReceipt(String[] params) throws Exception;
 

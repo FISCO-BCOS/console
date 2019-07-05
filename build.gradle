@@ -28,9 +28,10 @@ check.dependsOn.remove(verifyGoogleJavaFormat)
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // compile group: "org.fisco-bcos", name: "web3sdk", version: "2.0.31-SNAPSHOT", changing: true
-	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.3'
+	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.0.4'
     compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.25'
-    compile group: 'org.jline', name: 'jline', version: '3.11.0'
+  //  compile group: 'org.jline', name: 'jline', version: '3.11.0'
+    compile files('lib/jline-3.11.1-SNAPSHOT.jar')
     compile group: 'io.bretty', name: 'console-table-builder', version: '1.2'
     compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.0'
     testCompile group: 'junit', name: 'junit', version: '4.1'
@@ -39,6 +40,22 @@ dependencies {
 configurations.all {
     resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
 }
+
+configurations {
+    all*.exclude group: 'org.java-websocket', module: 'Java-WebSocket'
+    all*.exclude group: 'org.antlr', module: '*'
+    all*.exclude group: 'de.vandermeer', module: '*'
+    all*.exclude group: 'net.bytebuddy', module: 'byte-buddy'
+    all*.exclude group: 'commons-configuration', module: 'commons-configuration'
+    all*.exclude group: 'org.apache.commons', module: 'commons-lang'
+    all*.exclude group: 'com.alibaba', module: 'druid'
+    all*.exclude group: 'com.google.guava', module: 'guava'
+    all*.exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+    all*.exclude group: 'org.mockito', module: 'mockito-core'
+    all*.exclude group: 'io.reactivex', module: 'rxjava'
+  //  all*.exclude group: 'org.ethereum', module: 'solcJ-all'
+}
+
 sourceSets {
     main {
         java {

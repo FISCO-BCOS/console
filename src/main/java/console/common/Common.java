@@ -16,6 +16,9 @@ public class Common {
     public static final String DeployLogntegerRange = "from 1 to 100";
     public static final String NodeIdLength = "128";
     public static final String TxGasLimitRange = "from 100000 to 2147483647";
+    public static final String EMPTY_CONTRACT_ADDRESS =
+            "0x0000000000000000000000000000000000000000";
+    public static final String EMPTY_OUTPUT = "0x";
     public static final int TxGasLimitMin = 10000;
 
     public static int PermissionCode = 0;
@@ -26,5 +29,5 @@ public class Common {
     public static int SYS_TABLE_VALUE_FIELD_MAX_LENGTH = 1024;
     public static int USER_TABLE_KEY_VALUE_MAX_LENGTH = 255;
     public static int USER_TABLE_FIELD_NAME_MAX_LENGTH = 64;
-    public static int USER_TABLE_FIELD_VALUE_MAX_LENGTH = 65535;
+    public static int USER_TABLE_FIELD_VALUE_MAX_LENGTH = 16 * 1024 * 1024 - 1;
 }

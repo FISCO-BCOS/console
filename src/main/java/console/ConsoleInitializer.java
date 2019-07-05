@@ -69,58 +69,36 @@ public class ConsoleInitializer {
                 useDefaultCredentials();
                 break;
             case 1: // bash start.sh groupID
-                groupID = setGroupID(args[0]);
+                if ("-l".equals(args[0])) { // input by scanner for log
+                    ConsoleClient.INPUT_FLAG = 1;
+                } else {
+                    groupID = setGroupID(args[0]);
+                }
                 useDefaultCredentials();
                 break;
-            case 3: // ./start.sh groupID -pem pemName
-                if ("-pem".equals(args[1])) {
+            case 2: // bash start.sh groupID -l
+                if ("-l".equals(args[1])) { // input by scanner for log
+                    ConsoleClient.INPUT_FLAG = 1;
                     groupID = setGroupID(args[0]);
-                    String pemName = args[2];
-                    pemName = handlPemFileName(pemName);
-                    PEMManager pem = new PEMManager();
-                    pem.setPemFile("classpath:" + pemName);
-                    try {
-                        pem.load();
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                        close();
-                    }
-                    ECKeyPair keyPair = pem.getECKeyPair();
-                    credentials = Credentials.create(keyPair);
-                } else if ("-p12".equals(args[1])) {
-                    groupID = setGroupID(args[0]);
-                    String p12Name = args[2];
-                    p12Name = handleP12FileName(p12Name);
-                    System.out.print("Enter Export Password:");
-                    Console cons = System.console();
-                    char[] passwd = cons.readPassword();
-                    String password = new String(passwd);
-                    P12Manager p12Manager = new P12Manager();
-                    p12Manager.setPassword(password);
-                    p12Manager.setP12File("classpath:" + p12Name);
-                    try {
-                        p12Manager.load();
-                    } catch (Exception e) {
-                        System.out.println(e.getMessage());
-                        close();
-                    }
-                    ECKeyPair keyPair;
-                    try {
-                        keyPair = p12Manager.getECKeyPair(password);
-                        credentials = Credentials.create(keyPair);
-                    } catch (Exception e) {
-                        System.out.println("The name for p12 account is error.");
-                        close();
-                    }
+                    useDefaultCredentials();
                 } else {
                     HelpInfo.startHelp();
                     close();
                 }
                 break;
+            case 3: // ./start.sh groupID -pem pemName
+                handleAccountParam(args);
+                break;
             default:
-                HelpInfo.startHelp();
-                close();
+                if (args.length == 4 && "-l".equals(args[3])) {
+                    handleAccountParam(args);
+                    ConsoleClient.INPUT_FLAG = 1;
+                } else {
+                    HelpInfo.startHelp();
+                    close();
+                }
         }
+
         if (credentials == null) {
             System.out.println("Please provide a valid account.");
             close();
@@ -181,6 +159,59 @@ public class ConsoleInitializer {
         } catch (Exception e) {
             System.out.println(
                     "Failed to connect to the node. Please check the node status and the console configuration.");
+            close();
+        }
+    }
+
+    private void handleAccountParam(String[] args)
+            throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException,
+                    InvalidKeySpecException, NoSuchProviderException,
+                    InvalidAlgorithmParameterException {
+        if ("-pem".equals(args[1])) {
+            groupID = setGroupID(args[0]);
+            String pemName = args[2];
+            pemName = handlPemFileName(pemName);
+            PEMManager pem = new PEMManager();
+            pem.setPemFile("classpath:" + pemName);
+            try {
+                pem.load();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                close();
+            }
+            ECKeyPair keyPair = pem.getECKeyPair();
+            credentials = Credentials.create(keyPair);
+        } else if ("-p12".equals(args[1])) {
+            groupID = setGroupID(args[0]);
+            String p12Name = args[2];
+            p12Name = handleP12FileName(p12Name);
+            System.out.print("Enter Export Password:");
+            Console cons = System.console();
+            char[] passwd = cons.readPassword();
+            String password = new String(passwd);
+            P12Manager p12Manager = new P12Manager();
+            p12Manager.setPassword(password);
+            p12Manager.setP12File("classpath:" + p12Name);
+            try {
+                p12Manager.load();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                close();
+            }
+            ECKeyPair keyPair;
+            try {
+                keyPair = p12Manager.getECKeyPair();
+                credentials = Credentials.create(keyPair);
+            } catch (Exception e) {
+                System.out.println("The name for p12 account is error.");
+                close();
+            }
+        } else if ("-l".equals(args[1])) {
+            groupID = setGroupID(args[0]);
+            ConsoleClient.INPUT_FLAG = 1;
+            useDefaultCredentials();
+        } else {
+            HelpInfo.startHelp();
             close();
         }
     }

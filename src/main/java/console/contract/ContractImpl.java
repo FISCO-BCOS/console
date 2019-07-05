@@ -1,10 +1,12 @@
 package console.contract;
 
+import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
+import console.common.TxDecodeUtil;
 import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
@@ -97,9 +99,7 @@ public class ContractImpl implements ContractFace {
     }
 
     private synchronized void writeLog(String contractName, String contractAddress) {
-        if (contractName.endsWith(".sol")) {
-            contractName = contractName.substring(0, contractName.length() - ".sol".length());
-        }
+        contractName = ContractClassFactory.removeSolPostfix(contractName);
         BufferedReader reader = null;
         try {
             File logFile = new File(Common.ContractLogFileName);
@@ -340,8 +340,22 @@ public class ContractImpl implements ContractFace {
         }
         System.out.println(returnObject);
         if (result instanceof TransactionReceipt) {
-            ContractClassFactory.printEventLogs(
-                    contractObject, methods, (TransactionReceipt) result);
+            AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
+            String abi = abiAndBin.getAbi();
+            TransactionReceipt receipt = (TransactionReceipt) result;
+            String version = PrecompiledCommon.BCOS_VERSION;
+            if (version == null
+                    || PrecompiledCommon.BCOS_RC1.equals(version)
+                    || PrecompiledCommon.BCOS_RC2.equals(version)
+                    || PrecompiledCommon.BCOS_RC3.equals(version)) {
+                TxDecodeUtil.setInputForReceipt(web3j, receipt);
+            }
+            if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
+                TxDecodeUtil.decodeOutput(abi, receipt);
+            }
+            if (receipt.getLogs() != null && receipt.getLogs().size() != 0) {
+                TxDecodeUtil.decodeEventLog(abi, receipt);
+            }
         }
         System.out.println();
     }
@@ -380,9 +394,7 @@ public class ContractImpl implements ContractFace {
         }
 
         String name = params[1];
-        if (name.endsWith(".sol")) {
-            name = name.substring(0, name.length() - ".sol".length());
-        }
+        name = ContractClassFactory.removeSolPostfix(name);
         CnsService cnsService = new CnsService(web3j, credentials);
         List<CnsInfo> qcns = cnsService.queryCnsByNameAndVersion(name, params[2]);
         if (qcns.size() != 0) {
@@ -553,8 +565,22 @@ public class ContractImpl implements ContractFace {
         }
         System.out.println(returnObject);
         if (result instanceof TransactionReceipt) {
-            ContractClassFactory.printEventLogs(
-                    contractObject, methods, (TransactionReceipt) result);
+            AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
+            String abi = abiAndBin.getAbi();
+            TransactionReceipt receipt = (TransactionReceipt) result;
+            String version = PrecompiledCommon.BCOS_VERSION;
+            if (version == null
+                    || PrecompiledCommon.BCOS_RC1.equals(version)
+                    || PrecompiledCommon.BCOS_RC2.equals(version)
+                    || PrecompiledCommon.BCOS_RC3.equals(version)) {
+                TxDecodeUtil.setInputForReceipt(web3j, receipt);
+            }
+            if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
+                TxDecodeUtil.decodeOutput(abi, receipt);
+            }
+            if (receipt.getLogs() != null && receipt.getLogs().size() != 0) {
+                TxDecodeUtil.decodeEventLog(abi, receipt);
+            }
         }
         System.out.println();
     }
