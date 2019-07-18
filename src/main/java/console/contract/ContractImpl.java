@@ -416,7 +416,11 @@ public class ContractImpl implements ContractFace {
             Contract contract = (Contract) remoteCall.send();
             String contractAddress = contract.getContractAddress();
             // register cns
-            cnsService.registerCns(name, contractVersion, contractAddress, "");
+            cnsService.registerCns(
+                    name,
+                    contractVersion,
+                    contractAddress,
+                    TxDecodeUtil.readAbiAndBin(name).getAbi());
             System.out.println("contract address: " + contractAddress);
             String contractName = name + ":" + contractVersion;
             writeLog(contractName, contractAddress);
