@@ -1,3 +1,5 @@
+![](https://github.com/FISCO-BCOS/FISCO-BCOS/raw/master/docs/images/FISCO_BCOS_Logo.svg?sanitize=true)
+
 English / [中文](doc/README_CN.md)
 
 # console
@@ -7,7 +9,7 @@ English / [中文](doc/README_CN.md)
 [![GitHub All Releases](https://img.shields.io/github/downloads/FISCO-BCOS/console/total.svg)](https://github.com/FISCO-BCOS/console)
 ---
 
-The console is an important interactive client tool of [FISCO BCOS 2.0](https://fisco-bcos-documentation.readthedocs.io/zh_CN/release-2.0/). The console has a wealth of commands, including querying blockchain status, managing blockchain nodes, deploying and invoking contracts. 
+The console is an important interactive client tool of [FISCO BCOS 2.0](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/). The console has a wealth of commands, including querying blockchain status, managing blockchain nodes, deploying and invoking contracts. 
 
 ## Features
 
@@ -24,12 +26,12 @@ The console is an important interactive client tool of [FISCO BCOS 2.0](https://
 ```
 $ git clone https://github.com/FISCO-BCOS/console.git
 $ cd console
-$ ./gradlew jar
+$ ./gradlew build
 ```
 If you install successfully, it produces the `dist` directory.
 
 ## Configuration
-Please see the [documentation](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html#id7) about configurating for the console. Have fun.
+Please see the [documentation](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html#id11) about configurating for the console. Have fun.
 
 ## Developing & Contributing
 - Star our Github.
