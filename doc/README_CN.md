@@ -1,3 +1,5 @@
+![](https://github.com/FISCO-BCOS/FISCO-BCOS/raw/master/docs/images/FISCO_BCOS_Logo.svg?sanitize=true)
+
 [English](../README.md) / 中文
 
 # 控制台
@@ -8,7 +10,7 @@
 [![GitHub All Releases](https://img.shields.io/github/downloads/FISCO-BCOS/console/total.svg)](https://github.com/FISCO-BCOS/console)
 ---
 
-控制台是[FISCO BCOS 2.0](https://fisco-bcos-documentation.readthedocs.io/zh_CN/release-2.0/)的重要交互式客户端工具。控制台拥有丰富的命令，包括查询区块链状态、管理区块链节点、部署并调用合约等。
+控制台是[FISCO BCOS 2.0](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/)的重要交互式客户端工具。控制台拥有丰富的命令，包括查询区块链状态、管理区块链节点、部署并调用合约等。
 
 ## 关键特性
 
@@ -18,18 +20,18 @@
  - 提供一个合约编译工具，用户可以方便快捷的将Solidity合约文件编译为Java合约文件。
 
 ## 使用
-- 可以直接下载控制台压缩包，然后解压控制台压缩包使用控制台。具体参考 [控制台手册](https://fisco-bcos-documentation.readthedocs.io/zh_CN/release-2.0/docs/manual/console.html)。
+- 可以直接下载控制台压缩包，然后解压控制台压缩包使用控制台。具体参考 [控制台手册](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html)。
 
 ## 源码安装
 ```
 $ git clone https://github.com/FISCO-BCOS/console.git
 $ cd console
-$ ./gradlew jar
+$ ./gradlew build
 ```
 如果安装成功，将在当前目录生成一个`dist`目录。
 
 ## 配置
-控制台具体配置参考[这里](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html#id7)。
+控制台具体配置参考[这里](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html#id11)。
 
 ## 贡献代码
 欢迎参与FISCO BCOS的社区建设：
