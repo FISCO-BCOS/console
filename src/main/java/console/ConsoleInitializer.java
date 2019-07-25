@@ -12,7 +12,10 @@ import console.web3j.Web3jFace;
 import console.web3j.Web3jImpl;
 import java.io.Console;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -170,34 +173,63 @@ public class ConsoleInitializer {
         if ("-pem".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String pemName = args[2];
-            pemName = handlPemFileName(pemName);
             PEMManager pem = new PEMManager();
-            pem.setPemFile("classpath:" + pemName);
+            
+            InputStream in = null;
             try {
-                pem.load();
+            	in = Files.newInputStream(Paths.get(pemName));
+            	pem.load(in);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 close();
+            } finally {
+            	if(in != null) {
+            		try {
+						in.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						// e.printStackTrace();
+					}
+            	}
             }
+            
             ECKeyPair keyPair = pem.getECKeyPair();
             credentials = Credentials.create(keyPair);
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
-            p12Name = handleP12FileName(p12Name);
+
             System.out.print("Enter Export Password:");
             Console cons = System.console();
             char[] passwd = cons.readPassword();
             String password = new String(passwd);
             P12Manager p12Manager = new P12Manager();
             p12Manager.setPassword(password);
-            p12Manager.setP12File("classpath:" + p12Name);
+            
+            InputStream in = null;
             try {
-                p12Manager.load();
+                try {
+                    in = Files.newInputStream(Paths.get(p12Name)); 
+                    p12Manager.load(in, password);
+                } catch (NullPointerException e) {
+                    p12Name = handleP12FileName(p12Name);
+                    p12Manager.setP12File("classpath:" + p12Name);
+                    p12Manager.load();
+                }
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 close();
+            } finally {
+            	if(in != null) {
+            		try {
+						in.close();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						// e.printStackTrace();
+					}
+            	}
             }
+
             ECKeyPair keyPair;
             try {
                 keyPair = p12Manager.getECKeyPair();
