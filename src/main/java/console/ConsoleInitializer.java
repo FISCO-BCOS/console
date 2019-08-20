@@ -174,25 +174,26 @@ public class ConsoleInitializer {
             groupID = setGroupID(args[0]);
             String pemName = args[2];
             PEMManager pem = new PEMManager();
-            
+
             InputStream in = null;
             try {
-            	in = Files.newInputStream(Paths.get(pemName));
-            	pem.load(in);
+                in = Files.newInputStream(Paths.get(pemName));
+                pem.load(in);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 close();
             } finally {
-            	if(in != null) {
-            		try {
-						in.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						// e.printStackTrace();
-					}
-            	}
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        // e.print_Stack_Trace();
+                        System.out.println(e.getMessage());
+                    }
+                }
             }
-            
+
             ECKeyPair keyPair = pem.getECKeyPair();
             credentials = Credentials.create(keyPair);
         } else if ("-p12".equals(args[1])) {
@@ -205,11 +206,11 @@ public class ConsoleInitializer {
             String password = new String(passwd);
             P12Manager p12Manager = new P12Manager();
             p12Manager.setPassword(password);
-            
+
             InputStream in = null;
             try {
                 try {
-                    in = Files.newInputStream(Paths.get(p12Name)); 
+                    in = Files.newInputStream(Paths.get(p12Name));
                     p12Manager.load(in, password);
                 } catch (NullPointerException e) {
                     p12Name = handleP12FileName(p12Name);
@@ -220,14 +221,15 @@ public class ConsoleInitializer {
                 System.out.println(e.getMessage());
                 close();
             } finally {
-            	if(in != null) {
-            		try {
-						in.close();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						// e.printStackTrace();
-					}
-            	}
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        // e.print_Stack_Trace();
+                        System.out.println(e.getMessage());
+                    }
+                }
             }
 
             ECKeyPair keyPair;
