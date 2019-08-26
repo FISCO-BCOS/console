@@ -175,9 +175,8 @@ public class ConsoleInitializer {
             String pemName = args[2];
             PEMManager pem = new PEMManager();
 
-            InputStream in = null;
+            InputStream in = readAccountFile(pemName);
             try {
-                in = Files.newInputStream(Paths.get(pemName));
                 pem.load(in);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
@@ -187,8 +186,6 @@ public class ConsoleInitializer {
                     try {
                         in.close();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        // e.print_Stack_Trace();
                         System.out.println(e.getMessage());
                     }
                 }
@@ -207,16 +204,9 @@ public class ConsoleInitializer {
             P12Manager p12Manager = new P12Manager();
             p12Manager.setPassword(password);
 
-            InputStream in = null;
+            InputStream in = readAccountFile(p12Name);
             try {
-                try {
-                    in = Files.newInputStream(Paths.get(p12Name));
-                    p12Manager.load(in, password);
-                } catch (NullPointerException e) {
-                    p12Name = handleP12FileName(p12Name);
-                    p12Manager.setP12File("classpath:" + p12Name);
-                    p12Manager.load();
-                }
+                p12Manager.load(in, password);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 close();
@@ -225,8 +215,6 @@ public class ConsoleInitializer {
                     try {
                         in.close();
                     } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        // e.print_Stack_Trace();
                         System.out.println(e.getMessage());
                     }
                 }
@@ -250,30 +238,19 @@ public class ConsoleInitializer {
         }
     }
 
-    private String handlPemFileName(String pemName) {
-        if (pemName.startsWith(ACCOUNT_DIR1)) {
-            pemName = pemName.substring(ACCOUNT_DIR1.length());
-        }
-        if (pemName.startsWith(ACCOUNT_DIR2)) {
-            pemName = pemName.substring(ACCOUNT_DIR2.length());
-        }
-        if (!pemName.endsWith(".pem")) {
-            pemName = pemName + ".pem";
-        }
-        return pemName;
-    }
+    private InputStream readAccountFile(String fileName) {
 
-    private String handleP12FileName(String p12Name) {
-        if (p12Name.startsWith(ACCOUNT_DIR1)) {
-            p12Name = p12Name.substring(ACCOUNT_DIR1.length());
+        try {
+            return Files.newInputStream(Paths.get(fileName));
+        } catch (IOException e) {
+            System.out.println(
+                    "["
+                            + Paths.get(fileName).toAbsolutePath()
+                            + "]"
+                            + " cannot be opened because it does not exist.");
+            close();
         }
-        if (p12Name.startsWith(ACCOUNT_DIR2)) {
-            p12Name = p12Name.substring(ACCOUNT_DIR2.length());
-        }
-        if (!p12Name.endsWith(".p12")) {
-            p12Name = p12Name + ".p12";
-        }
-        return p12Name;
+        return null;
     }
 
     private void useDefaultCredentials()
