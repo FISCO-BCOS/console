@@ -78,6 +78,9 @@ public class TxDecodeUtil {
                 transactionDecoder.decodeOutputReturnObject(
                         receipt.getInput(), receipt.getOutput());
         List<ResultEntity> resultList = result.getResult();
+        if (resultList.isEmpty()) {
+            return;
+        }
         ConsoleUtils.singleLine();
         System.out.println("Output ");
         StringBuilder resultType = new StringBuilder();
