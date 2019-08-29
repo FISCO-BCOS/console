@@ -3,6 +3,7 @@
 set -e
 
 scan_code_script="python ~/cobra/cobra.py -t "
+ignore_files=(.ci)
 
 LOG_ERROR() {
     content=${1}
@@ -26,11 +27,26 @@ execute_cmd() {
     fi
 }
 
+should_ignore()
+{
+    local file=${1}
+    for ignore in ${ignore_files[*]}; do
+        if echo ${file} | grep ${ignore} &>/dev/null; then
+            echo "ignore ${file} ${ignore}"
+            return 0
+        fi
+    done
+    return 1
+}
+
 scan_code()
 {
     # Redirect output to stderr.
     exec 1>&2
-    for file in $(git diff-index --name-status HEAD^ | grep -v .ci | awk '{print $2}'); do
+    for file in $(git diff-index --name-status HEAD^ | awk '{print $2}'); do
+        if should_ignore ${file}; then continue; fi
+        if [ ! -f ${file} ];then continue; fi
+        LOG_INFO "check file ${file}"
         execute_cmd "${scan_code_script} $file -f json -o /tmp/report.json"
         trigger_rules=$(jq -r '.' /tmp/report.json | grep 'trigger_rules' | awk '{print $2}' | sed 's/,//g')
         echo "trigger_rules is ${trigger_rules}"
