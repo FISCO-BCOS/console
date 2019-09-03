@@ -48,8 +48,8 @@ public class ContractClassFactory {
         try {
             name = removeSolPostfix(name);
             dynamicCompileSolFilesToJava(name);
-        } catch (IOException e) {
-            throw new IOException(e.getMessage());
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
         try {
             dynamicCompileJavaToClass(name);
@@ -104,7 +104,7 @@ public class ContractClassFactory {
             if (compileResult != 0) {
                 System.err.println("compile failed!!");
                 System.out.println();
-                return;
+                throw new Exception("compile failed, solidity file: " + name);
             }
         }
     }
@@ -379,6 +379,7 @@ public class ContractClassFactory {
         }
         Object[] obj = new Object[params.length];
         for (int i = 0; i < obj.length; i++) {
+
             if (type[i] == String.class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
                     try {
@@ -439,13 +440,8 @@ public class ContractClassFactory {
                 }
             } else if (type[i] == byte[].class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    byte[] bytes2 = params[i].substring(1, params[i].length() - 1).getBytes();
-                    byte[] bytes1 = new byte[32];
-
-                    for (int j = 0; j < bytes2.length; j++) {
-                        bytes1[j] = bytes2[j];
-                    }
-                    obj[i] = bytes1;
+                    byte[] bytes = params[i].substring(1, params[i].length() - 1).getBytes();
+                    obj[i] = bytes;
                 } else {
                     System.out.println("Please provide double quote for byte String.");
                     System.out.println();
@@ -476,12 +472,7 @@ public class ContractClassFactory {
                                 if (ilist[j].startsWith("\"") && ilist[j].endsWith("\"")) {
                                     byte[] bytes =
                                             ilist[j].substring(1, ilist[j].length() - 1).getBytes();
-                                    byte[] bytes1 = new byte[32];
-                                    byte[] bytes2 = bytes;
-                                    for (int k = 0; k < bytes2.length; k++) {
-                                        bytes1[k] = bytes2[k];
-                                    }
-                                    paramsList.add(bytes1);
+                                    paramsList.add(bytes);
                                 }
                             }
                         }
