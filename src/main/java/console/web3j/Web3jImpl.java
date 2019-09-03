@@ -1,11 +1,13 @@
 package console.web3j;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
+import console.common.TotalTransactionCountResult;
 import console.common.TxDecodeUtil;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -515,16 +517,33 @@ public class Web3jImpl implements Web3jFace {
     }
 
     @Override
-    public void getTotalTransactionCount(String[] params) throws IOException {
+    public void getTotalTransactionCount(String[] params)
+            throws JsonParseException, JsonMappingException, IOException {
         if (HelpInfo.promptNoParams(params, "getTotalTransactionCount")) {
             return;
         }
+
         String transactionCount = web3j.getTotalTransactionCount().sendForReturnString();
-        JSONObject jo = JSONObject.parseObject(transactionCount);
-        jo.put("txSum", Numeric.decodeQuantity(jo.get("txSum").toString()));
-        jo.put("blockNumber", Numeric.decodeQuantity(jo.get("blockNumber").toString()));
-        jo.put("failedTxSum", Numeric.decodeQuantity(jo.get("failedTxSum").toString()));
-        ConsoleUtils.printJson(jo.toJSONString());
+        TotalTransactionCountResult totalTransactionCountResult =
+                ObjectMapperFactory.getObjectMapper()
+                        .readValue(transactionCount, TotalTransactionCountResult.class);
+
+        TotalTransactionCountResult.InnerTotalTransactionCountResult
+                innerTotalTransactionCountResult =
+                        totalTransactionCountResult.new InnerTotalTransactionCountResult();
+        innerTotalTransactionCountResult.setBlockNumber(
+                Numeric.decodeQuantity(totalTransactionCountResult.getBlockNumber()));
+        innerTotalTransactionCountResult.setTxSum(
+                Numeric.decodeQuantity(totalTransactionCountResult.getTxSum()));
+
+        if (totalTransactionCountResult.getFailedTxSum() != null) {
+            innerTotalTransactionCountResult.setFailedTxSum(
+                    Numeric.decodeQuantity(totalTransactionCountResult.getFailedTxSum()));
+        }
+
+        ConsoleUtils.printJson(
+                ObjectMapperFactory.getObjectMapper()
+                        .writeValueAsString(innerTotalTransactionCountResult));
         System.out.println();
     }
 
