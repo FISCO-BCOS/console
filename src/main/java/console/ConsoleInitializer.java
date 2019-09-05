@@ -197,6 +197,11 @@ public class ConsoleInitializer {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
 
+            InputStream in = readAccountFile(p12Name);
+            if (null == in) {
+                return;
+            }
+
             System.out.print("Enter Export Password:");
             Console cons = System.console();
             char[] passwd = cons.readPassword();
@@ -204,7 +209,6 @@ public class ConsoleInitializer {
             P12Manager p12Manager = new P12Manager();
             p12Manager.setPassword(password);
 
-            InputStream in = readAccountFile(p12Name);
             try {
                 p12Manager.load(in, password);
             } catch (Exception e) {
