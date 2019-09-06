@@ -312,7 +312,8 @@ public class ContractImpl implements ContractFace {
                 return;
             }
             if (!StatusCode.Success.equals(receipt.getStatus())) {
-                System.out.println(StatusCode.getStatusMessage(receipt.getStatus()));
+                System.out.println(
+                        StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
                 System.out.println();
                 return;
             }
@@ -541,7 +542,8 @@ public class ContractImpl implements ContractFace {
                 return;
             }
             if (!StatusCode.Success.equals(receipt.getStatus())) {
-                System.out.println(StatusCode.getStatusMessage(receipt.getStatus()));
+                System.out.println(
+                        StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
                 System.out.println();
                 return;
             }
