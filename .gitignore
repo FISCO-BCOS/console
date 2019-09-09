@@ -41,3 +41,4 @@ gradle.properties
 build.gradle.bak
 .project
 .settings/**
+.classpath
