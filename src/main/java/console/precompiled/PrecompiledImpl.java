@@ -338,23 +338,25 @@ public class PrecompiledImpl implements PrecompiledFace {
                         throw new ConsoleMessageException(
                                 "Unknown field '" + entryField + "' in field list.");
                     }
-                    if (fieldsList.size() != entryFields.size()) {
-                        List<String> listString = new ArrayList<String>(fieldsList);
-                        for (String entryItem : entryFields) {
-                            listString.remove(entryItem);
-                        }
-                        StringBuilder strBuilder = new StringBuilder("Please provide field '");
-                        for (int i = 0; i < listString.size(); i++) {
-                            if (i == listString.size() - 1) {
-                                strBuilder.append(listString.get(i)).append("' ");
-                            } else {
-                                strBuilder.append(listString.get(i)).append("', '");
-                            }
-                        }
-                        strBuilder.append("in field list.");
-                        throw new ConsoleMessageException(strBuilder.toString());
-                    }
                 }
+
+                if (fieldsList.size() != entryFields.size()) {
+                    List<String> listString = new ArrayList<String>(fieldsList);
+                    for (String entryItem : entryFields) {
+                        listString.remove(entryItem);
+                    }
+                    StringBuilder strBuilder = new StringBuilder("Please provide field '");
+                    for (int i = 0; i < listString.size(); i++) {
+                        if (i == listString.size() - 1) {
+                            strBuilder.append(listString.get(i)).append("' ");
+                        } else {
+                            strBuilder.append(listString.get(i)).append("', '");
+                        }
+                    }
+                    strBuilder.append("in field list.");
+                    throw new ConsoleMessageException(strBuilder.toString());
+                }
+
                 String keyValue = entry.get(keyName);
                 if (keyValue == null) {
                     throw new ConsoleMessageException(
