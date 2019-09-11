@@ -1,6 +1,7 @@
 package console;
 
 import console.common.Common;
+import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
@@ -14,6 +15,7 @@ import java.io.Console;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
@@ -114,6 +116,14 @@ public class ConsoleInitializer {
                     "Failed to connect to the node. Please check the node status and the console configuration.");
             close();
         }
+
+        try {
+            ContractClassFactory.initClassLoad();
+        } catch (MalformedURLException e) {
+            System.out.println("Failed to init class load, " + e.getMessage());
+            close();
+        }
+
         channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
         channelEthereumService.setTimeout(60000);
