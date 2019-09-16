@@ -43,6 +43,16 @@ public class ContractClassFactory {
     public static final String PACKAGE_NAME = "temp";
     public static final String TAR_GET_CLASSPATH = "contracts/console/java/classes/";
     public static final String SOL_POSTFIX = ".sol";
+    private static URLClassLoader classLoader;
+
+    public static void initClassLoad() throws MalformedURLException {
+        File clazzPath = new File(TAR_GET_CLASSPATH);
+        if (clazzPath.exists() && clazzPath.isDirectory()) {
+            URL[] urls = new URL[1];
+            urls[0] = clazzPath.toURI().toURL();
+            classLoader = new URLClassLoader(urls);
+        }
+    }
 
     public static Class<?> compileContract(String name) throws Exception {
         try {
@@ -132,9 +142,6 @@ public class ContractClassFactory {
         File clazzPath = new File(TAR_GET_CLASSPATH);
 
         if (clazzPath.exists() && clazzPath.isDirectory()) {
-            URL[] urls = new URL[1];
-            urls[0] = clazzPath.toURI().toURL();
-            URLClassLoader classLoader = new URLClassLoader(urls);
 
             int clazzPathLen = clazzPath.getAbsolutePath().length() + 1;
 
@@ -183,6 +190,13 @@ public class ContractClassFactory {
             int num)
             throws IllegalAccessException, InvocationTargetException, ConsoleMessageException {
         Method method = ContractClassFactory.getDeployFunction(contractClass);
+        if (method == null) {
+            throw new ConsoleMessageException(
+                    "The method constructor with "
+                            + contractClass.getName()
+                            + " is undefined of the contract.");
+        }
+
         Type[] classType = method.getParameterTypes();
         if (classType.length - 3 != params.length - num) {
             throw new ConsoleMessageException(
@@ -249,8 +263,8 @@ public class ContractClassFactory {
             } else if (type[i + 3] == BigInteger.class) {
                 try {
                     BigInteger param = new BigInteger(params[i]);
-                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) == 1
-                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) == -1) {
+                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) > 0
+                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) < 0) {
                         throw new ConsoleMessageException(
                                 "The "
                                         + (i + 1)
@@ -411,8 +425,8 @@ public class ContractClassFactory {
             } else if (type[i] == BigInteger.class) {
                 try {
                     BigInteger param = new BigInteger(params[i]);
-                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) == 1
-                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) == -1) {
+                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) > 0
+                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) < 0) {
                         throw new ConsoleMessageException(
                                 "The "
                                         + (i + 1)
