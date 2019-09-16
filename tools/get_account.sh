@@ -120,7 +120,7 @@ main()
 		rm ${output_path}/ecprivkey.pem
         LOG_INFO "Account Address   : 0x${accountAddress}"
         LOG_INFO "Private Key (p12) : ${output_path}/0x${accountAddress}.p12"
-		LOG_INFO "Public  Key (p12) : ${output_path}/0x${accountAddress}.public.pem"
+		LOG_INFO "Public  Key (p12) : ${output_path}/0x${accountAddress}.public.p12"
     fi
     # LOG_INFO "Private Key (hex) : 0x${privKey}"
     # echo "0x${pubKey}" > ${output_path}/${accountAddress}.public.hex
