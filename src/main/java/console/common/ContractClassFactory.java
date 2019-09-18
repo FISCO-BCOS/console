@@ -47,11 +47,13 @@ public class ContractClassFactory {
 
     public static void initClassLoad() throws MalformedURLException {
         File clazzPath = new File(TAR_GET_CLASSPATH);
-        if (clazzPath.exists() && clazzPath.isDirectory()) {
-            URL[] urls = new URL[1];
-            urls[0] = clazzPath.toURI().toURL();
-            classLoader = new URLClassLoader(urls);
+        if (!clazzPath.exists()) {
+            clazzPath.mkdirs();
         }
+
+        URL[] urls = new URL[1];
+        urls[0] = clazzPath.toURI().toURL();
+        classLoader = new URLClassLoader(urls);
     }
 
     public static Class<?> compileContract(String name) throws Exception {
