@@ -31,6 +31,7 @@ contract Entry {
     
     function set(string, int) public;
     function set(string, string) public;
+    function set(string, address) public;
 }
 
 //record sets

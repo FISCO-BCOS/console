@@ -1,6 +1,7 @@
 package console;
 
 import console.common.Common;
+import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
@@ -12,7 +13,11 @@ import console.web3j.Web3jFace;
 import console.web3j.Web3jImpl;
 import java.io.Console;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -111,6 +116,14 @@ public class ConsoleInitializer {
                     "Failed to connect to the node. Please check the node status and the console configuration.");
             close();
         }
+
+        try {
+            ContractClassFactory.initClassLoad();
+        } catch (MalformedURLException e) {
+            System.out.println("Failed to init class load, " + e.getMessage());
+            close();
+        }
+
         channelEthereumService = new ChannelEthereumService();
         channelEthereumService.setChannelService(service);
         channelEthereumService.setTimeout(60000);
@@ -170,34 +183,57 @@ public class ConsoleInitializer {
         if ("-pem".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String pemName = args[2];
-            pemName = handlPemFileName(pemName);
             PEMManager pem = new PEMManager();
-            pem.setPemFile("classpath:" + pemName);
+
+            InputStream in = readAccountFile(pemName);
             try {
-                pem.load();
+                pem.load(in);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 close();
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
             }
+
             ECKeyPair keyPair = pem.getECKeyPair();
             credentials = Credentials.create(keyPair);
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
-            p12Name = handleP12FileName(p12Name);
+
+            InputStream in = readAccountFile(p12Name);
+            if (null == in) {
+                return;
+            }
+
             System.out.print("Enter Export Password:");
             Console cons = System.console();
             char[] passwd = cons.readPassword();
             String password = new String(passwd);
             P12Manager p12Manager = new P12Manager();
             p12Manager.setPassword(password);
-            p12Manager.setP12File("classpath:" + p12Name);
+
             try {
-                p12Manager.load();
+                p12Manager.load(in, password);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 close();
+            } finally {
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        System.out.println(e.getMessage());
+                    }
+                }
             }
+
             ECKeyPair keyPair;
             try {
                 keyPair = p12Manager.getECKeyPair();
@@ -216,30 +252,19 @@ public class ConsoleInitializer {
         }
     }
 
-    private String handlPemFileName(String pemName) {
-        if (pemName.startsWith(ACCOUNT_DIR1)) {
-            pemName = pemName.substring(ACCOUNT_DIR1.length());
-        }
-        if (pemName.startsWith(ACCOUNT_DIR2)) {
-            pemName = pemName.substring(ACCOUNT_DIR2.length());
-        }
-        if (!pemName.endsWith(".pem")) {
-            pemName = pemName + ".pem";
-        }
-        return pemName;
-    }
+    private InputStream readAccountFile(String fileName) {
 
-    private String handleP12FileName(String p12Name) {
-        if (p12Name.startsWith(ACCOUNT_DIR1)) {
-            p12Name = p12Name.substring(ACCOUNT_DIR1.length());
+        try {
+            return Files.newInputStream(Paths.get(fileName));
+        } catch (IOException e) {
+            System.out.println(
+                    "["
+                            + Paths.get(fileName).toAbsolutePath()
+                            + "]"
+                            + " cannot be opened because it does not exist.");
+            close();
         }
-        if (p12Name.startsWith(ACCOUNT_DIR2)) {
-            p12Name = p12Name.substring(ACCOUNT_DIR2.length());
-        }
-        if (!p12Name.endsWith(".p12")) {
-            p12Name = p12Name + ".p12";
-        }
-        return p12Name;
+        return null;
     }
 
     private void useDefaultCredentials()

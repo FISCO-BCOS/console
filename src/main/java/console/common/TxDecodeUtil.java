@@ -25,26 +25,29 @@ public class TxDecodeUtil {
 
     public static AbiAndBin readAbiAndBin(String contractName) throws IOException {
         String tempName = ContractClassFactory.removeSolPostfix(contractName);
-        BufferedReader abiReader =
-                new BufferedReader(
-                        new FileReader(ContractClassFactory.ABI_PATH + tempName + ".abi"));
-        BufferedReader binReader =
-                new BufferedReader(
-                        new FileReader(ContractClassFactory.BIN_PATH + tempName + ".bin"));
-        StringBuilder abiBuilder = new StringBuilder();
-        StringBuilder binBuilder = new StringBuilder();
-        String abiStr = "";
-        while ((abiStr = abiReader.readLine()) != null) {
-            abiBuilder.append(abiStr);
+
+        try (BufferedReader abiReader =
+                        new BufferedReader(
+                                new FileReader(ContractClassFactory.ABI_PATH + tempName + ".abi"));
+                BufferedReader binReader =
+                        new BufferedReader(
+                                new FileReader(
+                                        ContractClassFactory.BIN_PATH + tempName + ".bin")); ) {
+            StringBuilder abiBuilder = new StringBuilder();
+            StringBuilder binBuilder = new StringBuilder();
+            String abiStr = "";
+            while ((abiStr = abiReader.readLine()) != null) {
+                abiBuilder.append(abiStr);
+            }
+            String binStr = "";
+            while ((binStr = binReader.readLine()) != null) {
+                binBuilder.append(binStr);
+            }
+            AbiAndBin abiAndBin = new AbiAndBin();
+            abiAndBin.setAbi(abiBuilder.toString());
+            abiAndBin.setBin(binBuilder.toString());
+            return abiAndBin;
         }
-        String binStr = "";
-        while ((binStr = binReader.readLine()) != null) {
-            binBuilder.append(binStr);
-        }
-        AbiAndBin abiAndBin = new AbiAndBin();
-        abiAndBin.setAbi(abiBuilder.toString());
-        abiAndBin.setBin(binBuilder.toString());
-        return abiAndBin;
     }
 
     public static void decodeInput(AbiAndBin abiAndBin, String input)
@@ -78,6 +81,9 @@ public class TxDecodeUtil {
                 transactionDecoder.decodeOutputReturnObject(
                         receipt.getInput(), receipt.getOutput());
         List<ResultEntity> resultList = result.getResult();
+        if (resultList.isEmpty()) {
+            return;
+        }
         ConsoleUtils.singleLine();
         System.out.println("Output ");
         StringBuilder resultType = new StringBuilder();

@@ -19,7 +19,7 @@ public class Common {
     public static final String EMPTY_CONTRACT_ADDRESS =
             "0x0000000000000000000000000000000000000000";
     public static final String EMPTY_OUTPUT = "0x";
-    public static final int TxGasLimitMin = 10000;
+    public static final int TxGasLimitMin = 100000;
 
     public static int PermissionCode = 0;
     public static int TableExist = 0;

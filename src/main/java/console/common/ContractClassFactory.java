@@ -43,13 +43,25 @@ public class ContractClassFactory {
     public static final String PACKAGE_NAME = "temp";
     public static final String TAR_GET_CLASSPATH = "contracts/console/java/classes/";
     public static final String SOL_POSTFIX = ".sol";
+    private static URLClassLoader classLoader;
+
+    public static void initClassLoad() throws MalformedURLException {
+        File clazzPath = new File(TAR_GET_CLASSPATH);
+        if (!clazzPath.exists()) {
+            clazzPath.mkdirs();
+        }
+
+        URL[] urls = new URL[1];
+        urls[0] = clazzPath.toURI().toURL();
+        classLoader = new URLClassLoader(urls);
+    }
 
     public static Class<?> compileContract(String name) throws Exception {
         try {
             name = removeSolPostfix(name);
             dynamicCompileSolFilesToJava(name);
-        } catch (IOException e) {
-            throw new IOException(e.getMessage());
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
         try {
             dynamicCompileJavaToClass(name);
@@ -104,7 +116,7 @@ public class ContractClassFactory {
             if (compileResult != 0) {
                 System.err.println("compile failed!!");
                 System.out.println();
-                return;
+                throw new Exception("compile failed, solidity file: " + name);
             }
         }
     }
@@ -132,9 +144,6 @@ public class ContractClassFactory {
         File clazzPath = new File(TAR_GET_CLASSPATH);
 
         if (clazzPath.exists() && clazzPath.isDirectory()) {
-            URL[] urls = new URL[1];
-            urls[0] = clazzPath.toURI().toURL();
-            URLClassLoader classLoader = new URLClassLoader(urls);
 
             int clazzPathLen = clazzPath.getAbsolutePath().length() + 1;
 
@@ -183,6 +192,13 @@ public class ContractClassFactory {
             int num)
             throws IllegalAccessException, InvocationTargetException, ConsoleMessageException {
         Method method = ContractClassFactory.getDeployFunction(contractClass);
+        if (method == null) {
+            throw new ConsoleMessageException(
+                    "The method constructor with "
+                            + contractClass.getName()
+                            + " is undefined of the contract.");
+        }
+
         Type[] classType = method.getParameterTypes();
         if (classType.length - 3 != params.length - num) {
             throw new ConsoleMessageException(
@@ -249,8 +265,8 @@ public class ContractClassFactory {
             } else if (type[i + 3] == BigInteger.class) {
                 try {
                     BigInteger param = new BigInteger(params[i]);
-                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) == 1
-                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) == -1) {
+                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) > 0
+                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) < 0) {
                         throw new ConsoleMessageException(
                                 "The "
                                         + (i + 1)
@@ -379,6 +395,7 @@ public class ContractClassFactory {
         }
         Object[] obj = new Object[params.length];
         for (int i = 0; i < obj.length; i++) {
+
             if (type[i] == String.class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
                     try {
@@ -410,8 +427,8 @@ public class ContractClassFactory {
             } else if (type[i] == BigInteger.class) {
                 try {
                     BigInteger param = new BigInteger(params[i]);
-                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) == 1
-                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) == -1) {
+                    if (param.compareTo(new BigInteger(Integer.MAX_VALUE + "")) > 0
+                            || param.compareTo(new BigInteger(Integer.MIN_VALUE + "")) < 0) {
                         throw new ConsoleMessageException(
                                 "The "
                                         + (i + 1)
@@ -439,13 +456,8 @@ public class ContractClassFactory {
                 }
             } else if (type[i] == byte[].class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    byte[] bytes2 = params[i].substring(1, params[i].length() - 1).getBytes();
-                    byte[] bytes1 = new byte[32];
-
-                    for (int j = 0; j < bytes2.length; j++) {
-                        bytes1[j] = bytes2[j];
-                    }
-                    obj[i] = bytes1;
+                    byte[] bytes = params[i].substring(1, params[i].length() - 1).getBytes();
+                    obj[i] = bytes;
                 } else {
                     System.out.println("Please provide double quote for byte String.");
                     System.out.println();
@@ -476,12 +488,7 @@ public class ContractClassFactory {
                                 if (ilist[j].startsWith("\"") && ilist[j].endsWith("\"")) {
                                     byte[] bytes =
                                             ilist[j].substring(1, ilist[j].length() - 1).getBytes();
-                                    byte[] bytes1 = new byte[32];
-                                    byte[] bytes2 = bytes;
-                                    for (int k = 0; k < bytes2.length; k++) {
-                                        bytes1[k] = bytes2[k];
-                                    }
-                                    paramsList.add(bytes1);
+                                    paramsList.add(bytes);
                                 }
                             }
                         }
