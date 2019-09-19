@@ -9,7 +9,7 @@ English / [中文](doc/README_CN.md)
 [![GitHub All Releases](https://img.shields.io/github/downloads/FISCO-BCOS/console/total.svg)](https://github.com/FISCO-BCOS/console)
 ---
 
-The console is an important interactive client tool of [FISCO BCOS 2.0](https://fisco-bcos-documentation.readthedocs.io/en/latest/). The console has a wealth of commands, including querying blockchain status, managing blockchain nodes, deploying and invoking contracts. 
+The console is an important interactive client tool of [FISCO BCOS 2.0+](https://fisco-bcos-documentation.readthedocs.io/en/latest/). The console has a wealth of commands, including querying blockchain status, managing blockchain nodes, deploying and invoking contracts. 
 
 ## Features
 
