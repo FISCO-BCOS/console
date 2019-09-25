@@ -60,6 +60,11 @@ calculate_address_pem()
 {
     local pem_file=$1
     local no_print="$2"
+    local suffix=${pem_file##*.}
+    if [[ "${suffix}" != "pem" ]];then
+        echo "The suffix of ${pem_file} is not pem. Please check it."
+        exit 1
+    fi
     prepare_keccak256
     privKey=$(openssl ec -in ${pem_file} -text -noout 2>/dev/null| sed -n '3,5p' | tr -d ": \n" | awk '{print $0}')
     pubKey=$(openssl ec -in ${pem_file} -text -noout 2>/dev/null| sed -n '7,11p' | tr -d ": \n" | awk '{print substr($0,3);}')
@@ -71,6 +76,11 @@ calculate_address_pkcs12()
 {
     local p12_file=$1
     local pem_file="/tmp/.tmp.pem"
+    local suffix=${p12_file##*.}
+    if [[ "${suffix}" != "p12" && "${suffix}" != "pfx" ]];then
+        echo "The suffix of ${p12_file} is neither p12 nor pfx. Please check it."
+        exit 1
+    fi
     openssl pkcs12 -in ${p12_file} -out ${pem_file} -nodes
     calculate_address_pem ${pem_file}
     rm ${pem_file}
@@ -102,13 +112,15 @@ main()
         LOG_INFO "Account Address   : 0x${accountAddress}"
         LOG_INFO "Private Key (pem) : ${output_path}/0x${accountAddress}.pem"
         # echo "0x${privKey}" > ${output_path}/${accountAddress}.private.hex
-        # openssl ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/${accountAddress}.public.pem 2>/dev/null
-        # LOG_INFO "Public  Key (pem) : ${output_path}/${accountAddress}.publick.pem"
+        openssl ec -in ${output_path}/0x${accountAddress}.pem -pubout -out ${output_path}/0x${accountAddress}.public.pem 2>/dev/null
+        LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.public.pem"
     else
-        openssl pkcs12 -export -name key -nocerts -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/0x${accountAddress}.p12" # -passout "pass:${pkcs12_passwd}"
-        rm ${output_path}/ecprivkey.pem
+        openssl pkcs12 -export -name key -nocerts -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/0x${accountAddress}.p12" || $(rm ${output_path}/0x${accountAddress}.p12 && rm ${output_path}/ecprivkey.pem && exit 1)
+        openssl ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/0x${accountAddress}.public.p12 2>/dev/null
+		rm ${output_path}/ecprivkey.pem
         LOG_INFO "Account Address   : 0x${accountAddress}"
         LOG_INFO "Private Key (p12) : ${output_path}/0x${accountAddress}.p12"
+		LOG_INFO "Public  Key (p12) : ${output_path}/0x${accountAddress}.public.p12"
     fi
     # LOG_INFO "Private Key (hex) : 0x${privKey}"
     # echo "0x${pubKey}" > ${output_path}/${accountAddress}.public.hex
