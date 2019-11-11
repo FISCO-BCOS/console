@@ -43,9 +43,8 @@ public class ContractClassFactory {
     public static final String PACKAGE_NAME = "temp";
     public static final String TAR_GET_CLASSPATH = "contracts/console/java/classes/";
     public static final String SOL_POSTFIX = ".sol";
-    private static URLClassLoader classLoader;
 
-    public static void initClassLoad() throws MalformedURLException {
+    public static URLClassLoader initClassLoad() throws MalformedURLException {
         File clazzPath = new File(TAR_GET_CLASSPATH);
         if (!clazzPath.exists()) {
             clazzPath.mkdirs();
@@ -53,7 +52,9 @@ public class ContractClassFactory {
 
         URL[] urls = new URL[1];
         urls[0] = clazzPath.toURI().toURL();
-        classLoader = new URLClassLoader(urls);
+
+        URLClassLoader classLoader = new URLClassLoader(urls);
+        return classLoader;
     }
 
     public static Class<?> compileContract(String name) throws Exception {
@@ -173,6 +174,7 @@ public class ContractClassFactory {
                         className = className.replace(File.separatorChar, '.');
 
                         if (contractName.equals(className)) {
+                            URLClassLoader classLoader = initClassLoad();
                             return Class.forName(className, true, classLoader);
                         }
                     }
