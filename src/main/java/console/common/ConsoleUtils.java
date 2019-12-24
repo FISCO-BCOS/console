@@ -140,7 +140,7 @@ public class ConsoleUtils {
         } else {
             address.setValid(true);
             if (addressStr.startsWith("0x")) {
-                if (!addressStr.substring(2, addressStr.length()).matches("^[a-f0-9]+$")) {
+                if (!addressStr.substring(2, addressStr.length()).matches("^[a-fA-F0-9]+$")) {
                     address.setValid(false);
                     address.setAddress(addressStr);
                 } else {
