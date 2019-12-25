@@ -28,7 +28,8 @@ check.dependsOn.remove(verifyGoogleJavaFormat)
 // In this section you declare the dependencies for your production and test code
 dependencies {
     // compile group: "org.fisco-bcos", name: "web3sdk", version: "2.0.31-SNAPSHOT", changing: true
-	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.2.0.111500-SNAPSHOT'
+	compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.2.0.1226-SNAPSHOT'
+    compile group: 'commons-codec', name:'commons-codec', version:'1.10'
     compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.25'
     compile group: 'org.jline', name: 'jline', version: '3.12.0'
     compile group: 'io.bretty', name: 'console-table-builder', version: '1.2'
