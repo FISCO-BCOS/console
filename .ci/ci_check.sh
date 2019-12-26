@@ -10,6 +10,7 @@ echo "127.0.0.1:4 agency1 1,2,3" > ipconf
 ./nodes/127.0.0.1/start_all.sh
 cp nodes/127.0.0.1/sdk/* src/main/resources/
 mv src/main/resources/applicationContext-sample.xml src/main/resources/applicationContext.xml
+ls -lt src/main/resources/*
 ./gradlew verifyGoogleJavaFormat
 ./gradlew build
 ./gradlew test
