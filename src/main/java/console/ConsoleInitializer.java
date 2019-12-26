@@ -112,8 +112,7 @@ public class ConsoleInitializer {
         try {
             service.run();
         } catch (Exception e) {
-            System.out.println(
-                    "Failed to connect to the node. Please check the node status and the console configuration.");
+            System.out.println("Failed to init the console！ " + e.getMessage());
             close();
         }
 
@@ -315,10 +314,7 @@ public class ConsoleInitializer {
             service.run();
             groupID = toGroupID;
         } catch (Exception e) {
-            System.out.println(
-                    "Switch to group "
-                            + toGroupID
-                            + " failed! Please check the node status and the console configuration.");
+            System.out.println("Switch to group " + toGroupID + " failed! " + e.getMessage());
             System.out.println();
             service.setGroupId(groupID);
             try {
