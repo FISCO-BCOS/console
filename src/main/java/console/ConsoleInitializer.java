@@ -303,10 +303,10 @@ public class ConsoleInitializer {
         int toGroupID = 1;
         try {
             toGroupID = Integer.parseInt(groupIDStr);
-            if (toGroupID <= 0) {
+            if (toGroupID <= 0 || toGroupID > Common.MaxGroupID) {
                 System.out.println(
                         "Please provide group ID by positive integer mode, "
-                                + Common.PositiveIntegerRange
+                                + Common.GroupIDRange
                                 + ".");
                 System.out.println();
                 return;
@@ -314,7 +314,7 @@ public class ConsoleInitializer {
         } catch (NumberFormatException e) {
             System.out.println(
                     "Please provide group ID by positive integer mode, "
-                            + Common.PositiveIntegerRange
+                            + Common.GroupIDRange
                             + ".");
             System.out.println();
             return;
@@ -333,6 +333,7 @@ public class ConsoleInitializer {
             try {
                 service.run();
             } catch (Exception e1) {
+                logger.error(" message: {}, e: {}", e1.getMessage(), e1);
             }
             return;
         }
@@ -354,17 +355,17 @@ public class ConsoleInitializer {
     private int setGroupID(String groupIDStr) {
         try {
             groupID = Integer.parseInt(groupIDStr);
-            if (groupID <= 0 || groupID > Integer.MAX_VALUE) {
+            if (groupID <= 0 || groupID > Common.MaxGroupID) {
                 System.out.println(
                         "Please provide groupID by non-negative integer mode, "
-                                + Common.NonNegativeIntegerRange
+                                + Common.GroupIDRange
                                 + ".");
                 close();
             }
         } catch (NumberFormatException e) {
             System.out.println(
                     "Please provide groupID by non-negative integer mode, "
-                            + Common.NonNegativeIntegerRange
+                            + Common.GroupIDRange
                             + ".");
             close();
         }
