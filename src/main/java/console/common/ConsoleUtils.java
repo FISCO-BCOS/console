@@ -19,8 +19,12 @@ import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
 import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
 import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsoleUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleUtils.class);
 
     public static final String SOLIDITY_PATH = "contracts/solidity/";
     public static final String JAVA_PATH = "contracts/sdk/java/";
@@ -193,6 +197,7 @@ public class ConsoleUtils {
                     "\nCompile solidity contract files to java contract files successfully!");
         } catch (IOException e) {
             System.out.print(e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
     }
 

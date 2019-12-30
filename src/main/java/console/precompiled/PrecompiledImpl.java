@@ -26,8 +26,12 @@ import org.fisco.bcos.web3j.precompile.crud.EnumOP;
 import org.fisco.bcos.web3j.precompile.crud.Table;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PrecompiledImpl implements PrecompiledFace {
+
+    private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
 
     private Web3j web3j;
     private Credentials credentials;
@@ -260,6 +264,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -298,6 +303,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -391,6 +397,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -447,6 +454,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -483,6 +491,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
