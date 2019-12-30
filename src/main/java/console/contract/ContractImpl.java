@@ -166,7 +166,7 @@ public class ContractImpl implements ContractFace {
         } catch (IOException e) {
             System.out.println(e.getMessage());
             System.out.println();
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         }
     }

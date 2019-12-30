@@ -197,7 +197,7 @@ public class ConsoleUtils {
                     "\nCompile solidity contract files to java contract files successfully!");
         } catch (IOException e) {
             System.out.print(e.getMessage());
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
     }
 

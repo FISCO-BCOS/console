@@ -264,7 +264,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -303,7 +303,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -397,7 +397,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -454,7 +454,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -491,7 +491,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             System.out.println();
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");

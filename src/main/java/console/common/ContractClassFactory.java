@@ -65,7 +65,7 @@ public class ContractClassFactory {
             name = removeSolPostfix(name);
             dynamicCompileSolFilesToJava(name);
         } catch (Exception e) {
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             throw new Exception(e.getMessage());
         }
         try {
@@ -427,7 +427,7 @@ public class ContractClassFactory {
                                     + funcName
                                     + " needs boolean value.");
                     System.out.println();
-                    logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                    logger.error(" message: {}, e: {}", e.getMessage(), e);
                     return null;
                 }
             } else if (type[i] == BigInteger.class) {
@@ -500,7 +500,7 @@ public class ContractClassFactory {
                         }
                         obj[i] = paramsList;
                     } catch (Exception e) {
-                        logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                        logger.error(" message: {}, e: {}", e.getMessage(), e);
                         System.out.println(e.getMessage());
                     }
                 }

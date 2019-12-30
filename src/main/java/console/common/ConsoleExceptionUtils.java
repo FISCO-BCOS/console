@@ -33,7 +33,7 @@ public class ConsoleExceptionUtils {
         } catch (Exception e1) {
             System.out.println(e1.getMessage());
             System.out.println();
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e1.getMessage(), e1);
         }
     }
 }

@@ -116,7 +116,7 @@ public class ConsoleInitializer {
         try {
             service.run();
         } catch (Exception e) {
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             System.out.println("Failed to init the console！ " + e.getMessage());
             close();
         }
@@ -124,7 +124,7 @@ public class ConsoleInitializer {
         try {
             ContractClassFactory.initClassLoad();
         } catch (MalformedURLException e) {
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             System.out.println("Failed to init class load, " + e.getMessage());
             close();
         }
@@ -172,13 +172,13 @@ public class ConsoleInitializer {
                 System.out.println("Don't connect a removed node.");
             } else {
                 System.out.println(e.getMessage());
-                logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
             }
             close();
         } catch (Exception e) {
             System.out.println(
                     "Failed to connect to the node. Please check the node status and the console configuration.");
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             close();
         }
     }
@@ -197,7 +197,7 @@ public class ConsoleInitializer {
                 pem.load(in);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
                 close();
             } finally {
                 if (in != null) {
@@ -205,7 +205,7 @@ public class ConsoleInitializer {
                         in.close();
                     } catch (IOException e) {
                         System.out.println(e.getMessage());
-                        logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                        logger.error(" message: {}, e: {}", e.getMessage(), e);
                     }
                 }
             }
@@ -232,7 +232,7 @@ public class ConsoleInitializer {
                 p12Manager.load(in, password);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
-                logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
                 close();
             } finally {
                 if (in != null) {
@@ -240,7 +240,7 @@ public class ConsoleInitializer {
                         in.close();
                     } catch (IOException e) {
                         System.out.println(e.getMessage());
-                        logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                        logger.error(" message: {}, e: {}", e.getMessage(), e);
                     }
                 }
             }
@@ -327,7 +327,7 @@ public class ConsoleInitializer {
             groupID = toGroupID;
         } catch (Exception e) {
             System.out.println("Switch to group " + toGroupID + " failed! " + e.getMessage());
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             System.out.println();
             service.setGroupId(groupID);
             try {
@@ -379,7 +379,7 @@ public class ConsoleInitializer {
             System.exit(0);
         } catch (IOException e) {
             System.out.println(e.getMessage());
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
     }
 

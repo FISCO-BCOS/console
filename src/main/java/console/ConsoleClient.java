@@ -54,7 +54,7 @@ public class ConsoleClient {
             keymap.bind(new Reference("end-of-line"), "\033[4~");
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         }
 
@@ -292,7 +292,7 @@ public class ConsoleClient {
                 ConsoleUtils.printJson(
                         "{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
                 System.out.println();
-                logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
                 System.out.println(e.getMessage() + " does not exist.");
                 System.out.println();
@@ -313,7 +313,7 @@ public class ConsoleClient {
                             "The groupID is not configured in dist/conf/applicationContext.xml file.");
                 } else {
                     System.out.println(e.getMessage());
-                    logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                    logger.error(" message: {}, e: {}", e.getMessage(), e);
                 }
                 System.out.println();
             } catch (InvocationTargetException e) {
@@ -331,13 +331,13 @@ public class ConsoleClient {
                 } else {
                     System.out.println(e.getMessage());
                     System.out.println();
-                    logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                    logger.error(" message: {}, e: {}", e.getMessage(), e);
                 }
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println();
-                logger.warn(" message: {}, e: {}", e.getMessage(), e);
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
             }
         }
     }

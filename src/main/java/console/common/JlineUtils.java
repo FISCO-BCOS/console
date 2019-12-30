@@ -184,7 +184,7 @@ class ConsoleFilesCompleter extends FilesCompleter {
                     });
         } catch (IOException e) {
             System.out.println(e.getMessage());
-            logger.warn(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
     }
 }
