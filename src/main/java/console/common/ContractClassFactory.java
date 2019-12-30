@@ -33,8 +33,12 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.Log;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tuples.Tuple;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContractClassFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContractClassFactory.class);
 
     public static final String SOLIDITY_PATH = "contracts/solidity/";
     public static final String JAVA_PATH = "contracts/console/java/";
@@ -61,6 +65,7 @@ public class ContractClassFactory {
             name = removeSolPostfix(name);
             dynamicCompileSolFilesToJava(name);
         } catch (Exception e) {
+            logger.warn(" message: {}, e: {}", e.getMessage(), e);
             throw new Exception(e.getMessage());
         }
         try {
@@ -422,6 +427,7 @@ public class ContractClassFactory {
                                     + funcName
                                     + " needs boolean value.");
                     System.out.println();
+                    logger.warn(" message: {}, e: {}", e.getMessage(), e);
                     return null;
                 }
             } else if (type[i] == BigInteger.class) {
@@ -494,6 +500,7 @@ public class ContractClassFactory {
                         }
                         obj[i] = paramsList;
                     } catch (Exception e) {
+                        logger.warn(" message: {}, e: {}", e.getMessage(), e);
                         System.out.println(e.getMessage());
                     }
                 }

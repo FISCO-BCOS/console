@@ -38,8 +38,12 @@ import org.fisco.bcos.web3j.tx.Contract;
 import org.fisco.bcos.web3j.tx.exceptions.ContractCallException;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContractImpl implements ContractFace {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContractImpl.class);
 
     private int groupID;
     private Credentials credentials;
@@ -162,6 +166,7 @@ public class ContractImpl implements ContractFace {
         } catch (IOException e) {
             System.out.println(e.getMessage());
             System.out.println();
+            logger.warn(" message: {}, e: {}", e.getMessage(), e);
             return;
         }
     }

@@ -28,8 +28,12 @@ import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class StringsCompleterIgnoreCase implements Completer {
+
+    private static final Logger logger = LoggerFactory.getLogger(StringsCompleterIgnoreCase.class);
 
     protected final Collection<Candidate> candidates = new ArrayList<>();
 
@@ -75,6 +79,9 @@ class StringsCompleterIgnoreCase implements Completer {
 }
 
 class ConsoleFilesCompleter extends FilesCompleter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleFilesCompleter.class);
+
     public final String SOL_STR = ".sol";
     public final String TABLE_SOL = "Table.sol";
 
@@ -177,11 +184,14 @@ class ConsoleFilesCompleter extends FilesCompleter {
                     });
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            logger.warn(" message: {}, e: {}", e.getMessage(), e);
         }
     }
 }
 
 public class JlineUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
 
     public static LineReader getLineReader() throws IOException {
 

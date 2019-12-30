@@ -20,8 +20,12 @@ import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsoleClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleClient.class);
 
     private static Web3jFace web3jFace;
     private static PrecompiledFace precompiledFace;
@@ -50,6 +54,7 @@ public class ConsoleClient {
             keymap.bind(new Reference("end-of-line"), "\033[4~");
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            logger.warn(" message: {}, e: {}", e.getMessage(), e);
             return;
         }
 
@@ -287,6 +292,7 @@ public class ConsoleClient {
                 ConsoleUtils.printJson(
                         "{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
                 System.out.println();
+                logger.warn(" message: {}, e: {}", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
                 System.out.println(e.getMessage() + " does not exist.");
                 System.out.println();
@@ -307,6 +313,7 @@ public class ConsoleClient {
                             "The groupID is not configured in dist/conf/applicationContext.xml file.");
                 } else {
                     System.out.println(e.getMessage());
+                    logger.warn(" message: {}, e: {}", e.getMessage(), e);
                 }
                 System.out.println();
             } catch (InvocationTargetException e) {
@@ -324,10 +331,13 @@ public class ConsoleClient {
                 } else {
                     System.out.println(e.getMessage());
                     System.out.println();
+                    logger.warn(" message: {}, e: {}", e.getMessage(), e);
                 }
+
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println();
+                logger.warn(" message: {}, e: {}", e.getMessage(), e);
             }
         }
     }
