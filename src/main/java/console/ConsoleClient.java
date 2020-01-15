@@ -289,8 +289,9 @@ public class ConsoleClient {
                         break;
                 }
             } catch (ResponseExcepiton e) {
-                ConsoleUtils.printJson(
-                        "{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
+                /*ConsoleUtils.printJson(
+                "{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");*/
+                System.out.println(e.getMessage());
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
