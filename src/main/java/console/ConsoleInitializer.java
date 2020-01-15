@@ -23,12 +23,16 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.fisco.bcos.channel.client.P12Manager;
 import org.fisco.bcos.channel.client.PEMManager;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.crypto.gm.GenCredential;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
@@ -183,6 +187,28 @@ public class ConsoleInitializer {
         }
     }
 
+    private void checkAccountPrivateKey(ECParameterSpec ecParameterSpec, int encryptType) {
+        // int encryptType = 0; // 0:ECDSA 1:SM2
+        // sm2p256v1 secp256k1
+
+        String name = ((ECNamedCurveSpec) ecParameterSpec).getName();
+        boolean accountPrivateKeyMatch =
+                ((0 != EncryptType.encryptType) && name.contains("sm2"))
+                        || ((0 == EncryptType.encryptType) && name.contains("secp256k1"));
+
+        logger.info(" name: {}, encrypt: {}", name, encryptType);
+
+        if (!accountPrivateKeyMatch) {
+            if (0 == EncryptType.encryptType) {
+                throw new IllegalArgumentException(
+                        " Load SM2 private key while configuration is ECSDA");
+            } else {
+                throw new IllegalArgumentException(
+                        " Load ECSDA private key while configuration is SM2");
+            }
+        }
+    }
+
     private void handleAccountParam(String[] args)
             throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException,
                     InvalidKeySpecException, NoSuchProviderException,
@@ -212,6 +238,9 @@ public class ConsoleInitializer {
 
             ECKeyPair keyPair = pem.getECKeyPair();
             credentials = Credentials.create(keyPair);
+
+            checkAccountPrivateKey(
+                    ((ECPrivateKey) pem.getPrivateKey()).getParams(), EncryptType.encryptType);
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
@@ -253,6 +282,10 @@ public class ConsoleInitializer {
                 System.out.println("The name for p12 account is error.");
                 close();
             }
+
+            checkAccountPrivateKey(
+                    ((ECPrivateKey) p12Manager.getPrivateKey()).getParams(),
+                    EncryptType.encryptType);
         } else if ("-l".equals(args[1])) {
             groupID = setGroupID(args[0]);
             ConsoleClient.INPUT_FLAG = 1;
