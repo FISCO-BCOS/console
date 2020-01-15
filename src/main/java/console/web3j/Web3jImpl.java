@@ -12,13 +12,16 @@ import console.common.TxDecodeUtil;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosTransactionReceipt;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -429,17 +432,25 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-        String receiptStr = web3j.getTransactionReceipt(transactionHash).sendForReturnString();
-        if ("null".equals(receiptStr)) {
+
+        BcosTransactionReceipt bcosTransactionReceipt =
+                web3j.getTransactionReceipt(transactionHash).send();
+        TransactionReceipt receipt = bcosTransactionReceipt.getResult();
+
+        if (Objects.isNull(receipt) || Objects.isNull(receipt.getTransactionHash())) {
             System.out.println("This transaction hash doesn't exist.");
             System.out.println();
             return;
         }
-        ConsoleUtils.printJson(receiptStr);
+
+        if (!receipt.isStatusOK()) {
+            receipt.setMessage(
+                    StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
+        }
+
+        ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(receipt));
+
         if (params.length == 3) {
-            TransactionReceipt receipt =
-                    ObjectMapperFactory.getObjectMapper()
-                            .readValue(receiptStr, TransactionReceipt.class);
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(params[2]);
             String abi = abiAndBin.getAbi();
             if (!Common.EMPTY_CONTRACT_ADDRESS.equals(receipt.getTo())) {
