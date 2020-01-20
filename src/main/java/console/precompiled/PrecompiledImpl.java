@@ -13,13 +13,9 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
-import org.fisco.bcos.channel.protocol.ChannelPrococolExceiption;
-import org.fisco.bcos.fisco.EnumNodeVersion;
 import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.crypto.WalletUtils;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.precompile.config.SystemConfigService;
 import org.fisco.bcos.web3j.precompile.consensus.ConsensusService;
@@ -28,7 +24,6 @@ import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
 import org.fisco.bcos.web3j.precompile.crud.EnumOP;
 import org.fisco.bcos.web3j.precompile.crud.Table;
-import org.fisco.bcos.web3j.precompile.frozen.FrozenService;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.slf4j.Logger;
@@ -250,98 +245,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
-    @Override
-    public void frozenContract(String[] params) throws Exception {
-        checkVersionForFrozen();
-        if (params.length < 2) {
-            HelpInfo.promptHelp("frozenContract");
-            return;
-        }
-
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.frozenContractHelp();
-            return;
-        }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
-        }
-
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.frozen(address);
-        ConsoleUtils.printJson(result);
-    }
-
-    @Override
-    public void unfrozenContract(String[] params) throws Exception {
-        checkVersionForFrozen();
-        if (params.length < 2) {
-            HelpInfo.promptHelp("unfrozenContract");
-            return;
-        }
-
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.unfrozenContractHelp();
-            return;
-        }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
-        }
-
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.unfrozen(address);
-        ConsoleUtils.printJson(result);
-    }
-
-    @Override
-    public void killContract(String[] params) throws Exception {
-        checkVersionForFrozen();
-        if (params.length < 2) {
-            HelpInfo.promptHelp("killContract");
-            return;
-        }
-
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.killContractHelp();
-            return;
-        }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
-        }
-
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.kill(address);
-        ConsoleUtils.printJson(result);
-    }
-
-    @Override
-    public void queryContractStatus(String[] params) throws Exception {
-        checkVersionForFrozen();
-        if (params.length < 1) {
-            HelpInfo.promptHelp("queryContractStatus");
-            return;
-        }
-
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.queryContractStatusHelp();
-            return;
-        }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
-        }
-
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.queryStatus(address);
-        ConsoleUtils.printJson(result);
-    }
-
     private void checkVersionForCRUD() throws ConsoleMessageException {
         String version = PrecompiledCommon.BCOS_VERSION;
         if (version == null
@@ -349,28 +252,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                 || PrecompiledCommon.BCOS_RC2.equals(version)) {
             throw new ConsoleMessageException(
                     "The version 2.0.0-rc3 or above of FISCO-BCOS can support the command.");
-        }
-    }
-
-    private void checkVersionForFrozen() throws ConsoleMessageException {
-
-        String version = PrecompiledCommon.BCOS_VERSION;
-
-        if (Objects.isNull(version)) {
-            throw new ConsoleMessageException("The version of the node is unknown");
-        }
-
-        try {
-            final EnumNodeVersion.Version classVersion = EnumNodeVersion.getClassVersion(version);
-
-            /*if (!((classVersion.getMajor() == 2) && classVersion.getMinor() >= 3)) {
-                throw new ConsoleMessageException(
-                        "The version below 2.3.0 of FISCO-BCOS not support the command.");
-            }*/
-
-        } catch (ChannelPrococolExceiption channelPrococolExceiption) {
-            logger.debug(" exception: {} ", channelPrococolExceiption.getMessage());
-            throw new ConsoleMessageException("The version of the node is unknown.");
         }
     }
 

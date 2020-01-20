@@ -31,13 +31,4 @@ public interface PrecompiledFace {
     void select(String sql) throws Exception;
 
     void desc(String[] params) throws Exception;
-
-    // FrozenPrecompiled
-    void frozenContract(String[] params) throws Exception;
-
-    void unfrozenContract(String[] params) throws Exception;
-
-    void killContract(String[] params) throws Exception;
-
-    void queryContractStatus(String[] params) throws Exception;
 }
