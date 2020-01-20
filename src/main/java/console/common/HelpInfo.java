@@ -89,6 +89,18 @@ public class HelpInfo {
             case "listSysConfigManager":
                 listSysConfigManagerHelp();
                 break;
+            case "frozenContract":
+                frozenContractHelp();
+                break;
+            case "unfrozenContract":
+                unfrozenContractHelp();
+                break;
+            case "killContract":
+                killContractHelp();
+                break;
+            case "queryContractStatus":
+                queryContractStatusHelp();
+                break;
             case "quit":
             case "q":
                 quitHelp();
@@ -102,6 +114,34 @@ public class HelpInfo {
     public static void help() {
         System.out.println("Provide help information.");
         System.out.println("Usage: help");
+        System.out.println();
+    }
+
+    public static void frozenContractHelp() {
+        System.out.println("Frozen the contract.");
+        System.out.println("Usage: frozenContract contractAddress");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
+        System.out.println();
+    }
+
+    public static void unfrozenContractHelp() {
+        System.out.println("Unfrozen the contract.");
+        System.out.println("Usage: unfrozenContract contractAddress");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
+        System.out.println();
+    }
+
+    public static void killContractHelp() {
+        System.out.println("Kill the contract.");
+        System.out.println("Usage: killContract contractAddress");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
+        System.out.println();
+    }
+
+    public static void queryContractStatusHelp() {
+        System.out.println("Query the status of the contract.");
+        System.out.println("Usage: queryContractStatus contractAddress");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println();
     }
 
