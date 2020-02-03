@@ -573,7 +573,10 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getSystemConfigByKeyHelp();
             return;
         }
-        if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
+        if (Common.TxCountLimit.equals(key)
+                || Common.TxGasLimit.equals(key)
+                || Common.RPBFTEpochSize.equals(key)
+                || Common.RPBFTRotatingInterval.equals(key)) {
             String value = web3j.getSystemConfigByKey(key).sendForReturnString();
             System.out.println(value);
         } else {
