@@ -295,6 +295,16 @@ public class JlineUtils {
                             new StringsCompleter(command),
                             new StringsCompleter(Common.TxGasLimit),
                             new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.RPBFTEpochSize),
+                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.RPBFTRotatingInterval),
+                            new StringsCompleterIgnoreCase()));
         }
 
         Terminal terminal =
