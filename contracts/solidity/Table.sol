@@ -1,56 +1,66 @@
 contract TableFactory {
-    function openTable(string) public constant returns (Table); //open table
-    function createTable(string,string,string) public constant returns(int); //create table
+    function openTable(string memory) public view returns (Table); //open table
+    function createTable(string, string, string) public returns (int256); //create table
 }
 
 //select condition
 contract Condition {
-    function EQ(string, int);
-    function EQ(string, string);
-    
-    function NE(string, int);
-    function NE(string, string);
+    function EQ(string, int256) public;
+    function EQ(string, string) public;
 
-    function GT(string, int);
-    function GE(string, int);
-    
-    function LT(string, int);
-    function LE(string, int);
-    
-    function limit(int);
-    function limit(int, int);
+    function NE(string, int256) public;
+    function NE(string, string) public;
+
+    function GT(string, int256) public;
+    function GE(string, int256) public;
+
+    function LT(string, int256) public;
+    function LE(string, int256) public;
+
+    function limit(int256) public;
+    function limit(int256, int256) public;
 }
 
-//one record 
+//one record
 contract Entry {
-    function getInt(string) public constant returns(int);
-    function getAddress(string) public constant returns(address);
-    function getBytes64(string) public constant returns(byte[64]);
-    function getBytes32(string) public constant returns(bytes32);
-    function getString(string) public constant returns(string);
-    
-    function set(string, int) public;
+    function getInt(string) public view returns (int256);
+    function getUInt(string) public view returns (int256);
+    function getAddress(string) public view returns (address);
+    function getBytes64(string) public view returns (bytes1[64]);
+    function getBytes32(string) public view returns (bytes32);
+    function getString(string) public view returns (string);
+
+    function set(string, int256) public;
+    function set(string, uint256) public;
     function set(string, string) public;
     function set(string, address) public;
 }
 
 //record sets
 contract Entries {
-    function get(int) public constant returns(Entry);
-    function size() public constant returns(int);
+    function get(int256) public view returns (Entry);
+    function size() public view returns (int256);
 }
 
 //Table main contract
 contract Table {
-    //select api
-    function select(string, Condition) public constant returns(Entries);
-    //insert api
-    function insert(string, Entry) public returns(int);
-    //update api
-    function update(string, Entry, Condition) public returns(int);
-    //remove api
-    function remove(string, Condition) public returns(int);
-    
-    function newEntry() public constant returns(Entry);
-    function newCondition() public constant returns(Condition);
+    function select(string, Condition) public view returns (Entries);
+    function insert(string, Entry) public returns (int256);
+    function update(string, Entry, Condition) public returns (int256);
+    function remove(string, Condition) public returns (int256);
+
+    function newEntry() public view returns (Entry);
+    function newCondition() public view returns (Condition);
+}
+
+contract KVTableFactory {
+    function openTable(string) public view returns (KVTable);
+    function createTable(string, string, string) public returns (int256);
+}
+
+//KVTable per permiary key has only one Entry
+contract KVTable {
+    function get(string) public view returns (bool, Entry);
+    function set(string, Entry) public returns (int256);
+    function newEntry() public view returns (Entry);
 }
