@@ -1,9 +1,9 @@
 package console.common;
 
-import static org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options.ABI;
-import static org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options.BIN;
-import static org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options.INTERFACE;
-import static org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler.Options.METADATA;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
 import console.exception.CompileSolidityException;
 import java.io.File;
@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
-import org.fisco.bcos.web3j.solidity.compiler.CompilationResult;
-import org.fisco.bcos.web3j.solidity.compiler.SolidityCompiler;
+import org.fisco.solc.compiler.CompilationResult;
+import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -230,22 +230,42 @@ public class ConsoleUtils {
                     continue;
                 }
             }
+
+            String contractName = solFile.getName().split("\\.")[0];
+            /** ecdsa compile */
             SolidityCompiler.Result res =
-                    SolidityCompiler.compile(solFile, true, ABI, BIN, INTERFACE, METADATA);
-            if ("".equals(res.output)) {
-                throw new CompileSolidityException("Compile error: " + res.errors);
+                    SolidityCompiler.compile(solFile, false, true, ABI, BIN, INTERFACE, METADATA);
+            if (res.isFailed()) {
+                throw new CompileSolidityException(" Compile error: " + res.getErrors());
             }
-            CompilationResult result = CompilationResult.parse(res.output);
-            String contractname = solFile.getName().split("\\.")[0];
-            CompilationResult.ContractMetadata a =
-                    result.getContract(solFile.getName().split("\\.")[0]);
-            FileUtils.writeStringToFile(new File(abiDir + contractname + ".abi"), a.abi);
-            FileUtils.writeStringToFile(new File(binDir + contractname + ".bin"), a.bin);
+
+            SolidityCompiler.Result smRes =
+                    SolidityCompiler.compile(solFile, true, true, ABI, BIN, INTERFACE, METADATA);
+            if (res.isFailed()) {
+                throw new CompileSolidityException(" SM Compile error: " + res.getErrors());
+            }
+
+            CompilationResult result = CompilationResult.parse(res.getOutput());
+            CompilationResult smResult = CompilationResult.parse(smRes.getOutput());
+
+            CompilationResult.ContractMetadata meta = result.getContract(contractName);
+            CompilationResult.ContractMetadata smMeta = smResult.getContract(contractName);
+
+            FileUtils.writeStringToFile(new File(abiDir + contractName + ".abi"), meta.abi);
+            FileUtils.writeStringToFile(new File(binDir + contractName + ".bin"), meta.bin);
+
+            FileUtils.writeStringToFile(
+                    new File(abiDir + "/sm/" + contractName + ".abi"), meta.abi);
+            FileUtils.writeStringToFile(
+                    new File(binDir + "/sm/" + contractName + ".bin"), meta.bin);
+
             String binFile;
+            String smBinFile;
             String abiFile;
-            String filename = contractname;
+            String filename = contractName;
             abiFile = abiDir + filename + ".abi";
             binFile = binDir + filename + ".bin";
+            smBinFile = abiDir + "/sm/" + filename + ".bin";
             SolidityFunctionWrapperGenerator.main(
                     Arrays.asList(
                                     "-a", abiFile,
