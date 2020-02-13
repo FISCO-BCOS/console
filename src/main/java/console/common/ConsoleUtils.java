@@ -265,11 +265,12 @@ public class ConsoleUtils {
             String filename = contractName;
             abiFile = abiDir + filename + ".abi";
             binFile = binDir + filename + ".bin";
-            smBinFile = abiDir + "/sm/" + filename + ".bin";
+            smBinFile = binDir + "/sm/" + filename + ".bin";
             SolidityFunctionWrapperGenerator.main(
                     Arrays.asList(
                                     "-a", abiFile,
                                     "-b", binFile,
+                                    "-s", smBinFile,
                                     "-p", packageName,
                                     "-o", tempDirPath)
                             .toArray(new String[0]));
