@@ -235,13 +235,13 @@ public class ConsoleUtils {
             /** ecdsa compile */
             SolidityCompiler.Result res =
                     SolidityCompiler.compile(solFile, false, true, ABI, BIN, INTERFACE, METADATA);
-            if (res.isFailed()) {
+            if (res.isFailed() || "".equals(res.getOutput())) {
                 throw new CompileSolidityException(" Compile error: " + res.getErrors());
             }
 
             SolidityCompiler.Result smRes =
                     SolidityCompiler.compile(solFile, true, true, ABI, BIN, INTERFACE, METADATA);
-            if (res.isFailed()) {
+            if (res.isFailed() || "".equals(res.getOutput())) {
                 throw new CompileSolidityException(" SM Compile error: " + res.getErrors());
             }
 
