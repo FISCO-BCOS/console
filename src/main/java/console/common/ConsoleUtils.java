@@ -235,13 +235,23 @@ public class ConsoleUtils {
             /** ecdsa compile */
             SolidityCompiler.Result res =
                     SolidityCompiler.compile(solFile, false, true, ABI, BIN, INTERFACE, METADATA);
+            logger.debug(
+                    " solidity compiler result, success: {}, output: {}, error: {}",
+                    !res.isFailed(),
+                    res.getOutput(),
+                    res.getErrors());
             if (res.isFailed() || "".equals(res.getOutput())) {
                 throw new CompileSolidityException(" Compile error: " + res.getErrors());
             }
 
             SolidityCompiler.Result smRes =
                     SolidityCompiler.compile(solFile, true, true, ABI, BIN, INTERFACE, METADATA);
-            if (res.isFailed() || "".equals(res.getOutput())) {
+            logger.debug(
+                    " sm solidity compiler result, success: {}, output: {}, error: {}",
+                    !smRes.isFailed(),
+                    smRes.getOutput(),
+                    smRes.getErrors());
+            if (smRes.isFailed() || "".equals(smRes.getOutput())) {
                 throw new CompileSolidityException(" SM Compile error: " + res.getErrors());
             }
 
@@ -255,9 +265,9 @@ public class ConsoleUtils {
             FileUtils.writeStringToFile(new File(binDir + contractName + ".bin"), meta.bin);
 
             FileUtils.writeStringToFile(
-                    new File(abiDir + "/sm/" + contractName + ".abi"), meta.abi);
+                    new File(abiDir + "/sm/" + contractName + ".abi"), smMeta.abi);
             FileUtils.writeStringToFile(
-                    new File(binDir + "/sm/" + contractName + ".bin"), meta.bin);
+                    new File(binDir + "/sm/" + contractName + ".bin"), smMeta.bin);
 
             String binFile;
             String smBinFile;
