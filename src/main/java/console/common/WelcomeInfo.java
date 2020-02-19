@@ -123,6 +123,7 @@ public class WelcomeInfo {
         sb.append("unfrozenContract                         Unfrozen the contract.\n");
         sb.append("killContract                             Kill the contract.\n");
         sb.append("queryContractStatus                      Query the status of the contract.\n");
+        sb.append("queryAuthority                           Query authority of the contract.\n");
         sb.append(
                 "switch(s)                                Switch to a specific group by group ID.\n");
         sb.append("[create sql]                             Create table by sql.\n");

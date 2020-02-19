@@ -40,4 +40,6 @@ public interface PrecompiledFace {
     void killContract(String[] params) throws Exception;
 
     void queryContractStatus(String[] params) throws Exception;
+
+    void queryAuthority(String[] params) throws Exception;
 }

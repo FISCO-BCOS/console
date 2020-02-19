@@ -101,6 +101,9 @@ public class HelpInfo {
             case "queryContractStatus":
                 queryContractStatusHelp();
                 break;
+            case "queryAuthority":
+                queryAuthorityHelp();
+                break;
             case "quit":
             case "q":
                 quitHelp();
@@ -141,6 +144,13 @@ public class HelpInfo {
     public static void queryContractStatusHelp() {
         System.out.println("Query the status of the contract.");
         System.out.println("Usage: queryContractStatus contractAddress");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
+        System.out.println();
+    }
+
+    public static void queryAuthorityHelp() {
+        System.out.println("Query the authority of the contract.");
+        System.out.println("Usage: queryAuthority contractAddress");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println();
     }

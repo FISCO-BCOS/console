@@ -248,6 +248,7 @@ public class JlineUtils {
                         "unfrozenContract",
                         "killContract",
                         "queryContractStatus",
+                        "queryAuthority",
                         "quit",
                         "exit",
                         "desc",

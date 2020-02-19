@@ -264,7 +264,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void frozenContract(String[] params) throws Exception {
         checkVersionForFrozen();
-        if (params.length < 2) {
+        if (params.length != 2) {
             HelpInfo.promptHelp("frozenContract");
             return;
         }
@@ -282,12 +282,13 @@ public class PrecompiledImpl implements PrecompiledFace {
         FrozenService frozenService = new FrozenService(web3j, credentials);
         String result = frozenService.frozen(address);
         ConsoleUtils.printJson(result);
+        System.out.println();
     }
 
     @Override
     public void unfrozenContract(String[] params) throws Exception {
         checkVersionForFrozen();
-        if (params.length < 2) {
+        if (params.length != 2) {
             HelpInfo.promptHelp("unfrozenContract");
             return;
         }
@@ -305,12 +306,13 @@ public class PrecompiledImpl implements PrecompiledFace {
         FrozenService frozenService = new FrozenService(web3j, credentials);
         String result = frozenService.unfrozen(address);
         ConsoleUtils.printJson(result);
+        System.out.println();
     }
 
     @Override
     public void killContract(String[] params) throws Exception {
         checkVersionForFrozen();
-        if (params.length < 2) {
+        if (params.length != 2) {
             HelpInfo.promptHelp("killContract");
             return;
         }
@@ -328,12 +330,13 @@ public class PrecompiledImpl implements PrecompiledFace {
         FrozenService frozenService = new FrozenService(web3j, credentials);
         String result = frozenService.kill(address);
         ConsoleUtils.printJson(result);
+        System.out.println();
     }
 
     @Override
     public void queryContractStatus(String[] params) throws Exception {
         checkVersionForFrozen();
-        if (params.length < 1) {
+        if (params.length != 2) {
             HelpInfo.promptHelp("queryContractStatus");
             return;
         }
@@ -351,6 +354,31 @@ public class PrecompiledImpl implements PrecompiledFace {
         FrozenService frozenService = new FrozenService(web3j, credentials);
         String result = frozenService.queryStatus(address);
         ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void queryAuthority(String[] params) throws Exception {
+        checkVersionForFrozen();
+        if (params.length != 2) {
+            HelpInfo.promptHelp("queryAuthority");
+            return;
+        }
+
+        String address = params[1];
+        if ("-h".equals(address) || "--help".equals(address)) {
+            HelpInfo.queryContractStatusHelp();
+            return;
+        }
+
+        if (!WalletUtils.isValidAddress(address)) {
+            throw new ConsoleMessageException(address + " not invalid address.");
+        }
+
+        FrozenService frozenService = new FrozenService(web3j, credentials);
+        String result = frozenService.queryAuthority(address);
+        ConsoleUtils.printJson(result);
+        System.out.println();
     }
 
     private void checkVersionForCRUD() throws ConsoleMessageException {
