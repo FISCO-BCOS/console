@@ -238,6 +238,8 @@ public class ContractImpl implements ContractFace {
                 System.out.println();
                 System.out.println(stringBuilder.toString());
             }
+        } catch (Exception e) {
+            logger.error(" load {} failed, e: {}", Common.ContractLogFileName, e);
         } finally {
             reader.close();
         }
