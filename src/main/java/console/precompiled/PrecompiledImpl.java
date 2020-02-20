@@ -402,14 +402,14 @@ public class PrecompiledImpl implements PrecompiledFace {
         try {
             final EnumNodeVersion.Version classVersion = EnumNodeVersion.getClassVersion(version);
 
-            /*if (!((classVersion.getMajor() == 2) && classVersion.getMinor() >= 3)) {
+            if (!((classVersion.getMajor() == 2) && classVersion.getMinor() >= 3)) {
                 throw new ConsoleMessageException(
-                        "The version below 2.3.0 of FISCO-BCOS not support the command.");
-            }*/
+                        "The fisco-bcos node version below 2.3.0 not support the command.");
+            }
 
         } catch (ChannelPrococolExceiption channelPrococolExceiption) {
             logger.debug(" exception: {} ", channelPrococolExceiption.getMessage());
-            throw new ConsoleMessageException("The version of the node is unknown.");
+            throw new ConsoleMessageException(" The fisco-bcos node version is unknown.");
         }
     }
 
