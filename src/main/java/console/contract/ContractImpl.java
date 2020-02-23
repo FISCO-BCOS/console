@@ -215,7 +215,8 @@ public class ContractImpl implements ContractFace {
         try {
             while ((line = reader.readLine()) != null) {
                 String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
-                if (("[group:" + groupID + "]").equals(contractInfos[2])) {
+                if ((contractInfos.length > 2)
+                        && ("[group:" + groupID + "]").equals(contractInfos[2])) {
                     textList.add(line);
                 }
             }
