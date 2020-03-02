@@ -153,15 +153,15 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
-                || Common.RPBFTEpochSize.equals(key)
-                || Common.RPBFTRotatingInterval.equals(key)) {
+                || Common.RPBFTEpochSealerNum.equals(key)
+                || Common.RPBFTEpochBlockNum.equals(key)) {
             String valueStr = params[2];
             int value = 1;
             try {
                 value = Integer.parseInt(valueStr);
                 if (Common.TxCountLimit.equals(key)
-                        || Common.RPBFTEpochSize.equals(key)
-                        || Common.RPBFTRotatingInterval.equals(key)) {
+                        || Common.RPBFTEpochSealerNum.equals(key)
+                        || Common.RPBFTEpochBlockNum.equals(key)) {
                     if (value <= 0) {
                         System.out.println(
                                 "Please provide value by positive integer mode, "
@@ -186,8 +186,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                 ConsoleUtils.printJson(result);
             } catch (NumberFormatException e) {
                 if (Common.TxCountLimit.equals(key)
-                        || Common.RPBFTEpochSize.equals(key)
-                        || Common.RPBFTRotatingInterval.equals(key)) {
+                        || Common.RPBFTEpochSealerNum.equals(key)
+                        || Common.RPBFTEpochBlockNum.equals(key)) {
                     System.out.println(
                             "Please provide value by positive integer mode, "
                                     + Common.PositiveIntegerRange
@@ -208,9 +208,9 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + " or "
                             + Common.TxGasLimit
                             + " or "
-                            + Common.RPBFTEpochSize
+                            + Common.RPBFTEpochSealerNum
                             + " or "
-                            + Common.RPBFTRotatingInterval
+                            + Common.RPBFTEpochBlockNum
                             + " .");
         }
         System.out.println();

@@ -7,8 +7,8 @@ public class Common {
     // SystemConfig key
     public static final String TxCountLimit = "tx_count_limit";
     public static final String TxGasLimit = "tx_gas_limit";
-    public static final String RPBFTEpochSize = "rpbft_epoch_size";
-    public static final String RPBFTRotatingInterval = "rpbft_rotating_interval";
+    public static final String RPBFTEpochSealerNum = "rpbft_epoch_sealer_num";
+    public static final String RPBFTEpochBlockNum = "rpbft_epoch_block_num";
 
     public static final int InvalidReturnNumber = -100;
     public static final int QueryLogCount = 20;
