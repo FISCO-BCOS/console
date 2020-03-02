@@ -575,8 +575,8 @@ public class Web3jImpl implements Web3jFace {
         }
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
-                || Common.RPBFTEpochSize.equals(key)
-                || Common.RPBFTRotatingInterval.equals(key)) {
+                || Common.RPBFTEpochSealerNum.equals(key)
+                || Common.RPBFTEpochBlockNum.equals(key)) {
             String value = web3j.getSystemConfigByKey(key).sendForReturnString();
             System.out.println(value);
         } else {

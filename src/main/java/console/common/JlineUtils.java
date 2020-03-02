@@ -299,12 +299,12 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.RPBFTEpochSize),
+                            new StringsCompleter(Common.RPBFTEpochSealerNum),
                             new StringsCompleterIgnoreCase()));
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.RPBFTRotatingInterval),
+                            new StringsCompleter(Common.RPBFTEpochBlockNum),
                             new StringsCompleterIgnoreCase()));
         }
 
