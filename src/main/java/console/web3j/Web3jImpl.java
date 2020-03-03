@@ -578,6 +578,9 @@ public class Web3jImpl implements Web3jFace {
                 || Common.RPBFTEpochSealerNum.equals(key)
                 || Common.RPBFTEpochBlockNum.equals(key)) {
             String value = web3j.getSystemConfigByKey(key).sendForReturnString();
+            if (Common.RPBFTEpochSealerNum.equals(key) || Common.RPBFTEpochBlockNum.equals(key)) {
+                System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
+            }
             System.out.println(value);
         } else {
             System.out.println(

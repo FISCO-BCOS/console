@@ -183,6 +183,10 @@ public class PrecompiledImpl implements PrecompiledFace {
                 SystemConfigService systemConfigSerivce =
                         new SystemConfigService(web3j, credentials);
                 String result = systemConfigSerivce.setValueByKey(key, value + "");
+                if (Common.RPBFTEpochSealerNum.equals(key)
+                        || Common.RPBFTEpochBlockNum.equals(key)) {
+                    System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
+                }
                 ConsoleUtils.printJson(result);
             } catch (NumberFormatException e) {
                 if (Common.TxCountLimit.equals(key)
