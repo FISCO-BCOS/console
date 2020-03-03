@@ -3,11 +3,15 @@ package console.precompiled.permission;
 import console.common.Address;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
+import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
 import java.util.List;
+import org.fisco.bcos.channel.protocol.ChannelPrococolExceiption;
+import org.fisco.bcos.fisco.EnumNodeVersion;
 import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
 import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
@@ -429,6 +433,124 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
         List<PermissionInfo> permissions = permissionTableService.listSysConfigManager();
         printPermissionInfo(permissions);
+    }
+
+    private void checkVersionForGrantWrite() throws ConsoleMessageException {
+        String version = PrecompiledCommon.BCOS_VERSION;
+        try {
+            final EnumNodeVersion.Version classVersion = EnumNodeVersion.getClassVersion(version);
+
+            return;
+
+        } catch (ChannelPrococolExceiption channelPrococolExceiption) {
+            throw new ConsoleMessageException(" The fisco-bcos node version is unknown.");
+        }
+    }
+
+    @Override
+    public void queryWritePermission(String[] params) throws Exception {
+        checkVersionForGrantWrite();
+
+        if (params.length < 2) {
+            HelpInfo.promptHelp("queryWritePermission");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("queryWritePermission");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.revokeSysConfigManagerHelp();
+            return;
+        }
+
+        String address = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(address);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+        address = convertAddr.getAddress();
+
+        PermissionService permissionTableService = new PermissionService(web3j, credentials);
+        List<PermissionInfo> permissions = permissionTableService.queryPermission(address);
+        printPermissionInfo(permissions);
+    }
+
+    @Override
+    public void grantWritePermission(String[] params) throws Exception {
+        checkVersionForGrantWrite();
+
+        if ((params.length > 1) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
+            HelpInfo.grantWritePermissionHelp();
+            return;
+        }
+
+        if (params.length < 3) {
+            HelpInfo.promptHelp("grantWritePermission");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("grantWritePermission");
+            return;
+        }
+
+        String contractAddress = params[1];
+        String userAddress = params[2];
+        Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+        contractAddress = convertAddr.getAddress();
+
+        Address convertUserAddr = ConsoleUtils.convertAddress(userAddress);
+        if (!convertUserAddr.isValid()) {
+            return;
+        }
+        userAddress = convertUserAddr.getAddress();
+
+        PermissionService permission = new PermissionService(web3j, credentials);
+        String result = permission.grantWrite(contractAddress, userAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void revokeWritePermission(String[] params) throws Exception {
+        checkVersionForGrantWrite();
+
+        if ((params.length > 1) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
+            HelpInfo.revokeWritePermissionHelp();
+            return;
+        }
+
+        if (params.length < 3) {
+            HelpInfo.promptHelp("revokeWritePermission");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("revokeWritePermission");
+            return;
+        }
+
+        String contractAddress = params[1];
+        String userAddress = params[2];
+        Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+        contractAddress = convertAddr.getAddress();
+
+        Address convertUserAddr = ConsoleUtils.convertAddress(userAddress);
+        if (!convertUserAddr.isValid()) {
+            return;
+        }
+        userAddress = convertUserAddr.getAddress();
+
+        PermissionService permission = new PermissionService(web3j, credentials);
+        String result = permission.revokeWrite(contractAddress, userAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
     }
 
     private void printPermissionInfo(List<PermissionInfo> permissionInfos) {

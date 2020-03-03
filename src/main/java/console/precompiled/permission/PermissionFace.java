@@ -44,4 +44,10 @@ public interface PermissionFace {
     void revokeSysConfigManager(String[] params) throws Exception;
 
     void listSysConfigManager(String[] params) throws Exception;
+
+    void queryWritePermission(String[] params) throws Exception;
+
+    void grantWritePermission(String[] params) throws Exception;
+
+    void revokeWritePermission(String[] params) throws Exception;
 }

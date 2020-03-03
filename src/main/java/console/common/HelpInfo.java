@@ -89,6 +89,15 @@ public class HelpInfo {
             case "listSysConfigManager":
                 listSysConfigManagerHelp();
                 break;
+            case "queryWritePermission":
+                queryWritePermissionHelp();
+                break;
+            case "grantWritePermission":
+                grantWritePermissionHelp();
+                break;
+            case "revokeWritePermission":
+                revokeWritePermissionHelp();
+                break;
             case "frozenContract":
                 frozenContractHelp();
                 break;
@@ -548,6 +557,29 @@ public class HelpInfo {
     public static void listSysConfigManagerHelp() {
         System.out.println("Query permisson information for system configuration.");
         System.out.println("Usage: listSysConfigManager");
+        System.out.println();
+    }
+
+    public static void queryWritePermissionHelp() {
+        System.out.println("Query write permisson information by address.");
+        System.out.println("Usage: queryWritePermission");
+        System.out.println("address -- 20 Bytes - The address of a tx.origin.");
+        System.out.println();
+    }
+
+    public static void grantWritePermissionHelp() {
+        System.out.println("Grant write permisson information by address.");
+        System.out.println("Usage: grantWritePermission");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
+        System.out.println("userAddress -- 20 Bytes - The address of a tx.origin.");
+        System.out.println();
+    }
+
+    public static void revokeWritePermissionHelp() {
+        System.out.println("Revoke write permisson information by address.");
+        System.out.println("Usage: remokeWritePermission");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
+        System.out.println("userAddress -- 20 Bytes - The address of a tx.origin.");
         System.out.println();
     }
 
