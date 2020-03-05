@@ -448,15 +448,15 @@ public class PermissionImpl implements PermissionFace {
     }
 
     @Override
-    public void queryWritePermission(String[] params) throws Exception {
+    public void listWritePermission(String[] params) throws Exception {
         checkVersionForGrantWrite();
 
         if (params.length < 2) {
-            HelpInfo.promptHelp("queryWritePermission");
+            HelpInfo.promptHelp("listWritePermission");
             return;
         }
         if (params.length > 2) {
-            HelpInfo.promptHelp("queryWritePermission");
+            HelpInfo.promptHelp("listWritePermission");
             return;
         }
 

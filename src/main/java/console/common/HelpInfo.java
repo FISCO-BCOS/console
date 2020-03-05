@@ -89,8 +89,8 @@ public class HelpInfo {
             case "listSysConfigManager":
                 listSysConfigManagerHelp();
                 break;
-            case "queryWritePermission":
-                queryWritePermissionHelp();
+            case "listWritePermission":
+                listWritePermissionHelp();
                 break;
             case "grantWritePermission":
                 grantWritePermissionHelp();
@@ -560,9 +560,9 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void queryWritePermissionHelp() {
+    public static void listWritePermissionHelp() {
         System.out.println("Query write permisson information by address.");
-        System.out.println("Usage: queryWritePermission");
+        System.out.println("Usage: listWritePermission");
         System.out.println("address -- 20 Bytes - The address of a tx.origin.");
         System.out.println();
     }

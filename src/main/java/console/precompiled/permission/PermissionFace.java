@@ -45,7 +45,7 @@ public interface PermissionFace {
 
     void listSysConfigManager(String[] params) throws Exception;
 
-    void queryWritePermission(String[] params) throws Exception;
+    void listWritePermission(String[] params) throws Exception;
 
     void grantWritePermission(String[] params) throws Exception;
 
