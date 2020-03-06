@@ -89,14 +89,14 @@ public class HelpInfo {
             case "listSysConfigManager":
                 listSysConfigManagerHelp();
                 break;
-            case "listWritePermission":
-                listWritePermissionHelp();
+            case "listContractWritePermission":
+                listContractWritePermissionHelp();
                 break;
-            case "grantWritePermission":
-                grantWritePermissionHelp();
+            case "grantContractWritePermission":
+                grantContractWritePermissionHelp();
                 break;
-            case "revokeWritePermission":
-                revokeWritePermissionHelp();
+            case "revokeContractWritePermission":
+                revokeContractWritePermissionHelp();
                 break;
             case "frozenContract":
                 frozenContractHelp();
@@ -560,22 +560,22 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void listWritePermissionHelp() {
+    public static void listContractWritePermissionHelp() {
         System.out.println("Query write permisson information by address.");
-        System.out.println("Usage: listWritePermission");
+        System.out.println("Usage: listContractWritePermission");
         System.out.println("address -- 20 Bytes - The address of a tx.origin.");
         System.out.println();
     }
 
-    public static void grantWritePermissionHelp() {
+    public static void grantContractWritePermissionHelp() {
         System.out.println("Grant write permisson information by address.");
-        System.out.println("Usage: grantWritePermission");
+        System.out.println("Usage: grantContractWritePermission");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("userAddress -- 20 Bytes - The address of a tx.origin.");
         System.out.println();
     }
 
-    public static void revokeWritePermissionHelp() {
+    public static void revokeContractWritePermissionHelp() {
         System.out.println("Revoke write permisson information by address.");
         System.out.println("Usage: remokeWritePermission");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");

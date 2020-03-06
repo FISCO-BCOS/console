@@ -448,15 +448,15 @@ public class PermissionImpl implements PermissionFace {
     }
 
     @Override
-    public void listWritePermission(String[] params) throws Exception {
+    public void listContractWritePermission(String[] params) throws Exception {
         checkVersionForGrantWrite();
 
         if (params.length < 2) {
-            HelpInfo.promptHelp("listWritePermission");
+            HelpInfo.promptHelp("listContractWritePermission");
             return;
         }
         if (params.length > 2) {
-            HelpInfo.promptHelp("listWritePermission");
+            HelpInfo.promptHelp("listContractWritePermission");
             return;
         }
 
@@ -478,20 +478,20 @@ public class PermissionImpl implements PermissionFace {
     }
 
     @Override
-    public void grantWritePermission(String[] params) throws Exception {
+    public void grantContractWritePermission(String[] params) throws Exception {
         checkVersionForGrantWrite();
 
         if ((params.length > 1) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
-            HelpInfo.grantWritePermissionHelp();
+            HelpInfo.grantContractWritePermissionHelp();
             return;
         }
 
         if (params.length < 3) {
-            HelpInfo.promptHelp("grantWritePermission");
+            HelpInfo.promptHelp("grantContractWritePermission");
             return;
         }
         if (params.length > 3) {
-            HelpInfo.promptHelp("grantWritePermission");
+            HelpInfo.promptHelp("grantContractWritePermission");
             return;
         }
 
@@ -516,20 +516,20 @@ public class PermissionImpl implements PermissionFace {
     }
 
     @Override
-    public void revokeWritePermission(String[] params) throws Exception {
+    public void revokeContractWritePermission(String[] params) throws Exception {
         checkVersionForGrantWrite();
 
         if ((params.length > 1) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
-            HelpInfo.revokeWritePermissionHelp();
+            HelpInfo.revokeContractWritePermissionHelp();
             return;
         }
 
         if (params.length < 3) {
-            HelpInfo.promptHelp("revokeWritePermission");
+            HelpInfo.promptHelp("revokeContractWritePermission");
             return;
         }
         if (params.length > 3) {
-            HelpInfo.promptHelp("revokeWritePermission");
+            HelpInfo.promptHelp("revokeContractWritePermission");
             return;
         }
 

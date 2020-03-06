@@ -119,6 +119,12 @@ public class WelcomeInfo {
                 "revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
         sb.append(
                 "revokeUserTableManager                   Revoke permission for user table by table name and address.\n");
+        sb.append(
+                "listContractWritePermission              Query the account list which have write permission of the contract.\n");
+        sb.append(
+                "grantContractWritePermission             Grant the account the contract write permission.\n");
+        sb.append(
+                "revokeContractWritePermission            Revoke the account the contract write permission.\n");
         sb.append("frozenContract                           Frozen the contract.\n");
         sb.append("unfrozenContract                         Unfrozen the contract.\n");
         sb.append("killContract                             Kill the contract.\n");
