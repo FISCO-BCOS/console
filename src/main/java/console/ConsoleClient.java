@@ -283,14 +283,14 @@ public class ConsoleClient {
                     case "listSysConfigManager":
                         permissionFace.listSysConfigManager(params);
                         break;
-                    case "queryWritePermission":
-                        permissionFace.queryWritePermission(params);
+                    case "listContractWritePermission":
+                        permissionFace.listContractWritePermission(params);
                         break;
-                    case "grantWritePermission":
-                        permissionFace.grantWritePermission(params);
+                    case "grantContractWritePermission":
+                        permissionFace.grantContractWritePermission(params);
                         break;
-                    case "revokeWritePermission":
-                        permissionFace.revokeWritePermission(params);
+                    case "revokeContractWritePermission":
+                        permissionFace.revokeContractWritePermission(params);
                         break;
                     case "frozenContract":
                         precompiledFace.frozenContract(params);
