@@ -71,6 +71,7 @@ public class ContractClassFactory {
         try {
             dynamicCompileJavaToClass(name);
         } catch (Exception e1) {
+            logger.error(" name: {}, error: {}", name, e1);
             throw new Exception("Compile " + name + ".java failed.");
         }
         String contractName = PACKAGE_NAME + "." + name;
