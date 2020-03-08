@@ -440,7 +440,10 @@ public class PermissionImpl implements PermissionFace {
         try {
             final EnumNodeVersion.Version classVersion = EnumNodeVersion.getClassVersion(version);
 
-            return;
+            if (!((classVersion.getMajor() == 2) && classVersion.getMinor() >= 3)) {
+                throw new ConsoleMessageException(
+                        "The fisco-bcos node version below 2.3.0 not support the command.");
+            }
 
         } catch (ChannelPrococolExceiption channelPrococolExceiption) {
             throw new ConsoleMessageException(" The fisco-bcos node version is unknown.");
