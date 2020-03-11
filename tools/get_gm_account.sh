@@ -135,6 +135,7 @@ main()
         ${TASSL_CMD} ec -in ${output_path}/0x${accountAddress}.pem -pubout -out ${output_path}/0x${accountAddress}.public.pem 2>/dev/null
         LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.public.pem"
     else
+        LOG_INFO "Note: the entered password cannot contain Chinese characters!"
         ${TASSL_CMD} pkcs12 -export -name key -nocerts -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/0x${accountAddress}.p12" 2>/dev/null || $(rm ${output_path}/0x${accountAddress}.p12 && rm ${output_path}/ecprivkey.pem && exit 1)
         ${TASSL_CMD} ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/0x${accountAddress}.public.p12 2>/dev/null
 		rm ${output_path}/ecprivkey.pem
