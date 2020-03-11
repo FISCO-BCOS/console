@@ -292,20 +292,23 @@ public class ConsoleClient {
                     case "revokeContractWritePermission":
                         permissionFace.revokeContractWritePermission(params);
                         break;
-                    case "frozenContract":
-                        precompiledFace.frozenContract(params);
+                    case "freezeContract":
+                        precompiledFace.freezeContract(params);
                         break;
-                    case "unfrozenContract":
-                        precompiledFace.unfrozenContract(params);
+                    case "unfreezeContract":
+                        precompiledFace.unfreezeContract(params);
                         break;
-                    case "killContract":
-                        precompiledFace.killContract(params);
+                    case "destroyContract":
+                        precompiledFace.destroyContract(params);
                         break;
-                    case "queryContractStatus":
-                        precompiledFace.queryContractStatus(params);
+                    case "grantContractStatusManager":
+                        precompiledFace.grantContractStatusManager(params);
                         break;
-                    case "queryAuthority":
-                        precompiledFace.queryAuthority(params);
+                    case "getContractStatus":
+                        precompiledFace.getContractStatus(params);
+                        break;
+                    case "listContractStatusManager":
+                        precompiledFace.listContractStatusManager(params);
                         break;
                     default:
                         System.out.println(

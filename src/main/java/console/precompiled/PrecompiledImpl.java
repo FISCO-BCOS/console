@@ -28,7 +28,7 @@ import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
 import org.fisco.bcos.web3j.precompile.crud.EnumOP;
 import org.fisco.bcos.web3j.precompile.crud.Table;
-import org.fisco.bcos.web3j.precompile.frozen.FrozenService;
+import org.fisco.bcos.web3j.precompile.csm.ContractStatusService;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.slf4j.Logger;
@@ -266,16 +266,16 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void frozenContract(String[] params) throws Exception {
-        checkVersionForFrozen();
+    public void freezeContract(String[] params) throws Exception {
+        checkVersionForContractStatusService();
         if (params.length != 2) {
-            HelpInfo.promptHelp("frozenContract");
+            HelpInfo.promptHelp("freezeContract");
             return;
         }
 
         String address = params[1];
         if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.frozenContractHelp();
+            HelpInfo.freezeContractHelp();
             return;
         }
 
@@ -283,23 +283,23 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " not invalid address.");
         }
 
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.frozen(address);
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.freeze(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
 
     @Override
-    public void unfrozenContract(String[] params) throws Exception {
-        checkVersionForFrozen();
+    public void unfreezeContract(String[] params) throws Exception {
+        checkVersionForContractStatusService();
         if (params.length != 2) {
-            HelpInfo.promptHelp("unfrozenContract");
+            HelpInfo.promptHelp("unfreezeContract");
             return;
         }
 
         String address = params[1];
         if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.unfrozenContractHelp();
+            HelpInfo.unfreezeContractHelp();
             return;
         }
 
@@ -307,23 +307,23 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " not invalid address.");
         }
 
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.unfrozen(address);
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.unfreeze(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
 
     @Override
-    public void killContract(String[] params) throws Exception {
-        checkVersionForFrozen();
+    public void destroyContract(String[] params) throws Exception {
+        checkVersionForContractStatusService();
         if (params.length != 2) {
-            HelpInfo.promptHelp("killContract");
+            HelpInfo.promptHelp("destroyContract");
             return;
         }
 
         String address = params[1];
         if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.killContractHelp();
+            HelpInfo.destroyContractHelp();
             return;
         }
 
@@ -331,47 +331,50 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " not invalid address.");
         }
 
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.kill(address);
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.destroy(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
 
     @Override
-    public void queryContractStatus(String[] params) throws Exception {
-        checkVersionForFrozen();
-        if (params.length != 2) {
-            HelpInfo.promptHelp("queryContractStatus");
+    public void grantContractStatusManager(String[] params) throws Exception {
+        if (params.length != 3) {
+            HelpInfo.promptHelp("grantContractStatusManager");
             return;
         }
 
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.queryContractStatusHelp();
+        String contractAddr = params[1];
+        if ("-h".equals(contractAddr) || "--help".equals(contractAddr)) {
+            HelpInfo.grantContractStatusManagerHelp();
             return;
         }
 
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
+        String userAddr = params[2];
+        if (!WalletUtils.isValidAddress(contractAddr)) {
+            throw new ConsoleMessageException(contractAddr + " not invalid address.");
+        }
+        if (!WalletUtils.isValidAddress(userAddr)) {
+            throw new ConsoleMessageException(userAddr + " not invalid address.");
         }
 
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.queryStatus(address);
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.grantManager(contractAddr, userAddr);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
 
     @Override
-    public void queryAuthority(String[] params) throws Exception {
-        checkVersionForFrozen();
+    public void getContractStatus(String[] params) throws Exception {
+        checkVersionForContractStatusService();
         if (params.length != 2) {
-            HelpInfo.promptHelp("queryAuthority");
+            HelpInfo.promptHelp("getContractStatus");
             return;
         }
 
         String address = params[1];
         if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.queryContractStatusHelp();
+            HelpInfo.getContractStatusHelp();
             return;
         }
 
@@ -379,8 +382,32 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " not invalid address.");
         }
 
-        FrozenService frozenService = new FrozenService(web3j, credentials);
-        String result = frozenService.queryAuthority(address);
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.getStatus(address);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void listContractStatusManager(String[] params) throws Exception {
+        checkVersionForContractStatusService();
+        if (params.length != 2) {
+            HelpInfo.promptHelp("listContractStatusManager");
+            return;
+        }
+
+        String address = params[1];
+        if ("-h".equals(address) || "--help".equals(address)) {
+            HelpInfo.listContractStatusManagerHelp();
+            return;
+        }
+
+        if (!WalletUtils.isValidAddress(address)) {
+            throw new ConsoleMessageException(address + " not invalid address.");
+        }
+
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.listManager(address);
         ConsoleUtils.printJson(result);
         System.out.println();
     }
@@ -395,7 +422,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
-    private void checkVersionForFrozen() throws ConsoleMessageException {
+    private void checkVersionForContractStatusService() throws ConsoleMessageException {
 
         String version = PrecompiledCommon.BCOS_VERSION;
 

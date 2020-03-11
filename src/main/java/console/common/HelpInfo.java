@@ -98,20 +98,23 @@ public class HelpInfo {
             case "revokeContractWritePermission":
                 revokeContractWritePermissionHelp();
                 break;
-            case "frozenContract":
-                frozenContractHelp();
+            case "freezeContract":
+                freezeContractHelp();
                 break;
-            case "unfrozenContract":
-                unfrozenContractHelp();
+            case "unfreezeContract":
+                unfreezeContractHelp();
                 break;
-            case "killContract":
-                killContractHelp();
+            case "destroyContract":
+                destroyContractHelp();
                 break;
-            case "queryContractStatus":
-                queryContractStatusHelp();
+            case "grantContractStatusManager":
+                grantContractStatusManagerHelp();
                 break;
-            case "queryAuthority":
-                queryAuthorityHelp();
+            case "listContractStatusManager":
+                listContractStatusManagerHelp();
+                break;
+            case "getContractStatus":
+                getContractStatusHelp();
                 break;
             case "quit":
             case "q":
@@ -129,37 +132,45 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void frozenContractHelp() {
-        System.out.println("Frozen the contract.");
-        System.out.println("Usage: frozenContract contractAddress");
+    public static void freezeContractHelp() {
+        System.out.println("Freeze the contract.");
+        System.out.println("Usage: freezeContract contractAddress");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println();
     }
 
-    public static void unfrozenContractHelp() {
-        System.out.println("Unfrozen the contract.");
-        System.out.println("Usage: unfrozenContract contractAddress");
+    public static void unfreezeContractHelp() {
+        System.out.println("Unfreeze the contract.");
+        System.out.println("Usage: unfreezeContract contractAddress");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println();
     }
 
-    public static void killContractHelp() {
-        System.out.println("Kill the contract.");
-        System.out.println("Usage: killContract contractAddress");
+    public static void destroyContractHelp() {
+        System.out.println("Destroy the contract.");
+        System.out.println("Usage: destroyContract contractAddress");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println();
     }
 
-    public static void queryContractStatusHelp() {
-        System.out.println("Query the status of the contract.");
-        System.out.println("Usage: queryContractStatus contractAddress");
+    public static void grantContractStatusManagerHelp() {
+        System.out.println("Grant contract authorization to the user.");
+        System.out.println("Usage: destroyContract contractAddress userAddress");
+        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
+        System.out.println("userAddress -- 20 Bytes - The address of a tx.origin.");
+        System.out.println();
+    }
+
+    public static void getContractStatusHelp() {
+        System.out.println("Get the status of the contract.");
+        System.out.println("Usage: getContractStatus contractAddress");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println();
     }
 
-    public static void queryAuthorityHelp() {
-        System.out.println("Query the authority of the contract.");
-        System.out.println("Usage: queryAuthority contractAddress");
+    public static void listContractStatusManagerHelp() {
+        System.out.println("List the authorization of the contract.");
+        System.out.println("Usage: listContractStatusManager contractAddress");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println();
     }
