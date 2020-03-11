@@ -115,6 +115,7 @@ main()
         openssl ec -in ${output_path}/0x${accountAddress}.pem -pubout -out ${output_path}/0x${accountAddress}.public.pem 2>/dev/null
         LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.public.pem"
     else
+        LOG_INFO "Note: the entered password cannot contain Chinese characters!"
         openssl pkcs12 -export -name key -nocerts -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/0x${accountAddress}.p12" || $(rm ${output_path}/0x${accountAddress}.p12 && rm ${output_path}/ecprivkey.pem && exit 1)
         openssl ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/0x${accountAddress}.public.p12 2>/dev/null
 		rm ${output_path}/ecprivkey.pem
