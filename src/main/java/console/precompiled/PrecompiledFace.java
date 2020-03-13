@@ -32,14 +32,16 @@ public interface PrecompiledFace {
 
     void desc(String[] params) throws Exception;
 
-    // FrozenPrecompiled
-    void frozenContract(String[] params) throws Exception;
+    // ContractStatusPrecompiled
+    void freezeContract(String[] params) throws Exception;
 
-    void unfrozenContract(String[] params) throws Exception;
+    void unfreezeContract(String[] params) throws Exception;
 
-    void killContract(String[] params) throws Exception;
+    void destroyContract(String[] params) throws Exception;
 
-    void queryContractStatus(String[] params) throws Exception;
+    void grantContractStatusManager(String[] params) throws Exception;
 
-    void queryAuthority(String[] params) throws Exception;
+    void getContractStatus(String[] params) throws Exception;
+
+    void listContractStatusManager(String[] params) throws Exception;
 }
