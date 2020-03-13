@@ -280,7 +280,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
+            throw new ConsoleMessageException(address + " is invalid address.");
         }
 
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
@@ -304,7 +304,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
+            throw new ConsoleMessageException(address + " is invalid address.");
         }
 
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
@@ -328,7 +328,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
+            throw new ConsoleMessageException(address + " is invalid address.");
         }
 
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
@@ -352,10 +352,10 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         String userAddr = params[2];
         if (!WalletUtils.isValidAddress(contractAddr)) {
-            throw new ConsoleMessageException(contractAddr + " not invalid address.");
+            throw new ConsoleMessageException(contractAddr + " is invalid address.");
         }
         if (!WalletUtils.isValidAddress(userAddr)) {
-            throw new ConsoleMessageException(userAddr + " not invalid address.");
+            throw new ConsoleMessageException(userAddr + " is invalid address.");
         }
 
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
@@ -379,7 +379,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
+            throw new ConsoleMessageException(address + " is invalid address.");
         }
 
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
@@ -403,7 +403,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " not invalid address.");
+            throw new ConsoleMessageException(address + " is invalid address.");
         }
 
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
