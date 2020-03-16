@@ -339,14 +339,22 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void grantContractStatusManager(String[] params) throws Exception {
-        if (params.length != 3) {
+        checkVersionForContractStatusService();
+        if (params.length < 2) {
             HelpInfo.promptHelp("grantContractStatusManager");
             return;
         }
-
+        if (params.length > 3) {
+            HelpInfo.promptHelp("grantContractStatusManager");
+            return;
+        }
         String contractAddr = params[1];
         if ("-h".equals(contractAddr) || "--help".equals(contractAddr)) {
             HelpInfo.grantContractStatusManagerHelp();
+            return;
+        }
+        if (params.length < 3) {
+            HelpInfo.promptHelp("grantContractStatusManager");
             return;
         }
 
