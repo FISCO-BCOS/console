@@ -104,9 +104,6 @@ public class HelpInfo {
             case "unfreezeContract":
                 unfreezeContractHelp();
                 break;
-            case "destroyContract":
-                destroyContractHelp();
-                break;
             case "grantContractStatusManager":
                 grantContractStatusManagerHelp();
                 break;
@@ -146,16 +143,9 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void destroyContractHelp() {
-        System.out.println("Destroy the contract.");
-        System.out.println("Usage: destroyContract contractAddress");
-        System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
-        System.out.println();
-    }
-
     public static void grantContractStatusManagerHelp() {
         System.out.println("Grant contract authorization to the user.");
-        System.out.println("Usage: destroyContract contractAddress userAddress");
+        System.out.println("Usage: grantContractStatusManager contractAddress userAddress");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("userAddress -- 20 Bytes - The address of a tx.origin.");
         System.out.println();

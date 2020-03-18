@@ -314,30 +314,6 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void destroyContract(String[] params) throws Exception {
-        checkVersionForContractStatusService();
-        if (params.length != 2) {
-            HelpInfo.promptHelp("destroyContract");
-            return;
-        }
-
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.destroyContractHelp();
-            return;
-        }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " is invalid address.");
-        }
-
-        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.destroy(address);
-        ConsoleUtils.printJson(result);
-        System.out.println();
-    }
-
-    @Override
     public void grantContractStatusManager(String[] params) throws Exception {
         checkVersionForContractStatusService();
         if (params.length < 2) {

@@ -298,9 +298,6 @@ public class ConsoleClient {
                     case "unfreezeContract":
                         precompiledFace.unfreezeContract(params);
                         break;
-                    case "destroyContract":
-                        precompiledFace.destroyContract(params);
-                        break;
                     case "grantContractStatusManager":
                         precompiledFace.grantContractStatusManager(params);
                         break;
