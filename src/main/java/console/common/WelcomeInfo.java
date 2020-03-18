@@ -127,7 +127,6 @@ public class WelcomeInfo {
                 "revokeContractWritePermission            Revoke the account the contract write permission.\n");
         sb.append("freezeContract                           Freeze the contract.\n");
         sb.append("unfreezeContract                         Unfreeze the contract.\n");
-        sb.append("destroyContract                          Destroy the contract.\n");
         sb.append(
                 "grantContractStatusManager               Grant contract authorization to the user.\n");
         sb.append("getContractStatus                        Get the status of the contract.\n");

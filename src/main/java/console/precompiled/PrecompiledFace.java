@@ -32,12 +32,10 @@ public interface PrecompiledFace {
 
     void desc(String[] params) throws Exception;
 
-    // ContractStatusPrecompiled
+    // ContractLifeCyclecompiled
     void freezeContract(String[] params) throws Exception;
 
     void unfreezeContract(String[] params) throws Exception;
-
-    void destroyContract(String[] params) throws Exception;
 
     void grantContractStatusManager(String[] params) throws Exception;
 

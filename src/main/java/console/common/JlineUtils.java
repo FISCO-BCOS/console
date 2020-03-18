@@ -252,7 +252,6 @@ public class JlineUtils {
                         "revokeContractWritePermission",
                         "freezeContract",
                         "unfreezeContract",
-                        "destroyContract",
                         "grantContractStatusManager",
                         "getContractStatus",
                         "listContractStatusManager",
