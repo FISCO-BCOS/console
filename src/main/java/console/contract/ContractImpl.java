@@ -316,12 +316,14 @@ public class ContractImpl implements ContractFace {
 
             Tuple2<Boolean, String> booleanStringTuple2 =
                     RevertResolver.tryResolveRevertMessage(receipt);
-            if (booleanStringTuple2.getValue1()) {
-                throw new ContractCallException(booleanStringTuple2.getValue2());
-            }
 
             if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
-                throw new ContractCallException("The execution of the contract rolled back.");
+                throw new ContractCallException(
+                        "The execution of the contract rolled back"
+                                + (booleanStringTuple2.getValue1()
+                                        ? ", " + booleanStringTuple2.getValue2()
+                                        : "")
+                                + ".");
             }
             if (StatusCode.CallAddressError.equals(receipt.getStatus())) {
                 System.out.println("The contract address is incorrect.");
@@ -330,7 +332,11 @@ public class ContractImpl implements ContractFace {
             }
             if (!StatusCode.Success.equals(receipt.getStatus())) {
                 System.out.println(
-                        StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
+                        StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage())
+                                + (booleanStringTuple2.getValue1()
+                                        ? ", " + booleanStringTuple2.getValue2()
+                                        : "")
+                                + ".");
                 System.out.println();
                 return;
             }
@@ -558,7 +564,12 @@ public class ContractImpl implements ContractFace {
             }
 
             if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
-                throw new ContractCallException("The execution of the contract rolled back.");
+                throw new ContractCallException(
+                        "The execution of the contract rolled back"
+                                + (booleanStringTuple2.getValue1()
+                                        ? ", " + booleanStringTuple2.getValue2()
+                                        : "")
+                                + ".");
             }
             if (StatusCode.CallAddressError.equals(receipt.getStatus())) {
                 System.out.println("The contract address is incorrect.");

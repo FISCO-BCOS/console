@@ -24,8 +24,6 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosTransactionReceipt;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
-import org.fisco.bcos.web3j.tuples.generated.Tuple2;
-import org.fisco.bcos.web3j.tx.RevertResolver;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.fisco.bcos.web3j.tx.txdecode.BaseException;
 import org.fisco.bcos.web3j.utils.Numeric;
@@ -445,11 +443,7 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
 
-        Tuple2<Boolean, String> booleanStringTuple2 =
-                RevertResolver.tryResolveRevertMessage(receipt);
-        if (booleanStringTuple2.getValue1()) {
-            receipt.setMessage(booleanStringTuple2.getValue2());
-        } else if (!receipt.isStatusOK()) {
+        if (!receipt.isStatusOK()) {
             receipt.setMessage(
                     StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
         }
