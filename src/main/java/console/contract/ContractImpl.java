@@ -34,7 +34,9 @@ import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.tuples.generated.Tuple2;
 import org.fisco.bcos.web3j.tx.Contract;
+import org.fisco.bcos.web3j.tx.RevertResolver;
 import org.fisco.bcos.web3j.tx.exceptions.ContractCallException;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -311,6 +313,13 @@ public class ContractImpl implements ContractFace {
         Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
             TransactionReceipt receipt = (TransactionReceipt) result;
+
+            Tuple2<Boolean, String> booleanStringTuple2 =
+                    RevertResolver.tryResolveRevertMessage(receipt);
+            if (booleanStringTuple2.getValue1()) {
+                throw new ContractCallException(booleanStringTuple2.getValue2());
+            }
+
             if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
                 throw new ContractCallException("The execution of the contract rolled back.");
             }
@@ -541,6 +550,13 @@ public class ContractImpl implements ContractFace {
         Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
             TransactionReceipt receipt = (TransactionReceipt) result;
+
+            Tuple2<Boolean, String> booleanStringTuple2 =
+                    RevertResolver.tryResolveRevertMessage(receipt);
+            if (booleanStringTuple2.getValue1()) {
+                throw new ContractCallException(booleanStringTuple2.getValue2());
+            }
+
             if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
                 throw new ContractCallException("The execution of the contract rolled back.");
             }
