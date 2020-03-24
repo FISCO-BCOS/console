@@ -283,6 +283,30 @@ public class ConsoleClient {
                     case "listSysConfigManager":
                         permissionFace.listSysConfigManager(params);
                         break;
+                    case "listContractWritePermission":
+                        permissionFace.listContractWritePermission(params);
+                        break;
+                    case "grantContractWritePermission":
+                        permissionFace.grantContractWritePermission(params);
+                        break;
+                    case "revokeContractWritePermission":
+                        permissionFace.revokeContractWritePermission(params);
+                        break;
+                    case "freezeContract":
+                        precompiledFace.freezeContract(params);
+                        break;
+                    case "unfreezeContract":
+                        precompiledFace.unfreezeContract(params);
+                        break;
+                    case "grantContractStatusManager":
+                        precompiledFace.grantContractStatusManager(params);
+                        break;
+                    case "getContractStatus":
+                        precompiledFace.getContractStatus(params);
+                        break;
+                    case "listContractStatusManager":
+                        precompiledFace.listContractStatusManager(params);
+                        break;
                     default:
                         System.out.println(
                                 "Undefined command: \"" + params[0] + "\". Try \"help\".\n");

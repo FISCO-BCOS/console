@@ -13,9 +13,13 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
+import org.fisco.bcos.channel.protocol.ChannelPrococolExceiption;
+import org.fisco.bcos.fisco.EnumNodeVersion;
 import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.crypto.WalletUtils;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.precompile.config.SystemConfigService;
 import org.fisco.bcos.web3j.precompile.consensus.ConsensusService;
@@ -24,6 +28,7 @@ import org.fisco.bcos.web3j.precompile.crud.Condition;
 import org.fisco.bcos.web3j.precompile.crud.Entry;
 import org.fisco.bcos.web3j.precompile.crud.EnumOP;
 import org.fisco.bcos.web3j.precompile.crud.Table;
+import org.fisco.bcos.web3j.precompile.csm.ContractStatusService;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.slf4j.Logger;
@@ -146,12 +151,17 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.promptHelp("setSystemConfigByKey");
             return;
         }
-        if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
+        if (Common.TxCountLimit.equals(key)
+                || Common.TxGasLimit.equals(key)
+                || Common.RPBFTEpochSealerNum.equals(key)
+                || Common.RPBFTEpochBlockNum.equals(key)) {
             String valueStr = params[2];
             int value = 1;
             try {
                 value = Integer.parseInt(valueStr);
-                if (Common.TxCountLimit.equals(key)) {
+                if (Common.TxCountLimit.equals(key)
+                        || Common.RPBFTEpochSealerNum.equals(key)
+                        || Common.RPBFTEpochBlockNum.equals(key)) {
                     if (value <= 0) {
                         System.out.println(
                                 "Please provide value by positive integer mode, "
@@ -173,9 +183,15 @@ public class PrecompiledImpl implements PrecompiledFace {
                 SystemConfigService systemConfigSerivce =
                         new SystemConfigService(web3j, credentials);
                 String result = systemConfigSerivce.setValueByKey(key, value + "");
+                if (Common.RPBFTEpochSealerNum.equals(key)
+                        || Common.RPBFTEpochBlockNum.equals(key)) {
+                    System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
+                }
                 ConsoleUtils.printJson(result);
             } catch (NumberFormatException e) {
-                if (Common.TxCountLimit.equals(key)) {
+                if (Common.TxCountLimit.equals(key)
+                        || Common.RPBFTEpochSealerNum.equals(key)
+                        || Common.RPBFTEpochBlockNum.equals(key)) {
                     System.out.println(
                             "Please provide value by positive integer mode, "
                                     + Common.PositiveIntegerRange
@@ -195,7 +211,11 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + Common.TxCountLimit
                             + " or "
                             + Common.TxGasLimit
-                            + ".");
+                            + " or "
+                            + Common.RPBFTEpochSealerNum
+                            + " or "
+                            + Common.RPBFTEpochBlockNum
+                            + " .");
         }
         System.out.println();
     }
@@ -245,6 +265,137 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
+    @Override
+    public void freezeContract(String[] params) throws Exception {
+        checkVersionForContractStatusService();
+        if (params.length != 2) {
+            HelpInfo.promptHelp("freezeContract");
+            return;
+        }
+
+        String address = params[1];
+        if ("-h".equals(address) || "--help".equals(address)) {
+            HelpInfo.freezeContractHelp();
+            return;
+        }
+
+        if (!WalletUtils.isValidAddress(address)) {
+            throw new ConsoleMessageException(address + " is invalid address.");
+        }
+
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.freeze(address);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void unfreezeContract(String[] params) throws Exception {
+        checkVersionForContractStatusService();
+        if (params.length != 2) {
+            HelpInfo.promptHelp("unfreezeContract");
+            return;
+        }
+
+        String address = params[1];
+        if ("-h".equals(address) || "--help".equals(address)) {
+            HelpInfo.unfreezeContractHelp();
+            return;
+        }
+
+        if (!WalletUtils.isValidAddress(address)) {
+            throw new ConsoleMessageException(address + " is invalid address.");
+        }
+
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.unfreeze(address);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void grantContractStatusManager(String[] params) throws Exception {
+        checkVersionForContractStatusService();
+        if (params.length < 2) {
+            HelpInfo.promptHelp("grantContractStatusManager");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("grantContractStatusManager");
+            return;
+        }
+        String contractAddr = params[1];
+        if ("-h".equals(contractAddr) || "--help".equals(contractAddr)) {
+            HelpInfo.grantContractStatusManagerHelp();
+            return;
+        }
+        if (params.length < 3) {
+            HelpInfo.promptHelp("grantContractStatusManager");
+            return;
+        }
+
+        String userAddr = params[2];
+        if (!WalletUtils.isValidAddress(contractAddr)) {
+            throw new ConsoleMessageException(contractAddr + " is invalid address.");
+        }
+        if (!WalletUtils.isValidAddress(userAddr)) {
+            throw new ConsoleMessageException(userAddr + " is invalid address.");
+        }
+
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.grantManager(contractAddr, userAddr);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void getContractStatus(String[] params) throws Exception {
+        checkVersionForContractStatusService();
+        if (params.length != 2) {
+            HelpInfo.promptHelp("getContractStatus");
+            return;
+        }
+
+        String address = params[1];
+        if ("-h".equals(address) || "--help".equals(address)) {
+            HelpInfo.getContractStatusHelp();
+            return;
+        }
+
+        if (!WalletUtils.isValidAddress(address)) {
+            throw new ConsoleMessageException(address + " is invalid address.");
+        }
+
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.getStatus(address);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void listContractStatusManager(String[] params) throws Exception {
+        checkVersionForContractStatusService();
+        if (params.length != 2) {
+            HelpInfo.promptHelp("listContractStatusManager");
+            return;
+        }
+
+        String address = params[1];
+        if ("-h".equals(address) || "--help".equals(address)) {
+            HelpInfo.listContractStatusManagerHelp();
+            return;
+        }
+
+        if (!WalletUtils.isValidAddress(address)) {
+            throw new ConsoleMessageException(address + " is invalid address.");
+        }
+
+        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
+        String result = contractStatusService.listManager(address);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
     private void checkVersionForCRUD() throws ConsoleMessageException {
         String version = PrecompiledCommon.BCOS_VERSION;
         if (version == null
@@ -252,6 +403,28 @@ public class PrecompiledImpl implements PrecompiledFace {
                 || PrecompiledCommon.BCOS_RC2.equals(version)) {
             throw new ConsoleMessageException(
                     "The version 2.0.0-rc3 or above of FISCO-BCOS can support the command.");
+        }
+    }
+
+    private void checkVersionForContractStatusService() throws ConsoleMessageException {
+
+        String version = PrecompiledCommon.BCOS_VERSION;
+
+        if (Objects.isNull(version)) {
+            throw new ConsoleMessageException("The version of the node is unknown");
+        }
+
+        try {
+            final EnumNodeVersion.Version classVersion = EnumNodeVersion.getClassVersion(version);
+
+            if (!((classVersion.getMajor() == 2) && classVersion.getMinor() >= 3)) {
+                throw new ConsoleMessageException(
+                        "The fisco-bcos node version below 2.3.0 not support the command.");
+            }
+
+        } catch (ChannelPrococolExceiption channelPrococolExceiption) {
+            logger.debug(" exception: {} ", channelPrococolExceiption.getMessage());
+            throw new ConsoleMessageException(" The fisco-bcos node version is unknown.");
         }
     }
 

@@ -226,6 +226,9 @@ public class JlineUtils {
                         "addSealer",
                         "addObserver",
                         "removeNode",
+                        "grantContractWritePermission",
+                        "revokeContractWritePermission",
+                        "listContractWritePermission",
                         "grantUserTableManager",
                         "revokeUserTableManager",
                         "listUserTableManager",
@@ -244,6 +247,14 @@ public class JlineUtils {
                         "grantSysConfigManager",
                         "revokeSysConfigManager",
                         "listSysConfigManager",
+                        "listContractWritePermission",
+                        "grantContractWritePermission",
+                        "revokeContractWritePermission",
+                        "freezeContract",
+                        "unfreezeContract",
+                        "grantContractStatusManager",
+                        "getContractStatus",
+                        "listContractStatusManager",
                         "quit",
                         "exit",
                         "desc",
@@ -290,6 +301,16 @@ public class JlineUtils {
                     new ArgumentCompleter(
                             new StringsCompleter(command),
                             new StringsCompleter(Common.TxGasLimit),
+                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.RPBFTEpochSealerNum),
+                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.RPBFTEpochBlockNum),
                             new StringsCompleterIgnoreCase()));
         }
 
