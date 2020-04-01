@@ -119,7 +119,19 @@ public class WelcomeInfo {
                 "revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
         sb.append(
                 "revokeUserTableManager                   Revoke permission for user table by table name and address.\n");
-        sb.append("setSystemConfigByKey                     Set a system config.\n");
+        sb.append(
+                "listContractWritePermission              Query the account list which have write permission of the contract.\n");
+        sb.append(
+                "grantContractWritePermission             Grant the account the contract write permission.\n");
+        sb.append(
+                "revokeContractWritePermission            Revoke the account the contract write permission.\n");
+        sb.append("freezeContract                           Freeze the contract.\n");
+        sb.append("unfreezeContract                         Unfreeze the contract.\n");
+        sb.append(
+                "grantContractStatusManager               Grant contract authorization to the user.\n");
+        sb.append("getContractStatus                        Get the status of the contract.\n");
+        sb.append(
+                "listContractStatusManager                List the authorization of the contract.\n");
         sb.append(
                 "switch(s)                                Switch to a specific group by group ID.\n");
         sb.append("[create sql]                             Create table by sql.\n");

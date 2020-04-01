@@ -31,4 +31,15 @@ public interface PrecompiledFace {
     void select(String sql) throws Exception;
 
     void desc(String[] params) throws Exception;
+
+    // ContractLifeCyclecompiled
+    void freezeContract(String[] params) throws Exception;
+
+    void unfreezeContract(String[] params) throws Exception;
+
+    void grantContractStatusManager(String[] params) throws Exception;
+
+    void getContractStatus(String[] params) throws Exception;
+
+    void listContractStatusManager(String[] params) throws Exception;
 }

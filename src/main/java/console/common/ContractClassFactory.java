@@ -33,8 +33,12 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.Log;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tuples.Tuple;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContractClassFactory {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContractClassFactory.class);
 
     public static final String SOLIDITY_PATH = "contracts/solidity/";
     public static final String JAVA_PATH = "contracts/console/java/";
@@ -62,11 +66,13 @@ public class ContractClassFactory {
             name = removeSolPostfix(name);
             dynamicCompileSolFilesToJava(name);
         } catch (Exception e) {
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             throw new Exception(e.getMessage());
         }
         try {
             dynamicCompileJavaToClass(name);
         } catch (Exception e1) {
+            logger.error(" name: {}, error: {}", name, e1);
             throw new Exception("Compile " + name + ".java failed.");
         }
         String contractName = PACKAGE_NAME + "." + name;
@@ -424,6 +430,7 @@ public class ContractClassFactory {
                                     + funcName
                                     + " needs boolean value.");
                     System.out.println();
+                    logger.error(" message: {}, e: {}", e.getMessage(), e);
                     return null;
                 }
             } else if (type[i] == BigInteger.class) {
@@ -496,6 +503,7 @@ public class ContractClassFactory {
                         }
                         obj[i] = paramsList;
                     } catch (Exception e) {
+                        logger.error(" message: {}, e: {}", e.getMessage(), e);
                         System.out.println(e.getMessage());
                     }
                 }

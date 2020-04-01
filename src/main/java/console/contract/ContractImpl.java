@@ -34,12 +34,18 @@ import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
+import org.fisco.bcos.web3j.tuples.generated.Tuple2;
 import org.fisco.bcos.web3j.tx.Contract;
+import org.fisco.bcos.web3j.tx.RevertResolver;
 import org.fisco.bcos.web3j.tx.exceptions.ContractCallException;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ContractImpl implements ContractFace {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContractImpl.class);
 
     private int groupID;
     private Credentials credentials;
@@ -162,6 +168,7 @@ public class ContractImpl implements ContractFace {
         } catch (IOException e) {
             System.out.println(e.getMessage());
             System.out.println();
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         }
     }
@@ -210,7 +217,8 @@ public class ContractImpl implements ContractFace {
         try {
             while ((line = reader.readLine()) != null) {
                 String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
-                if (("[group:" + groupID + "]").equals(contractInfos[2])) {
+                if ((contractInfos.length > 2)
+                        && ("[group:" + groupID + "]").equals(contractInfos[2])) {
                     textList.add(line);
                 }
             }
@@ -233,6 +241,8 @@ public class ContractImpl implements ContractFace {
                 System.out.println();
                 System.out.println(stringBuilder.toString());
             }
+        } catch (Exception e) {
+            logger.error(" load {} failed, e: {}", Common.ContractLogFileName, e);
         } finally {
             reader.close();
         }
@@ -303,8 +313,17 @@ public class ContractImpl implements ContractFace {
         Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
             TransactionReceipt receipt = (TransactionReceipt) result;
+
+            Tuple2<Boolean, String> booleanStringTuple2 =
+                    RevertResolver.tryResolveRevertMessage(receipt);
+
             if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
-                throw new ContractCallException("The execution of the contract rolled back.");
+                throw new ContractCallException(
+                        "The execution of the contract rolled back"
+                                + (booleanStringTuple2.getValue1()
+                                        ? ", " + booleanStringTuple2.getValue2()
+                                        : "")
+                                + ".");
             }
             if (StatusCode.CallAddressError.equals(receipt.getStatus())) {
                 System.out.println("The contract address is incorrect.");
@@ -313,7 +332,11 @@ public class ContractImpl implements ContractFace {
             }
             if (!StatusCode.Success.equals(receipt.getStatus())) {
                 System.out.println(
-                        StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
+                        StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage())
+                                + (booleanStringTuple2.getValue1()
+                                        ? ", " + booleanStringTuple2.getValue2()
+                                        : "")
+                                + ".");
                 System.out.println();
                 return;
             }
@@ -533,8 +556,20 @@ public class ContractImpl implements ContractFace {
         Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
             TransactionReceipt receipt = (TransactionReceipt) result;
+
+            Tuple2<Boolean, String> booleanStringTuple2 =
+                    RevertResolver.tryResolveRevertMessage(receipt);
+            if (booleanStringTuple2.getValue1()) {
+                throw new ContractCallException(booleanStringTuple2.getValue2());
+            }
+
             if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
-                throw new ContractCallException("The execution of the contract rolled back.");
+                throw new ContractCallException(
+                        "The execution of the contract rolled back"
+                                + (booleanStringTuple2.getValue1()
+                                        ? ", " + booleanStringTuple2.getValue2()
+                                        : "")
+                                + ".");
             }
             if (StatusCode.CallAddressError.equals(receipt.getStatus())) {
                 System.out.println("The contract address is incorrect.");

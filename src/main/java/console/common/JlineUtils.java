@@ -28,8 +28,12 @@ import org.jline.terminal.TerminalBuilder;
 import org.jline.utils.AttributedString;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class StringsCompleterIgnoreCase implements Completer {
+
+    private static final Logger logger = LoggerFactory.getLogger(StringsCompleterIgnoreCase.class);
 
     protected final Collection<Candidate> candidates = new ArrayList<>();
 
@@ -75,6 +79,9 @@ class StringsCompleterIgnoreCase implements Completer {
 }
 
 class ConsoleFilesCompleter extends FilesCompleter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleFilesCompleter.class);
+
     public final String SOL_STR = ".sol";
     public final String TABLE_SOL = "Table.sol";
 
@@ -177,11 +184,14 @@ class ConsoleFilesCompleter extends FilesCompleter {
                     });
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
     }
 }
 
 public class JlineUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
 
     public static LineReader getLineReader() throws IOException {
 
@@ -216,6 +226,9 @@ public class JlineUtils {
                         "addSealer",
                         "addObserver",
                         "removeNode",
+                        "grantContractWritePermission",
+                        "revokeContractWritePermission",
+                        "listContractWritePermission",
                         "grantUserTableManager",
                         "revokeUserTableManager",
                         "listUserTableManager",
@@ -234,6 +247,14 @@ public class JlineUtils {
                         "grantSysConfigManager",
                         "revokeSysConfigManager",
                         "listSysConfigManager",
+                        "listContractWritePermission",
+                        "grantContractWritePermission",
+                        "revokeContractWritePermission",
+                        "freezeContract",
+                        "unfreezeContract",
+                        "grantContractStatusManager",
+                        "getContractStatus",
+                        "listContractStatusManager",
                         "quit",
                         "exit",
                         "desc",
@@ -280,6 +301,16 @@ public class JlineUtils {
                     new ArgumentCompleter(
                             new StringsCompleter(command),
                             new StringsCompleter(Common.TxGasLimit),
+                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.RPBFTEpochSealerNum),
+                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.RPBFTEpochBlockNum),
                             new StringsCompleterIgnoreCase()));
         }
 

@@ -1,6 +1,7 @@
 package console;
 
 import console.common.Common;
+import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
@@ -14,6 +15,7 @@ import java.io.Console;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.InvalidAlgorithmParameterException;
@@ -21,12 +23,16 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.fisco.bcos.channel.client.P12Manager;
 import org.fisco.bcos.channel.client.PEMManager;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.crypto.Keys;
 import org.fisco.bcos.web3j.crypto.gm.GenCredential;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
@@ -35,11 +41,15 @@ import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.core.methods.response.NodeVersion.Version;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class ConsoleInitializer {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleInitializer.class);
 
     private ChannelEthereumService channelEthereumService;
     private ApplicationContext context;
@@ -110,8 +120,16 @@ public class ConsoleInitializer {
         try {
             service.run();
         } catch (Exception e) {
-            System.out.println(
-                    "Failed to connect to the node. Please check the node status and the console configuration.");
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            System.out.println("Failed to init the console！ " + e.getMessage());
+            close();
+        }
+
+        try {
+            ContractClassFactory.initClassLoad();
+        } catch (MalformedURLException e) {
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            System.out.println("Failed to init class load, " + e.getMessage());
             close();
         }
 
@@ -158,12 +176,35 @@ public class ConsoleInitializer {
                 System.out.println("Don't connect a removed node.");
             } else {
                 System.out.println(e.getMessage());
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
             }
             close();
         } catch (Exception e) {
             System.out.println(
                     "Failed to connect to the node. Please check the node status and the console configuration.");
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             close();
+        }
+    }
+
+    private void checkAccountPrivateKey(ECParameterSpec ecParameterSpec, int encryptType) {
+
+        String name = ((ECNamedCurveSpec) ecParameterSpec).getName();
+        boolean accountPrivateKeyMatch =
+                ((EncryptType.ECDSA_TYPE != EncryptType.encryptType) && name.contains("sm2"))
+                        || ((EncryptType.ECDSA_TYPE == EncryptType.encryptType)
+                                && name.contains("secp256k1"));
+
+        logger.info(" name: {}, encrypt: {}", name, encryptType);
+
+        if (!accountPrivateKeyMatch) {
+            if (EncryptType.ECDSA_TYPE == EncryptType.encryptType) {
+                throw new IllegalArgumentException(
+                        " Load SM2 private key while configuration is ECSDA type");
+            } else {
+                throw new IllegalArgumentException(
+                        " Load ECSDA private key while configuration is SM2 type");
+            }
         }
     }
 
@@ -181,6 +222,7 @@ public class ConsoleInitializer {
                 pem.load(in);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
                 close();
             } finally {
                 if (in != null) {
@@ -188,12 +230,16 @@ public class ConsoleInitializer {
                         in.close();
                     } catch (IOException e) {
                         System.out.println(e.getMessage());
+                        logger.error(" message: {}, e: {}", e.getMessage(), e);
                     }
                 }
             }
 
             ECKeyPair keyPair = pem.getECKeyPair();
             credentials = Credentials.create(keyPair);
+
+            checkAccountPrivateKey(
+                    ((ECPrivateKey) pem.getPrivateKey()).getParams(), EncryptType.encryptType);
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
@@ -214,6 +260,7 @@ public class ConsoleInitializer {
                 p12Manager.load(in, password);
             } catch (Exception e) {
                 System.out.println(e.getMessage());
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
                 close();
             } finally {
                 if (in != null) {
@@ -221,6 +268,7 @@ public class ConsoleInitializer {
                         in.close();
                     } catch (IOException e) {
                         System.out.println(e.getMessage());
+                        logger.error(" message: {}, e: {}", e.getMessage(), e);
                     }
                 }
             }
@@ -233,6 +281,10 @@ public class ConsoleInitializer {
                 System.out.println("The name for p12 account is error.");
                 close();
             }
+
+            checkAccountPrivateKey(
+                    ((ECPrivateKey) p12Manager.getPrivateKey()).getParams(),
+                    EncryptType.encryptType);
         } else if ("-l".equals(args[1])) {
             groupID = setGroupID(args[0]);
             ConsoleClient.INPUT_FLAG = 1;
@@ -283,10 +335,10 @@ public class ConsoleInitializer {
         int toGroupID = 1;
         try {
             toGroupID = Integer.parseInt(groupIDStr);
-            if (toGroupID <= 0) {
+            if (toGroupID <= 0 || toGroupID > Common.MaxGroupID) {
                 System.out.println(
                         "Please provide group ID by positive integer mode, "
-                                + Common.PositiveIntegerRange
+                                + Common.GroupIDRange
                                 + ".");
                 System.out.println();
                 return;
@@ -294,7 +346,7 @@ public class ConsoleInitializer {
         } catch (NumberFormatException e) {
             System.out.println(
                     "Please provide group ID by positive integer mode, "
-                            + Common.PositiveIntegerRange
+                            + Common.GroupIDRange
                             + ".");
             System.out.println();
             return;
@@ -306,15 +358,14 @@ public class ConsoleInitializer {
             service.run();
             groupID = toGroupID;
         } catch (Exception e) {
-            System.out.println(
-                    "Switch to group "
-                            + toGroupID
-                            + " failed! Please check the node status and the console configuration.");
+            System.out.println("Switch to group " + toGroupID + " failed! " + e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             System.out.println();
             service.setGroupId(groupID);
             try {
                 service.run();
             } catch (Exception e1) {
+                logger.error(" message: {}, e: {}", e1.getMessage(), e1);
             }
             return;
         }
@@ -336,17 +387,17 @@ public class ConsoleInitializer {
     private int setGroupID(String groupIDStr) {
         try {
             groupID = Integer.parseInt(groupIDStr);
-            if (groupID <= 0 || groupID > Integer.MAX_VALUE) {
+            if (groupID <= 0 || groupID > Common.MaxGroupID) {
                 System.out.println(
                         "Please provide groupID by non-negative integer mode, "
-                                + Common.NonNegativeIntegerRange
+                                + Common.GroupIDRange
                                 + ".");
                 close();
             }
         } catch (NumberFormatException e) {
             System.out.println(
                     "Please provide groupID by non-negative integer mode, "
-                            + Common.NonNegativeIntegerRange
+                            + Common.GroupIDRange
                             + ".");
             close();
         }
@@ -361,6 +412,7 @@ public class ConsoleInitializer {
             System.exit(0);
         } catch (IOException e) {
             System.out.println(e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
     }
 
