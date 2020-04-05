@@ -476,6 +476,68 @@ public class Web3jImpl implements Web3jFace {
     }
 
     @Override
+    public void getTransactionByHashWithProof(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("getTransactionByHashWithProof");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("getTransactionByHashWithProof");
+            return;
+        }
+        String transactionHash = params[1];
+        if ("-h".equals(transactionHash) || "--help".equals(transactionHash)) {
+            HelpInfo.getTransactionByHashWithProofHelp();
+            return;
+        }
+        if (ConsoleUtils.isInvalidHash(transactionHash)) return;
+
+        String transactionWithProof =
+                web3j.getTransactionByHashWithProof(transactionHash).sendForReturnString();
+
+        if (Objects.isNull(transactionWithProof) || "".equals(transactionWithProof)) {
+            System.out.println("This transaction hash doesn't exist.");
+            System.out.println();
+            return;
+        }
+
+        ConsoleUtils.printJson(transactionWithProof);
+
+        System.out.println();
+    }
+
+    @Override
+    public void getTransactionReceiptByHashWithProof(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("getTransactionReceiptByHashWithProof");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("getTransactionReceiptByHashWithProof");
+            return;
+        }
+        String transactionHash = params[1];
+        if ("-h".equals(transactionHash) || "--help".equals(transactionHash)) {
+            HelpInfo.getTransactionReceiptByHashWithProofHelp();
+            return;
+        }
+        if (ConsoleUtils.isInvalidHash(transactionHash)) return;
+
+        String transactionReceiptWithProof =
+                web3j.getTransactionReceiptByHashWithProof(transactionHash).sendForReturnString();
+
+        if (Objects.isNull(transactionReceiptWithProof) || "".equals(transactionReceiptWithProof)) {
+            System.out.println("This transaction hash doesn't exist.");
+            System.out.println();
+            return;
+        }
+
+        ConsoleUtils.printJson(transactionReceiptWithProof);
+
+        System.out.println();
+    }
+
+    @Override
     public void getPendingTxSize(String[] params) throws IOException {
         if (HelpInfo.promptNoParams(params, "getPendingTxSize")) {
             return;

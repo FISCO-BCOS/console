@@ -307,6 +307,22 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void getTransactionByHashWithProofHelp() {
+        System.out.println(
+                "Query information about the transaction and proof by transaction hash.");
+        System.out.println("Usage: getTransactionByHashWithProof transactionHash");
+        System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
+        System.out.println();
+    }
+
+    public static void getTransactionReceiptByHashWithProofHelp() {
+        System.out.println(
+                "Query information about the transaction receipt and proof by transaction hash.");
+        System.out.println("Usage: getTransactionReceiptByHashWithProof transactionHash");
+        System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
+        System.out.println();
+    }
+
     public static void getTransactionByBlockNumberAndIndexHelp() {
         System.out.println(
                 "Query information about a transaction by block number and transaction index position.");

@@ -178,6 +178,12 @@ public class ConsoleClient {
                     case "getTransactionReceipt":
                         web3jFace.getTransactionReceipt(params);
                         break;
+                    case "getTransactionByHashWithProof":
+                        web3jFace.getTransactionByHashWithProof(params);
+                        break;
+                    case "getTransactionReceiptByHashWithProof":
+                        web3jFace.getTransactionReceiptByHashWithProof(params);
+                        break;
                     case "getPendingTransactions":
                         web3jFace.getPendingTransactions(params);
                         break;

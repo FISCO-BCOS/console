@@ -218,6 +218,8 @@ public class JlineUtils {
                         "getTransactionByHash",
                         "getTransactionByBlockHashAndIndex",
                         "getTransactionByBlockNumberAndIndex",
+                        "getTransactionByHashWithProof",
+                        "getTransactionReceiptByHashWithProof",
                         "getPendingTransactions",
                         "getPendingTxSize",
                         "getCode",

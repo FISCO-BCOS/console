@@ -79,6 +79,10 @@ public class WelcomeInfo {
         sb.append(
                 "getTransactionReceipt                    Query the receipt of a transaction by transaction hash.\n");
         sb.append(
+                "getTransactionByHashWithProof            Query the transaction and transaction proof by transaction hash.\n");
+        sb.append(
+                "getTransactionReceiptByHashWithProof     Query the receipt and transaction receipt proof by transaction hash.\n");
+        sb.append(
                 "grantCNSManager                          Grant permission for CNS by address.\n");
         sb.append(
                 "grantDeployAndCreateManager              Grant permission for deploy contract and create user table by address.\n");
