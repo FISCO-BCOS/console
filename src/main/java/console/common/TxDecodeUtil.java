@@ -73,6 +73,24 @@ public class TxDecodeUtil {
         ConsoleUtils.singleLine();
     }
 
+    private static boolean isByteNType(String type) {
+        String prefix = "bytes";
+        if (!type.startsWith(prefix) || type.equals(prefix)) {
+            return false;
+        }
+        String index = type.substring(prefix.length(), type.length());
+        if (index.length() == 0) {
+            return false;
+        }
+        try {
+            // try to parse index
+            int size = Integer.parseInt(index);
+            return (size > 0 && size <= 32);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     public static void decodeOutput(String abi, TransactionReceipt receipt)
             throws BaseException, IOException, TransactionException {
         TransactionDecoder transactionDecoder =
@@ -92,7 +110,14 @@ public class TxDecodeUtil {
         resultData.append("(");
         for (ResultEntity resultEntity : resultList) {
             resultType.append(resultEntity.getType()).append(", ");
-            resultData.append(resultEntity.getData()).append(", ");
+            if (isByteNType(resultEntity.getType())) {
+                // i=Integer.parseInt(s);
+                byte[] resultDataBytes = (byte[]) (resultEntity.getTypeObject().getValue());
+                String data = "0x" + byteToHex(resultDataBytes);
+                resultData.append(data).append(", ");
+            } else {
+                resultData.append(resultEntity.getData()).append(", ");
+            }
         }
         resultType.delete(resultType.length() - 2, resultType.length());
         resultData.delete(resultData.length() - 2, resultData.length());
