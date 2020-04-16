@@ -12,13 +12,16 @@ import console.common.TxDecodeUtil;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Objects;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
 import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
 import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
+import org.fisco.bcos.web3j.protocol.core.methods.response.BcosTransactionReceipt;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
@@ -429,17 +432,25 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-        String receiptStr = web3j.getTransactionReceipt(transactionHash).sendForReturnString();
-        if ("null".equals(receiptStr)) {
+
+        BcosTransactionReceipt bcosTransactionReceipt =
+                web3j.getTransactionReceipt(transactionHash).send();
+        TransactionReceipt receipt = bcosTransactionReceipt.getResult();
+
+        if (Objects.isNull(receipt) || Objects.isNull(receipt.getTransactionHash())) {
             System.out.println("This transaction hash doesn't exist.");
             System.out.println();
             return;
         }
-        ConsoleUtils.printJson(receiptStr);
+
+        if (!receipt.isStatusOK()) {
+            receipt.setMessage(
+                    StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
+        }
+
+        ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(receipt));
+
         if (params.length == 3) {
-            TransactionReceipt receipt =
-                    ObjectMapperFactory.getObjectMapper()
-                            .readValue(receiptStr, TransactionReceipt.class);
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(params[2]);
             String abi = abiAndBin.getAbi();
             if (!Common.EMPTY_CONTRACT_ADDRESS.equals(receipt.getTo())) {
@@ -461,6 +472,68 @@ public class Web3jImpl implements Web3jFace {
                 TxDecodeUtil.decodeEventLog(abi, receipt);
             }
         }
+        System.out.println();
+    }
+
+    @Override
+    public void getTransactionByHashWithProof(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("getTransactionByHashWithProof");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("getTransactionByHashWithProof");
+            return;
+        }
+        String transactionHash = params[1];
+        if ("-h".equals(transactionHash) || "--help".equals(transactionHash)) {
+            HelpInfo.getTransactionByHashWithProofHelp();
+            return;
+        }
+        if (ConsoleUtils.isInvalidHash(transactionHash)) return;
+
+        String transactionWithProof =
+                web3j.getTransactionByHashWithProof(transactionHash).sendForReturnString();
+
+        if (Objects.isNull(transactionWithProof) || "".equals(transactionWithProof)) {
+            System.out.println("This transaction hash doesn't exist.");
+            System.out.println();
+            return;
+        }
+
+        ConsoleUtils.printJson(transactionWithProof);
+
+        System.out.println();
+    }
+
+    @Override
+    public void getTransactionReceiptByHashWithProof(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("getTransactionReceiptByHashWithProof");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("getTransactionReceiptByHashWithProof");
+            return;
+        }
+        String transactionHash = params[1];
+        if ("-h".equals(transactionHash) || "--help".equals(transactionHash)) {
+            HelpInfo.getTransactionReceiptByHashWithProofHelp();
+            return;
+        }
+        if (ConsoleUtils.isInvalidHash(transactionHash)) return;
+
+        String transactionReceiptWithProof =
+                web3j.getTransactionReceiptByHashWithProof(transactionHash).sendForReturnString();
+
+        if (Objects.isNull(transactionReceiptWithProof) || "".equals(transactionReceiptWithProof)) {
+            System.out.println("This transaction hash doesn't exist.");
+            System.out.println();
+            return;
+        }
+
+        ConsoleUtils.printJson(transactionReceiptWithProof);
+
         System.out.println();
     }
 
@@ -562,8 +635,14 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getSystemConfigByKeyHelp();
             return;
         }
-        if (Common.TxCountLimit.equals(key) || Common.TxGasLimit.equals(key)) {
+        if (Common.TxCountLimit.equals(key)
+                || Common.TxGasLimit.equals(key)
+                || Common.RPBFTEpochSealerNum.equals(key)
+                || Common.RPBFTEpochBlockNum.equals(key)) {
             String value = web3j.getSystemConfigByKey(key).sendForReturnString();
+            if (Common.RPBFTEpochSealerNum.equals(key) || Common.RPBFTEpochBlockNum.equals(key)) {
+                System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
+            }
             System.out.println(value);
         } else {
             System.out.println(

@@ -20,8 +20,12 @@ import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsoleClient {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleClient.class);
 
     private static Web3jFace web3jFace;
     private static PrecompiledFace precompiledFace;
@@ -50,6 +54,7 @@ public class ConsoleClient {
             keymap.bind(new Reference("end-of-line"), "\033[4~");
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         }
 
@@ -173,6 +178,12 @@ public class ConsoleClient {
                     case "getTransactionReceipt":
                         web3jFace.getTransactionReceipt(params);
                         break;
+                    case "getTransactionByHashWithProof":
+                        web3jFace.getTransactionByHashWithProof(params);
+                        break;
+                    case "getTransactionReceiptByHashWithProof":
+                        web3jFace.getTransactionReceiptByHashWithProof(params);
+                        break;
                     case "getPendingTransactions":
                         web3jFace.getPendingTransactions(params);
                         break;
@@ -278,6 +289,30 @@ public class ConsoleClient {
                     case "listSysConfigManager":
                         permissionFace.listSysConfigManager(params);
                         break;
+                    case "listContractWritePermission":
+                        permissionFace.listContractWritePermission(params);
+                        break;
+                    case "grantContractWritePermission":
+                        permissionFace.grantContractWritePermission(params);
+                        break;
+                    case "revokeContractWritePermission":
+                        permissionFace.revokeContractWritePermission(params);
+                        break;
+                    case "freezeContract":
+                        precompiledFace.freezeContract(params);
+                        break;
+                    case "unfreezeContract":
+                        precompiledFace.unfreezeContract(params);
+                        break;
+                    case "grantContractStatusManager":
+                        precompiledFace.grantContractStatusManager(params);
+                        break;
+                    case "getContractStatus":
+                        precompiledFace.getContractStatus(params);
+                        break;
+                    case "listContractStatusManager":
+                        precompiledFace.listContractStatusManager(params);
+                        break;
                     default:
                         System.out.println(
                                 "Undefined command: \"" + params[0] + "\". Try \"help\".\n");
@@ -287,6 +322,7 @@ public class ConsoleClient {
                 ConsoleUtils.printJson(
                         "{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
                 System.out.println();
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
                 System.out.println(e.getMessage() + " does not exist.");
                 System.out.println();
@@ -307,6 +343,7 @@ public class ConsoleClient {
                             "The groupID is not configured in dist/conf/applicationContext.xml file.");
                 } else {
                     System.out.println(e.getMessage());
+                    logger.error(" message: {}, e: {}", e.getMessage(), e);
                 }
                 System.out.println();
             } catch (InvocationTargetException e) {
@@ -324,10 +361,13 @@ public class ConsoleClient {
                 } else {
                     System.out.println(e.getMessage());
                     System.out.println();
+                    logger.error(" message: {}, e: {}", e.getMessage(), e);
                 }
+
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println();
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
             }
         }
     }

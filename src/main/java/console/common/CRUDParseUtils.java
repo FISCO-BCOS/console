@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
+import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.expression.operators.relational.InExpression;
 import net.sf.jsqlparser.expression.operators.relational.IsNullExpression;
 import net.sf.jsqlparser.expression.operators.relational.ItemsList;
@@ -138,11 +139,13 @@ public class CRUDParseUtils {
         // parse columns
         List<Column> columns = insert.getColumns();
         ItemsList itemsList = insert.getItemsList();
-        String items = itemsList.toString();
-        String[] rawItem = items.substring(1, items.length() - 1).split(",");
-        String[] itemArr = new String[rawItem.length];
-        for (int i = 0; i < rawItem.length; i++) {
-            itemArr[i] = rawItem[i].trim();
+
+        ExpressionList expressionList = (ExpressionList) itemsList;
+        List<Expression> expressions = expressionList.getExpressions();
+
+        String[] itemArr = new String[expressions.size()];
+        for (int i = 0; i < expressions.size(); i++) {
+            itemArr[i] = expressions.get(i).toString().trim();
         }
         if (columns != null) {
             if (columns.size() != itemArr.length) {

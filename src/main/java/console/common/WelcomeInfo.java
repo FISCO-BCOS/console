@@ -79,6 +79,10 @@ public class WelcomeInfo {
         sb.append(
                 "getTransactionReceipt                    Query the receipt of a transaction by transaction hash.\n");
         sb.append(
+                "getTransactionByHashWithProof            Query the transaction and transaction proof by transaction hash.\n");
+        sb.append(
+                "getTransactionReceiptByHashWithProof     Query the receipt and transaction receipt proof by transaction hash.\n");
+        sb.append(
                 "grantCNSManager                          Grant permission for CNS by address.\n");
         sb.append(
                 "grantDeployAndCreateManager              Grant permission for deploy contract and create user table by address.\n");
@@ -119,7 +123,19 @@ public class WelcomeInfo {
                 "revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
         sb.append(
                 "revokeUserTableManager                   Revoke permission for user table by table name and address.\n");
-        sb.append("setSystemConfigByKey                     Set a system config.\n");
+        sb.append(
+                "listContractWritePermission              Query the account list which have write permission of the contract.\n");
+        sb.append(
+                "grantContractWritePermission             Grant the account the contract write permission.\n");
+        sb.append(
+                "revokeContractWritePermission            Revoke the account the contract write permission.\n");
+        sb.append("freezeContract                           Freeze the contract.\n");
+        sb.append("unfreezeContract                         Unfreeze the contract.\n");
+        sb.append(
+                "grantContractStatusManager               Grant contract authorization to the user.\n");
+        sb.append("getContractStatus                        Get the status of the contract.\n");
+        sb.append(
+                "listContractStatusManager                List the authorization of the contract.\n");
         sb.append(
                 "switch(s)                                Switch to a specific group by group ID.\n");
         sb.append("[create sql]                             Create table by sql.\n");

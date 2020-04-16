@@ -3,8 +3,12 @@ package console.common;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.core.Response;
 import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsoleExceptionUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleExceptionUtils.class);
 
     public static void pringMessageDecodeingException(MessageDecodingException e) {
         String message = e.getMessage();
@@ -29,6 +33,7 @@ public class ConsoleExceptionUtils {
         } catch (Exception e1) {
             System.out.println(e1.getMessage());
             System.out.println();
+            logger.error(" message: {}, e: {}", e1.getMessage(), e1);
         }
     }
 }
