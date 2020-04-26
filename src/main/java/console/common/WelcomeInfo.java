@@ -129,6 +129,20 @@ public class WelcomeInfo {
                 "grantContractWritePermission             Grant the account the contract write permission.\n");
         sb.append(
                 "revokeContractWritePermission            Revoke the account the contract write permission.\n");
+        sb.append("grantCommitteeMember                     Grant the account committee member\n");
+        sb.append(
+                "revokeCommitteeMember                    Revoke the account from committee member\n");
+        sb.append("listCommitteeMembers                     List all committee members\n");
+        sb.append("grantOperator                            Grant the account operator\n");
+        sb.append("revokeOperator                           Revoke the operator\n");
+        sb.append("listOperators                            List all operators\n");
+        sb.append("updateThreshold                          Update the threshold\n");
+        sb.append("queryThreshold                           Query the threshold\n");
+        sb.append("updateCommitteeMemberWeight              Update the committee member weight\n");
+        sb.append("queryCommitteeMemberWeight               Query the committee member weight\n");
+        sb.append("freezeAccount                            Freeze the account.\n");
+        sb.append("unfreezeAccount                          Unfreeze the account.\n");
+        sb.append("getAccountStatus                         GetAccountStatus of the account.\n");
         sb.append("freezeContract                           Freeze the contract.\n");
         sb.append("unfreezeContract                         Unfreeze the contract.\n");
         sb.append(
