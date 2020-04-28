@@ -1,11 +1,9 @@
 package console;
 
-import console.common.ConsoleExceptionUtils;
-import console.common.ConsoleUtils;
-import console.common.HelpInfo;
-import console.common.JlineUtils;
-import console.common.WelcomeInfo;
+import console.common.*;
 import console.contract.ContractFace;
+import console.exception.ConsoleMessageException;
+import console.key.KeyFace;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.permission.PermissionFace;
 import console.web3j.Web3jFace;
@@ -31,6 +29,7 @@ public class ConsoleClient {
     private static PrecompiledFace precompiledFace;
     private static PermissionFace permissionFace;
     private static ContractFace contractFace;
+    private static KeyFace keyFace;
 
     public static int INPUT_FLAG = 0;
 
@@ -40,14 +39,20 @@ public class ConsoleClient {
         LineReader lineReader = null;
         Scanner sc = null;
         ConsoleInitializer consoleInitializer = null;
+        int mode = 0;
         try {
             consoleInitializer = new ConsoleInitializer();
-            consoleInitializer.init(args);
-            web3jFace = consoleInitializer.getWeb3jFace();
-            precompiledFace = consoleInitializer.getPrecompiledFace();
-            permissionFace = consoleInitializer.getPermissionFace();
-            contractFace = consoleInitializer.getContractFace();
-            lineReader = JlineUtils.getLineReader();
+            mode = consoleInitializer.init(args);
+            if (Common.INIT_KMS == mode) {
+                keyFace = consoleInitializer.getKeyFace();
+                lineReader = JlineUtils.getKMSLineReader();
+            } else {
+                web3jFace = consoleInitializer.getWeb3jFace();
+                precompiledFace = consoleInitializer.getPrecompiledFace();
+                permissionFace = consoleInitializer.getPermissionFace();
+                contractFace = consoleInitializer.getContractFace();
+                lineReader = JlineUtils.getLineReader();
+            }
             sc = new Scanner(System.in);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
             keymap.bind(new Reference("beginning-of-line"), "\033[1~");
@@ -58,9 +63,104 @@ public class ConsoleClient {
             return;
         }
 
-        WelcomeInfo.welcome();
+        if (Common.INIT_KMS == mode) {
+            WelcomeInfo.welcomeKMS();
+        } else if (Common.INIT_CHAIN == mode) {
+            WelcomeInfo.welcome();
+        }
 
-        while (true) {
+        while (true && Common.INIT_KMS == mode) {
+            try {
+                if (lineReader == null) {
+                    System.out.println("Console can not read commands.");
+                    break;
+                }
+                String request = "";
+                if (INPUT_FLAG == 0) {
+                    request =
+                            lineReader.readLine("[" + consoleInitializer.getAccountInfo() + "]> ");
+                } else {
+                    System.out.print("[" + consoleInitializer.getAccountInfo() + "]> ");
+                    sc = new Scanner(System.in);
+                    request = sc.nextLine();
+                }
+                String[] params = ConsoleUtils.tokenizeCommand(request);
+                if (params.length < 1) {
+                    System.out.print("");
+                    continue;
+                }
+                if ("".equals(params[0].trim())) {
+                    System.out.print("");
+                    continue;
+                }
+                if ("quit".equals(params[0]) || "q".equals(params[0]) || "exit".equals(params[0])) {
+                    if (HelpInfo.promptNoParams(params, "q")) {
+                        continue;
+                    } else if (params.length > 2) {
+                        HelpInfo.promptHelp("q");
+                        continue;
+                    }
+                    consoleInitializer.close();
+                    break;
+                }
+                String[] strArr = consoleInitializer.getAccountInfo().split(":");
+                String role = strArr[strArr.length - 1];
+                switch (params[0]) {
+                    case "help":
+                    case "h":
+                        WelcomeInfo.KMSHelp(params, role);
+                        break;
+                    case "addAdminAccount":
+                        keyFace.addAdminAccount(params);
+                        break;
+                    case "addVisitorAccount":
+                        keyFace.addVisitorAccount(params);
+                        break;
+                    case "deleteAccount":
+                        keyFace.deleteAccount(params);
+                        break;
+                    case "listAccount":
+                        keyFace.listAccount(params);
+                        break;
+                    case "updatePassword":
+                        keyFace.updatePwd(params);
+                        break;
+                    case "uploadPrivateKey":
+                        keyFace.uploadPrivateKey(params);
+                        break;
+                    case "listPrivateKey":
+                        keyFace.listPrivateKey(params);
+                        break;
+                    case "exportPrivateKey":
+                        keyFace.exportPrivateKey(params);
+                        break;
+                    case "deletePrivateKey":
+                        keyFace.deletePrivateKey(params);
+                        break;
+                    case "restorePrivateKey":
+                        keyFace.restorePrivateKey(params);
+                        break;
+                    default:
+                        System.out.println(
+                                "Undefined command: \"" + params[0] + "\". Try \"help\".\n");
+                        break;
+                }
+            } catch (UserInterruptException e) {
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                consoleInitializer.close();
+            } catch (ConsoleMessageException e) {
+                System.out.println(e.getMessage());
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                consoleInitializer.close();
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                consoleInitializer.close();
+            }
+            System.out.println();
+        }
+
+        while (true && Common.INIT_CHAIN == mode) {
 
             try {
                 if (lineReader == null) {

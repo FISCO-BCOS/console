@@ -49,7 +49,7 @@ configurations {
     all*.exclude group: 'org.apache.commons', module: 'commons-lang'
     all*.exclude group: 'com.alibaba', module: 'druid'
     all*.exclude group: 'com.google.guava', module: 'guava'
-    all*.exclude group: 'org.apache.httpcomponents', module: 'httpclient'
+  //  all*.exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     all*.exclude group: 'org.mockito', module: 'mockito-core'
     all*.exclude group: 'io.reactivex', module: 'rxjava'
   //  all*.exclude group: 'org.ethereum', module: 'solcJ-all'

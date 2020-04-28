@@ -40,4 +40,8 @@
         <property name="allChannelConnections" ref="groupChannelConnectionsConfig"></property>
     </bean>
 
+    <bean id="kmsService" class="console.key.KMSService">
+        <constructor-arg index="0" value="serviceIP:servicePort" />
+    </bean>
+
 </beans>

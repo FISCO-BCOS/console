@@ -189,6 +189,117 @@ class ConsoleFilesCompleter extends FilesCompleter {
     }
 }
 
+class ConsoleKMSFilesCompleter extends FilesCompleter {
+
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleKMSFilesCompleter.class);
+
+    public final String P12_STR = ".p12";
+    public final String PEM_STR = ".pem";
+    public final String P12_PUBLIC_STR = ".public.p12";
+    public final String PEM_PUBLIC_STR = ".public.pem";
+
+    public ConsoleKMSFilesCompleter(File currentDir) {
+        super(currentDir);
+    }
+
+    public ConsoleKMSFilesCompleter(Path path) {
+        super(path);
+    }
+
+    @Override
+    protected String getDisplay(Terminal terminal, Path p) {
+        String name = p.getFileName().toString();
+        if (Files.isDirectory(p)) {
+            AttributedStringBuilder sb = new AttributedStringBuilder();
+            sb.styled(AttributedStyle.BOLD.foreground(AttributedStyle.RED), name);
+            sb.append("/");
+            name = sb.toAnsi(terminal);
+        } else if (Files.isSymbolicLink(p)) {
+            AttributedStringBuilder sb = new AttributedStringBuilder();
+            sb.styled(AttributedStyle.BOLD.foreground(AttributedStyle.RED), name);
+            sb.append("@");
+            name = sb.toAnsi(terminal);
+        }
+        return name;
+    }
+
+    @Override
+    public void complete(
+            LineReader reader, ParsedLine commandLine, final List<Candidate> candidates) {
+        assert commandLine != null;
+        assert candidates != null;
+
+        String buffer = commandLine.word().substring(0, commandLine.wordCursor());
+
+        Path current;
+        String curBuf;
+        String sep = getUserDir().getFileSystem().getSeparator();
+        int lastSep = buffer.lastIndexOf(sep);
+        if (lastSep >= 0) {
+            curBuf = buffer.substring(0, lastSep + 1);
+            if (curBuf.startsWith("~")) {
+                if (curBuf.startsWith("~" + sep)) {
+                    current = getUserHome().resolve(curBuf.substring(2));
+                } else {
+                    current = getUserHome().getParent().resolve(curBuf.substring(1));
+                }
+            } else {
+                current = getUserDir().resolve(curBuf);
+            }
+        } else {
+            curBuf = "";
+            current = getUserDir();
+        }
+
+        try (DirectoryStream<Path> directoryStream =
+                     Files.newDirectoryStream(current, this::accept)) {
+
+            directoryStream.forEach(
+                    p -> {
+                        String value = curBuf + p.getFileName().toString();
+                        // filter not p12/pem file and public file
+                        if (!value.endsWith(P12_STR) && !value.endsWith(PEM_STR)) {
+                            return;
+                        }
+                        if (value.endsWith(P12_PUBLIC_STR) || value.endsWith(PEM_PUBLIC_STR)) {
+                            return;
+                        }
+                        if (Files.isDirectory(p)) {
+                            candidates.add(
+                                    new Candidate(
+                                            value
+                                                    + (reader.isSet(
+                                                    LineReader.Option
+                                                            .AUTO_PARAM_SLASH)
+                                                    ? sep
+                                                    : ""),
+                                            getDisplay(reader.getTerminal(), p),
+                                            null,
+                                            null,
+                                            reader.isSet(LineReader.Option.AUTO_REMOVE_SLASH)
+                                                    ? sep
+                                                    : null,
+                                            null,
+                                            false));
+                        } else {
+                            candidates.add(
+                                    new Candidate(
+                                            value,
+                                            getDisplay(reader.getTerminal(), p),
+                                            null,
+                                            null,
+                                            null,
+                                            null,
+                                            true));
+                        }
+                    });
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
+        }
+    }
+}
+
 public class JlineUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
@@ -311,6 +422,62 @@ public class JlineUtils {
                     new ArgumentCompleter(
                             new StringsCompleter(command),
                             new StringsCompleter(Common.RPBFTEpochBlockNum),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        Terminal terminal =
+                TerminalBuilder.builder()
+                        .nativeSignals(true)
+                        .signalHandler(Terminal.SignalHandler.SIG_IGN)
+                        .build();
+        Attributes termAttribs = terminal.getAttributes();
+        // enable CTRL+D shortcut to exit
+        // disable CTRL+C shortcut
+        termAttribs.setControlChar(ControlChar.VEOF, 4);
+        termAttribs.setControlChar(ControlChar.VINTR, -1);
+        terminal.setAttributes(termAttribs);
+        return LineReaderBuilder.builder()
+                .terminal(terminal)
+                .completer(new AggregateCompleter(completers))
+                .build()
+                .option(LineReader.Option.HISTORY_IGNORE_SPACE, false)
+                .option(LineReader.Option.HISTORY_REDUCE_BLANKS, false);
+    }
+
+    public static LineReader getKMSLineReader() throws IOException {
+
+        List<Completer> completers = new ArrayList<Completer>();
+
+        List<String> commands =
+                Arrays.asList(
+                        "help",
+                        "addAdminAccount",
+                        "addVisitorAccount",
+                        "deleteAccount",
+                        "listAccount",
+                        "updatePassword",
+                        "uploadPrivateKey",
+                        "listPrivateKey",
+                        "exportPrivateKey",
+                        "deletePrivateKey",
+                        "restorePrivateKey",
+                        "quit",
+                        "exit");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleterIgnoreCase(command),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        Path path = FileSystems.getDefault().getPath(console.key.tools.Common.FILE_PATH, "");
+        commands = Arrays.asList("uploadPrivateKey");
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new ConsoleKMSFilesCompleter(path),
                             new StringsCompleterIgnoreCase()));
         }
 
