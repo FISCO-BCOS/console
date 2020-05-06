@@ -77,7 +77,7 @@ public class ContractClassFactory {
         }
         String contractName = PACKAGE_NAME + "." + name;
         try {
-            return getContractClass(contractName);
+            return getContractClass2(contractName);
         } catch (Exception e) {
             throw new Exception(
                     "There is no " + name + ".class" + " in the directory of java/classes/temp");
@@ -189,6 +189,11 @@ public class ContractClassFactory {
         }
 
         return Class.forName(contractName);
+    }
+
+    public static Class<?> getContractClass2(String contractName) throws ClassNotFoundException {
+        ContractClassLoader contractClassLoader = new ContractClassLoader(TAR_GET_CLASSPATH);
+        return contractClassLoader.loadClass(contractName);
     }
 
     public static RemoteCall<?> handleDeployParameters(

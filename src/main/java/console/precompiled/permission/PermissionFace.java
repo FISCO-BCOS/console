@@ -50,4 +50,30 @@ public interface PermissionFace {
     void grantContractWritePermission(String[] params) throws Exception;
 
     void revokeContractWritePermission(String[] params) throws Exception;
+
+    void grantCommitteeMember(String[] params) throws Exception;
+
+    void revokeCommitteeMember(String[] params) throws Exception;
+
+    void listCommitteeMembers(String[] params) throws Exception;
+
+    void queryCommitteeMemberWeight(String[] params) throws Exception;
+
+    void updateCommitteeMemberWeight(String[] params) throws Exception;
+
+    void updateThreshold(String[] params) throws Exception;
+
+    void queryThreshold(String[] params) throws Exception;
+
+    void grantOperator(String[] params) throws Exception;
+
+    void revokeOperator(String[] params) throws Exception;
+
+    void listOperators(String[] params) throws Exception;
+
+    void freezeAccount(String[] params) throws Exception;
+
+    void unfreezeAccount(String[] params) throws Exception;
+
+    void getAccountStatus(String[] params) throws Exception;
 }

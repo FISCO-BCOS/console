@@ -601,6 +601,77 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void grantCommitteeMemberHelp() {
+        System.out.println("Grant committee member.");
+        System.out.println("Usage: grantCommitteeMember account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void revokeCommitteeMemberHelp() {
+        System.out.println("Revoke committee member.");
+        System.out.println("Usage: revokeCommitteeMember account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void queryCommitteeMemberWeightHelp() {
+        System.out.println("Query committee member weight.");
+        System.out.println("Usage: queryCommitteeMemberWeight account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void updateCommitteeMemberWeightHelp() {
+        System.out.println("Update committee member weight.");
+        System.out.println("Usage: updateCommitteeMemberWeight account weight");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println("weight -- int - The weight of the account.");
+        System.out.println();
+    }
+
+    public static void updateThresholdHelp() {
+        System.out.println("Update committee threshold.");
+        System.out.println("Usage: updateThreshold threshold");
+        System.out.println("threshold -- int - The threshold of the committee.");
+        System.out.println();
+    }
+
+    public static void grantOperatorHelp() {
+        System.out.println("Grant operator.");
+        System.out.println("Usage: grantOperator account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void revokeOperatorHelp() {
+        System.out.println("Revoke operator.");
+        System.out.println("Usage: revokeOperator account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void freezeAccountHelp() {
+        System.out.println("Freeze account.");
+        System.out.println("Usage: freezeAccount account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void unfreezeAccountHelp() {
+        System.out.println("Unfreeze account.");
+        System.out.println("Usage: unfreezeAccount account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void getAccountStatusHelp() {
+        System.out.println("Account status.");
+        System.out.println("Usage: getAccountStatus account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
     public static void setSystemConfigByKeyHelp() {
         System.out.println("Set a system config.");
         System.out.println("Usage: setSystemConfigByKey key value");

@@ -313,6 +313,45 @@ public class ConsoleClient {
                     case "listContractStatusManager":
                         precompiledFace.listContractStatusManager(params);
                         break;
+                    case "grantCommitteeMember":
+                        permissionFace.grantCommitteeMember(params);
+                        break;
+                    case "revokeCommitteeMember":
+                        permissionFace.revokeCommitteeMember(params);
+                        break;
+                    case "listCommitteeMembers":
+                        permissionFace.listCommitteeMembers(params);
+                        break;
+                    case "grantOperator":
+                        permissionFace.grantOperator(params);
+                        break;
+                    case "listOperators":
+                        permissionFace.listOperators(params);
+                        break;
+                    case "revokeOperator":
+                        permissionFace.revokeOperator(params);
+                        break;
+                    case "updateThreshold":
+                        permissionFace.updateThreshold(params);
+                        break;
+                    case "updateCommitteeMemberWeight":
+                        permissionFace.updateCommitteeMemberWeight(params);
+                        break;
+                    case "queryThreshold":
+                        permissionFace.queryThreshold(params);
+                        break;
+                    case "queryCommitteeMemberWeight":
+                        permissionFace.queryCommitteeMemberWeight(params);
+                        break;
+                    case "freezeAccount":
+                        permissionFace.freezeAccount(params);
+                        break;
+                    case "unfreezeAccount":
+                        permissionFace.unfreezeAccount(params);
+                        break;
+                    case "getAccountStatus":
+                        permissionFace.getAccountStatus(params);
+                        break;
                     default:
                         System.out.println(
                                 "Undefined command: \"" + params[0] + "\". Try \"help\".\n");
