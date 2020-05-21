@@ -53,6 +53,7 @@ configurations {
     all*.exclude group: 'org.apache.httpcomponents', module: 'httpclient'
     all*.exclude group: 'org.mockito', module: 'mockito-core'
     all*.exclude group: 'io.reactivex', module: 'rxjava'
+    all*.exclude group: 'org.projectlombok', module: 'lombok'
   //  all*.exclude group: 'org.ethereum', module: 'solcJ-all'
 }
 
