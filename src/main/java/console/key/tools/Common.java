@@ -1,14 +1,12 @@
 package console.key.tools;
 
-import org.fisco.bcos.web3j.crypto.Hash;
-import org.fisco.bcos.web3j.utils.Numeric;
-
 public class Common {
     public static String KMS_ROLE_ADMIN = "admin";
     public static String KMS_ROLE_VISITOR = "visitor";
     public static int KMS_ROLE_ADMIN_ID = 100000;
     public static int KMS_ROLE_VISITOR_ID = 100001;
     public static String FILE_PATH = "accounts/";
+    public static String FILE_GM_PATH = "accounts_gm/";
     public static String ACCOUNT_NAME_FORMAT =
             "Begins with a letter, between 5 and 20 in length, and contain only characters, numbers, and underscores.";
     public static String PASSWORD_FORMAT =
@@ -41,7 +39,8 @@ public class Common {
     }
 
     public static boolean checkUserName(String userName) {
-        // Begins with a letter, between 5 and 20 in length, and contain only characters, Numbers, and underscores.
+        // Begins with a letter, between 5 and 20 in length, and contain only characters, Numbers,
+        // and underscores.
         String regExp = "^[a-zA-Z][a-zA-Z0-9_]{4,19}$";
         return userName.matches(regExp);
     }

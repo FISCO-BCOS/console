@@ -58,7 +58,6 @@ public class KeyImpl implements KeyFace {
             consoleAccountName = data.getString("account");
             roleName = data.getString("roleName");
             String accountInfo = consoleAccountName + ":" + roleName;
-            logger.info(" accountInfo: {}, token: {}", accountInfo, token);
             return accountInfo;
         } else {
             System.out.println(jsonBody.getString("message"));
@@ -263,7 +262,7 @@ public class KeyImpl implements KeyFace {
                     return;
                 } else {
                     if (accountTotalCount != jsonBody.getIntValue("totalCount")) {
-                        logger.warn(" the count of accounts has changed");
+                        logger.warn(" the total count has changed");
                         throw new ConsoleMessageException(
                                 "The count of accounts has changed, please inquire again.");
                     }
@@ -278,7 +277,11 @@ public class KeyImpl implements KeyFace {
                 }
             }
             System.out.println(
-                    "The count of account created by \"" + consoleAccountName + "\" is " + accountTotalCount + ".");
+                    "The count of account created by \""
+                            + consoleAccountName
+                            + "\" is "
+                            + accountTotalCount
+                            + ".");
             ConsoleUtils.singleLine();
             ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 30);
             Table table = Table.of(headers, tableData, cf);
@@ -551,7 +554,12 @@ public class KeyImpl implements KeyFace {
                 }
             }
 
-            System.out.println("The count of keys uploaded by \"" + consoleAccountName + "\" is " + keyTotalCount + ".");
+            System.out.println(
+                    "The count of keys uploaded by \""
+                            + consoleAccountName
+                            + "\" is "
+                            + keyTotalCount
+                            + ".");
             ConsoleUtils.singleLine();
             ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 45);
             Table table = Table.of(headers, tableData, cf);
@@ -705,6 +713,13 @@ public class KeyImpl implements KeyFace {
             System.out.println("Decrypt fail.");
             return;
         }
-        System.out.println("The private key \"" + keyAlias + "\" of account \"" + accountName  + "\" is " + plainText + ".");
+        System.out.println(
+                "The private key \""
+                        + keyAlias
+                        + "\" of account \""
+                        + accountName
+                        + "\" is "
+                        + plainText
+                        + ".");
     }
 }

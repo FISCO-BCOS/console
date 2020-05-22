@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
@@ -252,7 +253,7 @@ class ConsoleKMSFilesCompleter extends FilesCompleter {
         }
 
         try (DirectoryStream<Path> directoryStream =
-                     Files.newDirectoryStream(current, this::accept)) {
+                Files.newDirectoryStream(current, this::accept)) {
 
             directoryStream.forEach(
                     p -> {
@@ -269,10 +270,10 @@ class ConsoleKMSFilesCompleter extends FilesCompleter {
                                     new Candidate(
                                             value
                                                     + (reader.isSet(
-                                                    LineReader.Option
-                                                            .AUTO_PARAM_SLASH)
-                                                    ? sep
-                                                    : ""),
+                                                                    LineReader.Option
+                                                                            .AUTO_PARAM_SLASH)
+                                                            ? sep
+                                                            : ""),
                                             getDisplay(reader.getTerminal(), p),
                                             null,
                                             null,
@@ -471,7 +472,11 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase()));
         }
 
-        Path path = FileSystems.getDefault().getPath(console.key.tools.Common.FILE_PATH, "");
+        String filePath =
+                (EncryptType.encryptType == 0)
+                        ? console.key.tools.Common.FILE_PATH
+                        : console.key.tools.Common.FILE_GM_PATH;
+        Path path = FileSystems.getDefault().getPath(filePath, "");
         commands = Arrays.asList("uploadPrivateKey");
         for (String command : commands) {
             completers.add(

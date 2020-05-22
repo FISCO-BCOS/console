@@ -46,7 +46,7 @@ public class HttpsRequest {
                             .setSSLHostnameVerifier((x, y) -> true)
                             .build();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warn("init httpClient warn message: {}, e: {}", e.getMessage(), e);
         }
     }
 
