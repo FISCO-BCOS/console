@@ -253,15 +253,6 @@ public class ConsoleClient {
                     case "listDeployAndCreateManager":
                         permissionFace.listDeployAndCreateManager(params);
                         break;
-                    case "grantPermissionManager":
-                        permissionFace.grantPermissionManager(params);
-                        break;
-                    case "revokePermissionManager":
-                        permissionFace.revokePermissionManager(params);
-                        break;
-                    case "listPermissionManager":
-                        permissionFace.listPermissionManager(params);
-                        break;
                     case "grantNodeManager":
                         permissionFace.grantNodeManager(params);
                         break;

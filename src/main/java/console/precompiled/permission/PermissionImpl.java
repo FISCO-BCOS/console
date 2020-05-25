@@ -184,70 +184,6 @@ public class PermissionImpl implements PermissionFace {
     }
 
     @Override
-    public void grantPermissionManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantPermissionManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("grantPermissionManager");
-            return;
-        }
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.grantPermissionManagerHelp();
-            return;
-        }
-        Address convertAddr = ConsoleUtils.convertAddress(address);
-        if (!convertAddr.isValid()) {
-            return;
-        }
-        address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.grantPermissionManager(address);
-        ConsoleUtils.printJson(result);
-        System.out.println();
-    }
-
-    @Override
-    public void revokePermissionManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokePermissionManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("revokePermissionManager");
-            return;
-        }
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.revokePermissionManagerHelp();
-            return;
-        }
-        Address convertAddr = ConsoleUtils.convertAddress(address);
-        if (!convertAddr.isValid()) {
-            return;
-        }
-        address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.revokePermissionManager(address);
-        ConsoleUtils.printJson(result);
-        System.out.println();
-    }
-
-    @Override
-    public void listPermissionManager(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listPermissionManager")) {
-            return;
-        }
-        PermissionService permissionTableService = new PermissionService(web3j, credentials);
-        List<PermissionInfo> permissions = permissionTableService.listPermissionManager();
-        printPermissionInfo(permissions);
-    }
-
-    @Override
     public void grantNodeManager(String[] params) throws Exception {
         if (params.length < 2) {
             HelpInfo.promptHelp("grantNodeManager");
@@ -468,7 +404,7 @@ public class PermissionImpl implements PermissionFace {
         }
 
         if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.revokeSysConfigManagerHelp();
+            HelpInfo.listContractWritePermissionHelp();
             return;
         }
 
@@ -691,7 +627,8 @@ public class PermissionImpl implements PermissionFace {
                 throw new InvalidParameterException(" invalid weight .");
             }
         } catch (NumberFormatException e) {
-            System.out.println("Please provide weight by non-negative integer mode .");
+            System.out.println(
+                    "Please provide weight by non-negative integer mode(from 1 to 2147483647) .");
             System.out.println();
             return;
         }
@@ -727,13 +664,13 @@ public class PermissionImpl implements PermissionFace {
         Integer threshold = null;
         try {
             threshold = Integer.parseInt(params[1]);
-            if (threshold < 0 || threshold > 100) {
+            if (threshold < 0 || threshold >= 100) {
                 throw new InvalidParameterException(" invalid threshold .");
             }
         } catch (Exception e) {
             System.out.println(
                     "Please provide threshold by non-negative integer mode, "
-                            + " from 0 to 100 "
+                            + " from 0 to 99 "
                             + ".");
             System.out.println();
             return;

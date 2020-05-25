@@ -21,12 +21,6 @@ public interface PermissionFace {
 
     void listDeployAndCreateManager(String[] params) throws Exception;
 
-    void grantPermissionManager(String[] params) throws Exception;
-
-    void revokePermissionManager(String[] params) throws Exception;
-
-    void listPermissionManager(String[] params) throws Exception;
-
     void grantNodeManager(String[] params) throws Exception;
 
     void revokeNodeManager(String[] params) throws Exception;
