@@ -69,6 +69,7 @@ public class WelcomeInfo {
         sb.append("getSealerList                            Query nodeId list for sealer nodes.\n");
         sb.append("getSyncStatus                            Query sync status.\n");
         sb.append("getSystemConfigByKey                     Query a system config value by key.\n");
+        sb.append("setSystemConfigByKey                     Set a system config value by key.\n");
         sb.append("getTotalTransactionCount                 Query total transaction count.\n");
         sb.append(
                 "getTransactionByBlockHashAndIndex        Query information about a transaction by block hash and transaction index position.\n");
@@ -89,8 +90,6 @@ public class WelcomeInfo {
         sb.append(
                 "grantNodeManager                         Grant permission for node configuration by address.\n");
         sb.append(
-                "grantPermissionManager                   Grant permission for permission configuration by address.\n");
-        sb.append(
                 "grantSysConfigManager                    Grant permission for system configuration by address.\n");
         sb.append(
                 "grantUserTableManager                    Grant permission for user table by table name and address.\n");
@@ -101,8 +100,6 @@ public class WelcomeInfo {
                 "listDeployAndCreateManager               Query permission information for deploy contract and create user table.\n");
         sb.append(
                 "listNodeManager                          Query permission information for node configuration.\n");
-        sb.append(
-                "listPermissionManager                    Query permission information for permission configuration.\n");
         sb.append(
                 "listSysConfigManager                     Query permission information for system configuration.\n");
         sb.append(
@@ -118,8 +115,6 @@ public class WelcomeInfo {
         sb.append(
                 "revokeNodeManager                        Revoke permission for node configuration by address.\n");
         sb.append(
-                "revokePermissionManager                  Revoke permission for permission configuration by address.\n");
-        sb.append(
                 "revokeSysConfigManager                   Revoke permission for system configuration by address.\n");
         sb.append(
                 "revokeUserTableManager                   Revoke permission for user table by table name and address.\n");
@@ -129,6 +124,11 @@ public class WelcomeInfo {
                 "grantContractWritePermission             Grant the account the contract write permission.\n");
         sb.append(
                 "revokeContractWritePermission            Revoke the account the contract write permission.\n");
+        sb.append(
+                "grantContractStatusManager               Grant contract authorization to the user.\n");
+        sb.append("getContractStatus                        Get the status of the contract.\n");
+        sb.append(
+                "listContractStatusManager                List the authorization of the contract.\n");
         sb.append("grantCommitteeMember                     Grant the account committee member\n");
         sb.append(
                 "revokeCommitteeMember                    Revoke the account from committee member\n");
@@ -145,11 +145,6 @@ public class WelcomeInfo {
         sb.append("getAccountStatus                         GetAccountStatus of the account.\n");
         sb.append("freezeContract                           Freeze the contract.\n");
         sb.append("unfreezeContract                         Unfreeze the contract.\n");
-        sb.append(
-                "grantContractStatusManager               Grant contract authorization to the user.\n");
-        sb.append("getContractStatus                        Get the status of the contract.\n");
-        sb.append(
-                "listContractStatusManager                List the authorization of the contract.\n");
         sb.append(
                 "switch(s)                                Switch to a specific group by group ID.\n");
         sb.append("[create sql]                             Create table by sql.\n");
