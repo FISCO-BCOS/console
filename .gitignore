@@ -12,6 +12,7 @@
 ### Gradle template
 .gradle
 /build
+/bin
 gradle.properties
 
 

@@ -117,7 +117,36 @@ public class HelpInfo {
             case "q":
                 quitHelp();
                 break;
-
+            case "addAdminAccount":
+                addAdminAccountHelp();
+                break;
+            case "addVisitorAccount":
+                addVisitorAccountHelp();
+                break;
+            case "deleteAccount":
+                deleteAccountHelp();
+                break;
+            case "listAccount":
+                listAccountHelp();
+                break;
+            case "updatePassword":
+                updatePasswordHelp();
+                break;
+            case "uploadPrivateKey":
+                uploadPrivateKeyHelp();
+                break;
+            case "listPrivateKey":
+                listPrivateKeyHelp();
+                break;
+            case "exportPrivateKey":
+                exportPrivateKeyHelp();
+                break;
+            case "deletePrivateKey":
+                deletePrivateKeyHelp();
+                break;
+            case "restorePrivateKey":
+                restorePrivateKeyHelp();
+                break;
             default:
                 break;
         }
@@ -640,10 +669,91 @@ public class HelpInfo {
 
     public static void startHelp() {
         System.out.println("Please provide one of the following ways to start the console.");
-        System.out.println("Usage: ");
+        System.out.println("Usage to access blockchain service: ");
         System.out.println("./start.sh");
         System.out.println("./start.sh groupID");
         System.out.println("./start.sh groupID -pem pemName");
         System.out.println("./start.sh groupID -p12 p12Name");
+        System.out.println("Usage to access key manager service: ");
+        System.out.println("./start.sh -kms account password");
+    }
+
+    public static void addAdminAccountHelp() {
+        System.out.println("Add an admin account.");
+        System.out.println("Usage: addAdminAccount userName password publicKey");
+        System.out.println("userName -- The unique identification of account.");
+        System.out.println("password -- The authentication of account.");
+        System.out.println(
+                "publicKey -- The public key of account, used to encrypt visitor's private key.");
+        System.out.println();
+    }
+
+    public static void addVisitorAccountHelp() {
+        System.out.println("Add a visitor account.");
+        System.out.println("Usage: addVisitorAccount userName password");
+        System.out.println("userName -- The unique identification of account.");
+        System.out.println("password -- The authentication of account.");
+        System.out.println();
+    }
+
+    public static void deleteAccountHelp() {
+        System.out.println("Delete admin or visitor account.");
+        System.out.println("Usage: deleteAccount userName");
+        System.out.println("userName -- The unique identification of user.");
+        System.out.println();
+    }
+
+    public static void listAccountHelp() {
+        System.out.println("Display a list of accounts created by yourself.");
+        System.out.println("Usage: listAccount");
+        System.out.println();
+    }
+
+    public static void updatePasswordHelp() {
+        System.out.println("Update the password of your own account.");
+        System.out.println("Usage: updatePassword oldAccountPwd newAccountPwd");
+        System.out.println("oldAccountPwd -- The password before change.");
+        System.out.println("newAccountPwd -- The password after change.");
+        System.out.println();
+    }
+
+    public static void uploadPrivateKeyHelp() {
+        System.out.println("Upload the private key to key manager service.");
+        System.out.println("Usage: uploadPrivateKey keyFile password [alias]");
+        System.out.println("keyFile -- The file in which private key is stored.");
+        System.out.println(
+                "password -- The password used to decrypt private key file. If the keyFile is .p12, it is also the decryption password");
+        System.out.println("alias -- [Optional] The alias of private key, default public key.");
+        System.out.println();
+    }
+
+    public static void listPrivateKeyHelp() {
+        System.out.println("Display a list of private keys owned by yourself.");
+        System.out.println("Usage: listPrivateKey");
+        System.out.println();
+    }
+
+    public static void exportPrivateKeyHelp() {
+        System.out.println("Export your own private key by alias.");
+        System.out.println("Usage: exportPrivateKey alias password");
+        System.out.println("alias -- The alias of private key.");
+        System.out.println("password -- The password used to decrypt the private key.");
+        System.out.println();
+    }
+
+    public static void deletePrivateKeyHelp() {
+        System.out.println("Delete your own private key by alias.");
+        System.out.println("Usage: deletePrivateKey alias");
+        System.out.println("alias -- The alias of private key.");
+        System.out.println();
+    }
+
+    public static void restorePrivateKeyHelp() {
+        System.out.println("Restore account's private key by alias.");
+        System.out.println("Usage: restorePrivateKey account alias privateKey");
+        System.out.println("account -- The owner of account's private key.");
+        System.out.println("alias -- The alias of account's private key.");
+        System.out.println("privateKey -- The creator's key.");
+        System.out.println();
     }
 }

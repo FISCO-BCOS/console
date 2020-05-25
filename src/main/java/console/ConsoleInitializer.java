@@ -5,6 +5,9 @@ import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
+import console.key.KMSService;
+import console.key.KeyFace;
+import console.key.KeyImpl;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.PrecompiledImpl;
 import console.precompiled.permission.PermissionFace;
@@ -63,19 +66,45 @@ public class ConsoleInitializer {
     public static final int InvalidRequest = 40009;
     public static final String ACCOUNT_DIR1 = "accounts/";
     public static final String ACCOUNT_DIR2 = "./accounts/";
+    private String urlPrefix;
 
     private Web3jFace web3jFace;
     private PrecompiledFace precompiledFace;
     private PermissionFace permissionFace;
     private ContractFace contractFace;
+    private KeyFace keyFace;
+    private String accountInfo;
 
-    public void init(String[] args)
+    public int init(String[] args)
             throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
                     NoSuchProviderException, UnrecoverableKeyException, KeyStoreException,
                     InvalidKeySpecException {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         Service service = context.getBean(Service.class);
+        KMSService kms = context.getBean(KMSService.class);
+        urlPrefix = "https://" + kms.getUrl() + "/FISCO-Key-Manager/";
+        logger.info(" kms service url prefix: {}", urlPrefix);
         groupID = service.getGroupId();
+
+        if (args.length > 0 && "-kms".equals(args[0])) {
+            if (args.length == 3) {
+                keyFace = new KeyImpl();
+                keyFace.setURLPrefix(urlPrefix);
+                try {
+                    accountInfo = keyFace.login(args);
+                    if (accountInfo.equals("")) {
+                        close();
+                    }
+                } catch (Exception e) {
+                    logger.error(" message: {}, e: {}", e.getMessage(), e);
+                    close();
+                }
+                return Common.INIT_KMS;
+            } else {
+                HelpInfo.startHelp();
+                close();
+            }
+        }
 
         switch (args.length) {
             case 0: // bash start.sh
@@ -185,6 +214,8 @@ public class ConsoleInitializer {
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             close();
         }
+
+        return Common.INIT_CHAIN;
     }
 
     private void checkAccountPrivateKey(ECParameterSpec ecParameterSpec, int encryptType) {
@@ -466,5 +497,13 @@ public class ConsoleInitializer {
 
     public ContractFace getContractFace() {
         return contractFace;
+    }
+
+    public KeyFace getKeyFace() {
+        return keyFace;
+    }
+
+    public String getAccountInfo() {
+        return accountInfo;
     }
 }

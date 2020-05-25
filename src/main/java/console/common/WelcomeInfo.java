@@ -21,6 +21,14 @@ public class WelcomeInfo {
         ConsoleUtils.doubleLine();
     }
 
+    public static void welcomeKMS() {
+        ConsoleUtils.doubleLine();
+        System.out.println(
+                "Welcome to Key Manager Service console(" + ConsoleVersion.Version + ")!");
+        System.out.println("Type 'help' or 'h' for help. Type 'quit' or 'q' to quit console.");
+        ConsoleUtils.doubleLine();
+    }
+
     public static void help(String[] params) {
         if (HelpInfo.promptNoParams(params, "help")) {
             return;
@@ -140,6 +148,47 @@ public class WelcomeInfo {
         sb.append("[select sql]                             Select records by sql.\n");
         sb.append("[update sql]                             Update records by sql.");
 
+        System.out.println(sb.toString());
+        ConsoleUtils.singleLine();
+        System.out.println();
+    }
+
+    public static void KMSHelp(String[] params, String role) {
+        if (HelpInfo.promptNoParams(params, "help")) {
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("help");
+            return;
+        }
+        System.out.println("The following commands can be called by the " + role);
+        ConsoleUtils.singleLine();
+        StringBuilder sb = new StringBuilder();
+        if (role.equals("admin")) {
+            sb.append("addAdminAccount                          Add an admin account.\n");
+            sb.append("addVisitorAccount                        Add a visitor account.\n");
+            sb.append(
+                    "deleteAccount                            Delete admin or visitor account.\n");
+            sb.append(
+                    "listAccount                              Display a list of accounts created by yourself.\n");
+            sb.append(
+                    "updatePassword                           Update the password of your own account.\n");
+            sb.append(
+                    "restorePrivateKey                        Restore account's private key by alias.\n");
+            sb.append("quit(q)                                  Quit console.\n");
+        } else if (role.equals("visitor")) {
+            sb.append(
+                    "updatePassword                           Update the password of your own account.\n");
+            sb.append(
+                    "uploadPrivateKey                         Upload the private key to key manager service.\n");
+            sb.append(
+                    "listPrivateKey                           Display a list of private keys owned by yourself.\n");
+            sb.append(
+                    "exportPrivateKey                         Export your own private key by alias.\n");
+            sb.append(
+                    "deletePrivateKey                         Delete your own private key by alias.\n");
+            sb.append("quit(q)                                  Quit console.\n");
+        }
         System.out.println(sb.toString());
         ConsoleUtils.singleLine();
         System.out.println();

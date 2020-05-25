@@ -28,11 +28,14 @@ function LOG_INFO()
 }
 
 function Usage() {
-    LOG_INFO "Usage:start the console"
+    LOG_INFO "Please provide one of the following ways to start the console."
+    LOG_INFO "Usage to access blockchain service: "
     LOG_INFO "./start.sh"
     LOG_INFO "./start.sh groupID"
     LOG_INFO "./start.sh groupID -pem pemName"
     LOG_INFO "./start.sh groupID -p12 p12Name"
+    LOG_INFO "Usage to access key manager service: "
+    LOG_INFO "./start.sh -kms user password"
     LOG_INFO "print console version:"
     LOG_INFO "./start.sh --version or -v"
 }
