@@ -5,10 +5,10 @@ import com.alibaba.fastjson.JSONObject;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
 import console.exception.ConsoleMessageException;
+import console.key.service.KMSService;
 import console.key.tools.AES;
 import console.key.tools.Common;
 import console.key.tools.ECC;
-import console.key.tools.HttpsRequest;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
@@ -16,14 +16,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.Map;
 import org.fisco.bcos.channel.client.P12Manager;
 import org.fisco.bcos.channel.client.PEMManager;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 
 public class KeyImpl implements KeyFace {
 
@@ -33,6 +37,16 @@ public class KeyImpl implements KeyFace {
     private String token;
     private String consoleAccountName;
     private String roleName;
+
+    private KMSService kmsService;
+
+    public KeyImpl() throws Exception {
+        try {
+            kmsService = new KMSService();
+        } catch (Exception e) {
+            throw new ConsoleMessageException("Init rest template error: " + e);
+        }
+    }
 
     @Override
     public void setURLPrefix(String urlPrefix) {
@@ -45,24 +59,26 @@ public class KeyImpl implements KeyFace {
         String account = params[1];
         String accountPwd = params[2];
 
-        Map<String, String> paramsMap = new HashMap<String, String>();
-        paramsMap.put("account", account);
-        paramsMap.put("accountPwd", accountPwd);
-        String strBody = HttpsRequest.httpsPostWithForm(url, paramsMap);
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/x-www-form-urlencoded");
+        LinkedMultiValueMap paramsMap = new LinkedMultiValueMap();
+        paramsMap.add("account", account);
+        paramsMap.add("accountPwd", accountPwd);
+        HttpEntity entity = new HttpEntity(paramsMap, headers);
+
+        ResponseEntity<String> response =
+                kmsService.getRestTemplate().exchange(url, HttpMethod.POST, entity, String.class);
+        String strBody = response.getBody();
         logger.info(strBody);
+
         JSONObject jsonBody = JSONObject.parseObject(strBody);
-        int code = Integer.parseInt(jsonBody.getString("code"));
-        if (0 == code) {
-            JSONObject data = jsonBody.getJSONObject("data");
-            token = data.getString("token");
-            consoleAccountName = data.getString("account");
-            roleName = data.getString("roleName");
-            String accountInfo = consoleAccountName + ":" + roleName;
-            return accountInfo;
-        } else {
-            System.out.println(jsonBody.getString("message"));
-            return "";
-        }
+        JSONObject data = jsonBody.getJSONObject("data");
+        token = data.getString("token");
+        consoleAccountName = data.getString("account");
+        roleName = data.getString("roleName");
+        String accountInfo = consoleAccountName + ":" + roleName;
+
+        return accountInfo;
     }
 
     @Override
@@ -107,18 +123,23 @@ public class KeyImpl implements KeyFace {
         jsonParam.put("accountPwd", accountPwd);
         jsonParam.put("publicKey", publicKey);
         jsonParam.put("roleId", Common.KMS_ROLE_ADMIN_ID);
-
-        String strBody = HttpsRequest.httpsPostWithJson(url, jsonParam, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println("Fail, " + jsonBody.getString("message"));
-        } else {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        headers.add("Content-Type", "application/json");
+        HttpEntity<String> entity = new HttpEntity<String>(jsonParam.toJSONString(), headers);
+        try {
+            ResponseEntity<String> response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.POST, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
             JSONObject data = jsonBody.getJSONObject("data");
             String newAccount = data.getString("account");
             System.out.println("Add an admin account \"" + newAccount + "\" successfully.");
+        } catch (HttpClientErrorException e) {
+            System.out.println("Fail, " + e.getResponseBodyAsString());
         }
     }
 
@@ -158,18 +179,23 @@ public class KeyImpl implements KeyFace {
         jsonParam.put("account", account);
         jsonParam.put("accountPwd", accountPwd);
         jsonParam.put("roleId", Common.KMS_ROLE_VISITOR_ID);
-
-        String strBody = HttpsRequest.httpsPostWithJson(url, jsonParam, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println("Fail, " + jsonBody.getString("message"));
-        } else {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        headers.add("Content-Type", "application/json");
+        HttpEntity<String> entity = new HttpEntity<String>(jsonParam.toJSONString(), headers);
+        try {
+            ResponseEntity<String> response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.POST, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
             JSONObject data = jsonBody.getJSONObject("data");
             String newAccount = data.getString("account");
             System.out.println("Add a visitor account \"" + newAccount + "\" successfully.");
+        } catch (HttpClientErrorException e) {
+            System.out.println("Fail, " + e.getResponseBodyAsString());
         }
     }
 
@@ -201,15 +227,14 @@ public class KeyImpl implements KeyFace {
         }
 
         String url = urlPrefix + "account/deleteAccount/" + accountName;
-        String strBody = HttpsRequest.httpsDelete(url, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println("Fail, " + jsonBody.getString("message"));
-        } else {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        try {
+            kmsService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
             System.out.println("Delete an account \"" + accountName + "\" successfully.");
+        } catch (HttpClientErrorException e) {
+            System.out.println("Fail, " + e.getResponseBodyAsString());
         }
     }
 
@@ -228,15 +253,19 @@ public class KeyImpl implements KeyFace {
         int pageNumber = 1;
         int pageSize = 10;
         String url = urlPrefix + "account/accountList/" + pageNumber + "/" + pageSize;
-        String strBody = HttpsRequest.httpsGet(url, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println(jsonBody.getString("message"));
-        } else {
-            String[] headers = {"name", "role", "createTime"};
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        ResponseEntity<String> response;
+        try {
+            response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
+            String[] tableHeaders = {"name", "role", "createTime"};
             int accountTotalCount = jsonBody.getIntValue("totalCount");
             String[][] tableData = new String[accountTotalCount][3];
             JSONArray data = jsonBody.getJSONArray("data");
@@ -252,28 +281,25 @@ public class KeyImpl implements KeyFace {
             }
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
                 url = urlPrefix + "account/accountList/" + pageIdx + "/" + pageSize;
-                strBody = HttpsRequest.httpsGet(url, token);
+                response =
+                        kmsService
+                                .getRestTemplate()
+                                .exchange(url, HttpMethod.GET, entity, String.class);
+                strBody = response.getBody();
+                logger.info(strBody);
                 jsonBody = JSONObject.parseObject(strBody);
-                if (jsonBody == null) {
-                    throw new ConsoleMessageException("The https result is error.");
+                if (accountTotalCount != jsonBody.getIntValue("totalCount")) {
+                    logger.warn(" the total count has changed");
+                    throw new ConsoleMessageException(
+                            "The count of accounts has changed, please inquire again.");
                 }
-                if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-                    System.out.println(jsonBody.getString("message"));
-                    return;
-                } else {
-                    if (accountTotalCount != jsonBody.getIntValue("totalCount")) {
-                        logger.warn(" the total count has changed");
-                        throw new ConsoleMessageException(
-                                "The count of accounts has changed, please inquire again.");
-                    }
-                    data = jsonBody.getJSONArray("data");
-                    for (int i = 0; i < data.size(); i++) {
-                        JSONObject account = data.getJSONObject(i);
-                        int index = (pageIdx - 1) * pageSize + i;
-                        tableData[index][0] = account.getString("account");
-                        tableData[index][1] = account.getString("roleName");
-                        tableData[index][2] = account.getString("createTime");
-                    }
+                data = jsonBody.getJSONArray("data");
+                for (int i = 0; i < data.size(); i++) {
+                    JSONObject account = data.getJSONObject(i);
+                    int index = (pageIdx - 1) * pageSize + i;
+                    tableData[index][0] = account.getString("account");
+                    tableData[index][1] = account.getString("roleName");
+                    tableData[index][2] = account.getString("createTime");
                 }
             }
             System.out.println(
@@ -282,11 +308,16 @@ public class KeyImpl implements KeyFace {
                             + "\" is "
                             + accountTotalCount
                             + ".");
+            if (0 == accountTotalCount) {
+                return;
+            }
             ConsoleUtils.singleLine();
             ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 30);
-            Table table = Table.of(headers, tableData, cf);
+            Table table = Table.of(tableHeaders, tableData, cf);
             System.out.println(table);
             ConsoleUtils.singleLine();
+        } catch (HttpClientErrorException e) {
+            System.out.println("Fail, " + e.getResponseBodyAsString());
         }
     }
 
@@ -320,15 +351,15 @@ public class KeyImpl implements KeyFace {
         JSONObject jsonParam = new JSONObject();
         jsonParam.put("oldAccountPwd", oldPassword);
         jsonParam.put("newAccountPwd", newPassword);
-        String strBody = HttpsRequest.httpsPut(url, jsonParam, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println("Fail, " + jsonBody.getString("message"));
-        } else {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        headers.add("Content-Type", "application/json");
+        HttpEntity<String> entity = new HttpEntity<String>(jsonParam.toJSONString(), headers);
+        try {
+            kmsService.getRestTemplate().exchange(url, HttpMethod.PUT, entity, String.class);
             System.out.println("Update password successfully.");
+        } catch (HttpClientErrorException e) {
+            System.out.println("Fail, " + e.getResponseBodyAsString());
         }
     }
 
@@ -359,22 +390,16 @@ public class KeyImpl implements KeyFace {
             return;
         }
 
-        String creatorPublicKey = getCreatorPublicKey();
-        if (creatorPublicKey.equals("")) {
-            System.out.println("The public key used to encrypt private key of account is empty.");
+        String creatorPublicKey;
+        try {
+            creatorPublicKey = getCreatorPublicKey();
+        } catch (ConsoleMessageException e) {
+            System.out.println("Fail, " + e.getMessage());
             return;
-        } else {
-            logger.info(
-                    "The public key used to encrypt private key of account is {}",
-                    creatorPublicKey);
         }
 
         String password = params[2];
         String privateKeyHex = keyPair.getPrivateKey().toString(16);
-        logger.info(
-                "The private key is {}, public key is {}",
-                privateKeyHex,
-                keyPair.getPublicKey().toString(16));
         String alias;
         if (params.length == 4) {
             alias = params[3];
@@ -402,37 +427,48 @@ public class KeyImpl implements KeyFace {
         jsonParam.put("keyAlias", alias);
         jsonParam.put("cipherText", cipherECC);
         jsonParam.put("privateKey", cipherAES);
-        String strBody = HttpsRequest.httpsPostWithJson(url, jsonParam, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println(jsonBody.getString("message"));
-        } else {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        headers.add("Content-Type", "application/json");
+        HttpEntity<String> entity = new HttpEntity<String>(jsonParam.toJSONString(), headers);
+        try {
+            ResponseEntity<String> response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.POST, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
             JSONObject data = jsonBody.getJSONObject("data");
             alias = data.getString("keyAlias");
             System.out.println("Upload a private key \"" + alias + "\" successfully.");
+        } catch (HttpClientErrorException e) {
+            System.out.println("Fail, " + e.getResponseBodyAsString());
         }
 
         return;
     }
 
-    private String getCreatorPublicKey() {
-        String publicKey = "";
+    private String getCreatorPublicKey() throws ConsoleMessageException {
+        String publicKey;
 
         String url = urlPrefix + "account/getPublicKey";
-        String strBody = HttpsRequest.httpsGet(url, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            logger.error("The http result is error.");
-            return "";
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            logger.error("getCreatorPublicKey return: {}", strBody);
-        } else {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        try {
+            ResponseEntity<String> response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
             JSONObject data = jsonBody.getJSONObject("data");
             publicKey = data.getString("publicKey");
+        } catch (HttpClientErrorException e) {
+            throw new ConsoleMessageException(
+                    "getCreatorPublicKey fail, " + e.getResponseBodyAsString());
         }
 
         return publicKey;
@@ -507,15 +543,19 @@ public class KeyImpl implements KeyFace {
         int pageNumber = 1;
         int pageSize = 10;
         String url = urlPrefix + "escrow/keyList/" + pageNumber + "/" + pageSize;
-        String strBody = HttpsRequest.httpsGet(url, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println(jsonBody.getString("message"));
-        } else {
-            String[] headers = {"alias", "createTime"};
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        ResponseEntity<String> response;
+        try {
+            response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
+            String[] tableHeaders = {"alias", "createTime"};
             int keyTotalCount = jsonBody.getIntValue("totalCount");
             String[][] tableData = new String[keyTotalCount][2];
             JSONArray data = jsonBody.getJSONArray("data");
@@ -530,27 +570,24 @@ public class KeyImpl implements KeyFace {
             }
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
                 url = urlPrefix + "escrow/keyList/" + pageIdx + "/" + pageSize;
-                strBody = HttpsRequest.httpsGet(url, token);
+                response =
+                        kmsService
+                                .getRestTemplate()
+                                .exchange(url, HttpMethod.GET, entity, String.class);
+                strBody = response.getBody();
+                logger.info(strBody);
                 jsonBody = JSONObject.parseObject(strBody);
-                if (jsonBody == null) {
-                    throw new ConsoleMessageException("The https result is error.");
+                if (keyTotalCount != jsonBody.getIntValue("totalCount")) {
+                    logger.warn(" the total count has changed");
+                    throw new ConsoleMessageException(
+                            "The count of uploaded keys has changed, please inquire again.");
                 }
-                if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-                    System.out.println(jsonBody.getString("message"));
-                    return;
-                } else {
-                    if (keyTotalCount != jsonBody.getIntValue("totalCount")) {
-                        logger.warn(" the count of uploaded keys has changed");
-                        throw new ConsoleMessageException(
-                                "The count of uploaded keys has changed, please inquire again.");
-                    }
-                    data = jsonBody.getJSONArray("data");
-                    for (int i = 0; i < data.size(); i++) {
-                        JSONObject key = data.getJSONObject(i);
-                        int index = (pageIdx - 1) * pageSize + i;
-                        tableData[index][0] = key.getString("keyAlias");
-                        tableData[index][1] = key.getString("createTime");
-                    }
+                data = jsonBody.getJSONArray("data");
+                for (int i = 0; i < data.size(); i++) {
+                    JSONObject key = data.getJSONObject(i);
+                    int index = (pageIdx - 1) * pageSize + i;
+                    tableData[index][0] = key.getString("keyAlias");
+                    tableData[index][1] = key.getString("createTime");
                 }
             }
 
@@ -560,11 +597,16 @@ public class KeyImpl implements KeyFace {
                             + "\" is "
                             + keyTotalCount
                             + ".");
+            if (0 == keyTotalCount) {
+                return;
+            }
             ConsoleUtils.singleLine();
             ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 45);
-            Table table = Table.of(headers, tableData, cf);
+            Table table = Table.of(tableHeaders, tableData, cf);
             System.out.println(table);
             ConsoleUtils.singleLine();
+        } catch (HttpClientErrorException e) {
+            System.out.println("Fail, " + e.getResponseBodyAsString());
         }
     }
 
@@ -592,32 +634,36 @@ public class KeyImpl implements KeyFace {
         String url = urlPrefix + "escrow/queryKey";
         String keyAlias = params[1];
         url += "/" + consoleAccountName + "/" + keyAlias;
-        String strBody = HttpsRequest.httpsGet(url, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        try {
+            ResponseEntity<String> response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
+            JSONObject data = jsonBody.getJSONObject("data");
+            if (data == null) {
+                System.out.println("The private key not exists.");
+                return;
+            }
+            String cipherText = data.getString("privateKey");
+            if (cipherText == null) {
+                System.out.println("Get cipher text fail.");
+                return;
+            }
+            String plainText = AES.decrypt(cipherText, params[2]);
+            if (plainText == null) {
+                System.out.println("Password error.");
+                return;
+            }
+            System.out.println("The private key \"" + keyAlias + "\" is " + plainText + ".");
+        } catch (HttpClientErrorException e) {
+            System.out.println("queryKey fail, " + e.getResponseBodyAsString());
         }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println(jsonBody.getString("message"));
-            return;
-        }
-
-        JSONObject data = jsonBody.getJSONObject("data");
-        if (data == null) {
-            System.out.println("The private key not exists.");
-            return;
-        }
-        String cipherText = data.getString("privateKey");
-        if (cipherText == null) {
-            System.out.println("Get cipher text fail.");
-            return;
-        }
-        String plainText = AES.decrypt(cipherText, params[2]);
-        if (plainText == null) {
-            System.out.println("Password error.");
-            return;
-        }
-        System.out.println("The private key \"" + keyAlias + "\" is " + plainText + ".");
     }
 
     @Override
@@ -644,16 +690,14 @@ public class KeyImpl implements KeyFace {
         String url = urlPrefix + "escrow/deleteKey";
         String keyAlias = params[1];
         url += "/" + consoleAccountName + "/" + keyAlias;
-        String strBody = HttpsRequest.httpsDelete(url, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
-        }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println(jsonBody.getString("message"));
-            return;
-        } else {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        try {
+            kmsService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
             System.out.println("Delete the private key \"" + keyAlias + "\" successfully.");
+        } catch (HttpClientErrorException e) {
+            System.out.println("Fail, " + e.getResponseBodyAsString());
         }
     }
 
@@ -688,38 +732,42 @@ public class KeyImpl implements KeyFace {
 
         String url = urlPrefix + "escrow/queryKey";
         url += "/" + accountName + "/" + keyAlias;
-        String strBody = HttpsRequest.httpsGet(url, token);
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        if (jsonBody == null) {
-            throw new ConsoleMessageException("The https result is error.");
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("AuthorizationToken", "Token " + token);
+        HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        try {
+            ResponseEntity<String> response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
+            JSONObject data = jsonBody.getJSONObject("data");
+            if (data == null) {
+                System.out.println("The private key not exists.");
+                return;
+            }
+            String cipherText = data.getString("cipherText");
+            if (cipherText == null) {
+                System.out.println("Get cipher text fail.");
+                return;
+            }
+            String plainText = ECC.decrypt(cipherText, privateKey);
+            if (plainText == null) {
+                System.out.println("Decrypt fail.");
+                return;
+            }
+            System.out.println(
+                    "The private key \""
+                            + keyAlias
+                            + "\" of account \""
+                            + accountName
+                            + "\" is "
+                            + plainText
+                            + ".");
+        } catch (HttpClientErrorException e) {
+            System.out.println("queryKey fail, " + e.getResponseBodyAsString());
         }
-        if (0 != Integer.parseInt(jsonBody.getString("code"))) {
-            System.out.println(jsonBody.getString("message"));
-            return;
-        }
-
-        JSONObject data = jsonBody.getJSONObject("data");
-        if (data == null) {
-            System.out.println("The private key not exists.");
-            return;
-        }
-        String cipherText = data.getString("cipherText");
-        if (cipherText == null) {
-            System.out.println("Get cipher text fail.");
-            return;
-        }
-        String plainText = ECC.decrypt(cipherText, privateKey);
-        if (plainText == null) {
-            System.out.println("Decrypt fail.");
-            return;
-        }
-        System.out.println(
-                "The private key \""
-                        + keyAlias
-                        + "\" of account \""
-                        + accountName
-                        + "\" is "
-                        + plainText
-                        + ".");
     }
 }
