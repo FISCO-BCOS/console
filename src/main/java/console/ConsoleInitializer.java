@@ -5,9 +5,9 @@ import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
-import console.key.KMSService;
 import console.key.KeyFace;
 import console.key.KeyImpl;
+import console.key.tools.KMSUrl;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.PrecompiledImpl;
 import console.precompiled.permission.PermissionFace;
@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractRefreshableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.web.client.HttpClientErrorException;
 
 public class ConsoleInitializer {
 
@@ -66,7 +67,6 @@ public class ConsoleInitializer {
     public static final int InvalidRequest = 40009;
     public static final String ACCOUNT_DIR1 = "accounts/";
     public static final String ACCOUNT_DIR2 = "./accounts/";
-    private String urlPrefix;
 
     private Web3jFace web3jFace;
     private PrecompiledFace precompiledFace;
@@ -81,20 +81,21 @@ public class ConsoleInitializer {
                     InvalidKeySpecException {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         Service service = context.getBean(Service.class);
-        KMSService kms = context.getBean(KMSService.class);
-        urlPrefix = "https://" + kms.getUrl() + "/FISCO-Key-Manager/";
-        logger.info(" kms service url prefix: {}", urlPrefix);
         groupID = service.getGroupId();
 
         if (args.length > 0 && "-kms".equals(args[0])) {
             if (args.length == 3) {
-                keyFace = new KeyImpl();
-                keyFace.setURLPrefix(urlPrefix);
                 try {
+                    keyFace = new KeyImpl();
+                    KMSUrl kmsUrl = context.getBean(KMSUrl.class);
+                    String urlPrefix = "https://" + kmsUrl.getUrl() + "/FISCO-Key-Manager/";
+                    logger.info(" key manager service url prefix: {}", urlPrefix);
+                    keyFace.setURLPrefix(urlPrefix);
                     accountInfo = keyFace.login(args);
-                    if (accountInfo.equals("")) {
-                        close();
-                    }
+                } catch (HttpClientErrorException e) {
+                    System.out.println("Fail, " + e.getResponseBodyAsString());
+                    logger.error(" message: {}, e: {}", e.getMessage(), e);
+                    close();
                 } catch (Exception e) {
                     logger.error(" message: {}, e: {}", e.getMessage(), e);
                     close();

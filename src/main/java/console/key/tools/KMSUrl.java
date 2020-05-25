@@ -1,12 +1,12 @@
-package console.key;
+package console.key.tools;
 
-public class KMSService {
+public class KMSUrl {
 
-    public KMSService(String url) {
+    public KMSUrl(String url) {
         this.url = url;
     }
 
-    public KMSService() {}
+    public KMSUrl() {}
 
     private String url;
 
