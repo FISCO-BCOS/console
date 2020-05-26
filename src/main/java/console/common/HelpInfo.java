@@ -77,9 +77,6 @@ public class HelpInfo {
             case "listDeployAndCreateManager":
                 listDeployAndCreateManagerHelp();
                 break;
-            case "listPermissionManager":
-                listPermissionManagerHelp();
-                break;
             case "listNodeManager":
                 listNodeManagerHelp();
                 break;
@@ -112,6 +109,15 @@ public class HelpInfo {
                 break;
             case "getContractStatus":
                 getContractStatusHelp();
+                break;
+            case "listCommitteeMembers":
+                listCommitteeMembersHelp();
+                break;
+            case "queryThreshold":
+                queryThresholdHelp();
+                break;
+            case "listOperators":
+                listOperatorsHelp();
                 break;
             case "quit":
             case "q":
@@ -498,26 +504,6 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void grantPermissionManagerHelp() {
-        System.out.println("Grant permission for permission configuration by address.");
-        System.out.println("Usage: grantPermissionManager address");
-        System.out.println("address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
-    }
-
-    public static void revokePermissionManagerHelp() {
-        System.out.println("Revoke permission for permission configuration by address.");
-        System.out.println("Usage: revokePermissionManager address");
-        System.out.println("address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
-    }
-
-    public static void listPermissionManagerHelp() {
-        System.out.println("Query permission information for permission configuration.");
-        System.out.println("Usage: listPermissionManager");
-        System.out.println();
-    }
-
     public static void grantNodeManagerHelp() {
         System.out.println("Grant permission for node configuration by address.");
         System.out.println("Usage: grantNodeManager address");
@@ -601,6 +587,12 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void listCommitteeMembersHelp() {
+        System.out.println("List committee members.");
+        System.out.println("Usage: listCommitteeMembers");
+        System.out.println();
+    }
+
     public static void grantCommitteeMemberHelp() {
         System.out.println("Grant committee member.");
         System.out.println("Usage: grantCommitteeMember account");
@@ -630,10 +622,22 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void queryThresholdHelp() {
+        System.out.println("Query committee threshold.");
+        System.out.println("Usage: queryThreshold");
+        System.out.println();
+    }
+
     public static void updateThresholdHelp() {
         System.out.println("Update committee threshold.");
         System.out.println("Usage: updateThreshold threshold");
         System.out.println("threshold -- int - The threshold of the committee.");
+        System.out.println();
+    }
+
+    public static void listOperatorsHelp() {
+        System.out.println("List operator members.");
+        System.out.println("Usage: listOperators");
         System.out.println();
     }
 
