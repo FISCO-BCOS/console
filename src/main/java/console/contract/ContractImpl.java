@@ -507,8 +507,15 @@ public class ContractImpl implements ContractFace {
             contractAddress =
                     cnsResolver.getAddressByContractNameAndVersion(contractNameAndVersion);
         } catch (Exception e) {
-            System.out.println("The contract version does not exist.");
-            System.out.println();
+            int i = e.getMessage().indexOf("ContractCallException");
+            if (i < 0) {
+                System.out.println("The contract version does not exist.");
+                System.out.println();
+            } else {
+                System.out.println(
+                        e.getMessage().substring(i + "ContractCallException".length() + 2));
+                System.out.println();
+            }
             return;
         }
         Class<?> contractClass = ContractClassFactory.compileContract(name);
