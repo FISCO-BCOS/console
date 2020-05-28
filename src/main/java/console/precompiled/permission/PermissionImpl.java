@@ -604,17 +604,18 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void updateCommitteeMemberWeight(String[] params) throws Exception {
-        if (params.length < 2) {
+
+        if ((params.length >= 2) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
+            HelpInfo.updateCommitteeMemberWeightHelp();
+            return;
+        }
+
+        if (params.length < 3) {
             HelpInfo.promptHelp("updateCommitteeMemberWeight");
             return;
         }
         if (params.length > 3) {
             HelpInfo.promptHelp("updateCommitteeMemberWeight");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.updateCommitteeMemberWeightHelp();
             return;
         }
 
