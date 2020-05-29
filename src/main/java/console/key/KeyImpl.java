@@ -66,19 +66,28 @@ public class KeyImpl implements KeyFace {
         paramsMap.add("accountPwd", accountPwd);
         HttpEntity entity = new HttpEntity(paramsMap, headers);
 
-        ResponseEntity<String> response =
-                kmsService.getRestTemplate().exchange(url, HttpMethod.POST, entity, String.class);
-        String strBody = response.getBody();
-        logger.info(strBody);
+        try {
+            ResponseEntity<String> response =
+                    kmsService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.POST, entity, String.class);
+            String strBody = response.getBody();
+            logger.info(strBody);
 
-        JSONObject jsonBody = JSONObject.parseObject(strBody);
-        JSONObject data = jsonBody.getJSONObject("data");
-        token = data.getString("token");
-        consoleAccountName = data.getString("account");
-        roleName = data.getString("roleName");
-        String accountInfo = consoleAccountName + ":" + roleName;
-
-        return accountInfo;
+            JSONObject jsonBody = JSONObject.parseObject(strBody);
+            if (0 == jsonBody.getInteger("code")) {
+                JSONObject data = jsonBody.getJSONObject("data");
+                token = data.getString("token");
+                consoleAccountName = data.getString("account");
+                roleName = data.getString("roleName");
+                String accountInfo = consoleAccountName + ":" + roleName;
+                return accountInfo;
+            } else {
+                throw new Exception(strBody);
+            }
+        } catch (HttpClientErrorException e) {
+            throw new Exception(e.getResponseBodyAsString());
+        }
     }
 
     @Override

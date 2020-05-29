@@ -97,6 +97,7 @@ public class ConsoleInitializer {
                     logger.error(" message: {}, e: {}", e.getMessage(), e);
                     close();
                 } catch (Exception e) {
+                    System.out.println("Fail, " + e.getMessage());
                     logger.error(" message: {}, e: {}", e.getMessage(), e);
                     close();
                 }
