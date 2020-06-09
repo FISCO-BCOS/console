@@ -178,6 +178,12 @@ public class ConsoleClient {
                     case "getTransactionReceipt":
                         web3jFace.getTransactionReceipt(params);
                         break;
+                    case "getTransactionByHashWithProof":
+                        web3jFace.getTransactionByHashWithProof(params);
+                        break;
+                    case "getTransactionReceiptByHashWithProof":
+                        web3jFace.getTransactionReceiptByHashWithProof(params);
+                        break;
                     case "getPendingTransactions":
                         web3jFace.getPendingTransactions(params);
                         break;
@@ -247,15 +253,6 @@ public class ConsoleClient {
                     case "listDeployAndCreateManager":
                         permissionFace.listDeployAndCreateManager(params);
                         break;
-                    case "grantPermissionManager":
-                        permissionFace.grantPermissionManager(params);
-                        break;
-                    case "revokePermissionManager":
-                        permissionFace.revokePermissionManager(params);
-                        break;
-                    case "listPermissionManager":
-                        permissionFace.listPermissionManager(params);
-                        break;
                     case "grantNodeManager":
                         permissionFace.grantNodeManager(params);
                         break;
@@ -306,6 +303,45 @@ public class ConsoleClient {
                         break;
                     case "listContractStatusManager":
                         precompiledFace.listContractStatusManager(params);
+                        break;
+                    case "grantCommitteeMember":
+                        permissionFace.grantCommitteeMember(params);
+                        break;
+                    case "revokeCommitteeMember":
+                        permissionFace.revokeCommitteeMember(params);
+                        break;
+                    case "listCommitteeMembers":
+                        permissionFace.listCommitteeMembers(params);
+                        break;
+                    case "grantOperator":
+                        permissionFace.grantOperator(params);
+                        break;
+                    case "listOperators":
+                        permissionFace.listOperators(params);
+                        break;
+                    case "revokeOperator":
+                        permissionFace.revokeOperator(params);
+                        break;
+                    case "updateThreshold":
+                        permissionFace.updateThreshold(params);
+                        break;
+                    case "updateCommitteeMemberWeight":
+                        permissionFace.updateCommitteeMemberWeight(params);
+                        break;
+                    case "queryThreshold":
+                        permissionFace.queryThreshold(params);
+                        break;
+                    case "queryCommitteeMemberWeight":
+                        permissionFace.queryCommitteeMemberWeight(params);
+                        break;
+                    case "freezeAccount":
+                        permissionFace.freezeAccount(params);
+                        break;
+                    case "unfreezeAccount":
+                        permissionFace.unfreezeAccount(params);
+                        break;
+                    case "getAccountStatus":
+                        permissionFace.getAccountStatus(params);
                         break;
                     default:
                         System.out.println(

@@ -7,14 +7,18 @@ import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
+import java.math.BigInteger;
+import java.security.InvalidParameterException;
 import java.util.List;
 import org.fisco.bcos.channel.protocol.ChannelPrococolExceiption;
 import org.fisco.bcos.fisco.EnumNodeVersion;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
+import org.fisco.bcos.web3j.precompile.permission.ChainGovernanceService;
 import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
 import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.tuples.generated.Tuple2;
 
 public class PermissionImpl implements PermissionFace {
 
@@ -176,70 +180,6 @@ public class PermissionImpl implements PermissionFace {
         }
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
         List<PermissionInfo> permissions = permissionTableService.listDeployAndCreateManager();
-        printPermissionInfo(permissions);
-    }
-
-    @Override
-    public void grantPermissionManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantPermissionManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("grantPermissionManager");
-            return;
-        }
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.grantPermissionManagerHelp();
-            return;
-        }
-        Address convertAddr = ConsoleUtils.convertAddress(address);
-        if (!convertAddr.isValid()) {
-            return;
-        }
-        address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.grantPermissionManager(address);
-        ConsoleUtils.printJson(result);
-        System.out.println();
-    }
-
-    @Override
-    public void revokePermissionManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokePermissionManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("revokePermissionManager");
-            return;
-        }
-        String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.revokePermissionManagerHelp();
-            return;
-        }
-        Address convertAddr = ConsoleUtils.convertAddress(address);
-        if (!convertAddr.isValid()) {
-            return;
-        }
-        address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.revokePermissionManager(address);
-        ConsoleUtils.printJson(result);
-        System.out.println();
-    }
-
-    @Override
-    public void listPermissionManager(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listPermissionManager")) {
-            return;
-        }
-        PermissionService permissionTableService = new PermissionService(web3j, credentials);
-        List<PermissionInfo> permissions = permissionTableService.listPermissionManager();
         printPermissionInfo(permissions);
     }
 
@@ -464,7 +404,7 @@ public class PermissionImpl implements PermissionFace {
         }
 
         if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.revokeSysConfigManagerHelp();
+            HelpInfo.listContractWritePermissionHelp();
             return;
         }
 
@@ -552,6 +492,364 @@ public class PermissionImpl implements PermissionFace {
 
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = permission.revokeWrite(contractAddress, userAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void grantCommitteeMember(String[] params) throws Exception {
+
+        if (params.length < 2) {
+            HelpInfo.promptHelp("grantCommitteeMember");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("grantCommitteeMember");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.grantCommitteeMemberHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.grantCommitteeMember(accountAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void revokeCommitteeMember(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("revokeCommitteeMember");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("revokeCommitteeMember");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.revokeCommitteeMemberHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.revokeCommitteeMember(accountAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void listCommitteeMembers(String[] params) throws Exception {
+        if (HelpInfo.promptNoParams(params, "listCommitteeMembers")) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        List<PermissionInfo> permissionInfos = chainGovernanceService.listCommitteeMembers();
+        printPermissionInfo(permissionInfos);
+    }
+
+    @Override
+    public void queryCommitteeMemberWeight(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("queryCommitteeMemberWeight");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("queryCommitteeMemberWeight");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.queryCommitteeMemberWeightHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        Tuple2<Boolean, BigInteger> weight =
+                chainGovernanceService.queryCommitteeMemberWeight(accountAddress);
+        if (weight.getValue1()) {
+            System.out.println("Account: " + accountAddress + " Weight: " + weight.getValue2());
+            System.out.println();
+        } else {
+            System.out.println(PrecompiledCommon.transferToJson(weight.getValue2().intValue()));
+            System.out.println();
+        }
+    }
+
+    @Override
+    public void updateCommitteeMemberWeight(String[] params) throws Exception {
+
+        if ((params.length >= 2) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
+            HelpInfo.updateCommitteeMemberWeightHelp();
+            return;
+        }
+
+        if (params.length < 3) {
+            HelpInfo.promptHelp("updateCommitteeMemberWeight");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("updateCommitteeMemberWeight");
+            return;
+        }
+
+        String accountAddress = params[1];
+
+        Integer weight = null;
+        try {
+            weight = Integer.parseInt(params[2]);
+            if (weight <= 0) {
+                throw new InvalidParameterException(" invalid weight .");
+            }
+        } catch (NumberFormatException e) {
+            System.out.println(
+                    "Please provide weight by non-negative integer mode(from 1 to 2147483647) .");
+            System.out.println();
+            return;
+        }
+
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.updateCommitteeMemberWeight(accountAddress, weight);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void updateThreshold(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("updateThreshold");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("updateThreshold");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.updateThresholdHelp();
+            return;
+        }
+
+        Integer threshold = null;
+        try {
+            threshold = Integer.parseInt(params[1]);
+            if (threshold < 0 || threshold >= 100) {
+                throw new InvalidParameterException(" invalid threshold .");
+            }
+        } catch (Exception e) {
+            System.out.println(
+                    "Please provide threshold by non-negative integer mode, "
+                            + " from 0 to 99 "
+                            + ".");
+            System.out.println();
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.updateThreshold(threshold);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void queryThreshold(String[] params) throws Exception {
+        if (HelpInfo.promptNoParams(params, "queryThreshold")) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        BigInteger threshold = chainGovernanceService.queryThreshold();
+        System.out.println("Effective threshold : " + threshold + "%");
+        System.out.println();
+    }
+
+    @Override
+    public void grantOperator(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("grantOperator");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("grantOperator");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.grantOperatorHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.grantOperator(accountAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void revokeOperator(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("revokeOperator");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("revokeOperator");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.revokeOperatorHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.revokeOperator(accountAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void listOperators(String[] params) throws Exception {
+        if (HelpInfo.promptNoParams(params, "listOperators")) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        List<PermissionInfo> permissionInfos = chainGovernanceService.listOperators();
+        printPermissionInfo(permissionInfos);
+    }
+
+    @Override
+    public void freezeAccount(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("freezeAccount");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("freezeAccount");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.freezeAccountHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.freezeAccount(accountAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void unfreezeAccount(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("unfreezeAccount");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("unfreezeAccount");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.unfreezeAccountHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.unfreezeAccount(accountAddress);
+        ConsoleUtils.printJson(result);
+        System.out.println();
+    }
+
+    @Override
+    public void getAccountStatus(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("getAccountStatus");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("getAccountStatus");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.getAccountStatusHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        String result = chainGovernanceService.getAccountStatus(accountAddress);
         ConsoleUtils.printJson(result);
         System.out.println();
     }

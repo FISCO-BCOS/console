@@ -10,7 +10,7 @@ keccak_256_tar="/tmp/keccak-256sum.tgz"
 help() {
     echo $1
     cat << EOF
-Usage: $0 
+Usage: $0
     default       generate account and store private key in PEM format file
     -p            generate account and store private key in PKCS12 format file
     -k [FILE]     calculate address of PEM format [FILE]
@@ -34,7 +34,7 @@ prepare_keccak256()
         tar -zxf ${keccak_256_tar} -C /tmp && rm ${keccak_256_tar}
         chmod u+x ${keccak_256_bin}
     fi
-    mkdir -p accounts
+    mkdir -p ${output_path}
 }
 
 LOG_INFO()

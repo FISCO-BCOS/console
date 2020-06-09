@@ -50,6 +50,10 @@ public interface Web3jFace {
 
     void getTransactionReceipt(String[] params) throws Exception;
 
+    void getTransactionByHashWithProof(String[] params) throws Exception;
+
+    void getTransactionReceiptByHashWithProof(String[] params) throws Exception;
+
     void getPendingTxSize(String[] params) throws IOException;
 
     void getPendingTransactions(String[] params) throws IOException;

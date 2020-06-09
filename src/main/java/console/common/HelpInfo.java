@@ -77,9 +77,6 @@ public class HelpInfo {
             case "listDeployAndCreateManager":
                 listDeployAndCreateManagerHelp();
                 break;
-            case "listPermissionManager":
-                listPermissionManagerHelp();
-                break;
             case "listNodeManager":
                 listNodeManagerHelp();
                 break;
@@ -112,6 +109,15 @@ public class HelpInfo {
                 break;
             case "getContractStatus":
                 getContractStatusHelp();
+                break;
+            case "listCommitteeMembers":
+                listCommitteeMembersHelp();
+                break;
+            case "queryThreshold":
+                queryThresholdHelp();
+                break;
+            case "listOperators":
+                listOperatorsHelp();
                 break;
             case "quit":
             case "q":
@@ -307,6 +313,22 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void getTransactionByHashWithProofHelp() {
+        System.out.println(
+                "Query information about the transaction and proof by transaction hash.");
+        System.out.println("Usage: getTransactionByHashWithProof transactionHash");
+        System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
+        System.out.println();
+    }
+
+    public static void getTransactionReceiptByHashWithProofHelp() {
+        System.out.println(
+                "Query information about the transaction receipt and proof by transaction hash.");
+        System.out.println("Usage: getTransactionReceiptByHashWithProof transactionHash");
+        System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
+        System.out.println();
+    }
+
     public static void getTransactionByBlockNumberAndIndexHelp() {
         System.out.println(
                 "Query information about a transaction by block number and transaction index position.");
@@ -482,26 +504,6 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void grantPermissionManagerHelp() {
-        System.out.println("Grant permission for permission configuration by address.");
-        System.out.println("Usage: grantPermissionManager address");
-        System.out.println("address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
-    }
-
-    public static void revokePermissionManagerHelp() {
-        System.out.println("Revoke permission for permission configuration by address.");
-        System.out.println("Usage: revokePermissionManager address");
-        System.out.println("address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
-    }
-
-    public static void listPermissionManagerHelp() {
-        System.out.println("Query permission information for permission configuration.");
-        System.out.println("Usage: listPermissionManager");
-        System.out.println();
-    }
-
     public static void grantNodeManagerHelp() {
         System.out.println("Grant permission for node configuration by address.");
         System.out.println("Usage: grantNodeManager address");
@@ -582,6 +584,95 @@ public class HelpInfo {
         System.out.println("Usage: remokeWritePermission");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("userAddress -- 20 Bytes - The address of a tx.origin.");
+        System.out.println();
+    }
+
+    public static void listCommitteeMembersHelp() {
+        System.out.println("List committee members.");
+        System.out.println("Usage: listCommitteeMembers");
+        System.out.println();
+    }
+
+    public static void grantCommitteeMemberHelp() {
+        System.out.println("Grant committee member.");
+        System.out.println("Usage: grantCommitteeMember account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void revokeCommitteeMemberHelp() {
+        System.out.println("Revoke committee member.");
+        System.out.println("Usage: revokeCommitteeMember account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void queryCommitteeMemberWeightHelp() {
+        System.out.println("Query committee member weight.");
+        System.out.println("Usage: queryCommitteeMemberWeight account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void updateCommitteeMemberWeightHelp() {
+        System.out.println("Update committee member weight.");
+        System.out.println("Usage: updateCommitteeMemberWeight account weight");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println("weight -- int - The weight of the account.");
+        System.out.println();
+    }
+
+    public static void queryThresholdHelp() {
+        System.out.println("Query committee threshold.");
+        System.out.println("Usage: queryThreshold");
+        System.out.println();
+    }
+
+    public static void updateThresholdHelp() {
+        System.out.println("Update committee threshold.");
+        System.out.println("Usage: updateThreshold threshold");
+        System.out.println("threshold -- int - The threshold of the committee.");
+        System.out.println();
+    }
+
+    public static void listOperatorsHelp() {
+        System.out.println("List operator members.");
+        System.out.println("Usage: listOperators");
+        System.out.println();
+    }
+
+    public static void grantOperatorHelp() {
+        System.out.println("Grant operator.");
+        System.out.println("Usage: grantOperator account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void revokeOperatorHelp() {
+        System.out.println("Revoke operator.");
+        System.out.println("Usage: revokeOperator account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void freezeAccountHelp() {
+        System.out.println("Freeze account.");
+        System.out.println("Usage: freezeAccount account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void unfreezeAccountHelp() {
+        System.out.println("Unfreeze account.");
+        System.out.println("Usage: unfreezeAccount account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
+        System.out.println();
+    }
+
+    public static void getAccountStatusHelp() {
+        System.out.println("Account status.");
+        System.out.println("Usage: getAccountStatus account");
+        System.out.println("account -- 20 Bytes - The address of a account.");
         System.out.println();
     }
 
