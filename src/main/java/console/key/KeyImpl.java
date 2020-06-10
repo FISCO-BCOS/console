@@ -1,10 +1,13 @@
 package console.key;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
 import console.exception.ConsoleMessageException;
+import console.key.entity.AccountInfo;
+import console.key.entity.KeyInfo;
+import console.key.entity.PasswordInfo;
 import console.key.service.KMSService;
 import console.key.tools.AES;
 import console.key.tools.Common;
@@ -58,6 +61,7 @@ public class KeyImpl implements KeyFace {
         String url = urlPrefix + "account/login";
         String account = params[1];
         String accountPwd = params[2];
+        logger.info("login");
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Type", "application/x-www-form-urlencoded");
@@ -74,12 +78,13 @@ public class KeyImpl implements KeyFace {
             String strBody = response.getBody();
             logger.info(strBody);
 
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
-            if (0 == jsonBody.getInteger("code")) {
-                JSONObject data = jsonBody.getJSONObject("data");
-                token = data.getString("token");
-                consoleAccountName = data.getString("account");
-                roleName = data.getString("roleName");
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+            if (0 == bodyNode.get("code").asInt()) {
+                JsonNode dataNode = bodyNode.get("data");
+                token = dataNode.get("token").asText();
+                consoleAccountName = dataNode.get("account").asText();
+                roleName = dataNode.get("roleName").asText();
                 String accountInfo = consoleAccountName + ":" + roleName;
                 return accountInfo;
             } else {
@@ -127,15 +132,15 @@ public class KeyImpl implements KeyFace {
         }
 
         String url = urlPrefix + "account/addAccount";
-        JSONObject jsonParam = new JSONObject();
-        jsonParam.put("account", account);
-        jsonParam.put("accountPwd", accountPwd);
-        jsonParam.put("publicKey", publicKey);
-        jsonParam.put("roleId", Common.KMS_ROLE_ADMIN_ID);
+        AccountInfo bean =
+                new AccountInfo(account, accountPwd, publicKey, Common.KMS_ROLE_ADMIN_ID);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String str = objectMapper.writeValueAsString(bean);
+        logger.info("addAdminAccount, param: {}", str);
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         headers.add("Content-Type", "application/json");
-        HttpEntity<String> entity = new HttpEntity<String>(jsonParam.toJSONString(), headers);
+        HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
             ResponseEntity<String> response =
                     kmsService
@@ -143,9 +148,9 @@ public class KeyImpl implements KeyFace {
                             .exchange(url, HttpMethod.POST, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
-            JSONObject data = jsonBody.getJSONObject("data");
-            String newAccount = data.getString("account");
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+            JsonNode dataNode = bodyNode.get("data");
+            String newAccount = dataNode.get("account").asText();
             System.out.println("Add an admin account \"" + newAccount + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -184,14 +189,14 @@ public class KeyImpl implements KeyFace {
         }
 
         String url = urlPrefix + "account/addAccount";
-        JSONObject jsonParam = new JSONObject();
-        jsonParam.put("account", account);
-        jsonParam.put("accountPwd", accountPwd);
-        jsonParam.put("roleId", Common.KMS_ROLE_VISITOR_ID);
+        AccountInfo bean = new AccountInfo(account, accountPwd, "", Common.KMS_ROLE_VISITOR_ID);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String str = objectMapper.writeValueAsString(bean);
+        logger.info("addVisitorAccount, param: {}", str);
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         headers.add("Content-Type", "application/json");
-        HttpEntity<String> entity = new HttpEntity<String>(jsonParam.toJSONString(), headers);
+        HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
             ResponseEntity<String> response =
                     kmsService
@@ -199,9 +204,9 @@ public class KeyImpl implements KeyFace {
                             .exchange(url, HttpMethod.POST, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
-            JSONObject data = jsonBody.getJSONObject("data");
-            String newAccount = data.getString("account");
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+            JsonNode dataNode = bodyNode.get("data");
+            String newAccount = dataNode.get("account").asText();
             System.out.println("Add a visitor account \"" + newAccount + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -239,6 +244,7 @@ public class KeyImpl implements KeyFace {
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        logger.info("deleteAccount, url: {}", url);
         try {
             kmsService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
             System.out.println("Delete an account \"" + accountName + "\" successfully.");
@@ -266,6 +272,7 @@ public class KeyImpl implements KeyFace {
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         ResponseEntity<String> response;
+        logger.info("listAccount, url: {}", url);
         try {
             response =
                     kmsService
@@ -273,16 +280,17 @@ public class KeyImpl implements KeyFace {
                             .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
             String[] tableHeaders = {"name", "role", "createTime"};
-            int accountTotalCount = jsonBody.getIntValue("totalCount");
+            int accountTotalCount = bodyNode.get("totalCount").asInt();
             String[][] tableData = new String[accountTotalCount][3];
-            JSONArray data = jsonBody.getJSONArray("data");
-            for (int i = 0; i < data.size(); i++) {
-                JSONObject account = data.getJSONObject(i);
-                tableData[i][0] = account.getString("account");
-                tableData[i][1] = account.getString("roleName");
-                tableData[i][2] = account.getString("createTime");
+            JsonNode dataNode = bodyNode.get("data");
+            for (int i = 0; i < dataNode.size(); i++) {
+                JsonNode accountNode = dataNode.get(i);
+                tableData[i][0] = accountNode.get("account").asText();
+                tableData[i][1] = accountNode.get("roleName").asText();
+                tableData[i][2] = accountNode.get("createTime").asText();
             }
             int pageTotalCount = accountTotalCount / pageSize;
             if (accountTotalCount % pageSize != 0) {
@@ -290,25 +298,26 @@ public class KeyImpl implements KeyFace {
             }
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
                 url = urlPrefix + "account/accountList/" + pageIdx + "/" + pageSize;
+                logger.info("listAccount, url: {}", url);
                 response =
                         kmsService
                                 .getRestTemplate()
                                 .exchange(url, HttpMethod.GET, entity, String.class);
                 strBody = response.getBody();
                 logger.info(strBody);
-                jsonBody = JSONObject.parseObject(strBody);
-                if (accountTotalCount != jsonBody.getIntValue("totalCount")) {
+                bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+                if (accountTotalCount != bodyNode.get("totalCount").asInt()) {
                     logger.warn(" the total count has changed");
                     throw new ConsoleMessageException(
                             "The count of accounts has changed, please inquire again.");
                 }
-                data = jsonBody.getJSONArray("data");
-                for (int i = 0; i < data.size(); i++) {
-                    JSONObject account = data.getJSONObject(i);
+                dataNode = bodyNode.get("data");
+                for (int i = 0; i < dataNode.size(); i++) {
+                    JsonNode accountNode = dataNode.get(i);
                     int index = (pageIdx - 1) * pageSize + i;
-                    tableData[index][0] = account.getString("account");
-                    tableData[index][1] = account.getString("roleName");
-                    tableData[index][2] = account.getString("createTime");
+                    tableData[index][0] = accountNode.get("account").asText();
+                    tableData[index][1] = accountNode.get("roleName").asText();
+                    tableData[index][2] = accountNode.get("createTime").asText();
                 }
             }
             System.out.println(
@@ -357,13 +366,14 @@ public class KeyImpl implements KeyFace {
         }
 
         String url = urlPrefix + "account/updatePassword";
-        JSONObject jsonParam = new JSONObject();
-        jsonParam.put("oldAccountPwd", oldPassword);
-        jsonParam.put("newAccountPwd", newPassword);
+        PasswordInfo bean = new PasswordInfo(oldPassword, newPassword);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String str = objectMapper.writeValueAsString(bean);
+        logger.info("updatePwd, str: {}", str);
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         headers.add("Content-Type", "application/json");
-        HttpEntity<String> entity = new HttpEntity<String>(jsonParam.toJSONString(), headers);
+        HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
             kmsService.getRestTemplate().exchange(url, HttpMethod.PUT, entity, String.class);
             System.out.println("Update password successfully.");
@@ -432,14 +442,14 @@ public class KeyImpl implements KeyFace {
         }
 
         String url = urlPrefix + "escrow/addKey";
-        JSONObject jsonParam = new JSONObject();
-        jsonParam.put("keyAlias", alias);
-        jsonParam.put("cipherText", cipherECC);
-        jsonParam.put("privateKey", cipherAES);
+        KeyInfo bean = new KeyInfo(alias, cipherECC, cipherAES);
+        ObjectMapper objectMapper = new ObjectMapper();
+        String str = objectMapper.writeValueAsString(bean);
+        logger.info("uploadPrivateKey, str: {}", str);
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         headers.add("Content-Type", "application/json");
-        HttpEntity<String> entity = new HttpEntity<String>(jsonParam.toJSONString(), headers);
+        HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
             ResponseEntity<String> response =
                     kmsService
@@ -447,9 +457,9 @@ public class KeyImpl implements KeyFace {
                             .exchange(url, HttpMethod.POST, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
-            JSONObject data = jsonBody.getJSONObject("data");
-            alias = data.getString("keyAlias");
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+            JsonNode dataNode = bodyNode.get("data");
+            alias = dataNode.get("keyAlias").asText();
             System.out.println("Upload a private key \"" + alias + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -472,12 +482,15 @@ public class KeyImpl implements KeyFace {
                             .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
-            JSONObject data = jsonBody.getJSONObject("data");
-            publicKey = data.getString("publicKey");
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+            JsonNode dataNode = bodyNode.get("data");
+            publicKey = dataNode.get("publicKey").asText();
         } catch (HttpClientErrorException e) {
             throw new ConsoleMessageException(
                     "getCreatorPublicKey fail, " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            throw new ConsoleMessageException(e.getMessage());
         }
 
         return publicKey;
@@ -556,6 +569,7 @@ public class KeyImpl implements KeyFace {
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         ResponseEntity<String> response;
+        logger.info("listPrivateKey, url: {}", url);
         try {
             response =
                     kmsService
@@ -563,15 +577,16 @@ public class KeyImpl implements KeyFace {
                             .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
             String[] tableHeaders = {"alias", "createTime"};
-            int keyTotalCount = jsonBody.getIntValue("totalCount");
+            int keyTotalCount = bodyNode.get("totalCount").asInt();
             String[][] tableData = new String[keyTotalCount][2];
-            JSONArray data = jsonBody.getJSONArray("data");
-            for (int i = 0; i < data.size(); i++) {
-                JSONObject key = data.getJSONObject(i);
-                tableData[i][0] = key.getString("keyAlias");
-                tableData[i][1] = key.getString("createTime");
+            JsonNode dataNode = bodyNode.get("data");
+            for (int i = 0; i < dataNode.size(); i++) {
+                JsonNode keyNode = dataNode.get(i);
+                tableData[i][0] = keyNode.get("keyAlias").asText();
+                tableData[i][1] = keyNode.get("createTime").asText();
             }
             int pageTotalCount = keyTotalCount / pageSize;
             if (keyTotalCount % pageSize != 0) {
@@ -579,24 +594,25 @@ public class KeyImpl implements KeyFace {
             }
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
                 url = urlPrefix + "escrow/keyList/" + pageIdx + "/" + pageSize;
+                logger.info("listPrivateKey, url: {}", url);
                 response =
                         kmsService
                                 .getRestTemplate()
                                 .exchange(url, HttpMethod.GET, entity, String.class);
                 strBody = response.getBody();
                 logger.info(strBody);
-                jsonBody = JSONObject.parseObject(strBody);
-                if (keyTotalCount != jsonBody.getIntValue("totalCount")) {
+                bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+                if (keyTotalCount != bodyNode.get("totalCount").asInt()) {
                     logger.warn(" the total count has changed");
                     throw new ConsoleMessageException(
                             "The count of uploaded keys has changed, please inquire again.");
                 }
-                data = jsonBody.getJSONArray("data");
-                for (int i = 0; i < data.size(); i++) {
-                    JSONObject key = data.getJSONObject(i);
+                dataNode = bodyNode.get("data");
+                for (int i = 0; i < dataNode.size(); i++) {
+                    JsonNode keyNode = dataNode.get(i);
                     int index = (pageIdx - 1) * pageSize + i;
-                    tableData[index][0] = key.getString("keyAlias");
-                    tableData[index][1] = key.getString("createTime");
+                    tableData[index][0] = keyNode.get("keyAlias").asText();
+                    tableData[index][1] = keyNode.get("createTime").asText();
                 }
             }
 
@@ -646,6 +662,7 @@ public class KeyImpl implements KeyFace {
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        logger.info("queryKey in exportPrivateKey, url: {}", url);
         try {
             ResponseEntity<String> response =
                     kmsService
@@ -653,13 +670,14 @@ public class KeyImpl implements KeyFace {
                             .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
-            JSONObject data = jsonBody.getJSONObject("data");
-            if (data == null) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+            JsonNode dataNode = bodyNode.get("data");
+            if (dataNode == null) {
                 System.out.println("The private key not exists.");
                 return;
             }
-            String cipherText = data.getString("privateKey");
+            String cipherText = dataNode.get("privateKey").asText();
             if (cipherText == null) {
                 System.out.println("Get cipher text fail.");
                 return;
@@ -702,6 +720,7 @@ public class KeyImpl implements KeyFace {
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        logger.info("deleteKey, url: {}", url);
         try {
             kmsService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
             System.out.println("Delete the private key \"" + keyAlias + "\" successfully.");
@@ -744,6 +763,7 @@ public class KeyImpl implements KeyFace {
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
+        logger.info("queryKey in restorePrivateKey, url: {}", url);
         try {
             ResponseEntity<String> response =
                     kmsService
@@ -751,13 +771,14 @@ public class KeyImpl implements KeyFace {
                             .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
-            JSONObject jsonBody = JSONObject.parseObject(strBody);
-            JSONObject data = jsonBody.getJSONObject("data");
-            if (data == null) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
+            JsonNode dataNode = bodyNode.get("data");
+            if (dataNode == null) {
                 System.out.println("The private key not exists.");
                 return;
             }
-            String cipherText = data.getString("cipherText");
+            String cipherText = dataNode.get("cipherText").asText();
             if (cipherText == null) {
                 System.out.println("Get cipher text fail.");
                 return;
