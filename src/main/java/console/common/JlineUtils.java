@@ -324,6 +324,11 @@ public class JlineUtils {
                             new StringsCompleter(command),
                             new StringsCompleter(Common.RPBFTEpochBlockNum),
                             new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.ConsensusTime),
+                            new StringsCompleterIgnoreCase()));
         }
 
         Terminal terminal =
