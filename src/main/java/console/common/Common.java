@@ -10,6 +10,9 @@ public class Common {
     public static final String RPBFTEpochSealerNum = "rpbft_epoch_sealer_num";
     public static final String RPBFTEpochBlockNum = "rpbft_epoch_block_num";
 
+    public static final String ConsensusTime = "consensus_time";
+    public static int ConsensusTimeMin = 1000;
+
     public static final int InvalidReturnNumber = -100;
     public static final int QueryLogCount = 20;
     public static final int LogMaxCount = 10000;
