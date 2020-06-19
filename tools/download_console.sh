@@ -1,7 +1,7 @@
 #!/bin/bash
 version=$(curl -s https://api.github.com/repos/FISCO-BCOS/console/releases | grep "tag_name" | sort -u | tail -n 1 | cut -d \" -f 4 | sed "s/^[vV]//")
 package_name="console.tar.gz"
-default_version="1.0.9"
+default_version="1.0.10"
 
 if [ -z "${version}" ];then
     echo "Failed to get latest version number via github api, download default version: ${default_version}"
