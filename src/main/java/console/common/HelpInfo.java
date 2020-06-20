@@ -281,6 +281,27 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void getBlockHeaderByHashHelp() {
+        System.out.println("Query information about a block header by hash.");
+        System.out.println("Usage: etBlockHeaderByHash blockHash [boolean]");
+        System.out.println("blockHash -- 32 Bytes - The hash of a block.");
+        System.out.println(
+                "boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
+        System.out.println();
+    }
+
+    public static void getBlockHeaderByNumberHelp() {
+        System.out.println("Query information about a block header by block number.");
+        System.out.println("Usage: getBlockHeaderByNumber blockNumber [boolean]");
+        System.out.println(
+                "blockNumber -- Integer of a block number, "
+                        + Common.NonNegativeIntegerRange
+                        + ".");
+        System.out.println(
+                "boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
+        System.out.println();
+    }
+
     public static void getBlockHashByNumberHelp() {
         System.out.println("Query block hash by block number.");
         System.out.println("Usage: getBlockHashByNumber blockNumber");

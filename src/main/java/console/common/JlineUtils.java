@@ -214,6 +214,8 @@ public class JlineUtils {
                         "getGroupList",
                         "getBlockByHash",
                         "getBlockByNumber",
+                        "getBlockHeaderByHash",
+                        "getBlockHeaderByNumber",
                         "getBlockHashByNumber",
                         "getTransactionByHash",
                         "getTransactionByBlockHashAndIndex",
