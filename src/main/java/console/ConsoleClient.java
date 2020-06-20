@@ -163,6 +163,12 @@ public class ConsoleClient {
                     case "getBlockByNumber":
                         web3jFace.getBlockByNumber(params);
                         break;
+                    case "getBlockHeaderByHash":
+                        web3jFace.getBlockHeaderByHash(params);
+                        break;
+                    case "getBlockHeaderByNumber":
+                        web3jFace.getBlockHeaderByNumber(params);
+                        break;
                     case "getBlockHashByNumber":
                         web3jFace.getBlockHashByNumber(params);
                         break;

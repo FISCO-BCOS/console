@@ -37,6 +37,10 @@ public interface Web3jFace {
 
     void getBlockByNumber(String[] params) throws IOException;
 
+    void getBlockHeaderByHash(String[] params) throws IOException;
+
+    void getBlockHeaderByNumber(String[] params) throws IOException;
+
     void getBlockHashByNumber(String[] params) throws IOException;
 
     void getTransactionByHash(String[] params)
