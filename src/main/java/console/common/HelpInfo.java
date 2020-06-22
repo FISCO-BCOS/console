@@ -283,10 +283,10 @@ public class HelpInfo {
 
     public static void getBlockHeaderByHashHelp() {
         System.out.println("Query information about a block header by hash.");
-        System.out.println("Usage: etBlockHeaderByHash blockHash [boolean]");
+        System.out.println("Usage: getBlockHeaderByHash blockHash [boolean]");
         System.out.println("blockHash -- 32 Bytes - The hash of a block.");
         System.out.println(
-                "boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
+                "boolean -- (optional) If true the signature list will also be returned.");
         System.out.println();
     }
 
@@ -297,8 +297,10 @@ public class HelpInfo {
                 "blockNumber -- Integer of a block number, "
                         + Common.NonNegativeIntegerRange
                         + ".");
+        System.out.println("blockHash -- 32 Bytes - The hash of a block.");
+
         System.out.println(
-                "boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
+                "boolean -- (optional) If true the signature list will also be returned.");
         System.out.println();
     }
 
