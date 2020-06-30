@@ -509,7 +509,9 @@ public class ContractImpl implements ContractFace {
         } catch (Exception e) {
             int i = e.getMessage().indexOf("ContractCallException");
             if (i < 0) {
-                System.out.println("The contract version does not exist.");
+                System.out.println(
+                        "Error when getting cns information (maybe the contract version does not exist), error info: ");
+                System.out.println(e.getMessage().toString());
                 System.out.println();
             } else {
                 System.out.println(
