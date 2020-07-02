@@ -457,11 +457,11 @@ public class JlineUtils {
                         "deleteAccount",
                         "listAccount",
                         "updatePassword",
-                        "uploadPrivateKey",
-                        "listPrivateKey",
-                        "exportPrivateKey",
-                        "deletePrivateKey",
-                        "restorePrivateKey",
+                        "uploadData",
+                        "listData",
+                        "exportData",
+                        "deleteData",
+                        "restoreData",
                         "quit",
                         "exit");
 
@@ -477,7 +477,7 @@ public class JlineUtils {
                         ? console.data.tools.Common.FILE_PATH
                         : console.data.tools.Common.FILE_GM_PATH;
         Path path = FileSystems.getDefault().getPath(filePath, "");
-        commands = Arrays.asList("uploadPrivateKey");
+        commands = Arrays.asList("uploadData");
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(

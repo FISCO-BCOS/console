@@ -125,20 +125,20 @@ public class ConsoleClient {
                     case "updatePassword":
                         dataEscrowFace.updatePwd(params);
                         break;
-                    case "uploadPrivateKey":
-                        dataEscrowFace.uploadPrivateKey(params);
+                    case "uploadData":
+                        dataEscrowFace.uploadData(params);
                         break;
-                    case "listPrivateKey":
-                        dataEscrowFace.listPrivateKey(params);
+                    case "listData":
+                        dataEscrowFace.listData(params);
                         break;
-                    case "exportPrivateKey":
-                        dataEscrowFace.exportPrivateKey(params);
+                    case "exportData":
+                        dataEscrowFace.exportData(params);
                         break;
-                    case "deletePrivateKey":
-                        dataEscrowFace.deletePrivateKey(params);
+                    case "deleteData":
+                        dataEscrowFace.deleteData(params);
                         break;
-                    case "restorePrivateKey":
-                        dataEscrowFace.restorePrivateKey(params);
+                    case "restoreData":
+                        dataEscrowFace.restoreData(params);
                         break;
                     default:
                         System.out.println(

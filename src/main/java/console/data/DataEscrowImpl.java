@@ -58,7 +58,7 @@ public class DataEscrowImpl implements DataEscrowFace {
 
     @Override
     public String login(String[] params) throws Exception {
-        String url = urlPrefix + "account/login";
+        String url = urlPrefix + "accounts/v1/login";
         String account = params[1];
         String accountPwd = params[2];
         logger.info("login");
@@ -129,7 +129,7 @@ public class DataEscrowImpl implements DataEscrowFace {
             return;
         }
 
-        String url = urlPrefix + "account/addAccount";
+        String url = urlPrefix + "accounts/v1";
         AccountInfo bean = new AccountInfo(account, accountPwd, publicKey, Common.SafeKeeper_ROLE_ADMIN_ID);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
@@ -183,7 +183,7 @@ public class DataEscrowImpl implements DataEscrowFace {
             return;
         }
 
-        String url = urlPrefix + "account/addAccount";
+        String url = urlPrefix + "accounts/v1";
         AccountInfo bean = new AccountInfo(account, accountPwd, "", Common.SafeKeeper_ROLE_VISITOR_ID);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
@@ -233,7 +233,7 @@ public class DataEscrowImpl implements DataEscrowFace {
             return;
         }
 
-        String url = urlPrefix + "account/deleteAccount/" + accountName;
+        String url = urlPrefix + "accounts/v1/" + accountName;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
@@ -260,7 +260,7 @@ public class DataEscrowImpl implements DataEscrowFace {
 
         int pageNumber = 1;
         int pageSize = 10;
-        String url = urlPrefix + "account/accountList/" + pageNumber + "/" + pageSize;
+        String url = urlPrefix + "accounts/v1?pageNumber=" + pageNumber + "&pageSize=" + pageSize;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
@@ -287,7 +287,7 @@ public class DataEscrowImpl implements DataEscrowFace {
                 pageTotalCount += 1;
             }
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
-                url = urlPrefix + "account/accountList/" + pageIdx + "/" + pageSize;
+                url = urlPrefix + "accounts/v1?pageNumber=" + pageIdx + "&pageSize=" + pageSize;
                 logger.info("listAccount, url: {}", url);
                 response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
                 strBody = response.getBody();
@@ -347,7 +347,7 @@ public class DataEscrowImpl implements DataEscrowFace {
             return;
         }
 
-        String url = urlPrefix + "account/updatePassword";
+        String url = urlPrefix + "accounts/v1/password";
         PasswordInfo bean = new PasswordInfo(oldPassword, newPassword);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
@@ -357,7 +357,7 @@ public class DataEscrowImpl implements DataEscrowFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            safeKeeperService.getRestTemplate().exchange(url, HttpMethod.PUT, entity, String.class);
+            safeKeeperService.getRestTemplate().exchange(url, HttpMethod.PATCH, entity, String.class);
             System.out.println("Update password successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -365,69 +365,51 @@ public class DataEscrowImpl implements DataEscrowFace {
     }
 
     @Override
-    public void uploadPrivateKey(String[] params) throws Exception {
+    public void uploadData(String[] params) throws Exception {
         if (!roleName.equals(Common.SafeKeeper_ROLE_VISITOR)) {
             System.out.println("This command can only be called by visitor role.");
             return;
         }
 
         if (params.length < 2) {
-            HelpInfo.promptHelp("uploadPrivateKey");
+            HelpInfo.promptHelp("uploadData");
             return;
         }
         String param = params[1];
         if ("-h".equals(param) || "--help".equals(param)) {
-            HelpInfo.uploadPrivateKeyHelp();
+            HelpInfo.uploadDataHelp();
             return;
         }
-        if (params.length < 3 || params.length > 4) {
-            HelpInfo.promptHelp("uploadPrivateKey");
-            return;
-        }
-
-        ECKeyPair keyPair = getECKeyPair(params);
-        if (keyPair == null) {
-            System.out.println("Cannot get the private key to be uploaded.");
+        if (params.length != 4) {
+            HelpInfo.promptHelp("uploadData");
             return;
         }
 
-        String creatorPublicKey;
-        try {
-            creatorPublicKey = getCreatorPublicKey();
-        } catch (ConsoleMessageException e) {
-            System.out.println("Fail, " + e.getMessage());
+        String creatorPublicKey = getCreatorPublicKey();
+        if (creatorPublicKey.length() == 0) {
             return;
         }
 
+        String plainText = params[1];
         String password = params[2];
-        String privateKeyHex = keyPair.getPrivateKey().toString(16);
-        String alias;
-        if (params.length == 4) {
-            alias = params[3];
-        } else if (params.length == 3) {
-            Credentials credentials = Credentials.create(keyPair);
-            alias = credentials.getAddress();
-        } else {
-            HelpInfo.promptHelp("uploadPrivateKey");
-            return;
-        }
+        String dataId = params[3];
 
-        String cipherECC = ECC.encrypt(privateKeyHex, creatorPublicKey);
+        String cipherECC = ECC.encrypt(plainText, creatorPublicKey);
         if (cipherECC == null) {
-            System.out.println("encrypt the private key by public key of creator fail.");
+            System.out.println("encrypt the escrow data by public key of creator fail.");
             return;
         }
-        String cipherAES = AES.encrypt(privateKeyHex, password);
+        String cipherAES = AES.encrypt(plainText, password);
         if (cipherAES == null) {
-            System.out.println("encrypt the private key by password of account fail.");
+            System.out.println("encrypt the escrow data by password of account fail.");
             return;
         }
 
-        String url = urlPrefix + "escrow/addKey";
-        DataEscrowInfo bean = new DataEscrowInfo(alias, cipherECC, cipherAES);
+        String url = urlPrefix + "escrow/v1/vaults";
+        DataEscrowInfo bean = new DataEscrowInfo(dataId, cipherECC, cipherAES);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
-        logger.info("uploadPrivateKey, str: {}", str);
+        logger.info("uploadData, str: {}", str);
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         headers.add("Content-Type", "application/json");
@@ -439,8 +421,8 @@ public class DataEscrowImpl implements DataEscrowFace {
             logger.info(strBody);
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
             JsonNode dataNode = bodyNode.get("data");
-            alias = dataNode.get("keyAlias").asText();
-            System.out.println("Upload a private key \"" + alias + "\" successfully.");
+            dataId = dataNode.get("dataID").asText();
+            System.out.println("Upload a escrow data \"" + dataId + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
         }
@@ -451,7 +433,7 @@ public class DataEscrowImpl implements DataEscrowFace {
     private String getCreatorPublicKey() throws ConsoleMessageException {
         String publicKey;
 
-        String url = urlPrefix + "account/getPublicKey";
+        String url = urlPrefix + "accounts/v1/publicKey";
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
@@ -463,55 +445,14 @@ public class DataEscrowImpl implements DataEscrowFace {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
             JsonNode dataNode = bodyNode.get("data");
-            publicKey = dataNode.get("publicKey").asText();
+            publicKey = dataNode.get("creatorPublicKey").asText();
         } catch (HttpClientErrorException e) {
             throw new ConsoleMessageException("getCreatorPublicKey fail, " + e.getResponseBodyAsString());
         } catch (Exception e) {
-            throw new ConsoleMessageException(e.getMessage());
+            throw new ConsoleMessageException("getCreatorPublicKey fail, " + e.getMessage());
         }
 
         return publicKey;
-    }
-
-    private ECKeyPair getECKeyPair(String[] params) {
-        ECKeyPair keyPair = null;
-
-        String keyFile = Common.FILE_PATH + params[1];
-        String password = params[2];
-        InputStream in = readAccountFile(keyFile);
-        if (null == in) {
-            return null;
-        }
-
-        try {
-            if (keyFile.endsWith("p12")) {
-                P12Manager p12Manager = new P12Manager();
-                p12Manager.setPassword(password);
-                p12Manager.load(in, password);
-                keyPair = p12Manager.getECKeyPair();
-            } else if (keyFile.endsWith("pem")) {
-                PEMManager pem = new PEMManager();
-                pem.load(in);
-                keyPair = pem.getECKeyPair();
-            } else {
-                System.out.println(" invalid file format, file name: " + keyFile);
-                logger.error(" invalid file format, file name: {}", keyFile);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    System.out.println(e.getMessage());
-                    logger.error(" message: {}, e: {}", e.getMessage(), e);
-                }
-            }
-        }
-
-        return keyPair;
     }
 
     private InputStream readAccountFile(String fileName) {
@@ -525,67 +466,67 @@ public class DataEscrowImpl implements DataEscrowFace {
     }
 
     @Override
-    public void listPrivateKey(String[] params) throws Exception {
+    public void listData(String[] params) throws Exception {
         if (!roleName.equals(Common.SafeKeeper_ROLE_VISITOR)) {
             System.out.println("This command can only be called by visitor role.");
             return;
         }
 
         if (params.length > 1 && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
-            HelpInfo.listPrivateKeyHelp();
+            HelpInfo.listDataHelp();
             return;
         }
 
         int pageNumber = 1;
         int pageSize = 10;
-        String url = urlPrefix + "escrow/keyList/" + pageNumber + "/" + pageSize;
+        String url = urlPrefix + "escrow/v1/vaults?pageNumber=" + pageNumber + "&pageSize=" + pageSize;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         ResponseEntity<String> response;
-        logger.info("listPrivateKey, url: {}", url);
+        logger.info("listData, url: {}", url);
         try {
             response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
-            String[] tableHeaders = { "alias", "createTime" };
-            int keyTotalCount = bodyNode.get("totalCount").asInt();
-            String[][] tableData = new String[keyTotalCount][2];
+            String[] tableHeaders = { "dataID", "createTime" };
+            int dataTotalCount = bodyNode.get("totalCount").asInt();
+            String[][] tableData = new String[dataTotalCount][2];
             JsonNode dataNode = bodyNode.get("data");
             for (int i = 0; i < dataNode.size(); i++) {
                 JsonNode keyNode = dataNode.get(i);
-                tableData[i][0] = keyNode.get("keyAlias").asText();
+                tableData[i][0] = keyNode.get("dataID").asText();
                 tableData[i][1] = keyNode.get("createTime").asText();
             }
-            int pageTotalCount = keyTotalCount / pageSize;
-            if (keyTotalCount % pageSize != 0) {
+            int pageTotalCount = dataTotalCount / pageSize;
+            if (dataTotalCount % pageSize != 0) {
                 pageTotalCount += 1;
             }
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
-                url = urlPrefix + "escrow/keyList/" + pageIdx + "/" + pageSize;
-                logger.info("listPrivateKey, url: {}", url);
+                url = urlPrefix + "escrow/v1/vaults?pageNumber=" + pageIdx + "&pageSize=" + pageSize;
+                logger.info("listData, url: {}", url);
                 response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
                 strBody = response.getBody();
                 logger.info(strBody);
                 bodyNode = objectMapper.readValue(strBody, JsonNode.class);
-                if (keyTotalCount != bodyNode.get("totalCount").asInt()) {
+                if (dataTotalCount != bodyNode.get("totalCount").asInt()) {
                     logger.warn(" the total count has changed");
-                    throw new ConsoleMessageException("The count of uploaded keys has changed, please inquire again.");
+                    throw new ConsoleMessageException("The count of escrow data has changed, please inquire again.");
                 }
                 dataNode = bodyNode.get("data");
                 for (int i = 0; i < dataNode.size(); i++) {
                     JsonNode keyNode = dataNode.get(i);
                     int index = (pageIdx - 1) * pageSize + i;
-                    tableData[index][0] = keyNode.get("keyAlias").asText();
+                    tableData[index][0] = keyNode.get("dataID").asText();
                     tableData[index][1] = keyNode.get("createTime").asText();
                 }
             }
 
             System.out
-                    .println("The count of keys uploaded by \"" + consoleAccountName + "\" is " + keyTotalCount + ".");
-            if (0 == keyTotalCount) {
+                    .println("The count of escrow data uploaded by \"" + consoleAccountName + "\" is " + dataTotalCount + ".");
+            if (0 == dataTotalCount) {
                 return;
             }
             ConsoleUtils.singleLine();
@@ -599,33 +540,33 @@ public class DataEscrowImpl implements DataEscrowFace {
     }
 
     @Override
-    public void exportPrivateKey(String[] params) throws Exception {
+    public void exportData(String[] params) throws Exception {
         if (!roleName.equals(Common.SafeKeeper_ROLE_VISITOR)) {
             System.out.println("This command can only be called by visitor role.");
             return;
         }
 
         if (params.length < 2) {
-            HelpInfo.promptHelp("exportPrivateKey");
+            HelpInfo.promptHelp("exportData");
             return;
         }
         String param = params[1];
         if ("-h".equals(param) || "--help".equals(param)) {
-            HelpInfo.exportPrivateKeyHelp();
+            HelpInfo.exportDataHelp();
             return;
         }
         if (params.length != 3) {
-            HelpInfo.promptHelp("exportPrivateKey");
+            HelpInfo.promptHelp("exportData");
             return;
         }
 
-        String url = urlPrefix + "escrow/queryKey";
-        String keyAlias = params[1];
-        url += "/" + consoleAccountName + "/" + keyAlias;
+        String url = urlPrefix + "/escrow/v1/vaults";
+        String dataId = params[1];
+        url += "/" + consoleAccountName + "/" + dataId;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
-        logger.info("queryKey in exportPrivateKey, url: {}", url);
+        logger.info("get escrow data in exportData, url: {}", url);
         try {
             ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity,
                     String.class);
@@ -635,10 +576,10 @@ public class DataEscrowImpl implements DataEscrowFace {
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
             JsonNode dataNode = bodyNode.get("data");
             if (dataNode == null) {
-                System.out.println("The private key not exists.");
+                System.out.println("The escrow data not exists.");
                 return;
             }
-            String cipherText = dataNode.get("privateKey").asText();
+            String cipherText = dataNode.get("cipherText2").asText();
             if (cipherText == null) {
                 System.out.println("Get cipher text fail.");
                 return;
@@ -648,83 +589,81 @@ public class DataEscrowImpl implements DataEscrowFace {
                 System.out.println("Password error.");
                 return;
             }
-            System.out.println("The private key \"" + keyAlias + "\" is " + plainText + ".");
+            System.out.println("The escrow data \"" + dataId + "\" is " + plainText + ".");
         } catch (HttpClientErrorException e) {
-            System.out.println("queryKey fail, " + e.getResponseBodyAsString());
+            System.out.println("export escrow data fail, " + e.getResponseBodyAsString());
         }
     }
 
     @Override
-    public void deletePrivateKey(String[] params) throws Exception {
+    public void deleteData(String[] params) throws Exception {
         if (!roleName.equals(Common.SafeKeeper_ROLE_VISITOR)) {
             System.out.println("This command can only be called by visitor role.");
             return;
         }
 
         if (params.length < 2) {
-            HelpInfo.promptHelp("deletePrivateKey");
+            HelpInfo.promptHelp("deleteData");
             return;
         }
         String param = params[1];
         if ("-h".equals(param) || "--help".equals(param)) {
-            HelpInfo.deletePrivateKeyHelp();
+            HelpInfo.deleteDataHelp();
             return;
         }
         if (params.length != 2) {
-            HelpInfo.promptHelp("deletePrivateKey");
+            HelpInfo.promptHelp("deleteData");
             return;
         }
 
-        String url = urlPrefix + "escrow/deleteKey";
-        String keyAlias = params[1];
-        url += "/" + consoleAccountName + "/" + keyAlias;
+        String dataId = params[1];
+        String url = urlPrefix + "escrow/v1/vaults/" + dataId;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("deleteKey, url: {}", url);
         try {
             safeKeeperService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
-            System.out.println("Delete the private key \"" + keyAlias + "\" successfully.");
+            System.out.println("Delete the escrow data \"" + dataId + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
         }
     }
 
     @Override
-    public void restorePrivateKey(String[] params) throws Exception {
+    public void restoreData(String[] params) throws Exception {
         if (!roleName.equals(Common.SafeKeeper_ROLE_ADMIN)) {
             System.out.println("This command can only be called by admin role.");
             return;
         }
 
         if (params.length < 2) {
-            HelpInfo.promptHelp("restorePrivateKey");
+            HelpInfo.promptHelp("restoreData");
             return;
         }
         String param = params[1];
         if ("-h".equals(param) || "--help".equals(param)) {
-            HelpInfo.restorePrivateKeyHelp();
+            HelpInfo.restoreDataHelp();
             return;
         }
         if (params.length != 4) {
-            HelpInfo.promptHelp("restorePrivateKey");
+            HelpInfo.promptHelp("restoreData");
             return;
         }
 
         String accountName = params[1];
-        String keyAlias = params[2];
+        String dataId = params[2];
         String privateKey = params[3];
         if (privateKey.length() != 64) {
             System.out.println("Invalid private key length, need 64. ");
             return;
         }
 
-        String url = urlPrefix + "escrow/queryKey";
-        url += "/" + accountName + "/" + keyAlias;
+        String url = urlPrefix + "/escrow/v1/vaults/" + accountName + "/" + dataId;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
-        logger.info("queryKey in restorePrivateKey, url: {}", url);
+        logger.info("get escrow data in restoreData, url: {}", url);
         try {
             ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity,
                     String.class);
@@ -734,10 +673,10 @@ public class DataEscrowImpl implements DataEscrowFace {
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
             JsonNode dataNode = bodyNode.get("data");
             if (dataNode == null) {
-                System.out.println("The private key not exists.");
+                System.out.println("The escrow data not exists.");
                 return;
             }
-            String cipherText = dataNode.get("cipherText").asText();
+            String cipherText = dataNode.get("cipherText1").asText();
             if (cipherText == null) {
                 System.out.println("Get cipher text fail.");
                 return;
@@ -748,9 +687,9 @@ public class DataEscrowImpl implements DataEscrowFace {
                 return;
             }
             System.out.println(
-                    "The private key \"" + keyAlias + "\" of account \"" + accountName + "\" is " + plainText + ".");
+                    "The escrow data \"" + dataId + "\" of account \"" + accountName + "\" is " + plainText + ".");
         } catch (HttpClientErrorException e) {
-            System.out.println("queryKey fail, " + e.getResponseBodyAsString());
+            System.out.println("restore escrow data fail, " + e.getResponseBodyAsString());
         }
     }
 }

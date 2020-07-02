@@ -132,20 +132,20 @@ public class HelpInfo {
             case "updatePassword":
                 updatePasswordHelp();
                 break;
-            case "uploadPrivateKey":
-                uploadPrivateKeyHelp();
+            case "uploadData":
+                uploadDataHelp();
                 break;
-            case "listPrivateKey":
-                listPrivateKeyHelp();
+            case "listData":
+                listDataHelp();
                 break;
-            case "exportPrivateKey":
-                exportPrivateKeyHelp();
+            case "exportData":
+                exportDataHelp();
                 break;
-            case "deletePrivateKey":
-                deletePrivateKeyHelp();
+            case "deleteData":
+                deleteDataHelp();
                 break;
-            case "restorePrivateKey":
-                restorePrivateKeyHelp();
+            case "restoreData":
+                restoreDataHelp();
                 break;
             default:
                 break;
@@ -717,9 +717,9 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void uploadPrivateKeyHelp() {
+    public static void uploadDataHelp() {
         System.out.println("Upload the private key to key manager service.");
-        System.out.println("Usage: uploadPrivateKey keyFile password [alias]");
+        System.out.println("Usage: uploadData keyFile password [alias]");
         System.out.println("keyFile -- The file in which private key is stored.");
         System.out.println(
                 "password -- The password used to decrypt private key file. If the keyFile is .p12, it is also the decryption password");
@@ -727,30 +727,30 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void listPrivateKeyHelp() {
+    public static void listDataHelp() {
         System.out.println("Display a list of private keys owned by yourself.");
-        System.out.println("Usage: listPrivateKey");
+        System.out.println("Usage: listData");
         System.out.println();
     }
 
-    public static void exportPrivateKeyHelp() {
+    public static void exportDataHelp() {
         System.out.println("Export your own private key by alias.");
-        System.out.println("Usage: exportPrivateKey alias password");
+        System.out.println("Usage: exportData alias password");
         System.out.println("alias -- The alias of private key.");
         System.out.println("password -- The password used to decrypt the private key.");
         System.out.println();
     }
 
-    public static void deletePrivateKeyHelp() {
+    public static void deleteDataHelp() {
         System.out.println("Delete your own private key by alias.");
-        System.out.println("Usage: deletePrivateKey alias");
+        System.out.println("Usage: deleteData alias");
         System.out.println("alias -- The alias of private key.");
         System.out.println();
     }
 
-    public static void restorePrivateKeyHelp() {
+    public static void restoreDataHelp() {
         System.out.println("Restore account's private key by alias.");
-        System.out.println("Usage: restorePrivateKey account alias privateKey");
+        System.out.println("Usage: restoreData account alias privateKey");
         System.out.println("account -- The owner of account's private key.");
         System.out.println("alias -- The alias of account's private key.");
         System.out.println("privateKey -- The creator's key.");

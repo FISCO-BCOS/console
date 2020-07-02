@@ -18,13 +18,13 @@ public interface DataEscrowFace {
     void updatePwd(String[] params) throws Exception;
 
     // key escrow
-    void uploadPrivateKey(String[] params) throws Exception;
+    void uploadData(String[] params) throws Exception;
 
-    void listPrivateKey(String[] params) throws Exception;
+    void listData(String[] params) throws Exception;
 
-    void exportPrivateKey(String[] params) throws Exception;
+    void exportData(String[] params) throws Exception;
 
-    void deletePrivateKey(String[] params) throws Exception;
+    void deleteData(String[] params) throws Exception;
 
-    void restorePrivateKey(String[] params) throws Exception;
+    void restoreData(String[] params) throws Exception;
 }

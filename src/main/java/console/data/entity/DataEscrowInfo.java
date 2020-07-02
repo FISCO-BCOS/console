@@ -2,7 +2,7 @@ package console.data.entity;
 
 public class DataEscrowInfo {
 
-    private String dataId;
+    private String dataID;
     private String cipherText1;
     private String cipherText2;
 
@@ -10,15 +10,15 @@ public class DataEscrowInfo {
         super();
     }
 
-    public DataEscrowInfo(String dataId, String cipherText1, String cipherText2) {
+    public DataEscrowInfo(String dataID, String cipherText1, String cipherText2) {
         super();
-        this.dataId = dataId;
+        this.dataID = dataID;
         this.cipherText1 = cipherText1;
         this.cipherText2 = cipherText2;
     }
 
-    public String getdataId() {
-        return dataId;
+    public String getDataID() {
+        return dataID;
     }
 
     public String getCipherText1() {
@@ -29,8 +29,8 @@ public class DataEscrowInfo {
         return cipherText2;
     }
 
-    public void setDataId(String dataId) {
-        this.dataId = dataId;
+    public void setDataId(String dataID) {
+        this.dataID = dataID;
     }
 
     public void setCipherText1(String cipherText1) {

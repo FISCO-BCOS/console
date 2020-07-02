@@ -174,19 +174,19 @@ public class WelcomeInfo {
             sb.append(
                     "updatePassword                           Update the password of your own account.\n");
             sb.append(
-                    "restorePrivateKey                        Restore account's private key by alias.\n");
+                    "restoreData                        Restore account's private key by alias.\n");
             sb.append("quit(q)                                  Quit console.\n");
         } else if (role.equals("visitor")) {
             sb.append(
                     "updatePassword                           Update the password of your own account.\n");
             sb.append(
-                    "uploadPrivateKey                         Upload the private key to key manager service.\n");
+                    "uploadData                         Upload the private key to key manager service.\n");
             sb.append(
-                    "listPrivateKey                           Display a list of private keys owned by yourself.\n");
+                    "listData                           Display a list of private keys owned by yourself.\n");
             sb.append(
-                    "exportPrivateKey                         Export your own private key by alias.\n");
+                    "exportData                         Export your own private key by alias.\n");
             sb.append(
-                    "deletePrivateKey                         Delete your own private key by alias.\n");
+                    "deleteData                         Delete your own private key by alias.\n");
             sb.append("quit(q)                                  Quit console.\n");
         }
         System.out.println(sb.toString());
