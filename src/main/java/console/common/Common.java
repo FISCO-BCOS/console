@@ -22,6 +22,7 @@ public class Common {
     public static final String DeployLogntegerRange = "from 1 to 100";
     public static final String NodeIdLength = "128";
     public static final String TxGasLimitRange = "from 100000 to 2147483647";
+    public static final String ConsensusTimeRange = "from 1000 to 2147483647";
     public static final String EMPTY_CONTRACT_ADDRESS =
             "0x0000000000000000000000000000000000000000";
     public static final String EMPTY_OUTPUT = "0x";

@@ -180,8 +180,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                     return;
                 } else if (Common.ConsensusTime.equals(key) && value < Common.ConsensusTimeMin) {
                     System.out.println(
-                            "Please provide a value no smaller than "
-                                    + Common.ConsensusTimeMin
+                            "Please provide value by positive integer mode, "
+                                    + Common.ConsensusTimeRange
                                     + ".");
                     System.out.println();
                     return;
@@ -210,7 +210,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 } else if (Common.ConsensusTime.equals(key)) {
                     System.out.println(
                             "Please provide a value no smaller than "
-                                    + Common.ConsensusTimeMin
+                                    + Common.ConsensusTimeRange
                                     + ".");
                 }
                 System.out.println();
