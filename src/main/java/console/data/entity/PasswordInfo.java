@@ -1,4 +1,4 @@
-package console.key.entity;
+package console.data.entity;
 
 public class PasswordInfo {
 

@@ -1,6 +1,6 @@
-package console.key;
+package console.data;
 
-public interface KeyFace {
+public interface DataEscrowFace {
     // service
     void setURLPrefix(String urlPrefix);
 

@@ -35,7 +35,7 @@ function Usage() {
     LOG_INFO "./start.sh groupID -pem pemName"
     LOG_INFO "./start.sh groupID -p12 p12Name"
     LOG_INFO "Usage to access key manager service: "
-    LOG_INFO "./start.sh -kms user password"
+    LOG_INFO "./start.sh -safekeeper user password"
     LOG_INFO "print console version:"
     LOG_INFO "./start.sh --version or -v"
 }

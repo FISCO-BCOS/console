@@ -1,4 +1,4 @@
-package console.key.tools;
+package console.data.tools;
 
 import java.math.BigInteger;
 import java.security.Security;

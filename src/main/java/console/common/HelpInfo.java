@@ -675,7 +675,7 @@ public class HelpInfo {
         System.out.println("./start.sh groupID -pem pemName");
         System.out.println("./start.sh groupID -p12 p12Name");
         System.out.println("Usage to access key manager service: ");
-        System.out.println("./start.sh -kms account password");
+        System.out.println("./start.sh -safekeeper account password");
     }
 
     public static void addAdminAccountHelp() {

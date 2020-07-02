@@ -34,6 +34,6 @@ public class Common {
     public static int USER_TABLE_FIELD_NAME_MAX_LENGTH = 64;
     public static int USER_TABLE_FIELD_VALUE_MAX_LENGTH = 16 * 1024 * 1024 - 1;
 
-    public static int INIT_KMS = 1;
+    public static int INIT_SAFEKEEPER = 1;
     public static int INIT_CHAIN = 2;
 }

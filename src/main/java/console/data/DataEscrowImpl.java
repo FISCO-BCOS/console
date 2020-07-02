@@ -1,17 +1,17 @@
-package console.key;
+package console.data;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
 import console.exception.ConsoleMessageException;
-import console.key.entity.AccountInfo;
-import console.key.entity.KeyInfo;
-import console.key.entity.PasswordInfo;
-import console.key.service.KMSService;
-import console.key.tools.AES;
-import console.key.tools.Common;
-import console.key.tools.ECC;
+import console.data.entity.AccountInfo;
+import console.data.entity.DataEscrowInfo;
+import console.data.entity.PasswordInfo;
+import console.data.service.SafeKeeperService;
+import console.data.tools.AES;
+import console.data.tools.Common;
+import console.data.tools.ECC;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
@@ -32,20 +32,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.HttpClientErrorException;
 
-public class KeyImpl implements KeyFace {
+public class DataEscrowImpl implements DataEscrowFace {
 
-    private static final Logger logger = LoggerFactory.getLogger(KeyImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(DataEscrowImpl.class);
 
     private String urlPrefix;
     private String token;
     private String consoleAccountName;
     private String roleName;
 
-    private KMSService kmsService;
+    private SafeKeeperService safeKeeperService;
 
-    public KeyImpl() throws Exception {
+    public DataEscrowImpl() throws Exception {
         try {
-            kmsService = new KMSService();
+            safeKeeperService = new SafeKeeperService();
         } catch (Exception e) {
             throw new ConsoleMessageException("Init rest template error: " + e);
         }
@@ -71,10 +71,8 @@ public class KeyImpl implements KeyFace {
         HttpEntity entity = new HttpEntity(paramsMap, headers);
 
         try {
-            ResponseEntity<String> response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.POST, entity,
+                    String.class);
             String strBody = response.getBody();
             logger.info(strBody);
 
@@ -97,7 +95,7 @@ public class KeyImpl implements KeyFace {
 
     @Override
     public void addAdminAccount(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_ADMIN)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_ADMIN)) {
             System.out.println("This command can only be called by admin role.");
             return;
         }
@@ -132,8 +130,7 @@ public class KeyImpl implements KeyFace {
         }
 
         String url = urlPrefix + "account/addAccount";
-        AccountInfo bean =
-                new AccountInfo(account, accountPwd, publicKey, Common.KMS_ROLE_ADMIN_ID);
+        AccountInfo bean = new AccountInfo(account, accountPwd, publicKey, Common.SafeKeeper_ROLE_ADMIN_ID);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
         logger.info("addAdminAccount, param: {}", str);
@@ -142,10 +139,8 @@ public class KeyImpl implements KeyFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            ResponseEntity<String> response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.POST, entity,
+                    String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
@@ -159,7 +154,7 @@ public class KeyImpl implements KeyFace {
 
     @Override
     public void addVisitorAccount(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_ADMIN)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_ADMIN)) {
             System.out.println("This command can only be called by admin role.");
             return;
         }
@@ -189,7 +184,7 @@ public class KeyImpl implements KeyFace {
         }
 
         String url = urlPrefix + "account/addAccount";
-        AccountInfo bean = new AccountInfo(account, accountPwd, "", Common.KMS_ROLE_VISITOR_ID);
+        AccountInfo bean = new AccountInfo(account, accountPwd, "", Common.SafeKeeper_ROLE_VISITOR_ID);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
         logger.info("addVisitorAccount, param: {}", str);
@@ -198,10 +193,8 @@ public class KeyImpl implements KeyFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            ResponseEntity<String> response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.POST, entity,
+                    String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
@@ -215,7 +208,7 @@ public class KeyImpl implements KeyFace {
 
     @Override
     public void deleteAccount(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_ADMIN)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_ADMIN)) {
             System.out.println("This command can only be called by admin role.");
             return;
         }
@@ -246,7 +239,7 @@ public class KeyImpl implements KeyFace {
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("deleteAccount, url: {}", url);
         try {
-            kmsService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
+            safeKeeperService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
             System.out.println("Delete an account \"" + accountName + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -255,7 +248,7 @@ public class KeyImpl implements KeyFace {
 
     @Override
     public void listAccount(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_ADMIN)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_ADMIN)) {
             System.out.println("This command can only be called by admin role.");
             return;
         }
@@ -274,15 +267,12 @@ public class KeyImpl implements KeyFace {
         ResponseEntity<String> response;
         logger.info("listAccount, url: {}", url);
         try {
-            response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.GET, entity, String.class);
+            response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
-            String[] tableHeaders = {"name", "role", "createTime"};
+            String[] tableHeaders = { "name", "role", "createTime" };
             int accountTotalCount = bodyNode.get("totalCount").asInt();
             String[][] tableData = new String[accountTotalCount][3];
             JsonNode dataNode = bodyNode.get("data");
@@ -299,17 +289,13 @@ public class KeyImpl implements KeyFace {
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
                 url = urlPrefix + "account/accountList/" + pageIdx + "/" + pageSize;
                 logger.info("listAccount, url: {}", url);
-                response =
-                        kmsService
-                                .getRestTemplate()
-                                .exchange(url, HttpMethod.GET, entity, String.class);
+                response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
                 strBody = response.getBody();
                 logger.info(strBody);
                 bodyNode = objectMapper.readValue(strBody, JsonNode.class);
                 if (accountTotalCount != bodyNode.get("totalCount").asInt()) {
                     logger.warn(" the total count has changed");
-                    throw new ConsoleMessageException(
-                            "The count of accounts has changed, please inquire again.");
+                    throw new ConsoleMessageException("The count of accounts has changed, please inquire again.");
                 }
                 dataNode = bodyNode.get("data");
                 for (int i = 0; i < dataNode.size(); i++) {
@@ -321,11 +307,7 @@ public class KeyImpl implements KeyFace {
                 }
             }
             System.out.println(
-                    "The count of account created by \""
-                            + consoleAccountName
-                            + "\" is "
-                            + accountTotalCount
-                            + ".");
+                    "The count of account created by \"" + consoleAccountName + "\" is " + accountTotalCount + ".");
             if (0 == accountTotalCount) {
                 return;
             }
@@ -375,7 +357,7 @@ public class KeyImpl implements KeyFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            kmsService.getRestTemplate().exchange(url, HttpMethod.PUT, entity, String.class);
+            safeKeeperService.getRestTemplate().exchange(url, HttpMethod.PUT, entity, String.class);
             System.out.println("Update password successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -384,7 +366,7 @@ public class KeyImpl implements KeyFace {
 
     @Override
     public void uploadPrivateKey(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_VISITOR)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_VISITOR)) {
             System.out.println("This command can only be called by visitor role.");
             return;
         }
@@ -442,7 +424,7 @@ public class KeyImpl implements KeyFace {
         }
 
         String url = urlPrefix + "escrow/addKey";
-        KeyInfo bean = new KeyInfo(alias, cipherECC, cipherAES);
+        DataEscrowInfo bean = new DataEscrowInfo(alias, cipherECC, cipherAES);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
         logger.info("uploadPrivateKey, str: {}", str);
@@ -451,10 +433,8 @@ public class KeyImpl implements KeyFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            ResponseEntity<String> response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.POST, entity, String.class);
+            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.POST, entity,
+                    String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
@@ -476,10 +456,8 @@ public class KeyImpl implements KeyFace {
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         try {
-            ResponseEntity<String> response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.GET, entity, String.class);
+            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity,
+                    String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -487,8 +465,7 @@ public class KeyImpl implements KeyFace {
             JsonNode dataNode = bodyNode.get("data");
             publicKey = dataNode.get("publicKey").asText();
         } catch (HttpClientErrorException e) {
-            throw new ConsoleMessageException(
-                    "getCreatorPublicKey fail, " + e.getResponseBodyAsString());
+            throw new ConsoleMessageException("getCreatorPublicKey fail, " + e.getResponseBodyAsString());
         } catch (Exception e) {
             throw new ConsoleMessageException(e.getMessage());
         }
@@ -542,17 +519,14 @@ public class KeyImpl implements KeyFace {
             return Files.newInputStream(Paths.get(fileName));
         } catch (IOException e) {
             System.out.println(
-                    "["
-                            + Paths.get(fileName).toAbsolutePath()
-                            + "]"
-                            + " cannot be opened because it does not exist.");
+                    "[" + Paths.get(fileName).toAbsolutePath() + "]" + " cannot be opened because it does not exist.");
         }
         return null;
     }
 
     @Override
     public void listPrivateKey(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_VISITOR)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_VISITOR)) {
             System.out.println("This command can only be called by visitor role.");
             return;
         }
@@ -571,15 +545,12 @@ public class KeyImpl implements KeyFace {
         ResponseEntity<String> response;
         logger.info("listPrivateKey, url: {}", url);
         try {
-            response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.GET, entity, String.class);
+            response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
-            String[] tableHeaders = {"alias", "createTime"};
+            String[] tableHeaders = { "alias", "createTime" };
             int keyTotalCount = bodyNode.get("totalCount").asInt();
             String[][] tableData = new String[keyTotalCount][2];
             JsonNode dataNode = bodyNode.get("data");
@@ -595,17 +566,13 @@ public class KeyImpl implements KeyFace {
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
                 url = urlPrefix + "escrow/keyList/" + pageIdx + "/" + pageSize;
                 logger.info("listPrivateKey, url: {}", url);
-                response =
-                        kmsService
-                                .getRestTemplate()
-                                .exchange(url, HttpMethod.GET, entity, String.class);
+                response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
                 strBody = response.getBody();
                 logger.info(strBody);
                 bodyNode = objectMapper.readValue(strBody, JsonNode.class);
                 if (keyTotalCount != bodyNode.get("totalCount").asInt()) {
                     logger.warn(" the total count has changed");
-                    throw new ConsoleMessageException(
-                            "The count of uploaded keys has changed, please inquire again.");
+                    throw new ConsoleMessageException("The count of uploaded keys has changed, please inquire again.");
                 }
                 dataNode = bodyNode.get("data");
                 for (int i = 0; i < dataNode.size(); i++) {
@@ -616,12 +583,8 @@ public class KeyImpl implements KeyFace {
                 }
             }
 
-            System.out.println(
-                    "The count of keys uploaded by \""
-                            + consoleAccountName
-                            + "\" is "
-                            + keyTotalCount
-                            + ".");
+            System.out
+                    .println("The count of keys uploaded by \"" + consoleAccountName + "\" is " + keyTotalCount + ".");
             if (0 == keyTotalCount) {
                 return;
             }
@@ -637,7 +600,7 @@ public class KeyImpl implements KeyFace {
 
     @Override
     public void exportPrivateKey(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_VISITOR)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_VISITOR)) {
             System.out.println("This command can only be called by visitor role.");
             return;
         }
@@ -664,10 +627,8 @@ public class KeyImpl implements KeyFace {
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("queryKey in exportPrivateKey, url: {}", url);
         try {
-            ResponseEntity<String> response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.GET, entity, String.class);
+            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity,
+                    String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -695,7 +656,7 @@ public class KeyImpl implements KeyFace {
 
     @Override
     public void deletePrivateKey(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_VISITOR)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_VISITOR)) {
             System.out.println("This command can only be called by visitor role.");
             return;
         }
@@ -722,7 +683,7 @@ public class KeyImpl implements KeyFace {
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("deleteKey, url: {}", url);
         try {
-            kmsService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
+            safeKeeperService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
             System.out.println("Delete the private key \"" + keyAlias + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -731,7 +692,7 @@ public class KeyImpl implements KeyFace {
 
     @Override
     public void restorePrivateKey(String[] params) throws Exception {
-        if (!roleName.equals(Common.KMS_ROLE_ADMIN)) {
+        if (!roleName.equals(Common.SafeKeeper_ROLE_ADMIN)) {
             System.out.println("This command can only be called by admin role.");
             return;
         }
@@ -765,10 +726,8 @@ public class KeyImpl implements KeyFace {
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("queryKey in restorePrivateKey, url: {}", url);
         try {
-            ResponseEntity<String> response =
-                    kmsService
-                            .getRestTemplate()
-                            .exchange(url, HttpMethod.GET, entity, String.class);
+            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity,
+                    String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -789,13 +748,7 @@ public class KeyImpl implements KeyFace {
                 return;
             }
             System.out.println(
-                    "The private key \""
-                            + keyAlias
-                            + "\" of account \""
-                            + accountName
-                            + "\" is "
-                            + plainText
-                            + ".");
+                    "The private key \"" + keyAlias + "\" of account \"" + accountName + "\" is " + plainText + ".");
         } catch (HttpClientErrorException e) {
             System.out.println("queryKey fail, " + e.getResponseBodyAsString());
         }

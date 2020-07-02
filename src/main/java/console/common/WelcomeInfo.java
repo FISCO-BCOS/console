@@ -21,7 +21,7 @@ public class WelcomeInfo {
         ConsoleUtils.doubleLine();
     }
 
-    public static void welcomeKMS() {
+    public static void welcomeSafeKeeper() {
         ConsoleUtils.doubleLine();
         System.out.println(
                 "Welcome to Key Manager Service console(" + ConsoleVersion.Version + ")!");
@@ -153,7 +153,7 @@ public class WelcomeInfo {
         System.out.println();
     }
 
-    public static void KMSHelp(String[] params, String role) {
+    public static void SafeKeeperHelp(String[] params, String role) {
         if (HelpInfo.promptNoParams(params, "help")) {
             return;
         }

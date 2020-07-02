@@ -1,10 +1,10 @@
-package console.key.tools;
+package console.data.tools;
 
 public class Common {
-    public static String KMS_ROLE_ADMIN = "admin";
-    public static String KMS_ROLE_VISITOR = "visitor";
-    public static int KMS_ROLE_ADMIN_ID = 100000;
-    public static int KMS_ROLE_VISITOR_ID = 100001;
+    public static String SafeKeeper_ROLE_ADMIN = "admin";
+    public static String SafeKeeper_ROLE_VISITOR = "visitor";
+    public static int SafeKeeper_ROLE_ADMIN_ID = 100000;
+    public static int SafeKeeper_ROLE_VISITOR_ID = 100001;
     public static String FILE_PATH = "accounts/";
     public static String FILE_GM_PATH = "accounts_gm/";
     public static String ACCOUNT_NAME_FORMAT =

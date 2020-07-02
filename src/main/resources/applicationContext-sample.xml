@@ -40,8 +40,8 @@
         <property name="allChannelConnections" ref="groupChannelConnectionsConfig"></property>
     </bean>
 
-    <bean id="kmsUrl" class="console.key.tools.KMSUrl">
-        <constructor-arg index="0" value="serviceIP:servicePort" />
+    <bean id="safeKeeperUrl" class="console.data.tools.SafeKeeperUrl">
+        <constructor-arg index="0" value="serviceIP:servicePort/SafeKeeper/" />
     </bean>
 
 </beans>

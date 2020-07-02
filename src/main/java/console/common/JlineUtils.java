@@ -190,20 +190,20 @@ class ConsoleFilesCompleter extends FilesCompleter {
     }
 }
 
-class ConsoleKMSFilesCompleter extends FilesCompleter {
+class ConsoleSafeKeeperFilesCompleter extends FilesCompleter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsoleKMSFilesCompleter.class);
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleSafeKeeperFilesCompleter.class);
 
     public final String P12_STR = ".p12";
     public final String PEM_STR = ".pem";
     public final String P12_PUBLIC_STR = ".public.p12";
     public final String PEM_PUBLIC_STR = ".public.pem";
 
-    public ConsoleKMSFilesCompleter(File currentDir) {
+    public ConsoleSafeKeeperFilesCompleter(File currentDir) {
         super(currentDir);
     }
 
-    public ConsoleKMSFilesCompleter(Path path) {
+    public ConsoleSafeKeeperFilesCompleter(Path path) {
         super(path);
     }
 
@@ -445,7 +445,7 @@ public class JlineUtils {
                 .option(LineReader.Option.HISTORY_REDUCE_BLANKS, false);
     }
 
-    public static LineReader getKMSLineReader() throws IOException {
+    public static LineReader getSafeKeeperLineReader() throws IOException {
 
         List<Completer> completers = new ArrayList<Completer>();
 
@@ -474,15 +474,15 @@ public class JlineUtils {
 
         String filePath =
                 (EncryptType.encryptType == 0)
-                        ? console.key.tools.Common.FILE_PATH
-                        : console.key.tools.Common.FILE_GM_PATH;
+                        ? console.data.tools.Common.FILE_PATH
+                        : console.data.tools.Common.FILE_GM_PATH;
         Path path = FileSystems.getDefault().getPath(filePath, "");
         commands = Arrays.asList("uploadPrivateKey");
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ConsoleKMSFilesCompleter(path),
+                            new ConsoleSafeKeeperFilesCompleter(path),
                             new StringsCompleterIgnoreCase()));
         }
 

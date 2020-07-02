@@ -1,4 +1,4 @@
-package console.key.service;
+package console.data.service;
 
 import console.exception.ConsoleMessageException;
 import java.security.cert.X509Certificate;
@@ -17,13 +17,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 
-public class KMSService {
+public class SafeKeeperService {
 
-    private static final Logger logger = LoggerFactory.getLogger(KMSService.class);
+    private static final Logger logger = LoggerFactory.getLogger(SafeKeeperService.class);
 
     private RestTemplate restTemplate;
 
-    public KMSService() throws Exception {
+    public SafeKeeperService() throws Exception {
         init();
     }
 
