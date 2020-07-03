@@ -329,7 +329,7 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.ConsensusTime),
+                            new StringsCompleter(Common.ConsensusTimeout),
                             new StringsCompleterIgnoreCase()));
         }
 
