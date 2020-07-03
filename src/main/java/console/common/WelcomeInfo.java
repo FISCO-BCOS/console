@@ -174,19 +174,19 @@ public class WelcomeInfo {
             sb.append(
                     "updatePassword                           Update the password of your own account.\n");
             sb.append(
-                    "restoreData                        Restore account's escrow data by dataID.\n");
+                    "restoreData                              Restore account's escrow data by dataID.\n");
             sb.append("quit(q)                                  Quit console.\n");
         } else if (role.equals("visitor")) {
             sb.append(
                     "updatePassword                           Update the password of your own account.\n");
             sb.append(
-                    "uploadData                         Upload the escrow data to safekeeper service.\n");
+                    "uploadData                               Upload the escrow data to safekeeper service.\n");
             sb.append(
-                    "listData                           Display a list of private keys owned by yourself.\n");
+                    "listData                                 Display a list of private keys owned by yourself.\n");
             sb.append(
-                    "exportData                         Export your own escrow data by dataID.\n");
+                    "exportData                               Export your own escrow data by dataID.\n");
             sb.append(
-                    "deleteData                         Delete your own escrow data by dataID.\n");
+                    "deleteData                               Delete your own escrow data by dataID.\n");
             sb.append("quit(q)                                  Quit console.\n");
         }
         System.out.println(sb.toString());
