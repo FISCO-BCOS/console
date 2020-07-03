@@ -2,8 +2,8 @@ package console;
 
 import console.common.*;
 import console.contract.ContractFace;
+import console.data.DataEscrowFace;
 import console.exception.ConsoleMessageException;
-import console.key.KeyFace;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.permission.PermissionFace;
 import console.web3j.Web3jFace;
@@ -29,7 +29,7 @@ public class ConsoleClient {
     private static PrecompiledFace precompiledFace;
     private static PermissionFace permissionFace;
     private static ContractFace contractFace;
-    private static KeyFace keyFace;
+    private static DataEscrowFace dataEscrowFace;
 
     public static int INPUT_FLAG = 0;
 
@@ -43,9 +43,9 @@ public class ConsoleClient {
         try {
             consoleInitializer = new ConsoleInitializer();
             mode = consoleInitializer.init(args);
-            if (Common.INIT_KMS == mode) {
-                keyFace = consoleInitializer.getKeyFace();
-                lineReader = JlineUtils.getKMSLineReader();
+            if (Common.INIT_SAFEKEEPER == mode) {
+                dataEscrowFace = consoleInitializer.getKeyFace();
+                lineReader = JlineUtils.getSafeKeeperLineReader();
             } else {
                 web3jFace = consoleInitializer.getWeb3jFace();
                 precompiledFace = consoleInitializer.getPrecompiledFace();
@@ -63,13 +63,13 @@ public class ConsoleClient {
             return;
         }
 
-        if (Common.INIT_KMS == mode) {
-            WelcomeInfo.welcomeKMS();
+        if (Common.INIT_SAFEKEEPER == mode) {
+            WelcomeInfo.welcomeSafeKeeper();
         } else if (Common.INIT_CHAIN == mode) {
             WelcomeInfo.welcome();
         }
 
-        while (true && Common.INIT_KMS == mode) {
+        while (true && Common.INIT_SAFEKEEPER == mode) {
             try {
                 if (lineReader == null) {
                     System.out.println("Console can not read commands.");
@@ -108,37 +108,37 @@ public class ConsoleClient {
                 switch (params[0]) {
                     case "help":
                     case "h":
-                        WelcomeInfo.KMSHelp(params, role);
+                        WelcomeInfo.SafeKeeperHelp(params, role);
                         break;
                     case "addAdminAccount":
-                        keyFace.addAdminAccount(params);
+                        dataEscrowFace.addAdminAccount(params);
                         break;
                     case "addVisitorAccount":
-                        keyFace.addVisitorAccount(params);
+                        dataEscrowFace.addVisitorAccount(params);
                         break;
                     case "deleteAccount":
-                        keyFace.deleteAccount(params);
+                        dataEscrowFace.deleteAccount(params);
                         break;
                     case "listAccount":
-                        keyFace.listAccount(params);
+                        dataEscrowFace.listAccount(params);
                         break;
                     case "updatePassword":
-                        keyFace.updatePwd(params);
+                        dataEscrowFace.updatePwd(params);
                         break;
-                    case "uploadPrivateKey":
-                        keyFace.uploadPrivateKey(params);
+                    case "uploadData":
+                        dataEscrowFace.uploadData(params);
                         break;
-                    case "listPrivateKey":
-                        keyFace.listPrivateKey(params);
+                    case "listData":
+                        dataEscrowFace.listData(params);
                         break;
-                    case "exportPrivateKey":
-                        keyFace.exportPrivateKey(params);
+                    case "exportData":
+                        dataEscrowFace.exportData(params);
                         break;
-                    case "deletePrivateKey":
-                        keyFace.deletePrivateKey(params);
+                    case "deleteData":
+                        dataEscrowFace.deleteData(params);
                         break;
-                    case "restorePrivateKey":
-                        keyFace.restorePrivateKey(params);
+                    case "restoreData":
+                        dataEscrowFace.restoreData(params);
                         break;
                     default:
                         System.out.println(

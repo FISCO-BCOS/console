@@ -5,9 +5,9 @@ import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
-import console.key.KeyFace;
-import console.key.KeyImpl;
-import console.key.tools.KMSUrl;
+import console.data.DataEscrowFace;
+import console.data.DataEscrowImpl;
+import console.data.tools.SafeKeeperUrl;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.PrecompiledImpl;
 import console.precompiled.permission.PermissionFace;
@@ -72,7 +72,7 @@ public class ConsoleInitializer {
     private PrecompiledFace precompiledFace;
     private PermissionFace permissionFace;
     private ContractFace contractFace;
-    private KeyFace keyFace;
+    private DataEscrowFace dataEscrowFace;
     private String accountInfo;
 
     public int init(String[] args)
@@ -83,15 +83,15 @@ public class ConsoleInitializer {
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
 
-        if (args.length > 0 && "-kms".equals(args[0])) {
+        if (args.length > 0 && "-safekeeper".equals(args[0])) {
             if (args.length == 3) {
                 try {
-                    keyFace = new KeyImpl();
-                    KMSUrl kmsUrl = context.getBean(KMSUrl.class);
-                    String urlPrefix = "https://" + kmsUrl.getUrl() + "/FISCO-Key-Manager/";
-                    logger.info(" key manager service url prefix: {}", urlPrefix);
-                    keyFace.setURLPrefix(urlPrefix);
-                    accountInfo = keyFace.login(args);
+                    dataEscrowFace = new DataEscrowImpl();
+                    SafeKeeperUrl safekeeperUrl = context.getBean(SafeKeeperUrl.class);
+                    String urlPrefix = "https://" + safekeeperUrl.getUrl();
+                    logger.info(" safekeeper service url prefix: {}", urlPrefix);
+                    dataEscrowFace.setURLPrefix(urlPrefix);
+                    accountInfo = dataEscrowFace.login(args);
                 } catch (HttpClientErrorException e) {
                     System.out.println("Fail, " + e.getResponseBodyAsString());
                     logger.error(" message: {}, e: {}", e.getMessage(), e);
@@ -101,7 +101,7 @@ public class ConsoleInitializer {
                     logger.error(" message: {}, e: {}", e.getMessage(), e);
                     close();
                 }
-                return Common.INIT_KMS;
+                return Common.INIT_SAFEKEEPER;
             } else {
                 HelpInfo.startHelp();
                 close();
@@ -233,10 +233,10 @@ public class ConsoleInitializer {
         if (!accountPrivateKeyMatch) {
             if (EncryptType.ECDSA_TYPE == EncryptType.encryptType) {
                 throw new IllegalArgumentException(
-                        " Load SM2 private key while configuration is ECSDA type");
+                        " Load SM2 escrow data while configuration is ECSDA type");
             } else {
                 throw new IllegalArgumentException(
-                        " Load ECSDA private key while configuration is SM2 type");
+                        " Load ECSDA escrow data while configuration is SM2 type");
             }
         }
     }
@@ -501,8 +501,8 @@ public class ConsoleInitializer {
         return contractFace;
     }
 
-    public KeyFace getKeyFace() {
-        return keyFace;
+    public DataEscrowFace getKeyFace() {
+        return dataEscrowFace;
     }
 
     public String getAccountInfo() {

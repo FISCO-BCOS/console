@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
@@ -190,20 +189,16 @@ class ConsoleFilesCompleter extends FilesCompleter {
     }
 }
 
-class ConsoleKMSFilesCompleter extends FilesCompleter {
+class ConsoleSafeKeeperFilesCompleter extends FilesCompleter {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsoleKMSFilesCompleter.class);
+    private static final Logger logger =
+            LoggerFactory.getLogger(ConsoleSafeKeeperFilesCompleter.class);
 
-    public final String P12_STR = ".p12";
-    public final String PEM_STR = ".pem";
-    public final String P12_PUBLIC_STR = ".public.p12";
-    public final String PEM_PUBLIC_STR = ".public.pem";
-
-    public ConsoleKMSFilesCompleter(File currentDir) {
+    public ConsoleSafeKeeperFilesCompleter(File currentDir) {
         super(currentDir);
     }
 
-    public ConsoleKMSFilesCompleter(Path path) {
+    public ConsoleSafeKeeperFilesCompleter(Path path) {
         super(path);
     }
 
@@ -258,13 +253,6 @@ class ConsoleKMSFilesCompleter extends FilesCompleter {
             directoryStream.forEach(
                     p -> {
                         String value = curBuf + p.getFileName().toString();
-                        // filter not p12/pem file and public file
-                        if (!value.endsWith(P12_STR) && !value.endsWith(PEM_STR)) {
-                            return;
-                        }
-                        if (value.endsWith(P12_PUBLIC_STR) || value.endsWith(PEM_PUBLIC_STR)) {
-                            return;
-                        }
                         if (Files.isDirectory(p)) {
                             candidates.add(
                                     new Candidate(
@@ -445,7 +433,7 @@ public class JlineUtils {
                 .option(LineReader.Option.HISTORY_REDUCE_BLANKS, false);
     }
 
-    public static LineReader getKMSLineReader() throws IOException {
+    public static LineReader getSafeKeeperLineReader() throws IOException {
 
         List<Completer> completers = new ArrayList<Completer>();
 
@@ -457,11 +445,11 @@ public class JlineUtils {
                         "deleteAccount",
                         "listAccount",
                         "updatePassword",
-                        "uploadPrivateKey",
-                        "listPrivateKey",
-                        "exportPrivateKey",
-                        "deletePrivateKey",
-                        "restorePrivateKey",
+                        "uploadData",
+                        "listData",
+                        "exportData",
+                        "deleteData",
+                        "restoreData",
                         "quit",
                         "exit");
 
@@ -472,17 +460,14 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase()));
         }
 
-        String filePath =
-                (EncryptType.encryptType == 0)
-                        ? console.key.tools.Common.FILE_PATH
-                        : console.key.tools.Common.FILE_GM_PATH;
+        String filePath = console.data.tools.Common.FILE_PATH;
         Path path = FileSystems.getDefault().getPath(filePath, "");
-        commands = Arrays.asList("uploadPrivateKey");
+        commands = Arrays.asList("uploadData");
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ConsoleKMSFilesCompleter(path),
+                            new ConsoleSafeKeeperFilesCompleter(path),
                             new StringsCompleterIgnoreCase()));
         }
 

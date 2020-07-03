@@ -1,12 +1,12 @@
-package console.key.tools;
+package console.data.tools;
 
-public class KMSUrl {
+public class SafeKeeperUrl {
 
-    public KMSUrl(String url) {
+    public SafeKeeperUrl(String url) {
         this.url = url;
     }
 
-    public KMSUrl() {}
+    public SafeKeeperUrl() {}
 
     private String url;
 
