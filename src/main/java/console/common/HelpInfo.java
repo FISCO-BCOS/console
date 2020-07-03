@@ -719,9 +719,9 @@ public class HelpInfo {
         System.out.println(
                 "      -- the value of  rpbft_epoch_sealer_num " + Common.PositiveIntegerRange);
         System.out.println(
-                "      -- the value of  consensus_time "
-                        + Common.ConsensusTimeRange
-                        + "(default 1000).");
+                "      -- the value of  consensus_timeout (seconds)"
+                        + Common.ConsensusTimeoutRange
+                        + "(default 3s).");
         System.out.println();
     }
 

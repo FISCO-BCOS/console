@@ -155,7 +155,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 || Common.TxGasLimit.equals(key)
                 || Common.RPBFTEpochSealerNum.equals(key)
                 || Common.RPBFTEpochBlockNum.equals(key)
-                || Common.ConsensusTime.equals(key)) {
+                || Common.ConsensusTimeout.equals(key)) {
             String valueStr = params[2];
             int value = 1;
             try {
@@ -178,10 +178,12 @@ public class PrecompiledImpl implements PrecompiledFace {
                                     + ".");
                     System.out.println();
                     return;
-                } else if (Common.ConsensusTime.equals(key) && value < Common.ConsensusTimeMin) {
+                } else if (Common.ConsensusTimeout.equals(key)
+                        && (value < Common.ConsensusTimeoutMin
+                                || value >= Common.ConsensusTimeoutMax)) {
                     System.out.println(
                             "Please provide value by positive integer mode, "
-                                    + Common.ConsensusTimeRange
+                                    + Common.ConsensusTimeoutRange
                                     + ".");
                     System.out.println();
                     return;
@@ -207,10 +209,10 @@ public class PrecompiledImpl implements PrecompiledFace {
                             "Please provide value by positive integer mode, "
                                     + Common.TxGasLimitRange
                                     + ".");
-                } else if (Common.ConsensusTime.equals(key)) {
+                } else if (Common.ConsensusTimeout.equals(key)) {
                     System.out.println(
                             "Please provide a value no smaller than "
-                                    + Common.ConsensusTimeRange
+                                    + Common.ConsensusTimeoutRange
                                     + ".");
                 }
                 System.out.println();
@@ -227,7 +229,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + " or "
                             + Common.RPBFTEpochBlockNum
                             + " or "
-                            + Common.ConsensusTime
+                            + Common.ConsensusTimeout
                             + " .");
         }
         System.out.println();
