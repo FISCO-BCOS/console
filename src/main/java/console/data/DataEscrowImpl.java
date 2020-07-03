@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
-import console.exception.ConsoleMessageException;
 import console.data.entity.AccountInfo;
 import console.data.entity.DataEscrowInfo;
 import console.data.entity.PasswordInfo;
@@ -12,17 +11,16 @@ import console.data.service.SafeKeeperService;
 import console.data.tools.AES;
 import console.data.tools.Common;
 import console.data.tools.ECC;
+import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
-import java.io.IOException;
+import java.io.*;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import org.fisco.bcos.channel.client.P12Manager;
-import org.fisco.bcos.channel.client.PEMManager;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.crypto.ECKeyPair;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -71,8 +69,10 @@ public class DataEscrowImpl implements DataEscrowFace {
         HttpEntity entity = new HttpEntity(paramsMap, headers);
 
         try {
-            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.POST, entity,
-                    String.class);
+            ResponseEntity<String> response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.POST, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
 
@@ -130,7 +130,8 @@ public class DataEscrowImpl implements DataEscrowFace {
         }
 
         String url = urlPrefix + "accounts/v1";
-        AccountInfo bean = new AccountInfo(account, accountPwd, publicKey, Common.SafeKeeper_ROLE_ADMIN_ID);
+        AccountInfo bean =
+                new AccountInfo(account, accountPwd, publicKey, Common.SafeKeeper_ROLE_ADMIN_ID);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
         logger.info("addAdminAccount, param: {}", str);
@@ -139,8 +140,10 @@ public class DataEscrowImpl implements DataEscrowFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.POST, entity,
-                    String.class);
+            ResponseEntity<String> response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.POST, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
@@ -184,7 +187,8 @@ public class DataEscrowImpl implements DataEscrowFace {
         }
 
         String url = urlPrefix + "accounts/v1";
-        AccountInfo bean = new AccountInfo(account, accountPwd, "", Common.SafeKeeper_ROLE_VISITOR_ID);
+        AccountInfo bean =
+                new AccountInfo(account, accountPwd, "", Common.SafeKeeper_ROLE_VISITOR_ID);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
         logger.info("addVisitorAccount, param: {}", str);
@@ -193,8 +197,10 @@ public class DataEscrowImpl implements DataEscrowFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.POST, entity,
-                    String.class);
+            ResponseEntity<String> response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.POST, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
@@ -239,7 +245,9 @@ public class DataEscrowImpl implements DataEscrowFace {
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("deleteAccount, url: {}", url);
         try {
-            safeKeeperService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
+            safeKeeperService
+                    .getRestTemplate()
+                    .exchange(url, HttpMethod.DELETE, entity, String.class);
             System.out.println("Delete an account \"" + accountName + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -267,12 +275,15 @@ public class DataEscrowImpl implements DataEscrowFace {
         ResponseEntity<String> response;
         logger.info("listAccount, url: {}", url);
         try {
-            response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
+            response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
-            String[] tableHeaders = { "name", "role", "createTime" };
+            String[] tableHeaders = {"name", "role", "createTime"};
             int accountTotalCount = bodyNode.get("totalCount").asInt();
             String[][] tableData = new String[accountTotalCount][3];
             JsonNode dataNode = bodyNode.get("data");
@@ -289,13 +300,17 @@ public class DataEscrowImpl implements DataEscrowFace {
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
                 url = urlPrefix + "accounts/v1?pageNumber=" + pageIdx + "&pageSize=" + pageSize;
                 logger.info("listAccount, url: {}", url);
-                response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
+                response =
+                        safeKeeperService
+                                .getRestTemplate()
+                                .exchange(url, HttpMethod.GET, entity, String.class);
                 strBody = response.getBody();
                 logger.info(strBody);
                 bodyNode = objectMapper.readValue(strBody, JsonNode.class);
                 if (accountTotalCount != bodyNode.get("totalCount").asInt()) {
                     logger.warn(" the total count has changed");
-                    throw new ConsoleMessageException("The count of accounts has changed, please inquire again.");
+                    throw new ConsoleMessageException(
+                            "The count of accounts has changed, please inquire again.");
                 }
                 dataNode = bodyNode.get("data");
                 for (int i = 0; i < dataNode.size(); i++) {
@@ -307,7 +322,11 @@ public class DataEscrowImpl implements DataEscrowFace {
                 }
             }
             System.out.println(
-                    "The count of account created by \"" + consoleAccountName + "\" is " + accountTotalCount + ".");
+                    "The count of account created by \""
+                            + consoleAccountName
+                            + "\" is "
+                            + accountTotalCount
+                            + ".");
             if (0 == accountTotalCount) {
                 return;
             }
@@ -357,7 +376,9 @@ public class DataEscrowImpl implements DataEscrowFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            safeKeeperService.getRestTemplate().exchange(url, HttpMethod.PATCH, entity, String.class);
+            safeKeeperService
+                    .getRestTemplate()
+                    .exchange(url, HttpMethod.PATCH, entity, String.class);
             System.out.println("Update password successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -390,9 +411,21 @@ public class DataEscrowImpl implements DataEscrowFace {
             return;
         }
 
-        String plainText = params[1];
+        String fileName = params[1];
         String password = params[2];
         String dataId = params[3];
+
+        String plainText;
+        try {
+            plainText = readFile(Common.FILE_PATH + fileName);
+            if (plainText == null) {
+                return;
+            }
+            logger.info("plain text; {}", plainText);
+        } catch (Exception e) {
+            System.out.println("Fail, " + e.getMessage());
+            return;
+        }
 
         String cipherECC = ECC.encrypt(plainText, creatorPublicKey);
         if (cipherECC == null) {
@@ -415,8 +448,10 @@ public class DataEscrowImpl implements DataEscrowFace {
         headers.add("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<String>(str, headers);
         try {
-            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.POST, entity,
-                    String.class);
+            ResponseEntity<String> response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.POST, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
@@ -438,8 +473,10 @@ public class DataEscrowImpl implements DataEscrowFace {
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         try {
-            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity,
-                    String.class);
+            ResponseEntity<String> response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -447,7 +484,8 @@ public class DataEscrowImpl implements DataEscrowFace {
             JsonNode dataNode = bodyNode.get("data");
             publicKey = dataNode.get("creatorPublicKey").asText();
         } catch (HttpClientErrorException e) {
-            throw new ConsoleMessageException("getCreatorPublicKey fail, " + e.getResponseBodyAsString());
+            throw new ConsoleMessageException(
+                    "getCreatorPublicKey fail, " + e.getResponseBodyAsString());
         } catch (Exception e) {
             throw new ConsoleMessageException("getCreatorPublicKey fail, " + e.getMessage());
         }
@@ -455,12 +493,24 @@ public class DataEscrowImpl implements DataEscrowFace {
         return publicKey;
     }
 
-    private InputStream readAccountFile(String fileName) {
+    private String readFile(String fileName) {
+        File file = new File(fileName);
+        if (file.length() > 4 * 1024) {
+            System.out.println("Fail, the file length cannot be greater than 4KB");
+            return null;
+        }
         try {
-            return Files.newInputStream(Paths.get(fileName));
+            InputStream inputStream = Files.newInputStream(Paths.get(fileName));
+            if (inputStream == null) {
+                return null;
+            }
+            return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             System.out.println(
-                    "[" + Paths.get(fileName).toAbsolutePath() + "]" + " cannot be opened because it does not exist.");
+                    "["
+                            + Paths.get(fileName).toAbsolutePath()
+                            + "]"
+                            + " cannot be opened because it does not exist.");
         }
         return null;
     }
@@ -479,19 +529,23 @@ public class DataEscrowImpl implements DataEscrowFace {
 
         int pageNumber = 1;
         int pageSize = 10;
-        String url = urlPrefix + "escrow/v1/vaults?pageNumber=" + pageNumber + "&pageSize=" + pageSize;
+        String url =
+                urlPrefix + "escrow/v1/vaults?pageNumber=" + pageNumber + "&pageSize=" + pageSize;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         ResponseEntity<String> response;
         logger.info("listData, url: {}", url);
         try {
-            response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
+            response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
-            String[] tableHeaders = { "dataID", "createTime" };
+            String[] tableHeaders = {"dataID", "createTime"};
             int dataTotalCount = bodyNode.get("totalCount").asInt();
             String[][] tableData = new String[dataTotalCount][2];
             JsonNode dataNode = bodyNode.get("data");
@@ -505,15 +559,24 @@ public class DataEscrowImpl implements DataEscrowFace {
                 pageTotalCount += 1;
             }
             for (int pageIdx = 2; pageIdx <= pageTotalCount; pageIdx++) {
-                url = urlPrefix + "escrow/v1/vaults?pageNumber=" + pageIdx + "&pageSize=" + pageSize;
+                url =
+                        urlPrefix
+                                + "escrow/v1/vaults?pageNumber="
+                                + pageIdx
+                                + "&pageSize="
+                                + pageSize;
                 logger.info("listData, url: {}", url);
-                response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity, String.class);
+                response =
+                        safeKeeperService
+                                .getRestTemplate()
+                                .exchange(url, HttpMethod.GET, entity, String.class);
                 strBody = response.getBody();
                 logger.info(strBody);
                 bodyNode = objectMapper.readValue(strBody, JsonNode.class);
                 if (dataTotalCount != bodyNode.get("totalCount").asInt()) {
                     logger.warn(" the total count has changed");
-                    throw new ConsoleMessageException("The count of escrow data has changed, please inquire again.");
+                    throw new ConsoleMessageException(
+                            "The count of escrow data has changed, please inquire again.");
                 }
                 dataNode = bodyNode.get("data");
                 for (int i = 0; i < dataNode.size(); i++) {
@@ -524,8 +587,12 @@ public class DataEscrowImpl implements DataEscrowFace {
                 }
             }
 
-            System.out
-                    .println("The count of escrow data uploaded by \"" + consoleAccountName + "\" is " + dataTotalCount + ".");
+            System.out.println(
+                    "The count of escrow data uploaded by \""
+                            + consoleAccountName
+                            + "\" is "
+                            + dataTotalCount
+                            + ".");
             if (0 == dataTotalCount) {
                 return;
             }
@@ -560,7 +627,7 @@ public class DataEscrowImpl implements DataEscrowFace {
             return;
         }
 
-        String url = urlPrefix + "/escrow/v1/vaults";
+        String url = urlPrefix + "escrow/v1/vaults";
         String dataId = params[1];
         url += "/" + consoleAccountName + "/" + dataId;
         HttpHeaders headers = new HttpHeaders();
@@ -568,8 +635,10 @@ public class DataEscrowImpl implements DataEscrowFace {
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("get escrow data in exportData, url: {}", url);
         try {
-            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity,
-                    String.class);
+            ResponseEntity<String> response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -623,7 +692,9 @@ public class DataEscrowImpl implements DataEscrowFace {
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("deleteKey, url: {}", url);
         try {
-            safeKeeperService.getRestTemplate().exchange(url, HttpMethod.DELETE, entity, String.class);
+            safeKeeperService
+                    .getRestTemplate()
+                    .exchange(url, HttpMethod.DELETE, entity, String.class);
             System.out.println("Delete the escrow data \"" + dataId + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
@@ -655,18 +726,20 @@ public class DataEscrowImpl implements DataEscrowFace {
         String dataId = params[2];
         String privateKey = params[3];
         if (privateKey.length() != 64) {
-            System.out.println("Invalid private key length, need 64. ");
+            System.out.println("Invalid escrow data length, need 64. ");
             return;
         }
 
-        String url = urlPrefix + "/escrow/v1/vaults/" + accountName + "/" + dataId;
+        String url = urlPrefix + "escrow/v1/vaults/" + accountName + "/" + dataId;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
         logger.info("get escrow data in restoreData, url: {}", url);
         try {
-            ResponseEntity<String> response = safeKeeperService.getRestTemplate().exchange(url, HttpMethod.GET, entity,
-                    String.class);
+            ResponseEntity<String> response =
+                    safeKeeperService
+                            .getRestTemplate()
+                            .exchange(url, HttpMethod.GET, entity, String.class);
             String strBody = response.getBody();
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
@@ -687,7 +760,13 @@ public class DataEscrowImpl implements DataEscrowFace {
                 return;
             }
             System.out.println(
-                    "The escrow data \"" + dataId + "\" of account \"" + accountName + "\" is " + plainText + ".");
+                    "The escrow data \""
+                            + dataId
+                            + "\" of account \""
+                            + accountName
+                            + "\" is "
+                            + plainText
+                            + ".");
         } catch (HttpClientErrorException e) {
             System.out.println("restore escrow data fail, " + e.getResponseBodyAsString());
         }

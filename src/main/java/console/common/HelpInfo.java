@@ -674,7 +674,7 @@ public class HelpInfo {
         System.out.println("./start.sh groupID");
         System.out.println("./start.sh groupID -pem pemName");
         System.out.println("./start.sh groupID -p12 p12Name");
-        System.out.println("Usage to access key manager service: ");
+        System.out.println("Usage to access safekeeper service: ");
         System.out.println("./start.sh -safekeeper account password");
     }
 
@@ -684,7 +684,7 @@ public class HelpInfo {
         System.out.println("userName -- The unique identification of account.");
         System.out.println("password -- The authentication of account.");
         System.out.println(
-                "publicKey -- The public key of account, used to encrypt visitor's private key.");
+                "publicKey -- The public key of account, used to encrypt visitor's escrow data.");
         System.out.println();
     }
 
@@ -718,12 +718,11 @@ public class HelpInfo {
     }
 
     public static void uploadDataHelp() {
-        System.out.println("Upload the private key to key manager service.");
-        System.out.println("Usage: uploadData keyFile password [alias]");
-        System.out.println("keyFile -- The file in which private key is stored.");
-        System.out.println(
-                "password -- The password used to decrypt private key file. If the keyFile is .p12, it is also the decryption password");
-        System.out.println("alias -- [Optional] The alias of private key, default public key.");
+        System.out.println("Upload the escrow data to safekeeper service.");
+        System.out.println("Usage: uploadData dataFile password [dataID]");
+        System.out.println("dataFile -- The file in which escrow data is stored.");
+        System.out.println("password -- The password used to decrypt escrow data file.");
+        System.out.println("dataID -- The dataID of escrow data.");
         System.out.println();
     }
 
@@ -734,25 +733,25 @@ public class HelpInfo {
     }
 
     public static void exportDataHelp() {
-        System.out.println("Export your own private key by alias.");
-        System.out.println("Usage: exportData alias password");
-        System.out.println("alias -- The alias of private key.");
-        System.out.println("password -- The password used to decrypt the private key.");
+        System.out.println("Export your own escrow data by dataID.");
+        System.out.println("Usage: exportData dataID password");
+        System.out.println("dataID -- The dataID of escrow data.");
+        System.out.println("password -- The password used to decrypt the escrow data.");
         System.out.println();
     }
 
     public static void deleteDataHelp() {
-        System.out.println("Delete your own private key by alias.");
-        System.out.println("Usage: deleteData alias");
-        System.out.println("alias -- The alias of private key.");
+        System.out.println("Delete your own escrow data by dataID.");
+        System.out.println("Usage: deleteData dataID");
+        System.out.println("dataID -- The dataID of escrow data.");
         System.out.println();
     }
 
     public static void restoreDataHelp() {
-        System.out.println("Restore account's private key by alias.");
-        System.out.println("Usage: restoreData account alias privateKey");
-        System.out.println("account -- The owner of account's private key.");
-        System.out.println("alias -- The alias of account's private key.");
+        System.out.println("Restore account's escrow data by dataID.");
+        System.out.println("Usage: restoreData account dataID privateKey");
+        System.out.println("account -- The owner of account's escrow data.");
+        System.out.println("dataID -- The dataID of account's escrow data.");
         System.out.println("privateKey -- The creator's key.");
         System.out.println();
     }

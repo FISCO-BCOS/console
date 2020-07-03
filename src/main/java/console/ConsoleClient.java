@@ -2,8 +2,8 @@ package console;
 
 import console.common.*;
 import console.contract.ContractFace;
-import console.exception.ConsoleMessageException;
 import console.data.DataEscrowFace;
+import console.exception.ConsoleMessageException;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.permission.PermissionFace;
 import console.web3j.Web3jFace;

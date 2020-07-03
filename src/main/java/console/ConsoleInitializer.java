@@ -89,7 +89,7 @@ public class ConsoleInitializer {
                     dataEscrowFace = new DataEscrowImpl();
                     SafeKeeperUrl safekeeperUrl = context.getBean(SafeKeeperUrl.class);
                     String urlPrefix = "https://" + safekeeperUrl.getUrl();
-                    logger.info(" key manager service url prefix: {}", urlPrefix);
+                    logger.info(" safekeeper service url prefix: {}", urlPrefix);
                     dataEscrowFace.setURLPrefix(urlPrefix);
                     accountInfo = dataEscrowFace.login(args);
                 } catch (HttpClientErrorException e) {
@@ -233,10 +233,10 @@ public class ConsoleInitializer {
         if (!accountPrivateKeyMatch) {
             if (EncryptType.ECDSA_TYPE == EncryptType.encryptType) {
                 throw new IllegalArgumentException(
-                        " Load SM2 private key while configuration is ECSDA type");
+                        " Load SM2 escrow data while configuration is ECSDA type");
             } else {
                 throw new IllegalArgumentException(
-                        " Load ECSDA private key while configuration is SM2 type");
+                        " Load ECSDA escrow data while configuration is SM2 type");
             }
         }
     }
