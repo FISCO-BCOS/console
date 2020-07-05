@@ -88,7 +88,7 @@ public class ConsoleInitializer {
                 try {
                     dataEscrowFace = new DataEscrowImpl();
                     SafeKeeperUrl safekeeperUrl = context.getBean(SafeKeeperUrl.class);
-                    String urlPrefix = "https://" + safekeeperUrl.getUrl();
+                    String urlPrefix = "https://" + safekeeperUrl.getUrl() + safekeeperUrl.getServer();
                     logger.info(" safekeeper service url prefix: {}", urlPrefix);
                     dataEscrowFace.setURLPrefix(urlPrefix);
                     accountInfo = dataEscrowFace.login(args);

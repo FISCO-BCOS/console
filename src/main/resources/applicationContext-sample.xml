@@ -41,7 +41,8 @@
     </bean>
 
     <bean id="safeKeeperUrl" class="console.data.tools.SafeKeeperUrl">
-        <constructor-arg index="0" value="serviceIP:servicePort/SafeKeeper/" />
+        <constructor-arg index="0" value="serviceIP:servicePort" />
+        <constructor-arg index="1" value="/SafeKeeper/" />
     </bean>
 
 </beans>

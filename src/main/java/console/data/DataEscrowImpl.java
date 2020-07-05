@@ -493,14 +493,14 @@ public class DataEscrowImpl implements DataEscrowFace {
         return publicKey;
     }
 
-    private String readFile(String fileName) {
-        File file = new File(fileName);
+    private String readFile(String filePath) {
+        File file = new File(filePath);
         if (file.length() > 4 * 1024) {
             System.out.println("Fail, the file length cannot be greater than 4KB");
             return null;
         }
         try {
-            InputStream inputStream = Files.newInputStream(Paths.get(fileName));
+            InputStream inputStream = Files.newInputStream(Paths.get(filePath));
             if (inputStream == null) {
                 return null;
             }
@@ -508,11 +508,28 @@ public class DataEscrowImpl implements DataEscrowFace {
         } catch (IOException e) {
             System.out.println(
                     "["
-                            + Paths.get(fileName).toAbsolutePath()
+                            + Paths.get(filePath).toAbsolutePath()
                             + "]"
                             + " cannot be opened because it does not exist.");
         }
         return null;
+    }
+
+    private void writeFile(String filePath, String content) {
+        FileWriter fwriter = null;
+        try {
+            fwriter = new FileWriter(filePath);
+            fwriter.write(content);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                fwriter.flush();
+                fwriter.close();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -658,7 +675,9 @@ public class DataEscrowImpl implements DataEscrowFace {
                 System.out.println("Password error.");
                 return;
             }
-            System.out.println("The escrow data \"" + dataId + "\" is " + plainText + ".");
+            String filePath = Common.FILE_PATH + dataId + ".txt";
+            writeFile(filePath, plainText);
+            System.out.println("The escrow data \"" + dataId + "\" has been recorded in " + filePath + ".");
         } catch (HttpClientErrorException e) {
             System.out.println("export escrow data fail, " + e.getResponseBodyAsString());
         }
@@ -759,13 +778,15 @@ public class DataEscrowImpl implements DataEscrowFace {
                 System.out.println("Decrypt fail.");
                 return;
             }
+            String filePath = Common.FILE_PATH + dataId + ".txt";
+            writeFile(filePath, plainText);
             System.out.println(
                     "The escrow data \""
                             + dataId
                             + "\" of account \""
                             + accountName
-                            + "\" is "
-                            + plainText
+                            + "\" has been recorded in "
+                            + filePath
                             + ".");
         } catch (HttpClientErrorException e) {
             System.out.println("restore escrow data fail, " + e.getResponseBodyAsString());
