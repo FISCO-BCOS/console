@@ -677,7 +677,8 @@ public class DataEscrowImpl implements DataEscrowFace {
             }
             String filePath = Common.FILE_PATH + dataId + ".txt";
             writeFile(filePath, plainText);
-            System.out.println("The escrow data \"" + dataId + "\" has been recorded in " + filePath + ".");
+            System.out.println(
+                    "The escrow data \"" + dataId + "\" has been recorded in " + filePath + ".");
         } catch (HttpClientErrorException e) {
             System.out.println("export escrow data fail, " + e.getResponseBodyAsString());
         }
