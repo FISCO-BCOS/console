@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity>=0.4.24 <0.6.11;
 
 contract HelloWorld {
     string name;
@@ -7,11 +7,11 @@ contract HelloWorld {
         name = "Hello, World!";
     }
 
-    function get() public view returns (string) {
+    function get() public view returns (string memory) {
         return name;
     }
 
-    function set(string n) public {
+    function set(string memory n) public {
         name = n;
     }
 }
