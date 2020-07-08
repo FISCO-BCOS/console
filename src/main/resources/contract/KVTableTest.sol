@@ -1,4 +1,5 @@
-pragma solidity ^0.4.24;
+pragma solidity>=0.4.24 <0.6.11;
+
 import "./Table.sol";
 
 contract KVTableTest {
@@ -15,7 +16,7 @@ contract KVTableTest {
     }
 
     //get record
-    function get(string id) public view returns (bool, int256, string) {
+    function get(string memory id) public view returns (bool, int256, string memory) {
         KVTable table = tableFactory.openTable(TABLE_NAME);
         bool ok = false;
         Entry entry;
@@ -30,9 +31,9 @@ contract KVTableTest {
     }
 
     //set record
-    function set(string id, int256 item_price, string item_name)
-        public
-        returns (int256)
+    function set(string memory id, int256 item_price, string memory item_name)
+    public
+    returns (int256)
     {
         KVTable table = tableFactory.openTable(TABLE_NAME);
         Entry entry = table.newEntry();

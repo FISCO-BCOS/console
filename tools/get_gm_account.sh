@@ -78,7 +78,7 @@ calculate_address_pem()
     prepare_sm3
     privKey=$(${TASSL_CMD} ec -in ${pem_file} -text -noout 2>/dev/null| sed -n '3,5p' | tr -d ": \n" | awk '{print $0}')
     pubKey=$(${TASSL_CMD} ec -in ${pem_file} -text -noout 2>/dev/null| sed -n '7,11p' | tr -d ": \n" | awk '{print substr($0,3);}')
-    echo "public key = ${pubKey}"
+    # echo "public key = ${pubKey}"
     accountAddress=$(${sm3_bin}  ${pubKey})
     [ ! -z "${no_print}" ] || LOG_INFO "Account Address   : 0x${accountAddress}"
 }
@@ -138,11 +138,11 @@ main()
     else
         LOG_INFO "Note: the entered password cannot contain Chinese characters!"
         ${TASSL_CMD} pkcs12 -export -name key -nocerts -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/0x${accountAddress}.p12" 2>/dev/null || $(rm ${output_path}/0x${accountAddress}.p12 && rm ${output_path}/ecprivkey.pem && exit 1)
-        ${TASSL_CMD} ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/0x${accountAddress}.public.p12 2>/dev/null
+        ${TASSL_CMD} ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/0x${accountAddress}.public.pem 2>/dev/null
 		rm ${output_path}/ecprivkey.pem
         LOG_INFO "Account Address   : 0x${accountAddress}"
         LOG_INFO "Private Key (p12) : ${output_path}/0x${accountAddress}.p12"
-		LOG_INFO "Public  Key (p12) : ${output_path}/0x${accountAddress}.public.p12"
+		LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.public.pem"
     fi
     # LOG_INFO "Private Key (hex) : 0x${privKey}"
     # echo "0x${pubKey}" > ${output_path}/${accountAddress}.public.hex

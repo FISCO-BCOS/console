@@ -1,5 +1,6 @@
-pragma solidity ^0.4.24;
+pragma solidity>=0.4.24 <0.6.11;
 pragma experimental ABIEncoderV2;
+
 import "./Table.sol";
 
 contract TableTest {
@@ -17,10 +18,10 @@ contract TableTest {
     }
 
     //select records
-    function select(string name)
-        public
-        view
-        returns (string[], int256[], string[])
+    function select(string memory name)
+    public
+    view
+    returns (string[] memory, int256[] memory, string[] memory)
     {
         Table table = tableFactory.openTable(TABLE_NAME);
 
@@ -46,9 +47,9 @@ contract TableTest {
         return (user_name_bytes_list, item_id_list, item_name_bytes_list);
     }
     //insert records
-    function insert(string name, int256 item_id, string item_name)
-        public
-        returns (int256)
+    function insert(string memory name, int256 item_id, string memory item_name)
+    public
+    returns (int256)
     {
         Table table = tableFactory.openTable(TABLE_NAME);
 
@@ -63,9 +64,9 @@ contract TableTest {
         return count;
     }
     //update records
-    function update(string name, int256 item_id, string item_name)
-        public
-        returns (int256)
+    function update(string memory name, int256 item_id, string memory item_name)
+    public
+    returns (int256)
     {
         Table table = tableFactory.openTable(TABLE_NAME);
 
@@ -82,7 +83,7 @@ contract TableTest {
         return count;
     }
     //remove records
-    function remove(string name, int256 item_id) public returns (int256) {
+    function remove(string memory name, int256 item_id) public returns (int256) {
         Table table = tableFactory.openTable(TABLE_NAME);
 
         Condition condition = table.newCondition();
