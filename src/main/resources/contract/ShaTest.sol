@@ -1,24 +1,19 @@
-pragma solidity ^0.4.24;
+pragma solidity>=0.4.24 <0.6.11;
 
 contract ShaTest{
     bytes _data = "Hello, ShaTest";
-    function ShaTest(){}
-    function getSha256(bytes _memory) returns(bytes32 result)
-    {   
+    
+    function getSha256(bytes memory _memory) public returns(bytes32 result)
+    {
         return sha256(_memory);
-    }   
-    
-    function getSha3(bytes _memory) returns(bytes32 result)
-    {   
-        return sha3(_memory);
     }
-    
-    function getKeccak256(bytes _memory)returns(bytes32 result)
+
+    function getKeccak256(bytes memory _memory) public returns(bytes32 result)
     {
         return keccak256(_memory);
     }
 
-    function getData() constant returns(bytes)
+    function getData() public view returns(bytes memory)
     {
         return _data;
     }
