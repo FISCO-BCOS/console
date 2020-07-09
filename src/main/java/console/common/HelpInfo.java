@@ -714,7 +714,7 @@ public class HelpInfo {
                         + Common.TxGasLimitRange
                         + "(default 300000000).");
         System.out.println(
-                "      -- the value of  rpbft_epoch_block_num from 1 to 2147483647(default 1000)"
+                "      -- the value of  rpbft_epoch_block_num from 1 to 2147483647"
                         + "(default 1000).");
         System.out.println(
                 "      -- the value of  rpbft_epoch_sealer_num " + Common.PositiveIntegerRange);
