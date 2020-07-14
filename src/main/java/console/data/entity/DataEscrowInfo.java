@@ -2,42 +2,42 @@ package console.data.entity;
 
 public class DataEscrowInfo {
 
-    private String dataID;
-    private String cipherText1;
-    private String cipherText2;
+    private String dataEntityId;
+    private String creatorCipherText;
+    private String userCipherText;
 
     public DataEscrowInfo() {
         super();
     }
 
-    public DataEscrowInfo(String dataID, String cipherText1, String cipherText2) {
+    public DataEscrowInfo(String dataEntityId, String creatorCipherText, String userCipherText) {
         super();
-        this.dataID = dataID;
-        this.cipherText1 = cipherText1;
-        this.cipherText2 = cipherText2;
+        this.dataEntityId = dataEntityId;
+        this.creatorCipherText = creatorCipherText;
+        this.userCipherText = userCipherText;
     }
 
-    public String getDataID() {
-        return dataID;
+    public String getDataEntityId() {
+        return dataEntityId;
     }
 
-    public String getCipherText1() {
-        return cipherText1;
+    public String getCreatorCipherText() {
+        return creatorCipherText;
     }
 
-    public String getCipherText2() {
-        return cipherText2;
+    public String getUserCipherText() {
+        return userCipherText;
     }
 
-    public void setDataId(String dataID) {
-        this.dataID = dataID;
+    public void setDataEntityId(String dataEntityId) {
+        this.dataEntityId = dataEntityId;
     }
 
-    public void setCipherText1(String cipherText1) {
-        this.cipherText1 = cipherText1;
+    public void setCreatorCipherText(String creatorCipherText) {
+        this.creatorCipherText = creatorCipherText;
     }
 
-    public void setCipherText2(String cipherText2) {
-        this.cipherText2 = cipherText2;
+    public void setUserCipherText(String userCipherText) {
+        this.userCipherText = userCipherText;
     }
 }

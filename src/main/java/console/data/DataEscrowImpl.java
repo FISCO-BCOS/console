@@ -413,7 +413,7 @@ public class DataEscrowImpl implements DataEscrowFace {
 
         String fileName = params[1];
         String password = params[2];
-        String dataId = params[3];
+        String dataEntityId = params[3];
 
         String plainText;
         try {
@@ -439,7 +439,7 @@ public class DataEscrowImpl implements DataEscrowFace {
         }
 
         String url = urlPrefix + "escrow/v1/vaults";
-        DataEscrowInfo bean = new DataEscrowInfo(dataId, cipherECC, cipherAES);
+        DataEscrowInfo bean = new DataEscrowInfo(dataEntityId, cipherECC, cipherAES);
         ObjectMapper objectMapper = new ObjectMapper();
         String str = objectMapper.writeValueAsString(bean);
         logger.info("uploadData, str: {}", str);
@@ -456,8 +456,10 @@ public class DataEscrowImpl implements DataEscrowFace {
             logger.info(strBody);
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
             JsonNode dataNode = bodyNode.get("data");
-            dataId = dataNode.get("dataID").asText();
-            System.out.println("Upload a escrow data \"" + dataId + "\" successfully.");
+            System.out.println(
+                    "Upload a escrow data \""
+                            + dataNode.get("dataEntityId").asText()
+                            + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
         }
@@ -515,19 +517,19 @@ public class DataEscrowImpl implements DataEscrowFace {
         return null;
     }
 
-    private void writeFile(String filePath, String content) {
+    private void writeFile(String filePath, String content) throws Exception {
         FileWriter fwriter = null;
         try {
             fwriter = new FileWriter(filePath);
             fwriter.write(content);
         } catch (IOException ex) {
-            ex.printStackTrace();
+            throw new ConsoleMessageException("write file error," + ex.getMessage());
         } finally {
             try {
                 fwriter.flush();
                 fwriter.close();
             } catch (IOException ex) {
-                ex.printStackTrace();
+                throw new ConsoleMessageException("write file error," + ex.getMessage());
             }
         }
     }
@@ -562,13 +564,13 @@ public class DataEscrowImpl implements DataEscrowFace {
             logger.info(strBody);
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode bodyNode = objectMapper.readValue(strBody, JsonNode.class);
-            String[] tableHeaders = {"dataID", "createTime"};
+            String[] tableHeaders = {"dataEntityId", "createTime"};
             int dataTotalCount = bodyNode.get("totalCount").asInt();
             String[][] tableData = new String[dataTotalCount][2];
             JsonNode dataNode = bodyNode.get("data");
             for (int i = 0; i < dataNode.size(); i++) {
                 JsonNode keyNode = dataNode.get(i);
-                tableData[i][0] = keyNode.get("dataID").asText();
+                tableData[i][0] = keyNode.get("dataEntityId").asText();
                 tableData[i][1] = keyNode.get("createTime").asText();
             }
             int pageTotalCount = dataTotalCount / pageSize;
@@ -599,7 +601,7 @@ public class DataEscrowImpl implements DataEscrowFace {
                 for (int i = 0; i < dataNode.size(); i++) {
                     JsonNode keyNode = dataNode.get(i);
                     int index = (pageIdx - 1) * pageSize + i;
-                    tableData[index][0] = keyNode.get("dataID").asText();
+                    tableData[index][0] = keyNode.get("dataEntityId").asText();
                     tableData[index][1] = keyNode.get("createTime").asText();
                 }
             }
@@ -645,8 +647,8 @@ public class DataEscrowImpl implements DataEscrowFace {
         }
 
         String url = urlPrefix + "escrow/v1/vaults";
-        String dataId = params[1];
-        url += "/" + consoleAccountName + "/" + dataId;
+        String dataEntityId = params[1];
+        url += "/" + consoleAccountName + "/" + dataEntityId;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
@@ -665,7 +667,7 @@ public class DataEscrowImpl implements DataEscrowFace {
                 System.out.println("The escrow data not exists.");
                 return;
             }
-            String cipherText = dataNode.get("cipherText2").asText();
+            String cipherText = dataNode.get("userCipherText").asText();
             if (cipherText == null) {
                 System.out.println("Get cipher text fail.");
                 return;
@@ -675,10 +677,14 @@ public class DataEscrowImpl implements DataEscrowFace {
                 System.out.println("Password error.");
                 return;
             }
-            String filePath = Common.FILE_PATH + dataId + ".txt";
+            String filePath = Common.FILE_PATH + dataEntityId + ".txt";
             writeFile(filePath, plainText);
             System.out.println(
-                    "The escrow data \"" + dataId + "\" has been recorded in " + filePath + ".");
+                    "The escrow data \""
+                            + dataEntityId
+                            + "\" has been recorded in "
+                            + filePath
+                            + ".");
         } catch (HttpClientErrorException e) {
             System.out.println("export escrow data fail, " + e.getResponseBodyAsString());
         }
@@ -705,8 +711,8 @@ public class DataEscrowImpl implements DataEscrowFace {
             return;
         }
 
-        String dataId = params[1];
-        String url = urlPrefix + "escrow/v1/vaults/" + dataId;
+        String dataEntityId = params[1];
+        String url = urlPrefix + "escrow/v1/vaults/" + dataEntityId;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
@@ -715,7 +721,7 @@ public class DataEscrowImpl implements DataEscrowFace {
             safeKeeperService
                     .getRestTemplate()
                     .exchange(url, HttpMethod.DELETE, entity, String.class);
-            System.out.println("Delete the escrow data \"" + dataId + "\" successfully.");
+            System.out.println("Delete the escrow data \"" + dataEntityId + "\" successfully.");
         } catch (HttpClientErrorException e) {
             System.out.println("Fail, " + e.getResponseBodyAsString());
         }
@@ -743,14 +749,14 @@ public class DataEscrowImpl implements DataEscrowFace {
         }
 
         String accountName = params[1];
-        String dataId = params[2];
+        String dataEntityId = params[2];
         String privateKey = params[3];
         if (privateKey.length() != 64) {
             System.out.println("Invalid escrow data length, need 64. ");
             return;
         }
 
-        String url = urlPrefix + "escrow/v1/vaults/" + accountName + "/" + dataId;
+        String url = urlPrefix + "escrow/v1/vaults/" + accountName + "/" + dataEntityId;
         HttpHeaders headers = new HttpHeaders();
         headers.add("AuthorizationToken", "Token " + token);
         HttpEntity<String> entity = new HttpEntity<String>(null, headers);
@@ -769,7 +775,7 @@ public class DataEscrowImpl implements DataEscrowFace {
                 System.out.println("The escrow data not exists.");
                 return;
             }
-            String cipherText = dataNode.get("cipherText1").asText();
+            String cipherText = dataNode.get("creatorCipherText").asText();
             if (cipherText == null) {
                 System.out.println("Get cipher text fail.");
                 return;
@@ -779,11 +785,11 @@ public class DataEscrowImpl implements DataEscrowFace {
                 System.out.println("Decrypt fail.");
                 return;
             }
-            String filePath = Common.FILE_PATH + dataId + ".txt";
+            String filePath = Common.FILE_PATH + dataEntityId + ".txt";
             writeFile(filePath, plainText);
             System.out.println(
                     "The escrow data \""
-                            + dataId
+                            + dataEntityId
                             + "\" of account \""
                             + accountName
                             + "\" has been recorded in "
