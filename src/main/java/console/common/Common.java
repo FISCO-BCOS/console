@@ -28,7 +28,7 @@ public class Common {
             "from "
                     + Integer.toString(ConsensusTimeoutMin)
                     + " seconds to "
-                    + Integer.toString(ConsensusTimeoutMax)
+                    + Integer.toString(ConsensusTimeoutMax - 1)
                     + " seconds";
     public static final String EMPTY_CONTRACT_ADDRESS =
             "0x0000000000000000000000000000000000000000";
