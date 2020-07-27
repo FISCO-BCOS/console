@@ -10,12 +10,15 @@ import io.bretty.console.table.Table;
 import java.math.BigInteger;
 import java.security.InvalidParameterException;
 import java.util.List;
+import java.util.Map;
 import org.fisco.bcos.channel.protocol.ChannelPrococolExceiption;
 import org.fisco.bcos.fisco.EnumNodeVersion;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.precompile.permission.ChainGovernanceService;
 import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
+import org.fisco.bcos.web3j.precompile.permission.Vote;
+import org.fisco.bcos.web3j.precompile.permission.MemberVotes;
 import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.tuples.generated.Tuple2;
@@ -698,6 +701,61 @@ public class PermissionImpl implements PermissionFace {
     }
 
     @Override
+    public void queryVotesOfMember(String[] params) throws Exception {
+
+        if (params.length < 2) {
+            HelpInfo.promptHelp("queryVotesOfMember");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("queryVotesOfMember");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.queryVotesOfMemberHelp();
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        MemberVotes votes = chainGovernanceService.queryVotesOfMember();
+        printMemberVotes(votes);
+    }
+
+    @Override
+    public void queryVotesOfThreshold(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("queryVotesOfThreshold");
+            return;
+        }
+        if (params.length > 2) {
+            HelpInfo.promptHelp("queryVotesOfThreshold");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.freezeAccountHelp();
+            return;
+        }
+
+        ChainGovernanceService chainGovernanceService =
+                new ChainGovernanceService(web3j, credentials);
+        Map<String, List<Vote>> thresholdVotes = chainGovernanceService.queryVotesOfThreshold();
+        if (thresholdVotes.isEmpty()) {
+            System.out.println("Empty set.");
+            System.out.println();
+            return;
+        }
+        for(String key : thresholdVotes.keySet()) {
+            ConsoleUtils.singleLine();
+            printVotes(thresholdVotes.get(key),"Expected Threshold",key);
+            ConsoleUtils.singleLine();
+        }
+        System.out.println();
+    }
+
+    @Override
     public void grantOperator(String[] params) throws Exception {
         if (params.length < 2) {
             HelpInfo.promptHelp("grantOperator");
@@ -871,6 +929,37 @@ public class PermissionImpl implements PermissionFace {
         ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 45);
         Table table = Table.of(headers, data, cf);
         System.out.println(table);
+        ConsoleUtils.singleLine();
+        System.out.println();
+    }
+
+    private void printVotes(List<Vote> votes, String firstColumnName, String operation)
+    {
+        String[] headers = {firstColumnName, "origin", "blcok_limit"};
+        int size = votes.size();
+        String[][] data = new String[size][3];
+        for (int i = 0; i < size; i++) {
+            data[i][0] = operation;
+            data[i][1] = votes.get(i).getOrigin();
+            data[i][2] = votes.get(i).getBlockLimit();
+        }
+        ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 45);
+        Table table = Table.of(headers, data, cf);
+        System.out.println(table);
+    }
+
+    private void printMemberVotes(MemberVotes votes) {
+        if (votes.isEmpty()) {
+            System.out.println("Empty set.");
+            System.out.println();
+            return;
+        }
+        ConsoleUtils.singleLine();
+        printVotes(votes.getGrant(),"","Grant");
+        ConsoleUtils.singleLine();
+        printVotes(votes.getRevoke(),"","Revoke");
+        ConsoleUtils.singleLine();
+        printVotes(votes.getUpdateWeight(),"","UpdateWeight");
         ConsoleUtils.singleLine();
         System.out.println();
     }

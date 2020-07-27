@@ -142,6 +142,8 @@ public class WelcomeInfo {
         sb.append("listOperators                            List all operators\n");
         sb.append("updateThreshold                          Update the threshold\n");
         sb.append("queryThreshold                           Query the threshold\n");
+        sb.append("queryVotesOfMember                       Query votes of a committee member\n");
+        sb.append("queryVotesOfThreshold                    Query votes of updateThreshold operation\n");
         sb.append("updateCommitteeMemberWeight              Update the committee member weight\n");
         sb.append("queryCommitteeMemberWeight               Query the committee member weight\n");
         sb.append("freezeAccount                            Freeze the account.\n");

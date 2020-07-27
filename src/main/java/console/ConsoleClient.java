@@ -340,6 +340,12 @@ public class ConsoleClient {
                     case "queryCommitteeMemberWeight":
                         permissionFace.queryCommitteeMemberWeight(params);
                         break;
+                    case "queryVotesOfMember":
+                        permissionFace.queryVotesOfMember(params);
+                        break;
+                    case "queryVotesOfThreshold":
+                        permissionFace.queryVotesOfThreshold(params);
+                        break;
                     case "freezeAccount":
                         permissionFace.freezeAccount(params);
                         break;

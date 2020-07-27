@@ -116,6 +116,12 @@ public class HelpInfo {
             case "queryThreshold":
                 queryThresholdHelp();
                 break;
+            case "queryVotesOfMember":
+                queryVotesOfMemberHelp();
+                break;
+            case "queryVotesOfThreshold":
+                queryVotesOfThresholdHelp();
+                break;
             case "listOperators":
                 listOperatorsHelp();
                 break;
@@ -648,6 +654,18 @@ public class HelpInfo {
     public static void queryThresholdHelp() {
         System.out.println("Query committee threshold.");
         System.out.println("Usage: queryThreshold");
+        System.out.println();
+    }
+
+    public static void queryVotesOfMemberHelp() {
+        System.out.println("Query votes of a committee member.");
+        System.out.println("Usage: queryVotesOfMember");
+        System.out.println();
+    }
+
+    public static void queryVotesOfThresholdHelp() {
+        System.out.println("Query votes of updateThreshold operation.");
+        System.out.println("Usage: queryVotesOfThreshold");
         System.out.println();
     }
 

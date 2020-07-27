@@ -265,6 +265,8 @@ public class JlineUtils {
                         "updateThreshold",
                         "updateCommitteeMemberWeight",
                         "queryThreshold",
+                        "queryVotesOfMember",
+                        "queryVotesOfThreshold",
                         "queryCommitteeMemberWeight",
                         "freezeAccount",
                         "unfreezeAccount",

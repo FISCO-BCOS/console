@@ -59,6 +59,10 @@ public interface PermissionFace {
 
     void queryThreshold(String[] params) throws Exception;
 
+    void queryVotesOfMember(String[] params) throws Exception;
+
+    void queryVotesOfThreshold(String[] params) throws Exception;
+
     void grantOperator(String[] params) throws Exception;
 
     void revokeOperator(String[] params) throws Exception;
