@@ -10,6 +10,11 @@ public class Common {
     public static final String RPBFTEpochSealerNum = "rpbft_epoch_sealer_num";
     public static final String RPBFTEpochBlockNum = "rpbft_epoch_block_num";
 
+    // in seconds
+    public static final String ConsensusTimeout = "consensus_timeout";
+    public static int ConsensusTimeoutMin = 3;
+    public static int ConsensusTimeoutMax = Integer.MAX_VALUE / 1000;
+
     public static final int InvalidReturnNumber = -100;
     public static final int QueryLogCount = 20;
     public static final int LogMaxCount = 10000;
@@ -19,6 +24,12 @@ public class Common {
     public static final String DeployLogntegerRange = "from 1 to 100";
     public static final String NodeIdLength = "128";
     public static final String TxGasLimitRange = "from 100000 to 2147483647";
+    public static final String ConsensusTimeoutRange =
+            "from "
+                    + Integer.toString(ConsensusTimeoutMin)
+                    + " seconds to "
+                    + Integer.toString(ConsensusTimeoutMax - 1)
+                    + " seconds";
     public static final String EMPTY_CONTRACT_ADDRESS =
             "0x0000000000000000000000000000000000000000";
     public static final String EMPTY_OUTPUT = "0x";

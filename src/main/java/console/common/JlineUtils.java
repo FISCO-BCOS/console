@@ -214,6 +214,8 @@ public class JlineUtils {
                         "getGroupList",
                         "getBlockByHash",
                         "getBlockByNumber",
+                        "getBlockHeaderByHash",
+                        "getBlockHeaderByNumber",
                         "getBlockHashByNumber",
                         "getTransactionByHash",
                         "getTransactionByBlockHashAndIndex",
@@ -323,6 +325,11 @@ public class JlineUtils {
                     new ArgumentCompleter(
                             new StringsCompleter(command),
                             new StringsCompleter(Common.RPBFTEpochBlockNum),
+                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.ConsensusTimeout),
                             new StringsCompleterIgnoreCase()));
         }
 

@@ -154,7 +154,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
                 || Common.RPBFTEpochSealerNum.equals(key)
-                || Common.RPBFTEpochBlockNum.equals(key)) {
+                || Common.RPBFTEpochBlockNum.equals(key)
+                || Common.ConsensusTimeout.equals(key)) {
             String valueStr = params[2];
             int value = 1;
             try {
@@ -170,22 +171,29 @@ public class PrecompiledImpl implements PrecompiledFace {
                         System.out.println();
                         return;
                     }
-                } else {
-                    if (value < Common.TxGasLimitMin) {
-                        System.out.println(
-                                "Please provide value by positive integer mode, "
-                                        + Common.TxGasLimitRange
-                                        + ".");
-                        System.out.println();
-                        return;
-                    }
+                } else if (Common.TxGasLimit.equals(key) && value < Common.TxGasLimitMin) {
+                    System.out.println(
+                            "Please provide value by positive integer mode, "
+                                    + Common.TxGasLimitRange
+                                    + ".");
+                    System.out.println();
+                    return;
+                } else if (Common.ConsensusTimeout.equals(key)
+                        && (value < Common.ConsensusTimeoutMin
+                                || value >= Common.ConsensusTimeoutMax)) {
+                    System.out.println(
+                            "Please provide value by positive integer mode, "
+                                    + Common.ConsensusTimeoutRange
+                                    + ".");
+                    System.out.println();
+                    return;
                 }
                 SystemConfigService systemConfigSerivce =
                         new SystemConfigService(web3j, credentials);
                 String result = systemConfigSerivce.setValueByKey(key, value + "");
                 if (Common.RPBFTEpochSealerNum.equals(key)
                         || Common.RPBFTEpochBlockNum.equals(key)) {
-                    System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
+                    System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
                 }
                 ConsoleUtils.printJson(result);
             } catch (NumberFormatException e) {
@@ -196,10 +204,15 @@ public class PrecompiledImpl implements PrecompiledFace {
                             "Please provide value by positive integer mode, "
                                     + Common.PositiveIntegerRange
                                     + ".");
-                } else {
+                } else if (Common.TxGasLimit.equals(key)) {
                     System.out.println(
                             "Please provide value by positive integer mode, "
                                     + Common.TxGasLimitRange
+                                    + ".");
+                } else if (Common.ConsensusTimeout.equals(key)) {
+                    System.out.println(
+                            "Please provide a value no smaller than "
+                                    + Common.ConsensusTimeoutRange
                                     + ".");
                 }
                 System.out.println();
@@ -215,6 +228,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + Common.RPBFTEpochSealerNum
                             + " or "
                             + Common.RPBFTEpochBlockNum
+                            + " or "
+                            + Common.ConsensusTimeout
                             + " .");
         }
         System.out.println();

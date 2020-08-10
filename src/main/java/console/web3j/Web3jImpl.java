@@ -250,6 +250,84 @@ public class Web3jImpl implements Web3jFace {
     }
 
     @Override
+    public void getBlockHeaderByHash(String[] params) throws IOException {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("getBlockHeaderByHash");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("getBlockHeaderByHash");
+            return;
+        }
+        String blockHash = params[1];
+        if ("-h".equals(blockHash) || "--help".equals(blockHash)) {
+            HelpInfo.getBlockHeaderByHashHelp();
+            return;
+        }
+        if (ConsoleUtils.isInvalidHash(blockHash)) return;
+
+        boolean flag = false;
+        if (params.length == 3) {
+            if ("true".equals(params[2])) {
+                flag = true;
+            } else if ("false".equals(params[2])) {
+                flag = false;
+            } else {
+                System.out.println("Please provide true or false for the second parameter.");
+                System.out.println();
+                return;
+            }
+        }
+        String blockHeader = web3j.getBlockHeaderByHash(blockHash, flag).sendForReturnString();
+        ConsoleUtils.printJson(blockHeader);
+        System.out.println();
+    }
+
+    @Override
+    public void getBlockHeaderByNumber(String[] params) throws IOException {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("getBlockHeaderByNumber");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("getBlockHeaderByNumber");
+            return;
+        }
+        String blockNumberStr1 = params[1];
+        if ("-h".equals(blockNumberStr1) || "--help".equals(blockNumberStr1)) {
+            HelpInfo.getBlockHeaderByNumberHelp();
+            return;
+        }
+        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        if (blockNumber == Common.InvalidReturnNumber) {
+            return;
+        }
+        BigInteger blockNumber1 = new BigInteger(blockNumberStr1);
+        String blockNumberStr2 = web3j.getBlockNumber().sendForReturnString();
+        BigInteger blockNumber2 = Numeric.decodeQuantity(blockNumberStr2);
+        if (blockNumber1.compareTo(blockNumber2) > 0) {
+            System.out.println("BlockNumber does not exist.");
+            System.out.println();
+            return;
+        }
+        boolean flag = false;
+        if (params.length == 3) {
+            if ("true".equals(params[2])) {
+                flag = true;
+            } else if ("false".equals(params[2])) {
+                flag = false;
+            } else {
+                System.out.println("Please provide true or false for the second parameter.");
+                System.out.println();
+                return;
+            }
+        }
+        String blockHeader = web3j.getBlockHeaderByNumber(blockNumber1, flag).sendForReturnString();
+        ConsoleUtils.printJson(blockHeader);
+        System.out.println();
+    }
+
+    @Override
     public void getBlockHashByNumber(String[] params) throws IOException {
         if (params.length < 2) {
             HelpInfo.promptHelp("getBlockHashByNumber");
@@ -638,7 +716,8 @@ public class Web3jImpl implements Web3jFace {
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
                 || Common.RPBFTEpochSealerNum.equals(key)
-                || Common.RPBFTEpochBlockNum.equals(key)) {
+                || Common.RPBFTEpochBlockNum.equals(key)
+                || Common.ConsensusTimeout.equals(key)) {
             String value = web3j.getSystemConfigByKey(key).sendForReturnString();
             if (Common.RPBFTEpochSealerNum.equals(key) || Common.RPBFTEpochBlockNum.equals(key)) {
                 System.out.println("Note: " + key + " only takes effect when RPBFT is used!");

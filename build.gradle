@@ -27,9 +27,15 @@ check.dependsOn.remove(verifyGoogleJavaFormat)
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.5.0'
+
+    // compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.6.10.0-SNAPSHOT'
+    // compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.5.2.0-SNAPSHOT'
+    compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.4.25.0-SNAPSHOT'
+
+    compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.6.0.0805-SNAPSHOT'
+
     compile group: 'commons-codec', name:'commons-codec', version:'1.10'
-    compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.25'
+    compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.30'
     compile group: 'org.jline', name: 'jline', version: '3.12.0'
     compile group: 'io.bretty', name: 'console-table-builder', version: '1.2'
     compile group: 'com.github.jsqlparser', name: 'jsqlparser', version: '2.0'
@@ -38,7 +44,7 @@ dependencies {
 }
 
 configurations.all {
-    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+    resolutionStrategy.cacheChangingModulesFor 30, 'seconds'
 }
 
 configurations {
@@ -54,7 +60,7 @@ configurations {
     all*.exclude group: 'org.mockito', module: 'mockito-core'
     all*.exclude group: 'io.reactivex', module: 'rxjava'
     all*.exclude group: 'org.projectlombok', module: 'lombok'
-  //  all*.exclude group: 'org.ethereum', module: 'solcJ-all'
+    all*.exclude group: 'org.ethereum', module: 'solcJ-all'
 }
 
 sourceSets {

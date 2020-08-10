@@ -46,6 +46,10 @@ public class WelcomeInfo {
                 "getBlockByHash                           Query information about a block by hash.\n");
         sb.append(
                 "getBlockByNumber                         Query information about a block by block number.\n");
+        sb.append(
+                "getBlockHeaderByHash                     Query information about a block header by hash.\n");
+        sb.append(
+                "getBlockHeaderByNumber                   Query information about a block header by block number.\n");
         sb.append("getBlockHashByNumber                     Query block hash by block number.\n");
         sb.append(
                 "getBlockNumber                           Query the number of most recent block.\n");

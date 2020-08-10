@@ -281,6 +281,29 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void getBlockHeaderByHashHelp() {
+        System.out.println("Query information about a block header by hash.");
+        System.out.println("Usage: getBlockHeaderByHash blockHash [boolean]");
+        System.out.println("blockHash -- 32 Bytes - The hash of a block.");
+        System.out.println(
+                "boolean -- (optional) If true the signature list will also be returned.");
+        System.out.println();
+    }
+
+    public static void getBlockHeaderByNumberHelp() {
+        System.out.println("Query information about a block header by block number.");
+        System.out.println("Usage: getBlockHeaderByNumber blockNumber [boolean]");
+        System.out.println(
+                "blockNumber -- Integer of a block number, "
+                        + Common.NonNegativeIntegerRange
+                        + ".");
+        System.out.println("blockHash -- 32 Bytes - The hash of a block.");
+
+        System.out.println(
+                "boolean -- (optional) If true the signature list will also be returned.");
+        System.out.println();
+    }
+
     public static void getBlockHashByNumberHelp() {
         System.out.println("Query block hash by block number.");
         System.out.println("Usage: getBlockHashByNumber blockNumber");
@@ -680,7 +703,7 @@ public class HelpInfo {
         System.out.println("Set a system config.");
         System.out.println("Usage: setSystemConfigByKey key value");
         System.out.println(
-                "key   -- The name of system config(tx_count_limit/tx_gas_limit supported currently).");
+                "key   -- The name of system config(tx_count_limit/tx_gas_limit/rpbft_epoch_block_num/rpbft_epoch_sealer_num/consensus_timeout supported currently).");
         System.out.println("value -- The value of system config to be set.");
         System.out.println(
                 "      -- The value of tx_count_limit "
@@ -690,6 +713,15 @@ public class HelpInfo {
                 "      -- the value of tx_gas_limit "
                         + Common.TxGasLimitRange
                         + "(default 300000000).");
+        System.out.println(
+                "      -- the value of  rpbft_epoch_block_num from 1 to 2147483647"
+                        + "(default 1000).");
+        System.out.println(
+                "      -- the value of  rpbft_epoch_sealer_num " + Common.PositiveIntegerRange);
+        System.out.println(
+                "      -- the value of  consensus_timeout (seconds)"
+                        + Common.ConsensusTimeoutRange
+                        + "(default 3s).");
         System.out.println();
     }
 
@@ -697,7 +729,7 @@ public class HelpInfo {
         System.out.println("Query a system config value by key.");
         System.out.println("Usage: getSystemConfigByKey key");
         System.out.println(
-                "key -- The name of system config(tx_count_limit/tx_gas_limit supported currently).");
+                "key -- The name of system config(tx_count_limit/tx_gas_limit/rpbft_epoch_block_num/rpbft_epoch_sealer_num/consensus_timeout supported currently).");
         System.out.println();
     }
 
