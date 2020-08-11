@@ -1,5 +1,7 @@
 package console.contract;
 
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
+
 import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
@@ -7,6 +9,7 @@ import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
 import console.common.TxDecodeUtil;
+import console.exception.CompileSolidityException;
 import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
@@ -24,7 +27,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import org.fisco.bcos.web3j.abi.EventEncoder;
+import org.fisco.bcos.web3j.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
+import org.fisco.bcos.web3j.abi.wrapper.ContractABIDefinition;
 import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.precompile.cns.CnsInfo;
 import org.fisco.bcos.web3j.precompile.cns.CnsService;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
@@ -40,6 +50,8 @@ import org.fisco.bcos.web3j.tx.RevertResolver;
 import org.fisco.bcos.web3j.tx.exceptions.ContractCallException;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.fisco.solc.compiler.CompilationResult;
+import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -245,6 +257,101 @@ public class ContractImpl implements ContractFace {
             logger.error(" load {} failed, e: {}", Common.ContractLogFileName, e);
         } finally {
             reader.close();
+        }
+    }
+
+    @Override
+    public void listAbi(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("listAbi");
+            return;
+        }
+        if (params.length > 3) {
+            HelpInfo.promptHelp("listAbi");
+            return;
+        }
+
+        String contractFileNameOrPath = params[1];
+        if ("-h".equals(contractFileNameOrPath) || "--help".equals(contractFileNameOrPath)) {
+            HelpInfo.listAbiHelp();
+            return;
+        }
+
+        if (!contractFileNameOrPath.endsWith(".sol")) {
+            System.out.println("Only support the solidity file.");
+            return;
+        }
+
+        File solFile = new File(contractFileNameOrPath);
+
+        String contractName = solFile.getName().split("\\.")[0];
+        if (params.length > 2) {
+            contractName = params[2];
+        }
+
+        SolidityCompiler.Result res =
+                SolidityCompiler.compile(
+                        solFile, EncryptType.encryptType == EncryptType.SM2_TYPE, true, ABI);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    " solidity compiler, contract: {}, result: {}, output: {}, error: {}",
+                    solFile,
+                    !res.isFailed(),
+                    res.getOutput(),
+                    res.getErrors());
+        }
+
+        if (res.isFailed()) {
+            throw new CompileSolidityException(
+                    " Compile " + solFile.getName() + " error: " + res.getErrors());
+        }
+
+        CompilationResult result = CompilationResult.parse(res.getOutput());
+        CompilationResult.ContractMetadata contractMetadata = result.getContract(contractName);
+
+        // Read Content of the file
+        ContractABIDefinition contractABIDefinition =
+                ABIDefinitionFactory.loadABI(contractMetadata.abi);
+        if (Objects.isNull(contractABIDefinition)) {
+            System.out.println(" Unable to load " + contractName + " abi.");
+            if (logger.isWarnEnabled()) {
+                logger.warn(" contract: {}, abi: {}", contractName, contractMetadata.abi);
+            }
+            return;
+        }
+
+        Map<String, ABIDefinition> methodIDToFunctions =
+                contractABIDefinition.getMethodIDToFunctions();
+
+        if (methodIDToFunctions.isEmpty()) {
+            System.out.println(contractName + " contains no method.");
+        } else {
+            System.out.println("\t Method list: ");
+
+            for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
+                System.out.printf(
+                        " \t\t name: %-5s \t signature: %-10s \t methodId: %-10s \t constant: %-3b\n",
+                        entry.getValue().getName(),
+                        entry.getValue().getMethodSignatureAsString(),
+                        entry.getValue().getMethodId(),
+                        entry.getValue().isConstant());
+            }
+        }
+
+        Map<String, List<ABIDefinition>> events = contractABIDefinition.getEvents();
+        if (!events.isEmpty()) {
+            System.out.println("\t Event list: ");
+
+            for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
+
+                System.out.printf(
+                        " \t\t name: %-5s \t signature: %-10s \t topic: %-10s \n",
+                        entry.getValue().getName(),
+                        entry.getValue().getMethodSignatureAsString(),
+                        EventEncoder.buildEventSignature(
+                                entry.getValue().getMethodSignatureAsString()));
+            }
         }
     }
 

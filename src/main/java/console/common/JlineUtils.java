@@ -227,6 +227,7 @@ public class JlineUtils {
                         "getCode",
                         "getTotalTransactionCount",
                         "getDeployLog",
+                        "listAbi",
                         "addSealer",
                         "addObserver",
                         "removeNode",
@@ -286,7 +287,8 @@ public class JlineUtils {
         }
 
         Path path = FileSystems.getDefault().getPath("contracts/solidity/", "");
-        commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
+        commands =
+                Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS", "listAbi");
 
         for (String command : commands) {
             completers.add(

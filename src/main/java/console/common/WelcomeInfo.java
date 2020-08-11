@@ -57,6 +57,8 @@ public class WelcomeInfo {
         sb.append("getConsensusStatus                       Query consensus status.\n");
         sb.append(
                 "getDeployLog                             Query the log of deployed contracts.\n");
+        sb.append(
+                "listAbi                             List functions and events info of the contract.\n");
         sb.append("getGroupList                             Query group list.\n");
         sb.append(
                 "getGroupPeers                            Query nodeId list for sealer and observer nodes.\n");

@@ -119,6 +119,9 @@ public class HelpInfo {
             case "listOperators":
                 listOperatorsHelp();
                 break;
+            case "listAbi":
+                listAbiHelp();
+                break;
             case "quit":
             case "q":
                 quitHelp();
@@ -178,6 +181,16 @@ public class HelpInfo {
                 "recordNumber -- (optional) The number of deployed contract records, "
                         + Common.DeployLogntegerRange
                         + "(default 20).");
+        System.out.println();
+    }
+
+    public static void listAbiHelp() {
+        System.out.println("List functions and events info of the contract.");
+        System.out.println("Usage: listAbi [contractFileName/contractFilePath] [contractName]");
+        System.out.println(
+                "contractFileName/contractFilePath -- the contract file name or contract file path");
+        System.out.println(
+                "contractName -- the contract name, not required, default the same with the contract file name");
         System.out.println();
     }
 
