@@ -1,3 +1,16 @@
+### v1.1.0
+
+(2020-08-12)
+
+* 新增
+1. 添加`getBlockHeaderByHash` `getBlockHeaderByNumber`命令
+
+* 更新
+1. 升级web3sdk版本为2.6.0, 参考web3sdk的ChangeLog更新内容
+2. 更新`get_acount.sh` `get_gm_account.sh`支持`aarch64`架构
+3. 更新`solcJ`版本，支持同时编译合约的国密/非国密版本，支持`aarch64`架构
+4. 更新`sol2java.sh`，能够生成国密/非国密环境同时能够使用的Java合约代码
+
 ### v1.0.10
 
 (2020-06-19)
