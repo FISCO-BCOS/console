@@ -1,6 +1,7 @@
 package console.precompiled;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import console.account.AccountManager;
 import console.common.CRUDParseUtils;
 import console.common.Common;
 import console.common.ConsoleUtils;
@@ -39,7 +40,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
 
     private Web3j web3j;
-    private Credentials credentials;
+    private AccountManager accountManager;
 
     @Override
     public void setWeb3j(Web3j web3j) {
@@ -47,8 +48,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public void setAccountManager(AccountManager accountManager) {
+        this.accountManager = accountManager;
     }
 
     @Override
@@ -70,6 +71,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(
                     PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
         } else {
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             String result;
             result = consensusService.addSealer(nodeId);
@@ -98,6 +100,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(
                     PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
         } else {
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             String result = consensusService.addObserver(nodeId);
             ConsoleUtils.printJson(result);
@@ -124,6 +127,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(
                     PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
         } else {
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             String result = null;
             result = consensusService.removeNode(nodeId);
@@ -188,6 +192,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                     System.out.println();
                     return;
                 }
+
+                Credentials credentials = accountManager.getCurrentAccountCredentials();
                 SystemConfigService systemConfigSerivce =
                         new SystemConfigService(web3j, credentials);
                 String result = systemConfigSerivce.setValueByKey(key, value + "");
@@ -262,6 +268,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
         try {
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             CRUDService CRUDService = new CRUDService(web3j, credentials);
             Table descTable = CRUDService.desc(tableName);
             if (descTable.getKey() == null) {
@@ -298,6 +305,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         String result = contractStatusService.freeze(address);
         ConsoleUtils.printJson(result);
@@ -322,6 +330,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         String result = contractStatusService.unfreeze(address);
         ConsoleUtils.printJson(result);
@@ -357,6 +366,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(userAddr + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         String result = contractStatusService.grantManager(contractAddr, userAddr);
         ConsoleUtils.printJson(result);
@@ -381,6 +391,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         String result = contractStatusService.getStatus(address);
         ConsoleUtils.printJson(result);
@@ -405,6 +416,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         String result = contractStatusService.listManager(address);
         ConsoleUtils.printJson(result);
@@ -462,6 +474,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             CRUDParseUtils.checkTableParams(table);
+
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             CRUDService CRUDService = new CRUDService(web3j, credentials);
             int result = CRUDService.createTable(table);
             if (result == 0) {
@@ -482,6 +496,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void insert(String sql) throws Exception {
         checkVersionForCRUD();
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -576,6 +592,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void update(String sql) throws Exception {
         checkVersionForCRUD();
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -634,6 +652,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void remove(String sql) throws Exception {
         checkVersionForCRUD();
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Condition condition = table.getCondition();
@@ -687,6 +707,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println();
             return;
         }
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         try {
             Table descTable = CRUDService.desc(table.getTableName());

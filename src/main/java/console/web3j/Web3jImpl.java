@@ -2,6 +2,7 @@ package console.web3j;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
-import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
@@ -31,7 +31,7 @@ import org.fisco.bcos.web3j.utils.Numeric;
 public class Web3jImpl implements Web3jFace {
 
     private Web3j web3j;
-    private Credentials credentials;
+    private AccountManager accountManager;
     private StaticGasProvider gasProvider;
 
     @Override
@@ -40,8 +40,8 @@ public class Web3jImpl implements Web3jFace {
     }
 
     @Override
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public void setAccountManager(AccountManager accountManager) {
+        this.accountManager = accountManager;
     }
 
     @Override

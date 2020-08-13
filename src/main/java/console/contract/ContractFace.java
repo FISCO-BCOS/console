@@ -1,6 +1,6 @@
 package console.contract;
 
-import org.fisco.bcos.web3j.crypto.Credentials;
+import console.account.AccountManager;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 
@@ -12,7 +12,7 @@ public interface ContractFace {
 
     void setGasProvider(StaticGasProvider gasProvider);
 
-    void setCredentials(Credentials credentials);
+    void setAccountManager(AccountManager accountManager);
 
     void deploy(String[] params) throws Exception;
 

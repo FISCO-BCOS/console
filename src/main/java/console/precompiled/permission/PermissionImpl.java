@@ -1,5 +1,6 @@
 package console.precompiled.permission;
 
+import console.account.AccountManager;
 import console.common.Address;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
@@ -23,7 +24,7 @@ import org.fisco.bcos.web3j.tuples.generated.Tuple2;
 public class PermissionImpl implements PermissionFace {
 
     private Web3j web3j;
-    private Credentials credentials;
+    private AccountManager accountManager;
 
     @Override
     public void setWeb3j(Web3j web3j) {
@@ -31,8 +32,8 @@ public class PermissionImpl implements PermissionFace {
     }
 
     @Override
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public void setAccountManager(AccountManager accountManager) {
+        this.accountManager = accountManager;
     }
 
     @Override
@@ -60,6 +61,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = null;
         result = permission.grantUserTableManager(tableName, address);
@@ -92,6 +94,8 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = null;
         result = permission.revokeUserTableManager(tableName, address);
@@ -114,6 +118,8 @@ public class PermissionImpl implements PermissionFace {
             HelpInfo.listUserTableManagerHelp();
             return;
         }
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
         List<PermissionInfo> permissions = permissionTableService.listUserTableManager(tableName);
         printPermissionInfo(permissions);
@@ -139,6 +145,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantDeployAndCreateManager(address);
@@ -166,6 +173,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeDeployAndCreateManager(address);
@@ -178,6 +186,7 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listDeployAndCreateManager")) {
             return;
         }
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
         List<PermissionInfo> permissions = permissionTableService.listDeployAndCreateManager();
         printPermissionInfo(permissions);
@@ -203,6 +212,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantNodeManager(address);
@@ -230,6 +240,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeNodeManager(address);
@@ -242,6 +253,7 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listNodeManager")) {
             return;
         }
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
         List<PermissionInfo> permissions = permissionTableService.listNodeManager();
         printPermissionInfo(permissions);
@@ -267,6 +279,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantCNSManager(address);
@@ -294,6 +307,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeCNSManager(address);
@@ -306,6 +320,8 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listCNSManager")) {
             return;
         }
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
         List<PermissionInfo> permissions = permissionTableService.listCNSManager();
         printPermissionInfo(permissions);
@@ -331,6 +347,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.grantSysConfigManager(address);
@@ -358,6 +375,8 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result;
         result = permission.revokeSysConfigManager(address);
@@ -370,6 +389,8 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listSysConfigManager")) {
             return;
         }
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
         List<PermissionInfo> permissions = permissionTableService.listSysConfigManager();
         printPermissionInfo(permissions);
@@ -415,6 +436,7 @@ public class PermissionImpl implements PermissionFace {
         }
         address = convertAddr.getAddress();
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permissionTableService = new PermissionService(web3j, credentials);
         List<PermissionInfo> permissions = permissionTableService.queryPermission(address);
         printPermissionInfo(permissions);
@@ -452,6 +474,7 @@ public class PermissionImpl implements PermissionFace {
         }
         userAddress = convertUserAddr.getAddress();
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = permission.grantWrite(contractAddress, userAddress);
         ConsoleUtils.printJson(result);
@@ -490,6 +513,7 @@ public class PermissionImpl implements PermissionFace {
         }
         userAddress = convertUserAddr.getAddress();
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         String result = permission.revokeWrite(contractAddress, userAddress);
         ConsoleUtils.printJson(result);
@@ -519,6 +543,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.grantCommitteeMember(accountAddress);
@@ -548,6 +573,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.revokeCommitteeMember(accountAddress);
@@ -561,6 +587,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         List<PermissionInfo> permissionInfos = chainGovernanceService.listCommitteeMembers();
@@ -589,6 +616,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         Tuple2<Boolean, BigInteger> weight =
@@ -639,6 +667,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.updateCommitteeMemberWeight(accountAddress, weight);
@@ -677,6 +706,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.updateThreshold(threshold);
@@ -690,6 +720,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         BigInteger threshold = chainGovernanceService.queryThreshold();
@@ -719,6 +750,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.grantOperator(accountAddress);
@@ -748,6 +780,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.revokeOperator(accountAddress);
@@ -761,6 +794,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         List<PermissionInfo> permissionInfos = chainGovernanceService.listOperators();
@@ -789,6 +823,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.freezeAccount(accountAddress);
@@ -818,6 +853,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.unfreezeAccount(accountAddress);
@@ -847,6 +883,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         String result = chainGovernanceService.getAccountStatus(accountAddress);
