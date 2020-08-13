@@ -121,6 +121,20 @@ public class HelpInfo {
                 break;
             case "listAbi":
                 listAbiHelp();
+            case "loadAccount":
+                loadAccountHelp();
+                break;
+            case "switchAccount":
+                switchAccountHelp();
+                break;
+            case "newAccount":
+                newAccountHelp();
+                break;
+            case "listAccount":
+                listAccountHelp();
+                break;
+            case "saveAccount":
+                saveAccountHelp();
                 break;
             case "quit":
             case "q":
@@ -781,5 +795,35 @@ public class HelpInfo {
         System.out.println("./start.sh groupID");
         System.out.println("./start.sh groupID -pem pemName");
         System.out.println("./start.sh groupID -p12 p12Name");
+    }
+
+    public static void newAccountHelp() {
+        System.out.println("create a new account for the transaction signature");
+        System.out.println("Usage: newAccount");
+        System.out.println();
+    }
+
+    public static void loadAccountHelp() {
+        System.out.println("load account for the transaction signature");
+        System.out.println("Usage: loadAccount accountFilePath");
+        System.out.println();
+    }
+
+    public static void switchAccountHelp() {
+        System.out.println("switch account for the transaction signature");
+        System.out.println("Usage: switchAccount accountAddress");
+        System.out.println();
+    }
+
+    public static void saveAccountHelp() {
+        System.out.println("save the account to the file");
+        System.out.println("Usage: saveAccount accountAddress accountFilePath");
+        System.out.println();
+    }
+
+    public static void listAccountHelp() {
+        System.out.println("list all the accounts");
+        System.out.println("Usage: listAccount");
+        System.out.println();
     }
 }
