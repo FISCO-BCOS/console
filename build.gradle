@@ -32,7 +32,7 @@ dependencies {
     // compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.5.2.0'
     compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.4.25.0'
 
-    compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.6.0'
+    compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.6.1'
 
     compile group: 'commons-codec', name:'commons-codec', version:'1.10'
     compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.30'
