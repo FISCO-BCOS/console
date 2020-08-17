@@ -1,7 +1,5 @@
 package console.contract;
 
-import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
-
 import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
@@ -9,27 +7,13 @@ import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
 import console.common.HelpInfo;
+import console.common.PathUtils;
 import console.common.TxDecodeUtil;
 import console.exception.CompileSolidityException;
 import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
@@ -55,6 +39,24 @@ import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 
 public class ContractImpl implements ContractFace {
 
@@ -281,22 +283,19 @@ public class ContractImpl implements ContractFace {
             return;
         }
 
-        String contractFileNameOrPath = params[1];
-        if ("-h".equals(contractFileNameOrPath) || "--help".equals(contractFileNameOrPath)) {
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
             HelpInfo.listAbiHelp();
             return;
         }
 
-        if (!contractFileNameOrPath.endsWith(".sol")) {
-            System.out.println("Only support the solidity file.");
-            return;
-        }
+        String contractFileName = params[1];
+        File solFile = PathUtils.getSolFile(contractFileName);
 
-        File solFile = new File(contractFileNameOrPath);
-
-        String contractName = solFile.getName().split("\\.")[0];
+        String contractName = null;
         if (params.length > 2) {
             contractName = params[2];
+        } else {
+            contractName = solFile.getName().split("\\.")[0];
         }
 
         SolidityCompiler.Result res =
@@ -324,7 +323,7 @@ public class ContractImpl implements ContractFace {
         ContractABIDefinition contractABIDefinition =
                 ABIDefinitionFactory.loadABI(contractMetadata.abi);
         if (Objects.isNull(contractABIDefinition)) {
-            System.out.println(" Unable to load " + contractName + " abi.");
+            System.out.println(" Unable to load " + contractName + " abi");
             if (logger.isWarnEnabled()) {
                 logger.warn(" contract: {}, abi: {}", contractName, contractMetadata.abi);
             }
@@ -334,9 +333,7 @@ public class ContractImpl implements ContractFace {
         Map<String, ABIDefinition> methodIDToFunctions =
                 contractABIDefinition.getMethodIDToFunctions();
 
-        if (methodIDToFunctions.isEmpty()) {
-            System.out.println(contractName + " contains no method.");
-        } else {
+        if (!methodIDToFunctions.isEmpty()) {
             System.out.println("\t Method list: ");
 
             for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
@@ -347,6 +344,8 @@ public class ContractImpl implements ContractFace {
                         entry.getValue().getMethodId(),
                         entry.getValue().isConstant());
             }
+        } else {
+            System.out.println(contractName + " contains no method.");
         }
 
         Map<String, List<ABIDefinition>> events = contractABIDefinition.getEvents();
