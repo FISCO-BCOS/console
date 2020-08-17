@@ -292,7 +292,7 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase()));
         }
 
-        Path path = FileSystems.getDefault().getPath("contracts/solidity/", "");
+        Path path = FileSystems.getDefault().getPath(PathUtils.SOL_DIRECTORY, "");
         commands =
                 Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS", "listAbi");
 
