@@ -40,7 +40,6 @@ public class ContractClassFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ContractClassFactory.class);
 
-    public static final String SOLIDITY_PATH = "contracts/solidity/";
     public static final String JAVA_PATH = "contracts/console/java/";
     public static final String ABI_PATH = "contracts/console/abi/";
     public static final String BIN_PATH = "contracts/console/bin/";
@@ -132,13 +131,14 @@ public class ContractClassFactory {
         if (!name.endsWith(SOL_POSTFIX)) {
             name = name + SOL_POSTFIX;
         }
-        File solFileList = new File(SOLIDITY_PATH);
+        File solFileList = new File(PathUtils.SOL_DIRECTORY);
         if (!solFileList.exists()) {
-            throw new IOException("Please checkout the directory " + SOLIDITY_PATH + " is exist.");
+            solFileList.mkdirs();
         }
-        File solFile = new File(SOLIDITY_PATH + "/" + name);
+        File solFile = new File(PathUtils.SOL_DIRECTORY + "/" + name);
         if (!solFile.exists()) {
-            throw new IOException("There is no " + name + " in the directory of " + SOLIDITY_PATH);
+            throw new IOException(
+                    "There is no " + name + " in the directory of " + PathUtils.SOL_DIRECTORY);
         }
         String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
         ConsoleUtils.compileSolToJava(

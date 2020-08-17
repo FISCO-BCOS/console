@@ -218,7 +218,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getBlockByNumberHelp();
             return;
         }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr1);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }
@@ -298,7 +298,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getBlockHeaderByNumberHelp();
             return;
         }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr1);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }
@@ -342,7 +342,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getBlockHashByNumberHelp();
             return;
         }
-        int blockNumberi = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        int blockNumberi = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumberi == Common.InvalidReturnNumber) {
             return;
         }
@@ -414,7 +414,7 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         String indexStr = params[2];
-        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
+        int index = ConsoleUtils.processNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
             return;
         }
@@ -455,7 +455,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
             return;
         }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }
@@ -467,7 +467,7 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         String indexStr = params[2];
-        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
+        int index = ConsoleUtils.processNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
             return;
         }

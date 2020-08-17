@@ -26,7 +26,6 @@ public class ConsoleUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleUtils.class);
 
-    public static final String SOLIDITY_PATH = "contracts/solidity/";
     public static final String JAVA_PATH = "contracts/sdk/java/";
     public static final String ABI_PATH = "contracts/sdk/abi/";
     public static final String BIN_PATH = "contracts/sdk/bin/";
@@ -109,7 +108,7 @@ public class ConsoleUtils {
         }
     }
 
-    public static int proccessNonNegativeNumber(String name, String intStr) {
+    public static int processNonNegativeNumber(String name, String intStr) {
         int intParam = 0;
         try {
             intParam = Integer.parseInt(intStr);
@@ -212,7 +211,7 @@ public class ConsoleUtils {
                 File solFile = new File(args[1]);
                 compileSolToJava(tempDirPath, pkgName, solFile, ABI_PATH, BIN_PATH);
             } else {
-                File solFileDir = new File(SOLIDITY_PATH);
+                File solFileDir = new File(PathUtils.SOL_DIRECTORY);
                 compileSolToJava("*", tempDirPath, pkgName, solFileDir, ABI_PATH, BIN_PATH);
             }
 
@@ -222,37 +221,6 @@ public class ConsoleUtils {
             System.out.print(e.getMessage());
             logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
-    }
-
-    /**
-     * Compile the contract file and return the ABI file
-     *
-     * @param solFile
-     * @return
-     * @throws IOException
-     */
-    public static String compileSolForABI(File solFile) throws IOException {
-
-        String contractName = solFile.getName().split("\\.")[0];
-
-        /** ecdsa compile */
-        SolidityCompiler.Result res = SolidityCompiler.compile(solFile, false, true, ABI);
-
-        logger.debug(
-                " solidity compiler, contract: {}, result: {}, output: {}, error: {}",
-                contractName,
-                !res.isFailed(),
-                res.getOutput(),
-                res.getErrors());
-
-        if (res.isFailed() || "".equals(res.getOutput())) {
-            throw new CompileSolidityException(" Compile error: " + res.getErrors());
-        }
-
-        CompilationResult result = CompilationResult.parse(res.getOutput());
-        CompilationResult.ContractMetadata meta = result.getContract(contractName);
-
-        return meta.abi;
     }
 
     /**
