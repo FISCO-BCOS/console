@@ -805,19 +805,24 @@ public class HelpInfo {
 
     public static void loadAccountHelp() {
         System.out.println("load account for the transaction signature");
-        System.out.println("Usage: loadAccount accountFilePath");
+        System.out.println("Usage: loadAccount accountPath");
+        System.out.println(
+                "accountPath -- The path to the account private key file, support absolute path, relative path, default directory files");
         System.out.println();
     }
 
     public static void switchAccountHelp() {
         System.out.println("switch account for the transaction signature");
         System.out.println("Usage: switchAccount accountAddress");
+        System.out.println("accountAddress -- The address of the account to switch");
         System.out.println();
     }
 
     public static void saveAccountHelp() {
         System.out.println("save the account to the file");
-        System.out.println("Usage: saveAccount accountAddress accountFilePath");
+        System.out.println("Usage: saveAccount accountAddress saveDir");
+        System.out.println("accountAddress -- The address of the account to save");
+        System.out.println("saveDir -- The directory of the account file to save");
         System.out.println();
     }
 

@@ -28,7 +28,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
-import java.security.interfaces.ECPrivateKey;
 import java.security.spec.InvalidKeySpecException;
 import org.fisco.bcos.channel.client.P12Manager;
 import org.fisco.bcos.channel.client.PEMManager;
@@ -81,7 +80,6 @@ public class ConsoleInitializer {
 
         switch (args.length) {
             case 0: // bash start.sh
-                // do nothing
                 account = AccountTools.newAccount();
                 break;
             case 1: // bash start.sh groupID
@@ -237,8 +235,7 @@ public class ConsoleInitializer {
             Credentials credentials = Credentials.create(keyPair);
             account = new Account(credentials);
             account.setNewAccount(false);
-            account.setPrivateKeyType(
-                    AccountTools.getPrivateKeyType((ECPrivateKey) pem.getPrivateKey()));
+            account.setPrivateKeyType(AccountTools.getPrivateKeyType(pem.getPrivateKey()));
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
@@ -279,7 +276,7 @@ public class ConsoleInitializer {
                 account = new Account(credentials);
                 account.setNewAccount(false);
                 account.setPrivateKeyType(
-                        AccountTools.getPrivateKeyType((ECPrivateKey) p12Manager.getPrivateKey()));
+                        AccountTools.getPrivateKeyType(p12Manager.getPrivateKey()));
             } catch (Exception e) {
                 System.out.println("The name for p12 account is error.");
                 close();

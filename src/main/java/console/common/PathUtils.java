@@ -6,6 +6,8 @@ import java.io.File;
 public class PathUtils {
     /** the solidity file default directory */
     public static final String SOL_DIRECTORY = "contracts/solidity";
+    /** */
+    public static final String ACCOUNT_DIRECTORY = "accounts/";
     /** solidity file ext name */
     public static final String SOL_POSTFIX = ".sol";
 
