@@ -1,11 +1,13 @@
 package console.account;
 
+import java.security.KeyPair;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.EncryptType;
 
 public class Account {
 
     private Credentials credentials;
+    private KeyPair keyPair;
     /** EncryptType.SM2_TYPE or EncryptType.ECDSA */
     private int privateKeyType;
     /** if this account temporary account */
@@ -60,5 +62,13 @@ public class Account {
                 + ", newAccount="
                 + isNewAccount
                 + '}';
+    }
+
+    public KeyPair getKeyPair() {
+        return this.keyPair;
+    }
+
+    public void setKeyPair(final KeyPair keyPair) {
+        this.keyPair = keyPair;
     }
 }

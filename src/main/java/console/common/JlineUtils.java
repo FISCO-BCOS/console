@@ -303,6 +303,7 @@ public class JlineUtils {
                             new ConsoleFilesCompleter(path),
                             new StringsCompleterIgnoreCase()));
         }
+
         commands = Arrays.asList("getTransactionReceipt");
         for (String command : commands) {
             completers.add(
@@ -338,6 +339,16 @@ public class JlineUtils {
                     new ArgumentCompleter(
                             new StringsCompleter(command),
                             new StringsCompleter(Common.ConsensusTimeout),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        Path accountPath = FileSystems.getDefault().getPath(PathUtils.ACCOUNT_DIRECTORY, "");
+        commands = Arrays.asList("loadAccount");
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new ConsoleFilesCompleter(accountPath),
                             new StringsCompleterIgnoreCase()));
         }
 

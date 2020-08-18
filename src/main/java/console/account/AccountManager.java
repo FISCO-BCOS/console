@@ -15,6 +15,18 @@ public class AccountManager {
     /** account mapper used to save all accounts loaded */
     private Map<String, Account> accountMap = new ConcurrentHashMap<>();
 
+    /**
+     * check if account current
+     *
+     * @param account
+     * @return
+     */
+    public boolean isCurrentAccount(Account account) {
+        return account.getCredentials()
+                .getAddress()
+                .equals(getCurrentAccount().getCredentials().getAddress());
+    }
+
     public Account getCurrentAccount() {
         return currentAccount;
     }
@@ -35,6 +47,10 @@ public class AccountManager {
         Account account1 = accountMap.putIfAbsent(account.getCredentials().getAddress(), account);
         logger.info("addAccount, addresses: {}", accountMap.keySet().toArray(new String[0]));
         return account1 != null;
+    }
+
+    public Account getAccount(String account) {
+        return accountMap.get(account);
     }
 
     public Map<String, Account> getAccountMap() {

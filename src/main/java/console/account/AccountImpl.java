@@ -1,6 +1,7 @@
 package console.account;
 
 import console.common.HelpInfo;
+import console.common.PathUtils;
 import java.util.Map;
 import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.utils.Numeric;
@@ -44,6 +45,7 @@ public class AccountImpl implements AccountInterface {
         if (params.length > 2) {
             password = params[2];
         }
+
         try {
             Account account = AccountTools.loadAccount(accountPath, password);
             if (!account.isAccountAvailable()) {
@@ -57,19 +59,19 @@ public class AccountImpl implements AccountInterface {
                 System.out.println(
                         " load "
                                 + accountPath
-                                + " successfully, address: "
+                                + " successfully, account address: "
                                 + account.getCredentials().getAddress());
             } else {
                 System.out.println(
                         " account: " + account.getCredentials().getAddress() + " has been loaded.");
             }
 
-            System.out.println();
         } catch (Exception e) {
             logger.error("e: ", e);
             System.out.println("load " + accountPath + " failed, error: " + e.getMessage());
-            System.out.println();
         }
+
+        System.out.println();
     }
 
     @Override
@@ -89,29 +91,28 @@ public class AccountImpl implements AccountInterface {
             return;
         }
 
-        String account = params[1];
+        String accountAddress = params[1];
         try {
-            account = Numeric.prependHexPrefix(account);
-            Map<String, Account> accountMap = accountManager.getAccountMap();
-            Account account1 = accountMap.get(account);
-            if (account1 == null) {
-                System.out.println(" account:" + account + " not exist.");
+            accountAddress = Numeric.prependHexPrefix(accountAddress);
+            Account account = accountManager.getAccount(accountAddress);
+            if (account == null) {
+                System.out.println(" account:" + accountAddress + " not exist.");
                 System.out.println();
                 System.out.println(" account list:");
-                for (String address : accountMap.keySet()) {
+                for (String address : accountManager.getAccountMap().keySet()) {
                     System.out.println("\t " + address);
                 }
             } else {
-                accountManager.setCurrentAccount(account1);
-                System.out.println("switch to account: " + account + " successfully.");
+                accountManager.setCurrentAccount(account);
+                System.out.println("switch to account: " + accountAddress + " successfully.");
             }
-            System.out.println();
 
         } catch (Exception e) {
             logger.error("e: ", e);
-            System.out.println(" load " + account + " failed, error: " + e.getMessage());
-            System.out.println();
+            System.out.println("load " + accountAddress + " failed, error: " + e.getMessage());
         }
+
+        System.out.println();
     }
 
     @Override
@@ -122,26 +123,61 @@ public class AccountImpl implements AccountInterface {
         }
 
         Map<String, Account> accountMap = accountManager.getAccountMap();
-        Account currentAccount = accountManager.getCurrentAccount();
         System.out.println(" account list:");
         for (Account account : accountMap.values()) {
             System.out.println(
                     "\t "
                             + account.getCredentials().getAddress()
-                            + (account.isNewAccount() ? "(temporary account)" : "")
-                            + (currentAccount
-                                            .getCredentials()
-                                            .getAddress()
-                                            .equals(account.getCredentials().getAddress())
-                                    ? " * "
-                                    : ""));
+                            + (account.isNewAccount() ? " (temporary account)" : "")
+                            + (accountManager.isCurrentAccount(account) ? " * " : ""));
         }
+
         System.out.println();
     }
 
     @Override
     public void saveAccount(String[] params) {
-        // saveAccount account accountSavePath
+        if (params.length < 2) {
+            HelpInfo.promptHelp("saveAccount");
+            return;
+        }
+
+        if (params.length > 3) {
+            HelpInfo.promptHelp("saveAccount");
+            return;
+        }
+
+        // saveAccount [accountAddress] [savePath]
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.saveAccountHelp();
+            return;
+        }
+
+        String accountAddress = params[1];
+        accountAddress = Numeric.prependHexPrefix(accountAddress);
+
+        String path = null;
+        if (params.length > 2) {
+            path = params[2];
+        } else {
+            path = PathUtils.ACCOUNT_DIRECTORY;
+        }
+
+        try {
+            Account account = accountManager.getAccount(accountAddress);
+            if (account == null) {
+                System.out.println(" account:" + accountAddress + " not exist.");
+            } else {
+                AccountTools.saveAccount(account, path);
+                System.out.println(
+                        " save account: " + accountAddress + " successfully, path: " + path);
+            }
+        } catch (Exception e) {
+            logger.error("e: ", e);
+            System.out.println("load " + accountAddress + " failed, error: " + e.getMessage());
+        }
+
+        System.out.println();
     }
 
     @Override
@@ -156,13 +192,13 @@ public class AccountImpl implements AccountInterface {
             Account account = AccountTools.newAccount();
             accountManager.addAccount(account);
             System.out.println(
-                    " create account successfully, account address:"
+                    " new account successfully, account address:"
                             + account.getCredentials().getAddress());
-            System.out.println();
         } catch (Exception e) {
             logger.error("e: ", e);
-            System.out.println(" create account failed, error: " + e.getMessage());
-            System.out.println();
+            System.out.println(" new account failed, error: " + e.getMessage());
         }
+
+        System.out.println();
     }
 }
