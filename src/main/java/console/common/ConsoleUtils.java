@@ -185,14 +185,14 @@ public class ConsoleUtils {
     public static void Usage() {
         System.out.println(" Usage:");
         System.out.println(
-                " \t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils packageName [solidityFilePath].");
+                " \t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils [packageName] [solidityFilePath or solidityDirPath] [JavaCodeDir].");
         System.out.println(" \t Example: ");
         System.out.println(
                 " \t\t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils org.fisco.hello");
         System.out.println(
-                " \t\t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils org.fisco.hello /data/app/HelloWorld.sol");
-        System.out.println(
                 " \t\t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils org.fisco.hello ./fisco/HelloWorld.sol");
+        System.out.println(
+                " \t\t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils org.fisco.hello /data/app/HelloWorld.sol /java");
         System.exit(0);
     }
 
@@ -205,14 +205,28 @@ public class ConsoleUtils {
         }
 
         String pkgName = args[0];
-        String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
+        String solPathOrDir = PathUtils.SOL_DIRECTORY;
+        String javaDir = JAVA_PATH;
+
+        if (args.length > 1) {
+            solPathOrDir = args[1];
+            if (args.length > 2) {
+                javaDir = args[2];
+            }
+        }
+
+        String fullJavaDir = new File(javaDir).getAbsolutePath();
+        File sol = new File(solPathOrDir);
+        if (!sol.exists()) {
+            System.out.println(sol.getAbsoluteFile() + " not exist ");
+            System.exit(0);
+        }
+
         try {
-            if (args.length > 1) {
-                File solFile = new File(args[1]);
-                compileSolToJava(tempDirPath, pkgName, solFile, ABI_PATH, BIN_PATH);
-            } else {
-                File solFileDir = new File(PathUtils.SOL_DIRECTORY);
-                compileSolToJava("*", tempDirPath, pkgName, solFileDir, ABI_PATH, BIN_PATH);
+            if (sol.isFile()) { // input file
+                compileSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
+            } else { // input dir
+                compileAllSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
             }
 
             System.out.println(
@@ -224,7 +238,7 @@ public class ConsoleUtils {
     }
 
     /**
-     * @param tempDirPath
+     * @param javaDir
      * @param packageName
      * @param solFile
      * @param abiDir
@@ -232,7 +246,7 @@ public class ConsoleUtils {
      * @throws IOException
      */
     public static void compileSolToJava(
-            String tempDirPath, String packageName, File solFile, String abiDir, String binDir)
+            String javaDir, String packageName, File solFile, String abiDir, String binDir)
             throws IOException {
 
         String contractName = solFile.getName().split("\\.")[0];
@@ -240,27 +254,20 @@ public class ConsoleUtils {
         /** compile */
         SolidityCompiler.Result res =
                 SolidityCompiler.compile(solFile, false, true, ABI, BIN, INTERFACE, METADATA);
-        logger.debug(
-                " solidity compiler, contract: {}, result: {}, output: {}, error: {}",
-                contractName,
-                !res.isFailed(),
-                res.getOutput(),
-                res.getErrors());
 
         if (res.isFailed() || "".equals(res.getOutput())) {
+            logger.error(" compile {} failed, e: {}", solFile.getAbsolutePath(), res.getErrors());
             throw new CompileSolidityException(" Compile error: " + res.getErrors());
         }
 
         /** sm compile */
         SolidityCompiler.Result smRes =
                 SolidityCompiler.compile(solFile, true, true, ABI, BIN, INTERFACE, METADATA);
-        logger.debug(
-                " sm solidity compiler result, success: {}, output: {}, error: {}",
-                !smRes.isFailed(),
-                smRes.getOutput(),
-                smRes.getErrors());
+
         if (smRes.isFailed() || "".equals(smRes.getOutput())) {
-            throw new CompileSolidityException(" Compile SM error: " + res.getErrors());
+            logger.error(
+                    " compile sm {} failed, e: {}", solFile.getAbsolutePath(), res.getErrors());
+            throw new CompileSolidityException(" Compile sm error: " + res.getErrors());
         }
 
         CompilationResult result = CompilationResult.parse(res.getOutput());
@@ -275,30 +282,22 @@ public class ConsoleUtils {
         FileUtils.writeStringToFile(new File(abiDir + "/sm/" + contractName + ".abi"), smMeta.abi);
         FileUtils.writeStringToFile(new File(binDir + "/sm/" + contractName + ".bin"), smMeta.bin);
 
-        String binFile;
-        String abiFile;
-        String smBinFile;
-        String filename = contractName;
-        abiFile = abiDir + filename + ".abi";
-        binFile = binDir + filename + ".bin";
-        smBinFile = binDir + "/sm/" + filename + ".bin";
+        String abiFile = abiDir + contractName + ".abi";
+        String binFile = binDir + contractName + ".bin";
+        String smBinFile = binDir + "/sm/" + contractName + ".bin";
+
         SolidityFunctionWrapperGenerator.main(
                 Arrays.asList(
                                 "-a", abiFile,
                                 "-b", binFile,
                                 "-s", smBinFile,
                                 "-p", packageName,
-                                "-o", tempDirPath)
+                                "-o", javaDir)
                         .toArray(new String[0]));
     }
 
-    public static void compileSolToJava(
-            String solName,
-            String tempDirPath,
-            String packageName,
-            File solFileList,
-            String abiDir,
-            String binDir)
+    public static void compileAllSolToJava(
+            String javaDir, String packageName, File solFileList, String abiDir, String binDir)
             throws IOException {
         File[] solFiles = solFileList.listFiles();
         if (solFiles.length == 0) {
@@ -309,20 +308,12 @@ public class ConsoleUtils {
             if (!solFile.getName().endsWith(".sol")) {
                 continue;
             }
-            if (!"*".equals(solName)) {
-                if (!solFile.getName().equals(solName)) {
-                    continue;
-                }
-                if (solFile.getName().startsWith("Lib")) {
-                    throw new IOException("Don't deploy the library: " + solFile.getName());
-                }
-            } else {
-                if (solFile.getName().startsWith("Lib")) {
-                    continue;
-                }
+
+            if (solFile.getName().startsWith("Lib")) {
+                continue;
             }
 
-            compileSolToJava(tempDirPath, packageName, solFile, abiDir, binDir);
+            compileSolToJava(javaDir, packageName, solFile, abiDir, binDir);
         }
     }
 

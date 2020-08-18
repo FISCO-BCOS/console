@@ -141,9 +141,8 @@ public class ContractClassFactory {
             throw new IOException(
                     "There is no " + name + " in the directory of " + PathUtils.SOL_DIRECTORY);
         }
-        String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
-        ConsoleUtils.compileSolToJava(
-                name, tempDirPath, PACKAGE_NAME, solFileList, ABI_PATH, BIN_PATH);
+        String javaDir = new File(JAVA_PATH).getAbsolutePath();
+        ConsoleUtils.compileSolToJava(javaDir, PACKAGE_NAME, solFile, ABI_PATH, BIN_PATH);
     }
 
     public static Class<?> getContractClass(String contractName)
