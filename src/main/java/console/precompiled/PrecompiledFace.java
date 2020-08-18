@@ -1,14 +1,6 @@
 package console.precompiled;
 
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.protocol.Web3j;
-
 public interface PrecompiledFace {
-
-    void setWeb3j(Web3j web3j);
-
-    void setCredentials(Credentials credentials);
-
     // ConsensusPrecompiled
     void addSealer(String[] params) throws Exception;
 

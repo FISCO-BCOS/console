@@ -1,15 +1,10 @@
-package console.web3j;
+package console.client;
 
 import java.io.IOException;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.protocol.Web3j;
-import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
-import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
-import org.fisco.bcos.web3j.tx.txdecode.BaseException;
+import org.fisco.bcos.sdk.client.Client;
 
-public interface Web3jFace {
-
-    void setWeb3j(Web3j web3j);
+public interface ConsoleClientFace {
+    void updateClient(Client client);
 
     void getBlockNumber(String[] params) throws IOException;
 
@@ -43,14 +38,11 @@ public interface Web3jFace {
 
     void getBlockHashByNumber(String[] params) throws IOException;
 
-    void getTransactionByHash(String[] params)
-            throws IOException, BaseException, TransactionException;
+    void getTransactionByHash(String[] params);
 
-    void getTransactionByBlockHashAndIndex(String[] params)
-            throws IOException, BaseException, TransactionException;
+    void getTransactionByBlockHashAndIndex(String[] params);
 
-    void getTransactionByBlockNumberAndIndex(String[] params)
-            throws IOException, BaseException, TransactionException;
+    void getTransactionByBlockNumberAndIndex(String[] params);
 
     void getTransactionReceipt(String[] params) throws Exception;
 
@@ -67,8 +59,4 @@ public interface Web3jFace {
     void getTotalTransactionCount(String[] params) throws IOException;
 
     void getSystemConfigByKey(String[] params) throws Exception;
-
-    void setCredentials(Credentials credentials);
-
-    void setGasProvider(StaticGasProvider gasProvider);
 }

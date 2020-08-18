@@ -5,6 +5,7 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import console.exception.CompileSolidityException;
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +17,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.commons.io.FileUtils;
-import org.fisco.bcos.web3j.codegen.SolidityFunctionWrapperGenerator;
+import org.fisco.bcos.sdk.codegen.CodeGenMain;
+import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -33,6 +35,15 @@ public class ConsoleUtils {
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
+    }
+
+    public static void printRetCode(Object retCode) {
+        try {
+            System.out.println(
+                    formatJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(retCode)));
+        } catch (JsonProcessingException e) {
+            System.out.println(retCode.toString());
+        }
     }
 
     public static String formatJson(String jsonStr) {
@@ -271,14 +282,11 @@ public class ConsoleUtils {
             FileUtils.writeStringToFile(
                     new File(binDir + "/sm/" + contractName + ".bin"), smMeta.bin);
 
-            String binFile;
-            String abiFile;
-            String smBinFile;
             String filename = contractName;
-            abiFile = abiDir + filename + ".abi";
-            binFile = binDir + filename + ".bin";
-            smBinFile = binDir + "/sm/" + filename + ".bin";
-            SolidityFunctionWrapperGenerator.main(
+            String abiFile = abiDir + filename + ".abi";
+            String binFile = binDir + filename + ".bin";
+            String smBinFile = binDir + "/sm/" + filename + ".bin";
+            CodeGenMain.main(
                     Arrays.asList(
                                     "-a", abiFile,
                                     "-b", binFile,

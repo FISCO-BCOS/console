@@ -1,6 +1,7 @@
 package console.common;
 
 import console.exception.ConsoleMessageException;
+import console.precompiled.Table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +35,9 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
-import org.fisco.bcos.web3j.precompile.crud.Condition;
-import org.fisco.bcos.web3j.precompile.crud.Entry;
-import org.fisco.bcos.web3j.precompile.crud.EnumOP;
-import org.fisco.bcos.web3j.precompile.crud.Table;
+import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
+import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
 
 public class CRUDParseUtils {
 
@@ -114,14 +114,7 @@ public class CRUDParseUtils {
         } else {
             fieldsList.remove(table.getKey());
         }
-        StringBuffer fields = new StringBuffer();
-        for (int i = 0; i < fieldsList.size(); i++) {
-            fields.append(fieldsList.get(i));
-            if (i != fieldsList.size() - 1) {
-                fields.append(",");
-            }
-        }
-        table.setValueFields(fields.toString());
+        table.setValueFields(fieldsList);
     }
 
     public static boolean parseInsert(String sql, Table table, Entry entry)
@@ -162,12 +155,12 @@ public class CRUDParseUtils {
                 }
             }
             for (int i = 0; i < columnNames.size(); i++) {
-                entry.put(columnNames.get(i), trimQuotes(itemArr[i]));
+                entry.getFieldNameToValue().put(columnNames.get(i), trimQuotes(itemArr[i]));
             }
             return false;
         } else {
             for (int i = 0; i < itemArr.length; i++) {
-                entry.put(i + "", trimQuotes(itemArr[i]));
+                entry.getFieldNameToValue().put(i + "", trimQuotes(itemArr[i]));
             }
             return true;
         }
@@ -255,11 +248,11 @@ public class CRUDParseUtils {
         if (expr instanceof IsNullExpression) {
             throw new ConsoleMessageException("The IsNullExpression is not supported.");
         }
-        Map<String, Map<EnumOP, String>> conditions = condition.getConditions();
+        Map<String, Map<ConditionOperator, String>> conditions = condition.getConditions();
         Set<String> keys = conditions.keySet();
         for (String key : keys) {
-            Map<EnumOP, String> value = conditions.get(key);
-            EnumOP operation = value.keySet().iterator().next();
+            Map<ConditionOperator, String> value = conditions.get(key);
+            ConditionOperator operation = value.keySet().iterator().next();
             String itemValue = value.values().iterator().next();
             String newValue = trimQuotes(itemValue);
             value.put(operation, newValue);
@@ -304,7 +297,8 @@ public class CRUDParseUtils {
             values[i] = expressions.get(i).toString();
         }
         for (int i = 0; i < columns.size(); i++) {
-            entry.put(trimQuotes(columns.get(i).toString()), trimQuotes(values[i]));
+            entry.getFieldNameToValue()
+                    .put(trimQuotes(columns.get(i).toString()), trimQuotes(values[i]));
         }
 
         // parse where clause
@@ -408,57 +402,6 @@ public class CRUDParseUtils {
             throw new ConsoleMessageException("SyntaxError: Unexpected Chinese quotes.");
         } else if (sql.contains("，")) {
             throw new ConsoleMessageException("SyntaxError: Unexpected Chinese comma.");
-        }
-    }
-
-    public static void checkTableParams(Table table) throws ConsoleMessageException {
-        if (table.getTableName().length() > Common.SYS_TABLE_KEY_MAX_LENGTH) {
-            throw new ConsoleMessageException(
-                    "The table name length is greater than "
-                            + Common.SYS_TABLE_KEY_MAX_LENGTH
-                            + ".");
-        }
-        if (table.getKey().length() > Common.SYS_TABLE_KEY_FIELD_NAME_MAX_LENGTH) {
-            throw new ConsoleMessageException(
-                    "The table primary key name length is greater than "
-                            + Common.SYS_TABLE_KEY_FIELD_NAME_MAX_LENGTH
-                            + ".");
-        }
-        String[] valueFields = table.getValueFields().split(",");
-        for (String valueField : valueFields) {
-            if (valueField.length() > Common.USER_TABLE_FIELD_NAME_MAX_LENGTH) {
-                throw new ConsoleMessageException(
-                        "The table field name length is greater than "
-                                + Common.USER_TABLE_FIELD_NAME_MAX_LENGTH
-                                + ".");
-            }
-        }
-        if (table.getValueFields().length() > Common.SYS_TABLE_VALUE_FIELD_MAX_LENGTH) {
-            throw new ConsoleMessageException(
-                    "The table total field name length is greater than "
-                            + Common.SYS_TABLE_VALUE_FIELD_MAX_LENGTH
-                            + ".");
-        }
-    }
-
-    public static void checkUserTableParam(Entry entry, Table descTable)
-            throws ConsoleMessageException {
-        Map<String, String> fieldsMap = entry.getFields();
-        Set<String> keys = fieldsMap.keySet();
-        for (String key : keys) {
-            if (key.equals(descTable.getKey())) {
-                if (fieldsMap.get(key).length() > Common.USER_TABLE_KEY_VALUE_MAX_LENGTH) {
-                    throw new ConsoleMessageException(
-                            "The table primary key value length is greater than "
-                                    + Common.USER_TABLE_KEY_VALUE_MAX_LENGTH
-                                    + ".");
-                }
-            } else {
-                if (fieldsMap.get(key).length() > Common.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
-                    throw new ConsoleMessageException(
-                            "The table field '" + key + "' value length is greater than 16M - 1.");
-                }
-            }
         }
     }
 }

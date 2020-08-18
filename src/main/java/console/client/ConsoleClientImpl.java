@@ -1,52 +1,34 @@
-package console.web3j;
+package console.client;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
 import console.common.TotalTransactionCountResult;
-import console.common.TxDecodeUtil;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Objects;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
-import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
-import org.fisco.bcos.web3j.protocol.Web3j;
-import org.fisco.bcos.web3j.protocol.channel.StatusCode;
-import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameter;
-import org.fisco.bcos.web3j.protocol.core.DefaultBlockParameterName;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosBlock;
-import org.fisco.bcos.web3j.protocol.core.methods.response.BcosTransactionReceipt;
-import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
-import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
-import org.fisco.bcos.web3j.tx.txdecode.BaseException;
-import org.fisco.bcos.web3j.utils.Numeric;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
+import org.fisco.bcos.sdk.model.TransactionReceipt;
+import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
+import org.fisco.bcos.sdk.utils.Numeric;
+import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 
-public class Web3jImpl implements Web3jFace {
+public class ConsoleClientImpl implements ConsoleClientFace {
 
-    private Web3j web3j;
-    private Credentials credentials;
-    private StaticGasProvider gasProvider;
+    private Client client;
 
-    @Override
-    public void setWeb3j(Web3j web3j) {
-        this.web3j = web3j;
+    public ConsoleClientImpl(Client client) {
+        this.client = client;
     }
 
     @Override
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
-    }
-
-    @Override
-    public void setGasProvider(StaticGasProvider gasProvider) {
-        this.gasProvider = gasProvider;
+    public void updateClient(Client client) {
+        this.client = client;
     }
 
     @Override
@@ -54,9 +36,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getNodeVersion")) {
             return;
         }
-
-        String nodeVersion = web3j.getNodeVersion().sendForReturnString();
-        ConsoleUtils.printJson(nodeVersion);
+        ConsoleUtils.printJson(client.getNodeVersion().getNodeVersion().toString());
         System.out.println();
     }
 
@@ -65,8 +45,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getBlockNumber")) {
             return;
         }
-        String blockNumber = web3j.getBlockNumber().sendForReturnString();
-        System.out.println(Numeric.decodeQuantity(blockNumber));
+        System.out.println(client.getBlockNumber().getBlockNumber());
         System.out.println();
     }
 
@@ -75,8 +54,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getPbftView")) {
             return;
         }
-        String pbftView = web3j.getPbftView().sendForReturnString();
-        System.out.println(Numeric.decodeQuantity(pbftView));
+        System.out.println(client.getPbftView().getPbftView());
         System.out.println();
     }
 
@@ -85,8 +63,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getObserverList")) {
             return;
         }
-        List<String> observerList = web3j.getObserverList().send().getResult();
-        String observers = observerList.toString();
+        String observers = client.getObserverList().getObserverList().toString();
         if ("[]".equals(observers)) {
             System.out.println("[]");
         } else {
@@ -100,8 +77,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getSealerList")) {
             return;
         }
-        List<String> sealerList = web3j.getSealerList().send().getResult();
-        String sealers = sealerList.toString();
+        String sealers = client.getSealerList().getSealerList().toString();
         if ("[]".equals(sealers)) {
             System.out.println("[]");
         } else {
@@ -115,8 +91,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getConsensusStatus")) {
             return;
         }
-        String consensusStatus = web3j.getConsensusStatus().sendForReturnString();
-        ConsoleUtils.printJson(consensusStatus);
+        ConsoleUtils.printJson(client.getConsensusStatus().getConsensusStatus().toString());
         System.out.println();
     }
 
@@ -125,8 +100,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getSyncStatus")) {
             return;
         }
-        String syncStatus = web3j.getSyncStatus().sendForReturnString();
-        ConsoleUtils.printJson(syncStatus);
+        ConsoleUtils.printJson(client.getSyncStatus().getSyncStatus().toString());
         System.out.println();
     }
 
@@ -135,8 +109,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getPeers")) {
             return;
         }
-        String peers = web3j.getPeers().sendForReturnString();
-        ConsoleUtils.printJson(peers);
+        ConsoleUtils.printJson(client.getPeers().getPeers().toString());
         System.out.println();
     }
 
@@ -145,8 +118,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getNodeIDList")) {
             return;
         }
-        List<String> nodeIds = web3j.getNodeIDList().send().getResult();
-        ConsoleUtils.printJson(nodeIds.toString());
+        ConsoleUtils.printJson(client.getNodeIDList().getNodeIDList().toString());
         System.out.println();
     }
 
@@ -155,8 +127,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getGroupPeers")) {
             return;
         }
-        List<String> groupPeers = web3j.getGroupPeers().send().getResult();
-        ConsoleUtils.printJson(groupPeers.toString());
+        ConsoleUtils.printJson(client.getGroupPeers().getGroupPeers().toString());
         System.out.println();
     }
 
@@ -165,8 +136,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getGroupList")) {
             return;
         }
-        List<String> groupList = web3j.getGroupList().send().getResult();
-        System.out.println(groupList);
+        System.out.println(client.getGroupList().getGroupList().toString());
         System.out.println();
     }
 
@@ -198,8 +168,7 @@ public class Web3jImpl implements Web3jFace {
                 return;
             }
         }
-        String block = web3j.getBlockByHash(blockHash, flag).sendForReturnString();
-        ConsoleUtils.printJson(block);
+        ConsoleUtils.printJson(client.getBlockByHash(blockHash, flag).getBlock().toString());
         System.out.println();
     }
 
@@ -213,21 +182,13 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.promptHelp("getBlockByNumber");
             return;
         }
-        String blockNumberStr1 = params[1];
-        if ("-h".equals(blockNumberStr1) || "--help".equals(blockNumberStr1)) {
+        String blockNumberStr = params[1];
+        if ("-h".equals(blockNumberStr) || "--help".equals(blockNumberStr)) {
             HelpInfo.getBlockByNumberHelp();
             return;
         }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
-            return;
-        }
-        BigInteger blockNumber1 = new BigInteger(blockNumberStr1);
-        String blockNumberStr2 = web3j.getBlockNumber().sendForReturnString();
-        BigInteger blockNumber2 = Numeric.decodeQuantity(blockNumberStr2);
-        if (blockNumber1.compareTo(blockNumber2) > 0) {
-            System.out.println("BlockNumber does not exist.");
-            System.out.println();
             return;
         }
         boolean flag = false;
@@ -242,10 +203,10 @@ public class Web3jImpl implements Web3jFace {
                 return;
             }
         }
-        String block =
-                web3j.getBlockByNumber(DefaultBlockParameter.valueOf(blockNumber1), flag)
-                        .sendForReturnString();
-        ConsoleUtils.printJson(block);
+        ConsoleUtils.printJson(
+                client.getBlockByNumber(BigInteger.valueOf(blockNumber), flag)
+                        .getBlock()
+                        .toString());
         System.out.println();
     }
 
@@ -278,8 +239,8 @@ public class Web3jImpl implements Web3jFace {
                 return;
             }
         }
-        String blockHeader = web3j.getBlockHeaderByHash(blockHash, flag).sendForReturnString();
-        ConsoleUtils.printJson(blockHeader);
+        ConsoleUtils.printJson(
+                client.getBlockHeaderByHash(blockHash, flag).getBlockHeader().toString());
         System.out.println();
     }
 
@@ -293,21 +254,13 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.promptHelp("getBlockHeaderByNumber");
             return;
         }
-        String blockNumberStr1 = params[1];
-        if ("-h".equals(blockNumberStr1) || "--help".equals(blockNumberStr1)) {
+        String blockNumberStr = params[1];
+        if ("-h".equals(blockNumberStr) || "--help".equals(blockNumberStr)) {
             HelpInfo.getBlockHeaderByNumberHelp();
             return;
         }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
-            return;
-        }
-        BigInteger blockNumber1 = new BigInteger(blockNumberStr1);
-        String blockNumberStr2 = web3j.getBlockNumber().sendForReturnString();
-        BigInteger blockNumber2 = Numeric.decodeQuantity(blockNumberStr2);
-        if (blockNumber1.compareTo(blockNumber2) > 0) {
-            System.out.println("BlockNumber does not exist.");
-            System.out.println();
             return;
         }
         boolean flag = false;
@@ -322,8 +275,10 @@ public class Web3jImpl implements Web3jFace {
                 return;
             }
         }
-        String blockHeader = web3j.getBlockHeaderByNumber(blockNumber1, flag).sendForReturnString();
-        ConsoleUtils.printJson(blockHeader);
+        ConsoleUtils.printJson(
+                client.getBlockHeaderByNumber(BigInteger.valueOf(blockNumber), flag)
+                        .getBlockHeader()
+                        .toString());
         System.out.println();
     }
 
@@ -342,28 +297,19 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getBlockHashByNumberHelp();
             return;
         }
-        int blockNumberi = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
-        if (blockNumberi == Common.InvalidReturnNumber) {
+        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }
-        BigInteger blockNumber = BigInteger.valueOf(blockNumberi);
-        BigInteger getBlockNumber =
-                Numeric.decodeQuantity(web3j.getBlockNumber().sendForReturnString());
-        if (blockNumber.compareTo(getBlockNumber) > 0) {
-            System.out.println("The block number doesn't exsit.");
-            System.out.println();
-            return;
-        }
-        String blockHash =
-                web3j.getBlockHashByNumber(DefaultBlockParameter.valueOf(blockNumber))
-                        .sendForReturnString();
-        ConsoleUtils.printJson(blockHash);
+        ConsoleUtils.printJson(
+                client.getBlockHashByNumber(BigInteger.valueOf(blockNumber))
+                        .getBlockHashByNumber()
+                        .toString());
         System.out.println();
     }
 
     @Override
-    public void getTransactionByHash(String[] params)
-            throws IOException, BaseException, TransactionException {
+    public void getTransactionByHash(String[] params) {
         if (params.length < 2) {
             HelpInfo.promptHelp("getTransactionByHash");
             return;
@@ -378,21 +324,18 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-        String transactionJson = web3j.getTransactionByHash(transactionHash).sendForReturnString();
-        if ("null".equals(transactionJson)) {
+        JsonTransactionResponse transaction =
+                client.getTransactionByHash(transactionHash).getTransaction().get();
+        if (transaction == null) {
             System.out.println("This transaction hash doesn't exist.");
             return;
         }
-        ConsoleUtils.printJson(transactionJson);
-        if (params.length == 3) {
-            TxDecodeUtil.decdeInputForTransaction(params[2], transactionJson);
-        }
+        ConsoleUtils.printJson(transaction.toString());
         System.out.println();
     }
 
     @Override
-    public void getTransactionByBlockHashAndIndex(String[] params)
-            throws IOException, BaseException, TransactionException {
+    public void getTransactionByBlockHashAndIndex(String[] params) {
         if (params.length < 2) {
             HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
             return;
@@ -418,78 +361,54 @@ public class Web3jImpl implements Web3jFace {
         if (index == Common.InvalidReturnNumber) {
             return;
         }
-        BcosBlock bcosBlock = web3j.getBlockByHash(blockHash, false).send();
-        int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
-        if (index > maxIndex) {
-            System.out.println("The index is out of range.");
-            System.out.println();
-            return;
-        }
-        String transactionJson =
-                web3j.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index))
-                        .sendForReturnString();
-        ConsoleUtils.printJson(transactionJson);
-        if (params.length == 4) {
-            TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
-        }
+        ConsoleUtils.printJson(
+                client.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index))
+                        .getTransaction()
+                        .toString());
         System.out.println();
     }
 
     @Override
-    public void getTransactionByBlockNumberAndIndex(String[] params)
-            throws IOException, BaseException, TransactionException {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
-            return;
-        }
-        if (params.length > 4) {
-            HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
-            return;
-        }
-        String blockNumberStr = params[1];
-        if ("-h".equals(blockNumberStr) || "--help".equals(blockNumberStr)) {
-            HelpInfo.getTransactionByBlockNumberAndIndexHelp();
-            return;
-        }
-        if (params.length < 3) {
-            HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
-            return;
-        }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
-        if (blockNumber == Common.InvalidReturnNumber) {
-            return;
-        }
-        BigInteger getBlockNumber =
-                Numeric.decodeQuantity(web3j.getBlockNumber().sendForReturnString());
-        if (BigInteger.valueOf(blockNumber).compareTo(getBlockNumber) > 0) {
-            System.out.println("The block number doesn't exsit.");
-            System.out.println();
-            return;
-        }
-        String indexStr = params[2];
-        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
-        if (index == Common.InvalidReturnNumber) {
-            return;
-        }
-        BcosBlock bcosBlock =
-                web3j.getBlockByNumber(
-                                DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)),
-                                false)
-                        .send();
-        int maxIndex = bcosBlock.getResult().getTransactions().size() - 1;
-        if (index > maxIndex) {
-            System.out.println("The index is out of range.");
-            System.out.println();
-            return;
-        }
-        String transactionJson =
-                web3j.getTransactionByBlockNumberAndIndex(
-                                DefaultBlockParameter.valueOf(BigInteger.valueOf(blockNumber)),
-                                BigInteger.valueOf(index))
-                        .sendForReturnString();
-        ConsoleUtils.printJson(transactionJson);
-        if (params.length == 4) {
-            TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
+    public void getTransactionByBlockNumberAndIndex(String[] params) {
+        try {
+            if (params.length < 2) {
+                HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
+                return;
+            }
+            if (params.length > 4) {
+                HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
+                return;
+            }
+            String blockNumberStr = params[1];
+            if ("-h".equals(blockNumberStr) || "--help".equals(blockNumberStr)) {
+                HelpInfo.getTransactionByBlockNumberAndIndexHelp();
+                return;
+            }
+            if (params.length < 3) {
+                HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
+                return;
+            }
+            int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+            if (blockNumber == Common.InvalidReturnNumber) {
+                return;
+            }
+            String indexStr = params[2];
+            int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
+            if (index == Common.InvalidReturnNumber) {
+                return;
+            }
+            String transactionJson =
+                    client.getTransactionByBlockNumberAndIndex(
+                                    BigInteger.valueOf(blockNumber), BigInteger.valueOf(index))
+                            .getTransaction()
+                            .toString();
+            ConsoleUtils.printJson(transactionJson);
+            /*
+            if (params.length == 4) {
+                TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
+            }*/
+        } catch (ClientException e) {
+            ConsoleUtils.printJson(e.getMessage());
         }
         System.out.println();
     }
@@ -511,10 +430,8 @@ public class Web3jImpl implements Web3jFace {
         }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
 
-        BcosTransactionReceipt bcosTransactionReceipt =
-                web3j.getTransactionReceipt(transactionHash).send();
-        TransactionReceipt receipt = bcosTransactionReceipt.getResult();
-
+        TransactionReceipt receipt =
+                client.getTransactionReceipt(transactionHash).getTransactionReceipt().get();
         if (Objects.isNull(receipt) || Objects.isNull(receipt.getTransactionHash())) {
             System.out.println("This transaction hash doesn't exist.");
             System.out.println();
@@ -523,33 +440,12 @@ public class Web3jImpl implements Web3jFace {
 
         if (!receipt.isStatusOK()) {
             receipt.setMessage(
-                    StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
+                    TransactionReceiptStatus.getStatusMessage(
+                                    receipt.getStatus(), receipt.getMessage())
+                            .getMessage());
         }
 
         ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(receipt));
-
-        if (params.length == 3) {
-            AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(params[2]);
-            String abi = abiAndBin.getAbi();
-            if (!Common.EMPTY_CONTRACT_ADDRESS.equals(receipt.getTo())) {
-                if (receipt.getInput() != null) {
-                    TxDecodeUtil.decodeInput(abiAndBin, receipt.getInput());
-                }
-            }
-            if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
-                String version = PrecompiledCommon.BCOS_VERSION;
-                if (version == null
-                        || PrecompiledCommon.BCOS_RC1.equals(version)
-                        || PrecompiledCommon.BCOS_RC2.equals(version)
-                        || PrecompiledCommon.BCOS_RC3.equals(version)) {
-                    TxDecodeUtil.setInputForReceipt(web3j, receipt);
-                }
-                TxDecodeUtil.decodeOutput(abi, receipt);
-            }
-            if (receipt.getLogs() != null && receipt.getLogs().size() != 0) {
-                TxDecodeUtil.decodeEventLog(abi, receipt);
-            }
-        }
         System.out.println();
     }
 
@@ -571,16 +467,14 @@ public class Web3jImpl implements Web3jFace {
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
 
         String transactionWithProof =
-                web3j.getTransactionByHashWithProof(transactionHash).sendForReturnString();
+                client.getTransactionByHashWithProof(transactionHash).getResult().toString();
 
         if (Objects.isNull(transactionWithProof) || "".equals(transactionWithProof)) {
             System.out.println("This transaction hash doesn't exist.");
             System.out.println();
             return;
         }
-
         ConsoleUtils.printJson(transactionWithProof);
-
         System.out.println();
     }
 
@@ -602,7 +496,7 @@ public class Web3jImpl implements Web3jFace {
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
 
         String transactionReceiptWithProof =
-                web3j.getTransactionReceiptByHashWithProof(transactionHash).sendForReturnString();
+                client.getTransactionReceiptByHashWithProof(transactionHash).getResult().toString();
 
         if (Objects.isNull(transactionReceiptWithProof) || "".equals(transactionReceiptWithProof)) {
             System.out.println("This transaction hash doesn't exist.");
@@ -620,7 +514,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getPendingTxSize")) {
             return;
         }
-        String size = web3j.getPendingTxSize().sendForReturnString();
+        String size = client.getPendingTxSize().getResult();
         System.out.println(Numeric.decodeQuantity(size));
         System.out.println();
     }
@@ -630,7 +524,7 @@ public class Web3jImpl implements Web3jFace {
         if (HelpInfo.promptNoParams(params, "getPendingTransactions")) {
             return;
         }
-        String pendingTransactions = web3j.getPendingTransaction().sendForReturnString();
+        String pendingTransactions = client.getPendingTransaction().getResult().toString();
         if ("[]".equals(pendingTransactions)) System.out.println(pendingTransactions);
         else ConsoleUtils.printJson(pendingTransactions);
         System.out.println();
@@ -656,8 +550,7 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         address = convertAddr.getAddress();
-        String code =
-                web3j.getCode(address, DefaultBlockParameterName.LATEST).sendForReturnString();
+        String code = client.getCode(address).getCode();
         if ("0x".equals(code)) {
             System.out.println("This address doesn't exist.");
             System.out.println();
@@ -674,7 +567,8 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
 
-        String transactionCount = web3j.getTotalTransactionCount().sendForReturnString();
+        String transactionCount =
+                client.getTotalTransactionCount().getTotalTransactionCount().toString();
         TotalTransactionCountResult totalTransactionCountResult =
                 ObjectMapperFactory.getObjectMapper()
                         .readValue(transactionCount, TotalTransactionCountResult.class);
@@ -718,7 +612,7 @@ public class Web3jImpl implements Web3jFace {
                 || Common.RPBFTEpochSealerNum.equals(key)
                 || Common.RPBFTEpochBlockNum.equals(key)
                 || Common.ConsensusTimeout.equals(key)) {
-            String value = web3j.getSystemConfigByKey(key).sendForReturnString();
+            String value = client.getSystemConfigByKey(key).getSystemConfig();
             if (Common.RPBFTEpochSealerNum.equals(key) || Common.RPBFTEpochBlockNum.equals(key)) {
                 System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
             }

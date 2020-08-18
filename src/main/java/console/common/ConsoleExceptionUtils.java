@@ -1,8 +1,8 @@
 package console.common;
 
-import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
-import org.fisco.bcos.web3j.protocol.core.Response;
-import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
+import org.fisco.bcos.sdk.client.protocol.response.JsonRpcResponse;
+import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
+import org.fisco.bcos.sdk.utils.exceptions.MessageDecodingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,14 +12,14 @@ public class ConsoleExceptionUtils {
 
     public static void pringMessageDecodeingException(MessageDecodingException e) {
         String message = e.getMessage();
-        Response t = null;
+        JsonRpcResponse t = null;
         try {
             t =
-                    ObjectMapperFactory.getObjectMapper(true)
+                    ObjectMapperFactory.getObjectMapper()
                             .readValue(
                                     message.substring(
                                             message.indexOf("{"), message.lastIndexOf("}") + 1),
-                                    Response.class);
+                                    JsonRpcResponse.class);
             if (t != null) {
                 ConsoleUtils.printJson(
                         "{\"code\":"

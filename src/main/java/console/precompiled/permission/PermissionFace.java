@@ -1,14 +1,6 @@
 package console.precompiled.permission;
 
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.protocol.Web3j;
-
 public interface PermissionFace {
-
-    void setWeb3j(Web3j web3j);
-
-    void setCredentials(Credentials credentials);
-
     void grantUserTableManager(String[] params) throws Exception;
 
     void revokeUserTableManager(String[] params) throws Exception;

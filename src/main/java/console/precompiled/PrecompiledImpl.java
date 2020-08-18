@@ -1,36 +1,28 @@
 package console.precompiled;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import console.common.CRUDParseUtils;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
-import console.common.TableInfo;
 import console.exception.ConsoleMessageException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
-import org.fisco.bcos.channel.protocol.ChannelPrococolExceiption;
-import org.fisco.bcos.fisco.EnumNodeVersion;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.crypto.WalletUtils;
-import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
-import org.fisco.bcos.web3j.precompile.config.SystemConfigService;
-import org.fisco.bcos.web3j.precompile.consensus.ConsensusService;
-import org.fisco.bcos.web3j.precompile.crud.CRUDService;
-import org.fisco.bcos.web3j.precompile.crud.Condition;
-import org.fisco.bcos.web3j.precompile.crud.Entry;
-import org.fisco.bcos.web3j.precompile.crud.EnumOP;
-import org.fisco.bcos.web3j.precompile.crud.Table;
-import org.fisco.bcos.web3j.precompile.csm.ContractStatusService;
-import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
-import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
+import org.fisco.bcos.sdk.contract.precompiled.contractmgr.ContractLifeCycleService;
+import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
+import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
+import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.contract.precompiled.sysconfig.SystemConfigService;
+import org.fisco.bcos.sdk.model.RetCode;
+import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,17 +30,19 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
 
-    private Web3j web3j;
-    private Credentials credentials;
+    private Client client;
+    private ConsensusService consensusService;
+    private SystemConfigService systemConfigService;
+    private TableCRUDService tableCRUDService;
+    private ContractLifeCycleService contractLifeCycleService;
 
-    @Override
-    public void setWeb3j(Web3j web3j) {
-        this.web3j = web3j;
-    }
-
-    @Override
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public PrecompiledImpl(Client client) {
+        this.client = client;
+        this.consensusService = new ConsensusService(client, client.getCryptoInterface());
+        this.systemConfigService = new SystemConfigService(client, client.getCryptoInterface());
+        this.tableCRUDService = new TableCRUDService(client, client.getCryptoInterface());
+        this.contractLifeCycleService =
+                new ContractLifeCycleService(client, client.getCryptoInterface());
     }
 
     @Override
@@ -67,13 +61,9 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         if (nodeId.length() != 128) {
-            ConsoleUtils.printJson(
-                    PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
+            ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
         } else {
-            ConsensusService consensusService = new ConsensusService(web3j, credentials);
-            String result;
-            result = consensusService.addSealer(nodeId);
-            ConsoleUtils.printJson(result);
+            ConsoleUtils.printRetCode(this.consensusService.addSealer(nodeId));
         }
         System.out.println();
     }
@@ -95,12 +85,9 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         if (nodeId.length() != 128) {
-            ConsoleUtils.printJson(
-                    PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
+            ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
         } else {
-            ConsensusService consensusService = new ConsensusService(web3j, credentials);
-            String result = consensusService.addObserver(nodeId);
-            ConsoleUtils.printJson(result);
+            ConsoleUtils.printRetCode(this.consensusService.addObserver(nodeId));
         }
         System.out.println();
     }
@@ -121,13 +108,9 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         if (nodeId.length() != 128) {
-            ConsoleUtils.printJson(
-                    PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
+            ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
         } else {
-            ConsensusService consensusService = new ConsensusService(web3j, credentials);
-            String result = null;
-            result = consensusService.removeNode(nodeId);
-            ConsoleUtils.printJson(result);
+            ConsoleUtils.printRetCode(this.consensusService.removeNode(nodeId));
         }
         System.out.println();
     }
@@ -188,14 +171,12 @@ public class PrecompiledImpl implements PrecompiledFace {
                     System.out.println();
                     return;
                 }
-                SystemConfigService systemConfigSerivce =
-                        new SystemConfigService(web3j, credentials);
-                String result = systemConfigSerivce.setValueByKey(key, value + "");
+
                 if (Common.RPBFTEpochSealerNum.equals(key)
                         || Common.RPBFTEpochBlockNum.equals(key)) {
                     System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
                 }
-                ConsoleUtils.printJson(result);
+                ConsoleUtils.printRetCode(this.systemConfigService.setValueByKey(key, value + ""));
             } catch (NumberFormatException e) {
                 if (Common.TxCountLimit.equals(key)
                         || Common.RPBFTEpochSealerNum.equals(key)
@@ -237,7 +218,6 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void desc(String[] params) throws Exception {
-        checkVersionForCRUD();
         if (params.length < 2) {
             HelpInfo.promptHelp("desc");
             return;
@@ -262,17 +242,9 @@ public class PrecompiledImpl implements PrecompiledFace {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
         try {
-            CRUDService CRUDService = new CRUDService(web3j, credentials);
-            Table descTable = CRUDService.desc(tableName);
-            if (descTable.getKey() == null) {
-                System.out.println("The table '" + tableName + "' does not exist.");
-                System.out.println();
-                return;
-            }
-            ObjectMapper objectMapper = ObjectMapperFactory.getObjectMapper();
             String tableInfo =
-                    objectMapper.writeValueAsString(
-                            new TableInfo(descTable.getKey(), descTable.getValueFields()));
+                    ObjectMapperFactory.getObjectMapper()
+                            .writeValueAsString(tableCRUDService.desc(tableName));
             ConsoleUtils.printJson(tableInfo);
             System.out.println();
         } catch (Exception e) {
@@ -282,7 +254,6 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void freezeContract(String[] params) throws Exception {
-        checkVersionForContractStatusService();
         if (params.length != 2) {
             HelpInfo.promptHelp("freezeContract");
             return;
@@ -293,20 +264,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.freezeContractHelp();
             return;
         }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " is invalid address.");
-        }
-
-        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.freeze(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(contractLifeCycleService.freeze(address));
         System.out.println();
     }
 
     @Override
     public void unfreezeContract(String[] params) throws Exception {
-        checkVersionForContractStatusService();
         if (params.length != 2) {
             HelpInfo.promptHelp("unfreezeContract");
             return;
@@ -317,20 +280,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.unfreezeContractHelp();
             return;
         }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " is invalid address.");
-        }
-
-        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.unfreeze(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(contractLifeCycleService.unfreeze(address));
         System.out.println();
     }
 
     @Override
     public void grantContractStatusManager(String[] params) throws Exception {
-        checkVersionForContractStatusService();
         if (params.length < 2) {
             HelpInfo.promptHelp("grantContractStatusManager");
             return;
@@ -350,22 +305,13 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         String userAddr = params[2];
-        if (!WalletUtils.isValidAddress(contractAddr)) {
-            throw new ConsoleMessageException(contractAddr + " is invalid address.");
-        }
-        if (!WalletUtils.isValidAddress(userAddr)) {
-            throw new ConsoleMessageException(userAddr + " is invalid address.");
-        }
-
-        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.grantManager(contractAddr, userAddr);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printJson(
+                contractLifeCycleService.grantManager(contractAddr, userAddr).getMessage());
         System.out.println();
     }
 
     @Override
     public void getContractStatus(String[] params) throws Exception {
-        checkVersionForContractStatusService();
         if (params.length != 2) {
             HelpInfo.promptHelp("getContractStatus");
             return;
@@ -376,20 +322,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.getContractStatusHelp();
             return;
         }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " is invalid address.");
-        }
-
-        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.getStatus(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printJson(contractLifeCycleService.getContractStatus(address));
         System.out.println();
     }
 
     @Override
     public void listContractStatusManager(String[] params) throws Exception {
-        checkVersionForContractStatusService();
         if (params.length != 2) {
             HelpInfo.promptHelp("listContractStatusManager");
             return;
@@ -400,52 +338,14 @@ public class PrecompiledImpl implements PrecompiledFace {
             HelpInfo.listContractStatusManagerHelp();
             return;
         }
-
-        if (!WalletUtils.isValidAddress(address)) {
-            throw new ConsoleMessageException(address + " is invalid address.");
-        }
-
-        ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.listManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printJson(
+                ObjectMapperFactory.getObjectMapper()
+                        .writeValueAsString(contractLifeCycleService.listManager(address)));
         System.out.println();
-    }
-
-    private void checkVersionForCRUD() throws ConsoleMessageException {
-        String version = PrecompiledCommon.BCOS_VERSION;
-        if (version == null
-                || PrecompiledCommon.BCOS_RC1.equals(version)
-                || PrecompiledCommon.BCOS_RC2.equals(version)) {
-            throw new ConsoleMessageException(
-                    "The version 2.0.0-rc3 or above of FISCO-BCOS can support the command.");
-        }
-    }
-
-    private void checkVersionForContractStatusService() throws ConsoleMessageException {
-
-        String version = PrecompiledCommon.BCOS_VERSION;
-
-        if (Objects.isNull(version)) {
-            throw new ConsoleMessageException("The version of the node is unknown");
-        }
-
-        try {
-            final EnumNodeVersion.Version classVersion = EnumNodeVersion.getClassVersion(version);
-
-            if (!((classVersion.getMajor() == 2) && classVersion.getMinor() >= 3)) {
-                throw new ConsoleMessageException(
-                        "The fisco-bcos node version below 2.3.0 not support the command.");
-            }
-
-        } catch (ChannelPrococolExceiption channelPrococolExceiption) {
-            logger.debug(" exception: {} ", channelPrococolExceiption.getMessage());
-            throw new ConsoleMessageException(" The fisco-bcos node version is unknown.");
-        }
     }
 
     @Override
     public void createTable(String sql) throws Exception {
-        checkVersionForCRUD();
         Table table = new Table();
         try {
             CRUDParseUtils.parseCreateTable(sql, table);
@@ -461,17 +361,16 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
-            CRUDParseUtils.checkTableParams(table);
-            CRUDService CRUDService = new CRUDService(web3j, credentials);
-            int result = CRUDService.createTable(table);
-            if (result == 0) {
+            RetCode result =
+                    tableCRUDService.createTable(
+                            table.getTableName(), table.getKey(), table.getValueFields());
+            // parse the result
+            if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
-            } else if (result == Common.TableExist) {
-                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.TableExist));
-            } else if (result == Common.PermissionCode) {
-                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
-                System.out.println("Create '" + table.getTableName() + "' failed.");
+                System.out.println("Create '" + table.getTableName() + "' failed: ");
+                System.out.println(" ret message: " + result.getMessage());
+                System.out.println(" ret code: " + result.getCode());
             }
             System.out.println();
         } catch (Exception e) {
@@ -481,10 +380,8 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void insert(String sql) throws Exception {
-        checkVersionForCRUD();
-        CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
-        Entry entry = table.getEntry();
+        Entry entry = new Entry(null);
         boolean useValues = false;
         try {
             useValues = CRUDParseUtils.parseInsert(sql, table, entry);
@@ -500,72 +397,23 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
-            String tableName = table.getTableName();
-            Table descTable = CRUDService.desc(tableName);
-            String keyName = descTable.getKey();
-            String fields = keyName + "," + descTable.getValueFields();
-            List<String> fieldsList = Arrays.asList(fields.split(","));
-            Set<String> entryFields = entry.getFields().keySet();
-            // insert into t_test values (fruit, 1, apple)
-            if (useValues) {
-                if (entry.getFields().size() != fieldsList.size()) {
-                    throw new ConsoleMessageException("Column count doesn't match value count.");
-                } else {
-                    Entry entryValue = table.getEntry();
-                    for (int i = 0; i < entry.getFields().size(); i++) {
-                        for (String entryField : entryFields) {
-                            if ((i + "").equals(entryField)) {
-                                entryValue.put(fieldsList.get(i), entry.get(i + ""));
-                                if (keyName.equals(fieldsList.get(i))) {
-                                    table.setKey(entry.get(i + ""));
-                                }
-                            }
-                        }
-                    }
-                    entry = entryValue;
-                }
+            List<Map<String, String>> descTable = tableCRUDService.desc(table.getTableName());
+            String keyName = descTable.get(0).get("key");
+            String keyValue = entry.getFieldNameToValue().get(keyName);
+            if (keyValue == null) {
+                throw new ConsoleMessageException("Please insert the key field '" + keyName + "'.");
             }
-            // insert into t_test (name, item_id, item_name) values (fruit, 1, apple)
-            else {
-                for (String entryField : entryFields) {
-                    if (!fieldsList.contains(entryField)) {
-                        throw new ConsoleMessageException(
-                                "Unknown field '" + entryField + "' in field list.");
-                    }
-                }
+            table.setKey(keyValue);
+            RetCode insertResult =
+                    tableCRUDService.insert(table.getTableName(), table.getKey(), entry, null);
 
-                if (fieldsList.size() != entryFields.size()) {
-                    List<String> listString = new ArrayList<String>(fieldsList);
-                    for (String entryItem : entryFields) {
-                        listString.remove(entryItem);
-                    }
-                    StringBuilder strBuilder = new StringBuilder("Please provide field '");
-                    for (int i = 0; i < listString.size(); i++) {
-                        if (i == listString.size() - 1) {
-                            strBuilder.append(listString.get(i)).append("' ");
-                        } else {
-                            strBuilder.append(listString.get(i)).append("', '");
-                        }
-                    }
-                    strBuilder.append("in field list.");
-                    throw new ConsoleMessageException(strBuilder.toString());
-                }
-
-                String keyValue = entry.get(keyName);
-                if (keyValue == null) {
-                    throw new ConsoleMessageException(
-                            "Please insert the key field '" + keyName + "'.");
-                }
-                table.setKey(keyValue);
-            }
-            CRUDParseUtils.checkUserTableParam(entry, descTable);
-            int insertResult = CRUDService.insert(table, entry);
-            if (insertResult == 0 || insertResult == 1) {
+            if (insertResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
+                    || insertResult.getCode() == 1) {
                 System.out.println("Insert OK, " + insertResult + " row affected.");
-            } else if (insertResult == Common.PermissionCode) {
-                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
-                System.out.println("Insert failed.");
+                System.out.println("Insert failed");
+                System.out.println("Ret message:" + insertResult.getMessage());
+                System.out.println("Ret code: " + insertResult.getCode());
             }
             System.out.println();
         } catch (Exception e) {
@@ -575,11 +423,9 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void update(String sql) throws Exception {
-        checkVersionForCRUD();
-        CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
-        Entry entry = table.getEntry();
-        Condition condition = table.getCondition();
+        Entry entry = new Entry(null);
+        Condition condition = new Condition();
         try {
             CRUDParseUtils.parseUpdate(sql, table, entry, condition);
         } catch (ConsoleMessageException e) {
@@ -595,35 +441,18 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             String tableName = table.getTableName();
-            Table descTable = CRUDService.desc(tableName);
-            String keyName = descTable.getKey();
-            if (entry.getFields().containsKey(keyName)) {
-                throw new ConsoleMessageException(
-                        "Please don't set the key field '" + keyName + "'.");
-            }
-            table.setKey(descTable.getKey());
+            List<Map<String, String>> descTable = tableCRUDService.desc(tableName);
+            String keyName = descTable.get(0).get("key_field");
+            table.setKey(keyName);
             handleKey(table, condition);
-            String fields = descTable.getKey() + "," + descTable.getValueFields();
-            List<String> fieldsList = Arrays.asList(fields.split(","));
-            Set<String> entryFields = entry.getFields().keySet();
-            Set<String> conditonFields = condition.getConditions().keySet();
-            Set<String> allFields = new HashSet<>();
-            allFields.addAll(entryFields);
-            allFields.addAll(conditonFields);
-            for (String entryField : allFields) {
-                if (!fieldsList.contains(entryField)) {
-                    throw new ConsoleMessageException(
-                            "Unknown field '" + entryField + "' in field list.");
-                }
-            }
-            CRUDParseUtils.checkUserTableParam(entry, descTable);
-            int updateResult = CRUDService.update(table, entry, condition);
-            if (updateResult == 0 || updateResult == 1) {
+            RetCode updateResult =
+                    tableCRUDService.update(table.getTableName(), table.getKey(), entry, condition);
+            if (updateResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
+                    || updateResult.getCode() == 1) {
                 System.out.println("Update OK, " + updateResult + " row affected.");
-            } else if (updateResult == Common.PermissionCode) {
-                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
-                System.out.println("Update OK, " + updateResult + " rows affected.");
+                System.out.println("Result of update " + tableName + " :");
+                ConsoleUtils.printRetCode(updateResult);
             }
             System.out.println();
         } catch (Exception e) {
@@ -633,10 +462,8 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void remove(String sql) throws Exception {
-        checkVersionForCRUD();
-        CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
-        Condition condition = table.getCondition();
+        Condition condition = new Condition();
         try {
             CRUDParseUtils.parseRemove(sql, table, condition);
         } catch (ConsoleMessageException e) {
@@ -651,16 +478,17 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
-            Table descTable = CRUDService.desc(table.getTableName());
-            table.setKey(descTable.getKey());
+            List<Map<String, String>> descTable = tableCRUDService.desc(table.getTableName());
+            table.setKey(descTable.get(0).get("key_field"));
             handleKey(table, condition);
-            int removeResult = CRUDService.remove(table, condition);
-            if (removeResult == 0 || removeResult == 1) {
+            RetCode removeResult =
+                    tableCRUDService.remove(table.getTableName(), table.getKey(), condition);
+            if (removeResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
+                    || removeResult.getCode() == 1) {
                 System.out.println("Remove OK, " + removeResult + " row affected.");
-            } else if (removeResult == Common.PermissionCode) {
-                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             } else {
-                System.out.println("Remove OK, " + removeResult + " rows affected.");
+                System.out.println("Result of remove " + table.getTableName() + " :");
+                ConsoleUtils.printRetCode(removeResult);
             }
             System.out.println();
         } catch (Exception e) {
@@ -670,9 +498,8 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void select(String sql) throws Exception {
-        checkVersionForCRUD();
         Table table = new Table();
-        Condition condition = table.getCondition();
+        Condition condition = new Condition();
         List<String> selectColumns = new ArrayList<>();
         try {
             CRUDParseUtils.parseSelect(sql, table, condition, selectColumns);
@@ -687,20 +514,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println();
             return;
         }
-        CRUDService CRUDService = new CRUDService(web3j, credentials);
         try {
-            Table descTable = CRUDService.desc(table.getTableName());
-            table.setKey(descTable.getKey());
+            List<Map<String, String>> descTable = tableCRUDService.desc(table.getTableName());
+            table.setKey(descTable.get(0).get("key_field"));
             handleKey(table, condition);
-            String fields = descTable.getKey() + "," + descTable.getValueFields();
-            List<String> fieldsList = Arrays.asList(fields.split(","));
-            for (String column : selectColumns) {
-                if (!fieldsList.contains(column) && !"*".equals(column)) {
-                    throw new ConsoleMessageException(
-                            "Unknown field '" + column + "' in field list.");
-                }
-            }
-            List<Map<String, String>> result = CRUDService.select(table, condition);
+            List<Map<String, String>> result =
+                    tableCRUDService.select(table.getTableName(), table.getKey(), condition);
             int rows = 0;
             if (result.size() == 0) {
                 System.out.println("Empty set.");
@@ -710,13 +529,13 @@ public class PrecompiledImpl implements PrecompiledFace {
             result = filterSystemColum(result);
             if ("*".equals(selectColumns.get(0))) {
                 selectColumns.clear();
-                selectColumns.add(descTable.getKey());
-                String[] valueArr = descTable.getValueFields().split(",");
+                selectColumns.add(table.getKey());
+                String[] valueArr = descTable.get(0).get("value_field").split(",");
                 selectColumns.addAll(Arrays.asList(valueArr));
-                result = getSeletedColumn(selectColumns, result);
+                result = getSelectedColumn(selectColumns, result);
                 rows = result.size();
             } else {
-                List<Map<String, String>> selectedResult = getSeletedColumn(selectColumns, result);
+                List<Map<String, String>> selectedResult = getSelectedColumn(selectColumns, result);
                 rows = selectedResult.size();
             }
             if (rows == 1) {
@@ -730,7 +549,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         System.out.println();
     }
 
-    private List<Map<String, String>> getSeletedColumn(
+    private List<Map<String, String>> getSelectedColumn(
             List<String> selectColumns, List<Map<String, String>> result) {
         List<Map<String, String>> selectedResult = new ArrayList<>(result.size());
         Map<String, String> selectedRecords;
@@ -772,16 +591,16 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         String keyName = table.getKey();
         String keyValue = "";
-        Map<EnumOP, String> keyMap = condition.getConditions().get(keyName);
+        Map<ConditionOperator, String> keyMap = condition.getConditions().get(keyName);
         if (keyMap == null) {
             throw new ConsoleMessageException(
                     "Please provide a equal condition for the key field '"
                             + keyName
                             + "' in where clause.");
         } else {
-            Set<EnumOP> keySet = keyMap.keySet();
-            for (EnumOP enumOP : keySet) {
-                if (enumOP != EnumOP.eq) {
+            Set<ConditionOperator> keySet = keyMap.keySet();
+            for (ConditionOperator enumOP : keySet) {
+                if (enumOP != ConditionOperator.eq) {
                     throw new ConsoleMessageException(
                             "Please provide a equal condition for the key field '"
                                     + keyName
