@@ -3,36 +3,29 @@ package console.precompiled.permission;
 import console.common.Address;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
-import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
 import java.math.BigInteger;
 import java.security.InvalidParameterException;
 import java.util.List;
-import org.fisco.bcos.channel.protocol.ChannelPrococolExceiption;
-import org.fisco.bcos.fisco.EnumNodeVersion;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
-import org.fisco.bcos.web3j.precompile.permission.ChainGovernanceService;
-import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
-import org.fisco.bcos.web3j.precompile.permission.PermissionService;
-import org.fisco.bcos.web3j.protocol.Web3j;
-import org.fisco.bcos.web3j.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.contract.exceptions.ContractException;
+import org.fisco.bcos.sdk.contract.precompiled.permission.ChainGovernanceService;
+import org.fisco.bcos.sdk.contract.precompiled.permission.PermissionInfo;
+import org.fisco.bcos.sdk.contract.precompiled.permission.PermissionService;
 
 public class PermissionImpl implements PermissionFace {
 
-    private Web3j web3j;
-    private Credentials credentials;
+    private Client client;
+    private PermissionService permissionService;
+    private ChainGovernanceService chainGovernanceService;
 
-    @Override
-    public void setWeb3j(Web3j web3j) {
-        this.web3j = web3j;
-    }
-
-    @Override
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public PermissionImpl(Client client) {
+        this.client = client;
+        this.permissionService = new PermissionService(client, client.getCryptoInterface());
+        this.chainGovernanceService =
+                new ChainGovernanceService(client, client.getCryptoInterface());
     }
 
     @Override
@@ -60,10 +53,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result = null;
-        result = permission.grantUserTableManager(tableName, address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.grantPermission(tableName, address));
         System.out.println();
     }
 
@@ -92,10 +82,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result = null;
-        result = permission.revokeUserTableManager(tableName, address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.revokePermission(tableName, address));
         System.out.println();
     }
 
@@ -114,8 +101,8 @@ public class PermissionImpl implements PermissionFace {
             HelpInfo.listUserTableManagerHelp();
             return;
         }
-        PermissionService permissionTableService = new PermissionService(web3j, credentials);
-        List<PermissionInfo> permissions = permissionTableService.listUserTableManager(tableName);
+        List<PermissionInfo> permissions =
+                this.permissionService.queryPermissionByTableName(tableName);
         printPermissionInfo(permissions);
     }
 
@@ -139,10 +126,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.grantDeployAndCreateManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.grantDeployAndCreateManager(address));
         System.out.println();
     }
 
@@ -166,10 +150,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.revokeDeployAndCreateManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.revokeDeployAndCreateManager(address));
         System.out.println();
     }
 
@@ -178,8 +159,7 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listDeployAndCreateManager")) {
             return;
         }
-        PermissionService permissionTableService = new PermissionService(web3j, credentials);
-        List<PermissionInfo> permissions = permissionTableService.listDeployAndCreateManager();
+        List<PermissionInfo> permissions = this.permissionService.listDeployAndCreateManager();
         printPermissionInfo(permissions);
     }
 
@@ -203,10 +183,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.grantNodeManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.grantNodeManager(address));
         System.out.println();
     }
 
@@ -230,10 +207,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.revokeNodeManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.revokeNodeManager(address));
         System.out.println();
     }
 
@@ -242,8 +216,7 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listNodeManager")) {
             return;
         }
-        PermissionService permissionTableService = new PermissionService(web3j, credentials);
-        List<PermissionInfo> permissions = permissionTableService.listNodeManager();
+        List<PermissionInfo> permissions = this.permissionService.listNodeManager();
         printPermissionInfo(permissions);
     }
 
@@ -267,10 +240,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.grantCNSManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.grantCNSManager(address));
         System.out.println();
     }
 
@@ -293,11 +263,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.revokeCNSManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(
+                this.permissionService.revokeCNSManager(convertAddr.getAddress()));
         System.out.println();
     }
 
@@ -306,8 +273,7 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listCNSManager")) {
             return;
         }
-        PermissionService permissionTableService = new PermissionService(web3j, credentials);
-        List<PermissionInfo> permissions = permissionTableService.listCNSManager();
+        List<PermissionInfo> permissions = this.permissionService.listCNSManager();
         printPermissionInfo(permissions);
     }
 
@@ -330,11 +296,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.grantSysConfigManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(
+                this.permissionService.grantSysConfigManager(convertAddr.getAddress()));
         System.out.println();
     }
 
@@ -357,11 +320,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        address = convertAddr.getAddress();
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result;
-        result = permission.revokeSysConfigManager(address);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(
+                this.permissionService.revokeSysConfigManager(convertAddr.getAddress()));
         System.out.println();
     }
 
@@ -370,29 +330,12 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listSysConfigManager")) {
             return;
         }
-        PermissionService permissionTableService = new PermissionService(web3j, credentials);
-        List<PermissionInfo> permissions = permissionTableService.listSysConfigManager();
+        List<PermissionInfo> permissions = this.permissionService.listSysConfigManager();
         printPermissionInfo(permissions);
-    }
-
-    private void checkVersionForGrantWrite() throws ConsoleMessageException {
-        String version = PrecompiledCommon.BCOS_VERSION;
-        try {
-            final EnumNodeVersion.Version classVersion = EnumNodeVersion.getClassVersion(version);
-
-            if (!((classVersion.getMajor() == 2) && classVersion.getMinor() >= 3)) {
-                throw new ConsoleMessageException(
-                        "The fisco-bcos node version below 2.3.0 not support the command.");
-            }
-
-        } catch (ChannelPrococolExceiption channelPrococolExceiption) {
-            throw new ConsoleMessageException(" The fisco-bcos node version is unknown.");
-        }
     }
 
     @Override
     public void listContractWritePermission(String[] params) throws Exception {
-        checkVersionForGrantWrite();
 
         if (params.length < 2) {
             HelpInfo.promptHelp("listContractWritePermission");
@@ -414,15 +357,12 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-
-        PermissionService permissionTableService = new PermissionService(web3j, credentials);
-        List<PermissionInfo> permissions = permissionTableService.queryPermission(address);
+        List<PermissionInfo> permissions = this.permissionService.queryPermission(address);
         printPermissionInfo(permissions);
     }
 
     @Override
     public void grantContractWritePermission(String[] params) throws Exception {
-        checkVersionForGrantWrite();
 
         if ((params.length > 1) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
             HelpInfo.grantContractWritePermissionHelp();
@@ -451,17 +391,12 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         userAddress = convertUserAddr.getAddress();
-
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result = permission.grantWrite(contractAddress, userAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.grantWrite(contractAddress, userAddress));
         System.out.println();
     }
 
     @Override
     public void revokeContractWritePermission(String[] params) throws Exception {
-        checkVersionForGrantWrite();
-
         if ((params.length > 1) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
             HelpInfo.revokeContractWritePermissionHelp();
             return;
@@ -489,10 +424,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         userAddress = convertUserAddr.getAddress();
-
-        PermissionService permission = new PermissionService(web3j, credentials);
-        String result = permission.revokeWrite(contractAddress, userAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(this.permissionService.revokeWrite(contractAddress, userAddress));
         System.out.println();
     }
 
@@ -518,11 +450,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.grantCommitteeMember(accountAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(chainGovernanceService.grantCommitteeMember(accountAddress));
         System.out.println();
     }
 
@@ -547,11 +475,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.revokeCommitteeMember(accountAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(
+                this.chainGovernanceService.revokeCommitteeMember(accountAddress));
         System.out.println();
     }
 
@@ -560,10 +485,7 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listCommitteeMembers")) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        List<PermissionInfo> permissionInfos = chainGovernanceService.listCommitteeMembers();
+        List<PermissionInfo> permissionInfos = this.chainGovernanceService.listCommitteeMembers();
         printPermissionInfo(permissionInfos);
     }
 
@@ -588,17 +510,12 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        Tuple2<Boolean, BigInteger> weight =
-                chainGovernanceService.queryCommitteeMemberWeight(accountAddress);
-        if (weight.getValue1()) {
-            System.out.println("Account: " + accountAddress + " Weight: " + weight.getValue2());
-            System.out.println();
-        } else {
-            System.out.println(PrecompiledCommon.transferToJson(weight.getValue2().intValue()));
-            System.out.println();
+        try {
+            BigInteger weight =
+                    this.chainGovernanceService.queryCommitteeMemberWeight(accountAddress);
+            System.out.println("Account: " + accountAddress + " Weight: " + weight);
+        } catch (ContractException e) {
+            System.out.println("queryCommitteeMemberWeight failed: " + e.getMessage());
         }
     }
 
@@ -638,11 +555,9 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.updateCommitteeMemberWeight(accountAddress, weight);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(
+                this.chainGovernanceService.updateCommitteeMemberWeight(
+                        accountAddress, BigInteger.valueOf(weight)));
         System.out.println();
     }
 
@@ -676,11 +591,8 @@ public class PermissionImpl implements PermissionFace {
             System.out.println();
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.updateThreshold(threshold);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(
+                this.chainGovernanceService.updateThreshold(BigInteger.valueOf(threshold)));
         System.out.println();
     }
 
@@ -690,9 +602,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
 
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        BigInteger threshold = chainGovernanceService.queryThreshold();
+        BigInteger threshold = this.chainGovernanceService.queryThreshold();
         System.out.println("Effective threshold : " + threshold + "%");
         System.out.println();
     }
@@ -718,11 +628,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.grantOperator(accountAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(chainGovernanceService.grantOperator(accountAddress));
         System.out.println();
     }
 
@@ -747,11 +653,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.revokeOperator(accountAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(chainGovernanceService.revokeOperator(accountAddress));
         System.out.println();
     }
 
@@ -760,9 +662,6 @@ public class PermissionImpl implements PermissionFace {
         if (HelpInfo.promptNoParams(params, "listOperators")) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
         List<PermissionInfo> permissionInfos = chainGovernanceService.listOperators();
         printPermissionInfo(permissionInfos);
     }
@@ -788,11 +687,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.freezeAccount(accountAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(chainGovernanceService.freezeAccount(accountAddress));
         System.out.println();
     }
 
@@ -817,11 +712,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.unfreezeAccount(accountAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(chainGovernanceService.unfreezeAccount(accountAddress));
         System.out.println();
     }
 
@@ -846,11 +737,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-
-        ChainGovernanceService chainGovernanceService =
-                new ChainGovernanceService(web3j, credentials);
-        String result = chainGovernanceService.getAccountStatus(accountAddress);
-        ConsoleUtils.printJson(result);
+        ConsoleUtils.printRetCode(chainGovernanceService.getAccountStatus(accountAddress));
         System.out.println();
     }
 
