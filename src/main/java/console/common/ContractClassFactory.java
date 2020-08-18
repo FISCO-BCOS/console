@@ -33,6 +33,7 @@ import org.fisco.bcos.web3j.protocol.core.methods.response.Log;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tuples.Tuple;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.fisco.bcos.web3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -468,10 +469,15 @@ public class ContractClassFactory {
                                     + Integer.MAX_VALUE
                                     + ") value in the console.");
                 }
+
             } else if (type[i] == byte[].class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    byte[] bytes = params[i].substring(1, params[i].length() - 1).getBytes();
-                    obj[i] = bytes;
+                    String bytesValue = params[i].substring(1, params[i].length() - 1);
+                    if (bytesValue.startsWith("0x")) {
+                        obj[i] = Numeric.hexStringToByteArray(bytesValue);
+                    } else {
+                        obj[i] = bytesValue.getBytes();
+                    }
                 } else {
                     System.out.println("Please provide double quote for byte String.");
                     System.out.println();
