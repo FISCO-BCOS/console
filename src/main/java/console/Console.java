@@ -1,19 +1,20 @@
 package console;
 
+import console.client.ConsoleClientFace;
 import console.common.ConsoleExceptionUtils;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
 import console.common.JlineUtils;
 import console.common.WelcomeInfo;
-import console.contract.ContractFace;
+import console.contract.ConsoleContractFace;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.permission.PermissionFace;
-import console.web3j.Web3jFace;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
-import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
-import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
+import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.utils.exceptions.MessageDecodingException;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
 import org.jline.reader.EndOfFileException;
@@ -23,14 +24,15 @@ import org.jline.reader.UserInterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ConsoleClient {
+public class Console {
 
-    private static final Logger logger = LoggerFactory.getLogger(ConsoleClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
-    private static Web3jFace web3jFace;
+    private static Client client;
     private static PrecompiledFace precompiledFace;
     private static PermissionFace permissionFace;
-    private static ContractFace contractFace;
+    private static ConsoleClientFace consoleClientFace;
+    private static ConsoleContractFace consoleContractFace;
 
     public static int INPUT_FLAG = 0;
 
@@ -43,10 +45,11 @@ public class ConsoleClient {
         try {
             consoleInitializer = new ConsoleInitializer();
             consoleInitializer.init(args);
-            web3jFace = consoleInitializer.getWeb3jFace();
+            client = consoleInitializer.getClient();
             precompiledFace = consoleInitializer.getPrecompiledFace();
             permissionFace = consoleInitializer.getPermissionFace();
-            contractFace = consoleInitializer.getContractFace();
+            consoleClientFace = consoleInitializer.getConsoleClientFace();
+            consoleContractFace = consoleInitializer.getConsoleContractFace();
             lineReader = JlineUtils.getLineReader();
             sc = new Scanner(System.in);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
@@ -94,7 +97,7 @@ public class ConsoleClient {
                         HelpInfo.promptHelp("q");
                         continue;
                     }
-                    consoleInitializer.close();
+                    consoleInitializer.stop();
                     break;
                 }
                 switch (params[0]) {
@@ -103,107 +106,109 @@ public class ConsoleClient {
                         WelcomeInfo.help(params);
                         break;
                     case "deploy":
-                        contractFace.deploy(params);
+                        consoleContractFace.deploy(params);
                         break;
                     case "getDeployLog":
-                        contractFace.getDeployLog(params);
+                        consoleContractFace.getDeployLog(params);
                         break;
                     case "call":
-                        contractFace.call(params);
+                        consoleContractFace.call(params);
                         break;
                     case "deployByCNS":
-                        contractFace.deployByCNS(params);
+                        consoleContractFace.deployByCNS(params);
                         break;
                     case "callByCNS":
-                        contractFace.callByCNS(params);
+                        consoleContractFace.callByCNS(params);
                         break;
-                    case "queryCNS":
-                        contractFace.queryCNS(params);
-                        break;
+                        /*
+                        case "queryCNS":
+                            consoleContractFace.queryCNS(params);
+                            break;*/
                     case "switch":
                     case "s":
                         consoleInitializer.switchGroupID(params);
                         break;
                     case "getBlockNumber":
-                        web3jFace.getBlockNumber(params);
+                        consoleClientFace.getBlockNumber(params);
                         break;
                     case "getPbftView":
-                        web3jFace.getPbftView(params);
+                        consoleClientFace.getPbftView(params);
                         break;
                     case "getSealerList":
-                        web3jFace.getSealerList(params);
+                        consoleClientFace.getSealerList(params);
                         break;
                     case "getObserverList":
-                        web3jFace.getObserverList(params);
+                        consoleClientFace.getObserverList(params);
                         break;
                     case "getConsensusStatus":
-                        web3jFace.getConsensusStatus(params);
+                        consoleClientFace.getConsensusStatus(params);
                         break;
                     case "getSyncStatus":
-                        web3jFace.getSyncStatus(params);
+                        consoleClientFace.getSyncStatus(params);
                         break;
                     case "getNodeVersion":
-                        web3jFace.getNodeVersion(params);
+                        consoleClientFace.getNodeVersion(params);
                         break;
                     case "getPeers":
-                        web3jFace.getPeers(params);
+                        consoleClientFace.getPeers(params);
                         break;
                     case "getNodeIDList":
-                        web3jFace.getNodeIDList(params);
+                        consoleClientFace.getNodeIDList(params);
                         break;
                     case "getGroupPeers":
-                        web3jFace.getGroupPeers(params);
+                        consoleClientFace.getGroupPeers(params);
                         break;
                     case "getGroupList":
-                        web3jFace.getGroupList(params);
+                        consoleClientFace.getGroupList(params);
                         break;
                     case "getBlockByHash":
-                        web3jFace.getBlockByHash(params);
+                        consoleClientFace.getBlockByHash(params);
                         break;
                     case "getBlockByNumber":
-                        web3jFace.getBlockByNumber(params);
+                        consoleClientFace.getBlockByNumber(params);
                         break;
                     case "getBlockHeaderByHash":
-                        web3jFace.getBlockHeaderByHash(params);
+                        consoleClientFace.getBlockHeaderByHash(params);
                         break;
                     case "getBlockHeaderByNumber":
-                        web3jFace.getBlockHeaderByNumber(params);
+                        consoleClientFace.getBlockHeaderByNumber(params);
                         break;
                     case "getBlockHashByNumber":
-                        web3jFace.getBlockHashByNumber(params);
+                        consoleClientFace.getBlockHashByNumber(params);
                         break;
                     case "getTransactionByHash":
-                        web3jFace.getTransactionByHash(params);
+                        consoleClientFace.getTransactionByHash(params);
                         break;
-                    case "getTransactionByBlockHashAndIndex":
-                        web3jFace.getTransactionByBlockHashAndIndex(params);
-                        break;
+                        /*
+                        case "getTransactionByBlockHashAndIndex":
+                            consoleClientFace.getTransactionByBlockHashAndIndex(params);
+                            break;*/
                     case "getTransactionByBlockNumberAndIndex":
-                        web3jFace.getTransactionByBlockNumberAndIndex(params);
+                        consoleClientFace.getTransactionByBlockNumberAndIndex(params);
                         break;
                     case "getTransactionReceipt":
-                        web3jFace.getTransactionReceipt(params);
+                        consoleClientFace.getTransactionReceipt(params);
                         break;
                     case "getTransactionByHashWithProof":
-                        web3jFace.getTransactionByHashWithProof(params);
+                        consoleClientFace.getTransactionByHashWithProof(params);
                         break;
                     case "getTransactionReceiptByHashWithProof":
-                        web3jFace.getTransactionReceiptByHashWithProof(params);
+                        consoleClientFace.getTransactionReceiptByHashWithProof(params);
                         break;
                     case "getPendingTransactions":
-                        web3jFace.getPendingTransactions(params);
+                        consoleClientFace.getPendingTransactions(params);
                         break;
                     case "getPendingTxSize":
-                        web3jFace.getPendingTxSize(params);
+                        consoleClientFace.getPendingTxSize(params);
                         break;
                     case "getCode":
-                        web3jFace.getCode(params);
+                        consoleClientFace.getCode(params);
                         break;
                     case "getTotalTransactionCount":
-                        web3jFace.getTotalTransactionCount(params);
+                        consoleClientFace.getTotalTransactionCount(params);
                         break;
                     case "getSystemConfigByKey":
-                        web3jFace.getSystemConfigByKey(params);
+                        consoleClientFace.getSystemConfigByKey(params);
                         break;
                     case "addSealer":
                         precompiledFace.addSealer(params);
@@ -354,9 +359,14 @@ public class ConsoleClient {
                                 "Undefined command: \"" + params[0] + "\". Try \"help\".\n");
                         break;
                 }
-            } catch (ResponseExcepiton e) {
+            } catch (ClientException e) {
                 ConsoleUtils.printJson(
-                        "{\"code\":" + e.getCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
+                        "{\"code\":"
+                                + e.getErrorCode()
+                                + ", \"msg\":"
+                                + "\""
+                                + e.getErrorMessage()
+                                + "\"}");
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
@@ -387,9 +397,9 @@ public class ConsoleClient {
                 System.out.println(targetException.getMessage());
                 System.out.println();
             } catch (UserInterruptException e) {
-                consoleInitializer.close();
+                consoleInitializer.stop();
             } catch (EndOfFileException e) {
-                consoleInitializer.close();
+                consoleInitializer.stop();
             } catch (RuntimeException e) {
                 if (e.getCause() instanceof MessageDecodingException) {
                     ConsoleExceptionUtils.pringMessageDecodeingException(
@@ -408,15 +418,15 @@ public class ConsoleClient {
         }
     }
 
-    public static void setWeb3jFace(Web3jFace web3jFace) {
-        ConsoleClient.web3jFace = web3jFace;
+    public static void setClient(Client client) {
+        Console.client = client;
     }
 
     public static void setPrecompiledFace(PrecompiledFace precompiledFace) {
-        ConsoleClient.precompiledFace = precompiledFace;
+        Console.precompiledFace = precompiledFace;
     }
 
-    public static void setContractFace(ContractFace contractFace) {
-        ConsoleClient.contractFace = contractFace;
+    public static void setConsoleContractFace(ConsoleContractFace consoleContractFace) {
+        Console.consoleContractFace = consoleContractFace;
     }
 }

@@ -1,6 +1,6 @@
 package console.common;
 
-import org.fisco.bcos.web3j.precompile.cns.CnsService;
+import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledConstant;
 
 public class HelpInfo {
 
@@ -425,7 +425,7 @@ public class HelpInfo {
         System.out.println("contractName -- The name of a contract.");
         System.out.println(
                 "contractVersion -- The version of a contract. The maximum length of the version hex string is "
-                        + CnsService.MAX_VERSION_LENGTH
+                        + PrecompiledConstant.CNS_MAX_VERSION_LENGTH
                         + ".");
         System.out.println();
     }
@@ -446,7 +446,7 @@ public class HelpInfo {
         System.out.println("contractName -- The name of a contract.");
         System.out.println(
                 "contractVersion -- (optional) The version of a contract. The maximum length of the version hex string is "
-                        + CnsService.MAX_VERSION_LENGTH
+                        + PrecompiledConstant.CNS_MAX_VERSION_LENGTH
                         + ".");
         System.out.println();
     }
