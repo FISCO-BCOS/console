@@ -385,7 +385,7 @@ public class Web3jImpl implements Web3jFace {
         }
         ConsoleUtils.printJson(transactionJson);
         if (params.length == 3) {
-            TxDecodeUtil.decdeInputForTransaction(params[2], transactionJson);
+            TxDecodeUtil.decodeInputForTransaction(params[2], transactionJson);
         }
         System.out.println();
     }
@@ -430,7 +430,7 @@ public class Web3jImpl implements Web3jFace {
                         .sendForReturnString();
         ConsoleUtils.printJson(transactionJson);
         if (params.length == 4) {
-            TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
+            TxDecodeUtil.decodeInputForTransaction(params[3], transactionJson);
         }
         System.out.println();
     }
@@ -489,7 +489,7 @@ public class Web3jImpl implements Web3jFace {
                         .sendForReturnString();
         ConsoleUtils.printJson(transactionJson);
         if (params.length == 4) {
-            TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
+            TxDecodeUtil.decodeInputForTransaction(params[3], transactionJson);
         }
         System.out.println();
     }

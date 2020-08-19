@@ -389,7 +389,7 @@ public class ConsoleClient {
                     System.out.println("The contract address is incorrect.");
                     System.out.println();
                 } else {
-                    ConsoleExceptionUtils.pringMessageDecodeingException(e);
+                    ConsoleExceptionUtils.printMessageDecodingException(e);
                 }
             } catch (IOException e) {
                 if (e.getMessage().startsWith("activeConnections")) {
@@ -414,7 +414,7 @@ public class ConsoleClient {
                 consoleInitializer.close();
             } catch (RuntimeException e) {
                 if (e.getCause() instanceof MessageDecodingException) {
-                    ConsoleExceptionUtils.pringMessageDecodeingException(
+                    ConsoleExceptionUtils.printMessageDecodingException(
                             new MessageDecodingException(e.getMessage()));
                 } else {
                     System.out.println(e.getMessage());

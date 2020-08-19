@@ -185,7 +185,7 @@ public class ConsoleUtils {
     public static void Usage() {
         System.out.println(" Usage:");
         System.out.println(
-                " \t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils [packageName] [solidityFilePath or solidityDirPath] [JavaCodeDir].");
+                " \t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils [packageName] [solidityFilePath or solidityDirPath] [JavaCodeDirPath].");
         System.out.println(" \t Example: ");
         System.out.println(
                 " \t\t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils org.fisco.hello");

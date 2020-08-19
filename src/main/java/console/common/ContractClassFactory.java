@@ -1,23 +1,6 @@
 package console.common;
 
 import console.exception.ConsoleMessageException;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
 import org.apache.commons.collections4.map.HashedMap;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.datatypes.Bytes;
@@ -34,6 +17,24 @@ import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class ContractClassFactory {
 
@@ -59,20 +60,24 @@ public class ContractClassFactory {
         return classLoader;
     }
 
-    public static Class<?> compileContract(String name) throws Exception {
+    public static Class<?> compileContract(File solFile) throws Exception {
+
+        String name = solFile.getName().split("\\.")[0];
         try {
-            name = removeSolPostfix(name);
-            dynamicCompileSolFilesToJava(name);
+            // compile solidity and generate java contract code first
+            ConsoleUtils.compileSolToJava(JAVA_PATH, PACKAGE_NAME, solFile, ABI_PATH, BIN_PATH);
         } catch (Exception e) {
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             throw new Exception(e.getMessage());
         }
+
         try {
             dynamicCompileJavaToClass(name);
         } catch (Exception e1) {
             logger.error(" name: {}, error: {}", name, e1);
             throw new Exception("Compile " + name + ".java failed.");
         }
+
         String contractName = PACKAGE_NAME + "." + name;
         try {
             return getContractClass(contractName);
@@ -82,65 +87,36 @@ public class ContractClassFactory {
         }
     }
 
-    public static String removeSolPostfix(String name) {
-        String tempName = "";
-        if (name.endsWith(SOL_POSTFIX)) {
-            tempName = name.substring(0, name.length() - SOL_POSTFIX.length());
-        } else {
-            tempName = name;
-        }
-        return tempName;
-    }
-
     // dynamic compile target java code
     public static void dynamicCompileJavaToClass(String name) throws Exception {
+
+        File distDir = new File(TAR_GET_CLASSPATH);
+        if (!distDir.exists()) {
+            distDir.mkdirs();
+        }
 
         File sourceDir = new File(JAVA_PATH + "temp/");
         if (!sourceDir.exists()) {
             sourceDir.mkdirs();
         }
 
-        File distDir = new File(TAR_GET_CLASSPATH);
-        if (!distDir.exists()) {
-            distDir.mkdirs();
+        File javaFile = new File(sourceDir, name + ".java");
+        if (!javaFile.exists()) {
+            throw new Exception(name + ".java not exist, maybe generate contract code failed.");
         }
-        File[] javaFiles = sourceDir.listFiles();
-        for (File javaFile : javaFiles) {
-            if (!javaFile.getName().equals(name + ".java")) {
-                continue;
-            }
-            JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-            int compileResult =
-                    javac.run(
-                            null,
-                            null,
-                            null,
-                            "-d",
-                            distDir.getAbsolutePath(),
-                            javaFile.getAbsolutePath());
-            if (compileResult != 0) {
-                System.err.println("compile failed!!");
-                System.out.println();
-                throw new Exception("compile failed, solidity file: " + name);
-            }
-        }
-    }
 
-    public static void dynamicCompileSolFilesToJava(String name) throws IOException {
-        if (!name.endsWith(SOL_POSTFIX)) {
-            name = name + SOL_POSTFIX;
+        JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+        int compileResult =
+                javac.run(
+                        null,
+                        null,
+                        null,
+                        "-d",
+                        distDir.getAbsolutePath(),
+                        javaFile.getAbsolutePath());
+        if (compileResult != 0) {
+            throw new Exception("compile failed, contract: " + name);
         }
-        File solFileList = new File(PathUtils.SOL_DIRECTORY);
-        if (!solFileList.exists()) {
-            solFileList.mkdirs();
-        }
-        File solFile = new File(PathUtils.SOL_DIRECTORY + "/" + name);
-        if (!solFile.exists()) {
-            throw new IOException(
-                    "There is no " + name + " in the directory of " + PathUtils.SOL_DIRECTORY);
-        }
-        String javaDir = new File(JAVA_PATH).getAbsolutePath();
-        ConsoleUtils.compileSolToJava(javaDir, PACKAGE_NAME, solFile, ABI_PATH, BIN_PATH);
     }
 
     public static Class<?> getContractClass(String contractName) throws ClassNotFoundException {
