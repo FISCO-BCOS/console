@@ -200,11 +200,10 @@ public class HelpInfo {
 
     public static void listAbiHelp() {
         System.out.println("List functions and events info of the contract.");
-        System.out.println("Usage: listAbi [contractFileName/contractFilePath] [contractName]");
+        System.out.println("Usage: listAbi [contractFile] [contractName]");
+        System.out.println("contractFile -- the contract file name or contract file path");
         System.out.println(
-                "contractFileName/contractFilePath -- the contract file name or contract file path");
-        System.out.println(
-                "contractName -- the contract name, not required, default the same with the contract file name");
+                "contractName -- the contract name, not required, default the same with the contract file");
         System.out.println();
     }
 

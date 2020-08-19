@@ -1,7 +1,5 @@
 package console.contract;
 
-import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
-
 import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
@@ -16,21 +14,6 @@ import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
@@ -56,6 +39,24 @@ import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 
 public class ContractImpl implements ContractFace {
 
@@ -338,15 +339,17 @@ public class ContractImpl implements ContractFace {
                 contractABIDefinition.getMethodIDToFunctions();
 
         if (!methodIDToFunctions.isEmpty()) {
-            System.out.println("\t Method list: ");
-
+            System.out.println(" \tMethod list: ");
+            System.out.println(
+                    " \t -------------------------------------------------------------- ");
+            System.out.printf(" \t%-5s \t%-5s \t%-10s \t%-10s\n", "name", "constant", "methodId", "signature");
             for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
                 System.out.printf(
-                        " \t\t name: %-5s \t signature: %-10s \t methodId: %-10s \t constant: %-3b\n",
+                        "  \t%-5s| \t%-5b| \t%-10s| \t%-10s\n",
                         entry.getValue().getName(),
-                        entry.getValue().getMethodSignatureAsString(),
+                        entry.getValue().isConstant(),
                         entry.getValue().getMethodId(),
-                        entry.getValue().isConstant());
+                        entry.getValue().getMethodSignatureAsString());
             }
         } else {
             System.out.println(contractName + " contains no method.");
@@ -354,16 +357,20 @@ public class ContractImpl implements ContractFace {
 
         Map<String, List<ABIDefinition>> events = contractABIDefinition.getEvents();
         if (!events.isEmpty()) {
-            System.out.println("\t Event list: ");
-
+            System.out.println();
+            System.out.println(" \tEvent list: ");
+            System.out.println(
+                    " \t -------------------------------------------------------------- ");
+            System.out.printf(
+                    "\t  %-10s   %-66s   %-10s\n", "name", "topic", "signature");
             for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
 
                 System.out.printf(
-                        " \t\t name: %-5s \t signature: %-10s \t topic: %-10s \n",
+                        "\t %-10s|   %66s|   %-10s\n",
                         entry.getValue().getName(),
-                        entry.getValue().getMethodSignatureAsString(),
                         EventEncoder.buildEventSignature(
-                                entry.getValue().getMethodSignatureAsString()));
+                                entry.getValue().getMethodSignatureAsString()),
+                        entry.getValue().getMethodSignatureAsString());
             }
         }
     }
