@@ -25,10 +25,13 @@ function LOG_INFO()
 
 function Usage() {
     LOG_INFO "# Compile Solidity Tool"
-    LOG_INFO "./sol2java.sh [packageName] [solidityFilePath or solidityDirPath] [javaCodeOutputDir]"
-    LOG_INFO " \t packageName: \n\t\t the package name of the generated Java file"
-    LOG_INFO " \t solidityFilePath or solidityDirPath: \n\t\t the solidity file path or the directory where solidity file is located"
-    LOG_INFO " \t javaCodeOutputDir: \n\t\t the directory where the generated Java files are located, default: contracts/java/"
+    LOG_INFO "./sol2java.sh [packageName] [solidityFileOrDir] [javaCodeOutputDir]"
+    LOG_INFO " \t packageName:"
+    LOG_INFO " \t\t the package name of the generated Java class file"
+    LOG_INFO " \t solidityFileOrDir:"
+    LOG_INFO " \t\t the solidity file path or the directory where solidity files is located, default: contracts/solidity"
+    LOG_INFO " \t javaCodeOutputDir:"
+    LOG_INFO " \t\t the directory where the generated Java files are located, default: contracts/sdk/java"
 }
 
 function check_java(){
@@ -54,7 +57,7 @@ function check_java(){
        exit 1
    fi
 }
-if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
+if [ $# == 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
     Usage
     exit 0
 else
