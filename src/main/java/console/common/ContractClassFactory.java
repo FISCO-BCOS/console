@@ -2,7 +2,6 @@ package console.common;
 
 import console.exception.ConsoleMessageException;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -17,7 +16,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import org.apache.commons.collections4.map.HashedMap;
@@ -77,7 +75,7 @@ public class ContractClassFactory {
         }
         String contractName = PACKAGE_NAME + "." + name;
         try {
-            return getContractClass2(contractName);
+            return getContractClass(contractName);
         } catch (Exception e) {
             throw new Exception(
                     "There is no " + name + ".class" + " in the directory of java/classes/temp");
@@ -145,53 +143,7 @@ public class ContractClassFactory {
         ConsoleUtils.compileSolToJava(javaDir, PACKAGE_NAME, solFile, ABI_PATH, BIN_PATH);
     }
 
-    public static Class<?> getContractClass(String contractName)
-            throws ClassNotFoundException, MalformedURLException {
-
-        File clazzPath = new File(TAR_GET_CLASSPATH);
-
-        if (clazzPath.exists() && clazzPath.isDirectory()) {
-
-            int clazzPathLen = clazzPath.getAbsolutePath().length() + 1;
-
-            Stack<File> stack = new Stack<>();
-            stack.push(clazzPath);
-
-            while (!stack.isEmpty()) {
-                File path = stack.pop();
-                File[] classFiles =
-                        path.listFiles(
-                                new FileFilter() {
-                                    public boolean accept(File pathname) {
-                                        return pathname.isDirectory()
-                                                || pathname.getName().endsWith(".class");
-                                    }
-                                });
-                for (File subFile : classFiles) {
-                    if (subFile.isDirectory()) {
-                        stack.push(subFile);
-                    } else {
-                        String className = subFile.getAbsolutePath();
-                        if (className.contains("$")) {
-                            continue;
-                        }
-
-                        className = className.substring(clazzPathLen, className.length() - 6);
-                        className = className.replace(File.separatorChar, '.');
-
-                        if (contractName.equals(className)) {
-                            URLClassLoader classLoader = initClassLoad();
-                            return Class.forName(className, true, classLoader);
-                        }
-                    }
-                }
-            }
-        }
-
-        return Class.forName(contractName);
-    }
-
-    public static Class<?> getContractClass2(String contractName) throws ClassNotFoundException {
+    public static Class<?> getContractClass(String contractName) throws ClassNotFoundException {
         ContractClassLoader contractClassLoader = new ContractClassLoader(TAR_GET_CLASSPATH);
         return contractClassLoader.loadClass(contractName);
     }
@@ -494,7 +446,6 @@ public class ContractClassFactory {
                             for (int j = 0; j < ilist.length; j++) {
                                 paramsList.add(ilist[j].substring(1, ilist[j].length() - 1));
                             }
-
                         } else if (generics[i].contains("BigInteger")) {
                             paramsList = new ArrayList<BigInteger>();
                             for (int j = 0; j < ilist.length; j++) {
@@ -509,6 +460,11 @@ public class ContractClassFactory {
                                             ilist[j].substring(1, ilist[j].length() - 1).getBytes();
                                     paramsList.add(bytes);
                                 }
+                            }
+                        } else if (generics[i].contains("Boolean")) {
+                            paramsList = new ArrayList<Boolean>();
+                            for (int j = 0; j < ilist.length; j++) {
+                                paramsList.add(Boolean.parseBoolean(ilist[j]));
                             }
                         }
                         obj[i] = paramsList;
