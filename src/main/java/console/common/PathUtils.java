@@ -12,7 +12,7 @@ public class PathUtils {
     public static final String SOL_POSTFIX = ".sol";
 
     /**
-     * Remove the suffix of the name
+     * Remove the postfix of the name
      *
      * @param name
      * @param postfix
@@ -27,12 +27,33 @@ public class PathUtils {
     }
 
     /**
-     * @param filePathOrName
+     * Remove the .sol postfix of the name
+     *
+     * @param name
      * @return
      */
-    public static File getSolFile(String filePathOrName) throws ConsoleMessageException {
+    public static String removeSolPostfix(String name) {
+        return removePostfix(name, SOL_POSTFIX);
+    }
 
-        String filePath = filePathOrName;
+    /**
+     * Add the .sol postfix to the name
+     *
+     * @param name
+     * @return
+     */
+    public static String addSolPostfix(String name) {
+        name = removePostfix(name, SOL_POSTFIX);
+        return name + SOL_POSTFIX;
+    }
+
+    /**
+     * @param solFileNameOrPath
+     * @return
+     */
+    public static File getSolFile(String solFileNameOrPath) throws ConsoleMessageException {
+
+        String filePath = solFileNameOrPath;
         filePath = removePostfix(filePath, SOL_POSTFIX);
         filePath += SOL_POSTFIX;
         /** Check that the file exists in the default directory first */
@@ -44,7 +65,7 @@ public class PathUtils {
 
         /** file not exist */
         if (!solFile.exists()) {
-            throw new ConsoleMessageException(filePathOrName + " does not exist ");
+            throw new ConsoleMessageException(solFileNameOrPath + " does not exist ");
         }
 
         return solFile;

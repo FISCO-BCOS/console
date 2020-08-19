@@ -24,7 +24,7 @@ import org.fisco.bcos.web3j.tx.txdecode.TransactionDecoderFactory;
 public class TxDecodeUtil {
 
     public static AbiAndBin readAbiAndBin(String contractName) throws IOException {
-        String tempName = ContractClassFactory.removeSolPostfix(contractName);
+        String tempName = PathUtils.removeSolPostfix(contractName);
 
         try (BufferedReader abiReader =
                         new BufferedReader(
@@ -182,11 +182,10 @@ public class TxDecodeUtil {
         return false;
     }
 
-    public static void decdeInputForTransaction(String contractName, String transactionJson)
+    public static void decodeInputForTransaction(String contractName, String transactionJson)
             throws IOException, JsonParseException, JsonMappingException, BaseException,
                     TransactionException {
-        AbiAndBin abiAndBin =
-                TxDecodeUtil.readAbiAndBin(ContractClassFactory.removeSolPostfix(contractName));
+        AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(PathUtils.removeSolPostfix(contractName));
         org.fisco.bcos.web3j.protocol.core.methods.response.Transaction transacton =
                 ObjectMapperFactory.getObjectMapper()
                         .readValue(

@@ -431,8 +431,9 @@ public class HelpInfo {
 
     public static void deployHelp() {
         System.out.println("Deploy a contract on blockchain.");
-        System.out.println("Usage: deploy contractName");
-        System.out.println("contractName -- The name of a contract.");
+        System.out.println("Usage: deploy [contractName or contractPath]");
+        System.out.println(
+                "contractName or contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println();
     }
 

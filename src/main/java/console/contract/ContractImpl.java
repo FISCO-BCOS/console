@@ -100,9 +100,13 @@ public class ContractImpl implements ContractFace {
             HelpInfo.deployHelp();
             return;
         }
-        String name = params[1];
+
+        String contractNameOrPath = params[1];
+        File solFile = PathUtils.getSolFile(contractNameOrPath);
+        String name = solFile.getName().split("\\.")[0];
+
         try {
-            Class<?> contractClass = ContractClassFactory.compileContract(name);
+            Class<?> contractClass = ContractClassFactory.compileContract(solFile);
             RemoteCall<?> remoteCall =
                     ContractClassFactory.handleDeployParameters(
                             web3j,
@@ -112,6 +116,7 @@ public class ContractImpl implements ContractFace {
                             params,
                             2);
             Contract contract = (Contract) remoteCall.send();
+            TransactionReceipt transactionReceipt = contract.getTransactionReceipt().get();
             String contractAddress = contract.getContractAddress();
             System.out.println("contract address: " + contractAddress);
             System.out.println();
@@ -128,7 +133,7 @@ public class ContractImpl implements ContractFace {
     }
 
     private synchronized void writeLog(String contractName, String contractAddress) {
-        contractName = ContractClassFactory.removeSolPostfix(contractName);
+        contractName = PathUtils.removeSolPostfix(contractName);
         BufferedReader reader = null;
         try {
             File logFile = new File(Common.ContractLogFileName);
@@ -377,8 +382,12 @@ public class ContractImpl implements ContractFace {
             HelpInfo.promptHelp("call");
             return;
         }
-        String name = params[1];
-        Class<?> contractClass = ContractClassFactory.compileContract(name);
+
+        String contractNameOrPath = params[1];
+        File solFile = PathUtils.getSolFile(contractNameOrPath);
+        String name = solFile.getName().split("\\.")[0];
+
+        Class<?> contractClass = ContractClassFactory.compileContract(solFile);
         Method load =
                 contractClass.getMethod(
                         "load",
@@ -540,8 +549,10 @@ public class ContractImpl implements ContractFace {
             return;
         }
 
-        String name = params[1];
-        name = ContractClassFactory.removeSolPostfix(name);
+        String contractNameOrPath = params[1];
+        File solFile = PathUtils.getSolFile(contractNameOrPath);
+        String name = solFile.getName().split("\\.")[0];
+
         CnsService cnsService =
                 new CnsService(web3j, accountManager.getCurrentAccountCredentials());
         List<CnsInfo> qcns = cnsService.queryCnsByNameAndVersion(name, params[2]);
@@ -553,7 +564,7 @@ public class ContractImpl implements ContractFace {
             return;
         }
         try {
-            Class<?> contractClass = ContractClassFactory.compileContract(name);
+            Class<?> contractClass = ContractClassFactory.compileContract(solFile);
             RemoteCall<?> remoteCall =
                     ContractClassFactory.handleDeployParameters(
                             web3j,
@@ -604,7 +615,11 @@ public class ContractImpl implements ContractFace {
             return;
         }
         String contractNameAndVersion = params[1];
-        String name = params[1];
+
+        String contractNameOrPath = params[1];
+        File solFile = PathUtils.getSolFile(contractNameOrPath);
+        String name = solFile.getName().split("\\.")[0];
+
         String contractVersion = null;
         if (contractNameAndVersion.contains(":")) {
             String[] nameAndVersion = contractNameAndVersion.split(":");
@@ -650,7 +665,7 @@ public class ContractImpl implements ContractFace {
             }
             return;
         }
-        Class<?> contractClass = ContractClassFactory.compileContract(name);
+        Class<?> contractClass = ContractClassFactory.compileContract(solFile);
         Method load =
                 contractClass.getMethod(
                         "load",
