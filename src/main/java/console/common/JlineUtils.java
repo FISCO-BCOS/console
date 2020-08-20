@@ -2,18 +2,6 @@ package console.common;
 
 import console.account.Account;
 import console.account.AccountManager;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
 import org.fisco.bcos.web3j.abi.wrapper.ContractABIDefinition;
 import org.jline.builtins.Completers.FilesCompleter;
@@ -36,12 +24,25 @@ import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class AccountCompleter extends StringsCompleterIgnoreCase {
-    private static final Logger logger = LoggerFactory.getLogger(AccountCompleter.class);
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+class SwitchAccountCompleter extends StringsCompleterIgnoreCase {
+    private static final Logger logger = LoggerFactory.getLogger(SwitchAccountCompleter.class);
 
     private AccountManager accountManager;
 
-    public AccountCompleter(final AccountManager accountManager) {
+    public SwitchAccountCompleter(final AccountManager accountManager) {
         this.accountManager = accountManager;
     }
 
@@ -62,6 +63,48 @@ class AccountCompleter extends StringsCompleterIgnoreCase {
             if (account.getCredentials()
                     .getAddress()
                     .equals(currentAccount.getCredentials().getAddress())) {
+                continue;
+            }
+
+            candidates.add(
+                    new Candidate(
+                            AttributedString.stripAnsi(account.getCredentials().getAddress()),
+                            account.getCredentials().getAddress(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            true));
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
+
+class SaveAccountCompleter extends StringsCompleterIgnoreCase {
+    private static final Logger logger = LoggerFactory.getLogger(SaveAccountCompleter.class);
+
+    private AccountManager accountManager;
+
+    public SaveAccountCompleter(final AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    public AccountManager getAccountManager() {
+        return this.accountManager;
+    }
+
+    public void setAccountManager(final AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        Collection<Account> values = accountManager.getAccountMap().values();
+        Account currentAccount = accountManager.getCurrentAccount();
+        for (Account account : values) {
+            if (!account.isNewAccount()) {
                 continue;
             }
 
@@ -421,7 +464,6 @@ public class JlineUtils {
                         "getAccountStatus",
                         "newAccount",
                         "listAccount",
-                        "switchAccount",
                         "saveAccount",
                         "newAccount",
                         "loadAccount",
@@ -470,7 +512,17 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new AccountCompleter(accountManager),
+                            new SwitchAccountCompleter(accountManager),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("saveAccount");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new SaveAccountCompleter(accountManager),
                             new StringsCompleterIgnoreCase()));
         }
 

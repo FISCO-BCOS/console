@@ -2,11 +2,12 @@ package console.account;
 
 import console.common.HelpInfo;
 import console.common.PathUtils;
-import java.util.Map;
 import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 public class AccountImpl implements AccountInterface {
 
@@ -129,7 +130,7 @@ public class AccountImpl implements AccountInterface {
                     "\t "
                             + account.getCredentials().getAddress()
                             + (account.isNewAccount() ? " (temporary account)" : "")
-                            + (accountManager.isCurrentAccount(account) ? " * " : ""));
+                            + (accountManager.isCurrentAccount(account) ? " <== " : ""));
         }
 
         System.out.println();
