@@ -1,5 +1,7 @@
 package console.common;
 
+import console.account.Account;
+import console.account.AccountManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -33,6 +35,50 @@ import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+class AccountCompleter extends StringsCompleterIgnoreCase {
+    private static final Logger logger = LoggerFactory.getLogger(AccountCompleter.class);
+
+    private AccountManager accountManager;
+
+    public AccountCompleter(final AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    public AccountManager getAccountManager() {
+        return this.accountManager;
+    }
+
+    public void setAccountManager(final AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        Collection<Account> values = accountManager.getAccountMap().values();
+        Account currentAccount = accountManager.getCurrentAccount();
+        for (Account account : values) {
+            if (account.getCredentials()
+                    .getAddress()
+                    .equals(currentAccount.getCredentials().getAddress())) {
+                continue;
+            }
+
+            candidates.add(
+                    new Candidate(
+                            AttributedString.stripAnsi(account.getCredentials().getAddress()),
+                            account.getCredentials().getAddress(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            true));
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
 
 class ContractAddressCompleter extends StringsCompleterIgnoreCase {
 
@@ -97,7 +143,7 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
 
         logger.info(" 11 ==> buffer:{} , length: {}", buffer, ss.length);
 
-        if (ss.length >= 3 && ss.length <= 4) {
+        if (ss.length >= 3) {
             String contractName = PathUtils.removeSolPostfix(ss[1]);
 
             try {
@@ -294,7 +340,8 @@ public class JlineUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
 
-    public static LineReader getLineReader(DeployContractManager deployContractManager)
+    public static LineReader getLineReader(
+            DeployContractManager deployContractManager, AccountManager accountManager)
             throws IOException {
 
         List<Completer> completers = new ArrayList<Completer>();
@@ -413,7 +460,18 @@ public class JlineUtils {
                             new StringsCompleter(command),
                             new ConsoleFilesCompleter(path),
                             new ContractAddressCompleter(deployContractManager),
-                            new ContractMethodCompleter()));
+                            new ContractMethodCompleter(),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("switchAccount");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new AccountCompleter(accountManager),
+                            new StringsCompleterIgnoreCase()));
         }
 
         commands = Arrays.asList("listAbi");
