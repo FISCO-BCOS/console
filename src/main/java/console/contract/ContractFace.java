@@ -19,6 +19,8 @@ public interface ContractFace {
 
     void setAccountManager(AccountManager accountManager);
 
+    AccountManager getAccountManager();
+
     void deploy(String[] params) throws Exception;
 
     void call(String[] params) throws Exception;

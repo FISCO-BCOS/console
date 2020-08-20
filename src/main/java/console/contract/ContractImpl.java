@@ -88,6 +88,7 @@ public class ContractImpl implements ContractFace {
         this.deployContractManager = deployContractManager;
     }
 
+    @Override
     public AccountManager getAccountManager() {
         return accountManager;
     }
