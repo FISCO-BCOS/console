@@ -1,6 +1,23 @@
 package console.common;
 
 import console.exception.ConsoleMessageException;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
 import org.apache.commons.collections4.map.HashedMap;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.datatypes.Bytes;
@@ -18,24 +35,6 @@ import org.fisco.bcos.web3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 public class ContractClassFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ContractClassFactory.class);
@@ -45,7 +44,6 @@ public class ContractClassFactory {
     public static final String BIN_PATH = "contracts/console/bin/";
     public static final String PACKAGE_NAME = "temp";
     public static final String TAR_GET_CLASSPATH = "contracts/console/java/classes/";
-    public static final String SOL_POSTFIX = ".sol";
 
     public static URLClassLoader initClassLoad() throws MalformedURLException {
         File clazzPath = new File(TAR_GET_CLASSPATH);

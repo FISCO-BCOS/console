@@ -10,9 +10,6 @@ import console.contract.ContractFace;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.permission.PermissionFace;
 import console.web3j.Web3jFace;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Scanner;
 import org.fisco.bcos.web3j.protocol.channel.ResponseExcepiton;
 import org.fisco.bcos.web3j.protocol.exceptions.MessageDecodingException;
 import org.jline.keymap.KeyMap;
@@ -23,6 +20,10 @@ import org.jline.reader.Reference;
 import org.jline.reader.UserInterruptException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Scanner;
 
 public class ConsoleClient {
 
@@ -51,7 +52,9 @@ public class ConsoleClient {
             contractFace = consoleInitializer.getContractFace();
             accountInterface = consoleInitializer.getAccountInterface();
 
-            lineReader = JlineUtils.getLineReader();
+            lineReader =
+                    JlineUtils.getLineReader(
+                             contractFace.getDeployContractManager());
             sc = new Scanner(System.in);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
             keymap.bind(new Reference("beginning-of-line"), "\033[1~");

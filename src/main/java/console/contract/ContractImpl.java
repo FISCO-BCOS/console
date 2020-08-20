@@ -1,11 +1,14 @@
 package console.contract;
 
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
+
 import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.ContractClassFactory;
+import console.common.DeployContractManager;
 import console.common.HelpInfo;
 import console.common.PathUtils;
 import console.common.TxDecodeUtil;
@@ -14,6 +17,16 @@ import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
@@ -40,30 +53,13 @@ import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
-
 public class ContractImpl implements ContractFace {
 
     private static final Logger logger = LoggerFactory.getLogger(ContractImpl.class);
 
     private int groupID;
     private AccountManager accountManager;
+    private DeployContractManager deployContractManager;
     private StaticGasProvider gasProvider;
     private Web3j web3j;
 
@@ -87,8 +83,18 @@ public class ContractImpl implements ContractFace {
         this.gasProvider = gasProvider;
     }
 
+    @Override
+    public void setDeployContractManager(DeployContractManager deployContractManager) {
+        this.deployContractManager = deployContractManager;
+    }
+
     public AccountManager getAccountManager() {
         return accountManager;
+    }
+
+    @Override
+    public DeployContractManager getDeployContractManager() {
+        return this.deployContractManager;
     }
 
     @Override
@@ -122,7 +128,8 @@ public class ContractImpl implements ContractFace {
             System.out.println("contract address: " + contractAddress);
             System.out.println();
             contractAddress = contract.getContractAddress();
-            writeLog(name, contractAddress);
+            deployContractManager.addNewDeployContract(
+                    String.valueOf(groupID), name, contractAddress);
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
@@ -130,75 +137,6 @@ public class ContractImpl implements ContractFace {
             } else {
                 throw e;
             }
-        }
-    }
-
-    private synchronized void writeLog(String contractName, String contractAddress) {
-        contractName = PathUtils.removeSolPostfix(contractName);
-        BufferedReader reader = null;
-        try {
-            File logFile = new File(Common.ContractLogFileName);
-            if (!logFile.exists()) {
-                logFile.createNewFile();
-            }
-            reader = new BufferedReader(new FileReader(Common.ContractLogFileName));
-            String line;
-            List<String> textList = new ArrayList<String>();
-            while ((line = reader.readLine()) != null) {
-                textList.add(line);
-            }
-            int i = 0;
-            if (textList.size() >= Common.LogMaxCount) {
-                i = textList.size() - Common.LogMaxCount + 1;
-                if (logFile.exists()) {
-                    logFile.delete();
-                    logFile.createNewFile();
-                }
-                PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true));
-                for (; i < textList.size(); i++) {
-                    pw.println(textList.get(i));
-                }
-                pw.flush();
-                pw.close();
-            }
-        } catch (IOException e) {
-            System.out.println("Read deploylog.txt failed.");
-            return;
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                System.out.println("Close deploylog.txt failed.");
-                ;
-            }
-        }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-        while (contractName.length() < 20) {
-            contractName = contractName + " ";
-        }
-        String log =
-                LocalDateTime.now().format(formatter)
-                        + "  [group:"
-                        + groupID
-                        + "]  "
-                        + contractName
-                        + "  "
-                        + contractAddress;
-        try {
-            File logFile = new File(Common.ContractLogFileName);
-            if (!logFile.exists()) {
-                logFile.createNewFile();
-            }
-            PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true));
-            pw.println(log);
-            pw.flush();
-            pw.close();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
         }
     }
 
@@ -342,7 +280,9 @@ public class ContractImpl implements ContractFace {
             System.out.println(" \tMethod list: ");
             System.out.println(
                     " \t -------------------------------------------------------------- ");
-            System.out.printf(" \t%-5s \t%-5s \t%-10s \t%-10s\n", "name", "constant", "methodId", "signature");
+            System.out.printf(
+                    " \t%-5s \t%-5s \t%-10s \t%-10s\n",
+                    "name", "constant", "methodId", "signature");
             for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
                 System.out.printf(
                         "  \t%-5s| \t%-5b| \t%-10s| \t%-10s\n",
@@ -361,8 +301,7 @@ public class ContractImpl implements ContractFace {
             System.out.println(" \tEvent list: ");
             System.out.println(
                     " \t -------------------------------------------------------------- ");
-            System.out.printf(
-                    "\t  %-10s   %-66s   %-10s\n", "name", "topic", "signature");
+            System.out.printf("\t  %-10s   %-66s   %-10s\n", "name", "topic", "signature");
             for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
 
                 System.out.printf(
@@ -594,7 +533,8 @@ public class ContractImpl implements ContractFace {
                     TxDecodeUtil.readAbiAndBin(name).getAbi());
             System.out.println("contract address: " + contractAddress);
             String contractName = name + ":" + contractVersion;
-            writeLog(contractName, contractAddress);
+            deployContractManager.addNewDeployContract(
+                    String.valueOf(groupID), name, contractAddress);
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
