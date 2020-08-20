@@ -1,6 +1,7 @@
 package console.contract;
 
 import console.account.AccountManager;
+import console.common.DeployContractManager;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
 
@@ -11,6 +12,10 @@ public interface ContractFace {
     void setWeb3j(Web3j web3j);
 
     void setGasProvider(StaticGasProvider gasProvider);
+
+    void setDeployContractManager(DeployContractManager deployContractManager);
+
+    DeployContractManager getDeployContractManager();
 
     void setAccountManager(AccountManager accountManager);
 

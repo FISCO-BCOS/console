@@ -7,6 +7,7 @@ import console.account.AccountManager;
 import console.account.AccountTools;
 import console.common.Common;
 import console.common.ContractClassFactory;
+import console.common.DeployContractManager;
 import console.common.HelpInfo;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
@@ -58,6 +59,7 @@ public class ConsoleInitializer {
     private Web3j web3j = null;
     private Account account = null;;
     private AccountManager accountManager = null;
+    private DeployContractManager deployContractManager = null;
     private int groupID;
     public static final int InvalidRequest = 40009;
     public static final String ACCOUNT_DIR1 = "accounts/";
@@ -77,6 +79,7 @@ public class ConsoleInitializer {
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
         accountManager = new AccountManager();
+        deployContractManager = DeployContractManager.newGroupDeployedContractManager();
 
         switch (args.length) {
             case 0: // bash start.sh
@@ -184,10 +187,12 @@ public class ConsoleInitializer {
             contractFace.setGasProvider(gasProvider);
             contractFace.setWeb3j(web3j);
             contractFace.setAccountManager(accountManager);
+            contractFace.setDeployContractManager(deployContractManager);
 
             accountInterface = new AccountImpl();
             accountInterface.setAccountManager(accountManager);
 
+            deployContractManager.setGroupId(String.valueOf(groupID));
         } catch (ResponseExcepiton e) {
             if (e.getCode() == InvalidRequest) {
                 System.out.println("Don't connect a removed node.");
@@ -366,6 +371,7 @@ public class ConsoleInitializer {
         permissionFace.setWeb3j(web3j);
         contractFace.setWeb3j(web3j);
         contractFace.setGroupID(groupID);
+        deployContractManager.setGroupId(String.valueOf(groupID));
 
         System.out.println("Switched to group " + groupID + ".");
         System.out.println();
@@ -433,10 +439,6 @@ public class ConsoleInitializer {
 
     public int getGroupID() {
         return this.groupID;
-    }
-
-    public void setGroupID(int groupID) {
-        this.groupID = groupID;
     }
 
     public Web3jFace getWeb3jFace() {

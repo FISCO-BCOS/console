@@ -11,6 +11,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
+import org.fisco.bcos.web3j.abi.wrapper.ContractABIDefinition;
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
@@ -30,6 +33,103 @@ import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+class ContractAddressCompleter extends StringsCompleterIgnoreCase {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContractAddressCompleter.class);
+
+    public ContractAddressCompleter(final DeployContractManager deployContractManager) {
+        this.deployContractManager = deployContractManager;
+    }
+
+    private DeployContractManager deployContractManager;
+
+    public DeployContractManager getDeployContractManager() {
+        return this.deployContractManager;
+    }
+
+    public void setDeployContractManager(final DeployContractManager deployContractManager) {
+        this.deployContractManager = deployContractManager;
+    }
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        String buffer = reader.getBuffer().toString().trim();
+        String[] ss = buffer.split(" ");
+
+        logger.info(" 00 ==> buffer:{}, length: {} ", buffer, ss.length);
+
+        if (ss.length >= 2) {
+
+            String contractName = ss[1];
+
+            List<DeployContractManager.DeployedContract> deployContractList =
+                    deployContractManager.getDeployContractList(
+                            deployContractManager.getGroupId(), contractName);
+
+            for (DeployContractManager.DeployedContract deployedContract : deployContractList) {
+                candidates.add(
+                        new Candidate(
+                                AttributedString.stripAnsi(deployedContract.getContractAddress()),
+                                deployedContract.getContractAddress(),
+                                null,
+                                null,
+                                null,
+                                null,
+                                true));
+            }
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
+
+class ContractMethodCompleter extends StringsCompleterIgnoreCase {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContractMethodCompleter.class);
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        String buffer = reader.getBuffer().toString().trim();
+        String[] ss = buffer.split(" ");
+
+        logger.info(" 11 ==> buffer:{} , length: {}", buffer, ss.length);
+
+        if (ss.length >= 3 && ss.length <= 4) {
+            String contractName = PathUtils.removeSolPostfix(ss[1]);
+
+            try {
+                File solFile =
+                        new File(ContractClassFactory.ABI_PATH + "/" + contractName + ".abi");
+                byte[] bytes = Files.readAllBytes(solFile.toPath());
+
+                ContractABIDefinition contractABIDefinition =
+                        ABIDefinitionFactory.loadABI(new String(bytes));
+                Set<String> functionNames = contractABIDefinition.getFunctions().keySet();
+                if (logger.isDebugEnabled()) {
+                    logger.debug(" funcNames: {}", functionNames.toArray(new String[0]));
+                }
+                for (String funName : functionNames) {
+                    candidates.add(
+                            new Candidate(
+                                    AttributedString.stripAnsi(funName),
+                                    funName,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    true));
+                }
+            } catch (Exception e) {
+                logger.trace("e: ", e);
+            }
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
 
 class StringsCompleterIgnoreCase implements Completer {
 
@@ -64,6 +164,7 @@ class StringsCompleterIgnoreCase implements Completer {
         assert candidates != null;
 
         Buffer buffer = reader.getBuffer();
+
         String start = (buffer == null) ? "" : buffer.toString();
         int index = start.lastIndexOf(" ");
         String tmp = start.substring(index + 1, start.length()).toLowerCase();
@@ -193,7 +294,8 @@ public class JlineUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
 
-    public static LineReader getLineReader() throws IOException {
+    public static LineReader getLineReader(DeployContractManager deployContractManager)
+            throws IOException {
 
         List<Completer> completers = new ArrayList<Completer>();
 
@@ -293,8 +395,28 @@ public class JlineUtils {
         }
 
         Path path = FileSystems.getDefault().getPath(PathUtils.SOL_DIRECTORY, "");
-        commands =
-                Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS", "listAbi");
+        commands = Arrays.asList("deploy", "deployByCNS", "callByCNS", "queryCNS");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new ConsoleFilesCompleter(path),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("call");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new ConsoleFilesCompleter(path),
+                            new ContractAddressCompleter(deployContractManager),
+                            new ContractMethodCompleter()));
+        }
+
+        commands = Arrays.asList("listAbi");
 
         for (String command : commands) {
             completers.add(
