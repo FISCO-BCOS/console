@@ -33,5 +33,7 @@ public interface ContractFace {
 
     void getDeployLog(String[] params) throws Exception;
 
+    void listDeployContractAddress(String[] params) throws Exception;
+
     void listAbi(String[] params) throws Exception;
 }

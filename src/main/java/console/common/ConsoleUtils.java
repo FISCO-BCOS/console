@@ -237,6 +237,25 @@ public class ConsoleUtils {
         }
     }
 
+    /** @param solFile */
+    public static String compileSolForABI(File solFile) throws IOException {
+        String contractName = solFile.getName().split("\\.")[0];
+
+        /** compile */
+        SolidityCompiler.Result res =
+                SolidityCompiler.compile(solFile, false, true, ABI, BIN, INTERFACE, METADATA);
+
+        if (res.isFailed() || "".equals(res.getOutput())) {
+            logger.error(" compile {} failed, e: {}", solFile.getAbsolutePath(), res.getErrors());
+            throw new CompileSolidityException(" Compile error: " + res.getErrors());
+        }
+
+        CompilationResult result = CompilationResult.parse(res.getOutput());
+        CompilationResult.ContractMetadata meta = result.getContract(contractName);
+
+        return meta.abi;
+    }
+
     /**
      * @param javaDir
      * @param packageName

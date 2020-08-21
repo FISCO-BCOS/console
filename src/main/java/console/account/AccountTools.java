@@ -83,7 +83,7 @@ public class AccountTools {
         }
 
         Account account = new Account(credentials);
-        account.setNewAccount(true);
+        account.setTempAccount(true);
         account.setKeyPair(keyPair);
         account.setPrivateKeyType(EncryptType.encryptType);
         logger.info(" newAccount: {}", account);
@@ -137,7 +137,7 @@ public class AccountTools {
 
         Account account = new Account(credentials);
         account.setPrivateKeyType(privateKeyType);
-        account.setNewAccount(false);
+        account.setTempAccount(false);
 
         return account;
     }

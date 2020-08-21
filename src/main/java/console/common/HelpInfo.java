@@ -198,6 +198,15 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void listDeployContractAddressHelp() {
+        System.out.println("Query the address list of the specified contract.");
+        System.out.println("Usage: listDeployContractAddress [contractName] [fromIndex] [count]");
+        System.out.println("contractName -- the contract name");
+        System.out.println("fromIndex -- (optional) the from index of results (default 0).");
+        System.out.println("count -- (optional) the number of results (default 10).");
+        System.out.println();
+    }
+
     public static void listAbiHelp() {
         System.out.println("List functions and events info of the contract.");
         System.out.println("Usage: listAbi [contractFile] [contractName]");
