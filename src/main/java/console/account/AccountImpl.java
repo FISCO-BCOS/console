@@ -2,12 +2,11 @@ package console.account;
 
 import console.common.HelpInfo;
 import console.common.PathUtils;
+import java.util.Map;
 import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Map;
 
 public class AccountImpl implements AccountInterface {
 
@@ -49,7 +48,7 @@ public class AccountImpl implements AccountInterface {
 
         try {
             Account account = AccountTools.loadAccount(accountPath, password);
-            if (!account.isAccountAvailable()) {
+            if (!account.isTypeMatchingAccount()) {
                 System.out.println(
                         " the loading private key is not available, private key type:"
                                 + AccountTools.getPrivateKeyTypeAsString(
@@ -129,7 +128,7 @@ public class AccountImpl implements AccountInterface {
             System.out.println(
                     "\t "
                             + account.getCredentials().getAddress()
-                            + (account.isNewAccount() ? " (temporary account)" : "")
+                            + (account.isTempAccount() ? " (temporary account)" : "")
                             + (accountManager.isCurrentAccount(account) ? " <== " : ""));
         }
 
@@ -170,6 +169,7 @@ public class AccountImpl implements AccountInterface {
                 System.out.println(" account:" + accountAddress + " not exist.");
             } else {
                 AccountTools.saveAccount(account, path);
+                account.setTempAccount(false);
                 System.out.println(
                         " save account: " + accountAddress + " successfully, path: " + path);
             }

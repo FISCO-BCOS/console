@@ -217,6 +217,52 @@ public class ContractImpl implements ContractFace {
     }
 
     @Override
+    public void listDeployContractAddress(String[] params) throws Exception {
+        // listDeployContractAddress [contractName] [from] [count]
+        if (params.length < 2) {
+            HelpInfo.promptHelp("listDeployContractAddress");
+            return;
+        }
+
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.listDeployContractAddressHelp();
+            return;
+        }
+
+        String contractName = params[1];
+        int from = 0;
+        int count = 20;
+
+        if (params.length > 2) {
+            from = Integer.valueOf(params[2]);
+            if (params.length > 3) {
+                count = count = Integer.valueOf(params[3]);
+            }
+        }
+
+        logger.debug("contractName: {}, from: {}, count: {}", contractName, from, count);
+
+        List<DeployContractManager.DeployedContract> deployContractList =
+                deployContractManager.getDeployContractList(String.valueOf(groupID), contractName);
+        System.out.println(contractName + " deployed contract count: " + deployContractList.size());
+
+        if (from <= deployContractList.size()) {
+            if (from + count >= deployContractList.size()) {
+                count = deployContractList.size() - from;
+            }
+
+            for (int i = from; i < from + count; i++) {
+                System.out.printf(
+                        "\t%3d. %s  %s\n",
+                        i,
+                        deployContractList.get(i).getContractAddress(),
+                        deployContractList.get(i).getTimestamp());
+            }
+        }
+        System.out.println();
+    }
+
+    @Override
     public void listAbi(String[] params) throws Exception {
         if (params.length < 2) {
             HelpInfo.promptHelp("listAbi");

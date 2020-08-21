@@ -115,6 +115,9 @@ public class ConsoleClient {
                     case "getDeployLog":
                         contractFace.getDeployLog(params);
                         break;
+                    case "listDeployContractAddress":
+                        contractFace.listDeployContractAddress(params);
+                        break;
                     case "listAbi":
                         contractFace.listAbi(params);
                         break;

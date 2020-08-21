@@ -2,6 +2,18 @@ package console.common;
 
 import console.account.Account;
 import console.account.AccountManager;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
 import org.fisco.bcos.web3j.abi.wrapper.ContractABIDefinition;
 import org.jline.builtins.Completers.FilesCompleter;
@@ -23,19 +35,6 @@ import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
 
 class SwitchAccountCompleter extends StringsCompleterIgnoreCase {
     private static final Logger logger = LoggerFactory.getLogger(SwitchAccountCompleter.class);
@@ -102,9 +101,8 @@ class SaveAccountCompleter extends StringsCompleterIgnoreCase {
     public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
 
         Collection<Account> values = accountManager.getAccountMap().values();
-        Account currentAccount = accountManager.getCurrentAccount();
         for (Account account : values) {
-            if (!account.isNewAccount()) {
+            if (!account.isTempAccount()) {
                 continue;
             }
 
@@ -419,6 +417,7 @@ public class JlineUtils {
                         "getCode",
                         "getTotalTransactionCount",
                         "getDeployLog",
+                        "listDeployContractAddress",
                         "listAbi",
                         "addSealer",
                         "addObserver",
@@ -484,7 +483,13 @@ public class JlineUtils {
         }
 
         Path path = FileSystems.getDefault().getPath(PathUtils.SOL_DIRECTORY, "");
-        commands = Arrays.asList("deploy", "deployByCNS", "callByCNS", "queryCNS");
+        commands =
+                Arrays.asList(
+                        "deploy",
+                        "deployByCNS",
+                        "callByCNS",
+                        "queryCNS",
+                        "listDeployContractAddress");
 
         for (String command : commands) {
             completers.add(

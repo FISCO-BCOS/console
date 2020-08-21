@@ -121,7 +121,7 @@ public class ConsoleInitializer {
             close();
         }
 
-        if (!account.isAccountAvailable()) {
+        if (!account.isTypeMatchingAccount()) {
             System.out.println(
                     " the loading private key is not available, private key type:"
                             + AccountTools.getPrivateKeyTypeAsString(account.getPrivateKeyType())
@@ -239,7 +239,7 @@ public class ConsoleInitializer {
             ECKeyPair keyPair = pem.getECKeyPair();
             Credentials credentials = Credentials.create(keyPair);
             account = new Account(credentials);
-            account.setNewAccount(false);
+            account.setTempAccount(false);
             account.setPrivateKeyType(AccountTools.getPrivateKeyType(pem.getPrivateKey()));
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
@@ -279,7 +279,7 @@ public class ConsoleInitializer {
                 keyPair = p12Manager.getECKeyPair();
                 Credentials credentials = Credentials.create(keyPair);
                 account = new Account(credentials);
-                account.setNewAccount(false);
+                account.setTempAccount(false);
                 account.setPrivateKeyType(
                         AccountTools.getPrivateKeyType(p12Manager.getPrivateKey()));
             } catch (Exception e) {
