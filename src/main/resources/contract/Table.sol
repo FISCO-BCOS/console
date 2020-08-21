@@ -25,7 +25,7 @@ contract Condition {
 //one record
 contract Entry {
     function getInt(string memory) public view returns (int256) {}
-    function getUInt(string memory) public view returns (int256) {}
+    function getUInt(string memory) public view returns (uint256) {}
     function getAddress(string memory) public view returns (address) {}
     function getBytes64(string memory) public view returns (bytes1[64] memory) {}
     function getBytes32(string memory) public view returns (bytes32) {}
@@ -59,7 +59,7 @@ contract KVTableFactory {
     function createTable(string memory, string memory, string memory) public returns (int256) {}
 }
 
-//KVTable per permiary key has only one Entry
+//KVTable per primary key has only one Entry
 contract KVTable {
     function get(string memory) public view returns (bool, Entry) {}
     function set(string memory, Entry) public returns (int256) {}
