@@ -12,7 +12,7 @@ import console.precompiled.permission.PermissionFace;
 import console.precompiled.permission.PermissionImpl;
 import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.config.ConfigException;
+import org.fisco.bcos.sdk.config.exceptions.ConfigException;
 import org.fisco.bcos.sdk.crypto.CryptoInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +99,15 @@ public class ConsoleInitializer {
             System.out.println("Switched to group " + toGroupID + ".");
             System.out.println();
         } catch (Exception e) {
-            System.out.println("Switch to group " + toGroupID + " failed! " + e.getMessage());
+            System.out.println(
+                    "Switch to group "
+                            + toGroupID
+                            + " failed! "
+                            + e.getMessage()
+                            + " Current groupList is: "
+                            + client.getGroupList().getGroupList().toString()
+                            + ", please check the existence of group "
+                            + toGroupID);
         }
     }
 
@@ -109,6 +117,10 @@ public class ConsoleInitializer {
 
     public Client getClient() {
         return client;
+    }
+
+    public BcosSDK getBcosSDK() {
+        return bcosSDK;
     }
 
     public CryptoInterface getCredentials() {

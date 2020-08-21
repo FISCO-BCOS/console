@@ -12,8 +12,10 @@ import console.precompiled.permission.PermissionFace;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
+import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.crypto.CryptoInterface;
 import org.fisco.bcos.sdk.utils.exceptions.MessageDecodingException;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
@@ -29,6 +31,7 @@ public class Console {
     private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
     private static Client client;
+    private static BcosSDK bcosSDK;
     private static PrecompiledFace precompiledFace;
     private static PermissionFace permissionFace;
     private static ConsoleClientFace consoleClientFace;
@@ -46,6 +49,7 @@ public class Console {
             consoleInitializer = new ConsoleInitializer();
             consoleInitializer.init(args);
             client = consoleInitializer.getClient();
+            bcosSDK = consoleInitializer.getBcosSDK();
             precompiledFace = consoleInitializer.getPrecompiledFace();
             permissionFace = consoleInitializer.getPermissionFace();
             consoleClientFace = consoleInitializer.getConsoleClientFace();
@@ -352,6 +356,28 @@ public class Console {
                         break;
                     case "getAccountStatus":
                         permissionFace.getAccountStatus(params);
+                        break;
+                    case "getCurrentAccount":
+                        System.out.println(
+                                client.getCryptoInterface().getCryptoKeyPair().getAddress());
+                        System.out.println();
+                        break;
+                    case "getCryptoType":
+                        // get ledger cryptoType
+                        int ledgerCryptoType = client.getCryptoInterface().getCryptoTypeConfig();
+                        System.out.println(
+                                "ledger crypto type: "
+                                        + (ledgerCryptoType == CryptoInterface.ECDSA_TYPE
+                                                ? "ECDSA"
+                                                : "SM"));
+                        // get ssl cryptoType
+                        int sslCryptoType = bcosSDK.getSSLCryptoType();
+                        System.out.println(
+                                "ssl crypto type: "
+                                        + (sslCryptoType == CryptoInterface.ECDSA_TYPE
+                                                ? "ECDSA"
+                                                : "SM"));
+                        System.out.println();
                         break;
                     default:
                         System.out.println(

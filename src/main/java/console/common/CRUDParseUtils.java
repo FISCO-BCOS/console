@@ -38,9 +38,9 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledConstant;
 
 public class CRUDParseUtils {
-
     public static final String PRIMARY_KEY = "primary key";
 
     public static void parseCreateTable(String sql, Table table)
@@ -117,7 +117,20 @@ public class CRUDParseUtils {
         table.setValueFields(fieldsList);
     }
 
-    public static boolean parseInsert(String sql, Table table, Entry entry)
+    public static String parseInsertedTableName(String sql)
+            throws JSQLParserException, ConsoleMessageException {
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Insert insert = (Insert) statement;
+
+        if (insert.getSelect() != null) {
+            throw new ConsoleMessageException("The insert select clause is not supported.");
+        }
+        // parse table name
+        return insert.getTable().getName();
+    }
+
+    public static boolean parseInsert(
+            String sql, Table table, Entry entry, Map<String, String> tableDesc)
             throws JSQLParserException, ConsoleMessageException {
         Statement statement = CCJSqlParserUtil.parse(sql);
         Insert insert = (Insert) statement;
@@ -159,8 +172,13 @@ public class CRUDParseUtils {
             }
             return false;
         } else {
+            String keyField = tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME);
+            String[] allFields = new String[itemArr.length];
+            allFields[0] = keyField;
+            String[] valueFields = tableDesc.get(PrecompiledConstant.VALUE_FIELD_NAME).split(",");
+            System.arraycopy(valueFields, 0, allFields, 1, valueFields.length);
             for (int i = 0; i < itemArr.length; i++) {
-                entry.getFieldNameToValue().put(i + "", trimQuotes(itemArr[i]));
+                entry.getFieldNameToValue().put(allFields[i], trimQuotes(itemArr[i]));
             }
             return true;
         }
