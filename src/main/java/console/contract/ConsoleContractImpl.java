@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.fisco.bcos.sdk.abi.ABICodec;
+import org.fisco.bcos.sdk.abi.ABICodecException;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
@@ -27,9 +29,11 @@ import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
 import org.fisco.bcos.sdk.contract.exceptions.ContractException;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
+import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.crypto.CryptoInterface;
 import org.fisco.bcos.sdk.transaction.manager.AssembleTransactionManagerInterface;
 import org.fisco.bcos.sdk.transaction.manager.TransactionManagerFactory;
+import org.fisco.bcos.sdk.transaction.model.dto.CallRequest;
 import org.fisco.bcos.sdk.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.transaction.model.exception.TransactionBaseException;
@@ -44,6 +48,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     private Client client;
     private AssembleTransactionManagerInterface assembleTransactionManager;
     private CnsService cnsService;
+    private ABICodec abiCodec = new ABICodec();
 
     public ConsoleContractImpl(Client client) throws Exception {
         this.client = client;
@@ -51,6 +56,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 TransactionManagerFactory.createAssembleTransactionManager(
                         client, client.getCryptoInterface());
         this.cnsService = new CnsService(client, client.getCryptoInterface());
+        this.abiCodec.setCryptoInterface(client.getCryptoInterface());
     }
 
     @Override
@@ -83,12 +89,20 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             bin,
                             contractName,
                             inputParams.stream().map(o -> (Object) o).collect(Collectors.toList()));
+            if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+                System.out.println("deploy contract for " + contractName + " failed!");
+                System.out.println("return message:" + response.getReturnMessage());
+                System.out.println("return code:" + response.getReturnCode());
+                return response;
+            }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
             System.out.println("Hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("contract address: " + contractAddress);
             writeLog(contractName, contractAddress);
             // save the bin and abi
             ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
+            // save the keyPair
+            client.getCryptoInterface().getCryptoKeyPair().storeKeyPairWithPemFormat();
             return response;
         } catch (ClientException | CompileContractException | IOException e) {
             throw new ConsoleMessageException("deploy contract failed for " + e.getMessage(), e);
@@ -283,7 +297,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractAddress,
             String functionName,
             List<String> callParams)
-            throws IOException, CodeGenException, TransactionBaseException {
+            throws IOException, CodeGenException, TransactionBaseException, ABICodecException {
         // load bin and abi
         AbiAndBin abiAndBin = ContractCompiler.loadAbiAndBin(contractName, contractAddress);
         // call
@@ -296,14 +310,19 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     contractName,
                     functionName,
                     callParams.size());
-            CallResponse response =
-                    assembleTransactionManager.sendCall(
+            String data =
+                    this.abiCodec.encodeMethodFromString(
+                            abiAndBin.getAbi(), functionName, callParams);
+            CallRequest callRequest =
+                    new CallRequest(
                             client.getCryptoInterface().getCryptoKeyPair().getAddress(),
                             contractAddress,
-                            abiAndBin.getAbi(),
-                            functionName,
-                            callParams.stream().map(o -> (Object) o).collect(Collectors.toList()));
-            System.out.println("Return values: " + response.getValues());
+                            data,
+                            abiDefinition);
+            CallResponse response = assembleTransactionManager.sendCall(callRequest);
+            if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+                System.out.println("Return values: " + response.getValues());
+            }
             System.out.println("Return messages: " + response.getReturnMessage());
             System.out.println("Return code: " + response.getReturnCode());
         }
@@ -316,16 +335,19 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     contractName,
                     functionName,
                     callParams.size());
+
+            String data =
+                    this.abiCodec.encodeMethodFromString(
+                            abiAndBin.getAbi(), functionName, callParams);
             TransactionResponse response =
                     assembleTransactionManager.sendTransactionAndGetResponse(
-                            contractAddress,
-                            abiAndBin.getAbi(),
-                            functionName,
-                            callParams.stream().map(o -> (Object) o).collect(Collectors.toList()));
+                            contractAddress, abiAndBin.getAbi(), data);
             System.out.println("hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("Receipt message: " + response.getReceiptMessages());
             System.out.println("Return message: " + response.getReturnMessage());
-            System.out.println("Event: " + response.getEvents());
+            if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+                System.out.println("Event: " + response.getEvents());
+            }
             System.out.println();
         }
     }

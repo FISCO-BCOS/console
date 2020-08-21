@@ -276,7 +276,9 @@ public class JlineUtils {
                         "select",
                         "insert",
                         "update",
-                        "delete");
+                        "delete",
+                        "getCurrentAccount",
+                        "getCryptoType");
 
         for (String command : commands) {
             completers.add(

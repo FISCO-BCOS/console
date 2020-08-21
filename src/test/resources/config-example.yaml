@@ -20,24 +20,25 @@
 # Required. Crypto algorithm, cert and keys are configured in this section
 cryptoMaterial:
 
-  # [Option] Config the crypto algorithm here, we support ecdsa and sm.
+  # [Optional] Config the crypto algorithm here, we support ecdsa and sm.
   # If not configured, ecdsa is the default option.
-  algorithm: ecdsa
+  # algorithm: ecdsa
+  certPath: conf
 
-  # Required. CA cert file path
-  caCert: conf/ca.crt
+  # [Optional]. CA cert file path
+  # caCert: conf/ca.crt
 
-  # Required. SSL cert file path
-  sslCert: conf/sdk.crt
+  # [Optional]. SSL cert file path
+  # sslCert: conf/sdk.crt
 
-  # Required. SSL key file path
-  sslKey: conf/sdk.key
+  # [Optional]. SSL key file path
+  # sslKey: conf/sdk.key
 
-  #[Option] if algorithm is sm, enSslCert and enSslKey is required
-  # enSslCert: src/test/resources/en.crt
-  # enSslKey: src/test/resources/en.key
+  #[Optional]. if algorithm is sm, enSslCert and enSslKey is required
+  # enSslCert: conf/gmensdk.crt
+  # enSslKey: conf/gmensdk.key
 
-# Required. The peer list to connect
+# [Required]. The peer list to connect
 peers:
   - 127.0.0.1:20200
   - 127.0.0.1:20201
@@ -67,12 +68,12 @@ Account:
   # The address of the account used to send transactions
   # When it's empty, use a randomly generated account to send transactions,
   # and the randomly generated account information is stored in tmp sub-directory of keyStoreDir
-  accountName:
+  # accountAddress:
   # The password used to load the account private key file
-  password:
+  # password:
 
 threadPool:
   # The size of the thread pool used to process the callback of the channel
-  channelProcessorThreadSize: 16
+  # channelProcessorThreadSize: 16
   # The size of the thread pool used to process the transaction receipt notification
-  receiptProcessorThreadSize: 16
+  # receiptProcessorThreadSize: 16
