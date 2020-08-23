@@ -237,9 +237,11 @@ public class ConsoleUtils {
         }
     }
 
-    /** @param solFile */
-    public static String compileSolForABI(File solFile) throws IOException {
-        String contractName = solFile.getName().split("\\.")[0];
+    /**
+     * @param solFile
+     * @throws IOException
+     */
+    public static String compileSolForABI(String name, File solFile) throws IOException {
 
         /** compile */
         SolidityCompiler.Result res =
@@ -251,7 +253,7 @@ public class ConsoleUtils {
         }
 
         CompilationResult result = CompilationResult.parse(res.getOutput());
-        CompilationResult.ContractMetadata meta = result.getContract(contractName);
+        CompilationResult.ContractMetadata meta = result.getContract(name);
 
         return meta.abi;
     }

@@ -199,18 +199,19 @@ public class HelpInfo {
     }
 
     public static void listDeployContractAddressHelp() {
-        System.out.println("Query the address list of the specified contract.");
-        System.out.println("Usage: listDeployContractAddress [contractName] [fromIndex] [count]");
+        System.out.println("List the deployed addresses list of the specified contract.");
+        System.out.println("Usage: listDeployContractAddress [contractName] [offset] [count]");
         System.out.println("contractName -- the contract name");
-        System.out.println("fromIndex -- (optional) the from index of results (default 0).");
+        System.out.println("offset -- (optional) the start index of results (default 0).");
         System.out.println("count -- (optional) the number of results (default 10).");
         System.out.println();
     }
 
     public static void listAbiHelp() {
         System.out.println("List functions and events info of the contract.");
-        System.out.println("Usage: listAbi [contractFile] [contractName]");
-        System.out.println("contractFile -- the contract file name or contract file path");
+        System.out.println("Usage: listAbi [contractPath] [contractName]");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println(
                 "contractName -- the contract name, not required, default the same with the contract file");
         System.out.println();
@@ -439,16 +440,17 @@ public class HelpInfo {
 
     public static void deployHelp() {
         System.out.println("Deploy a contract on blockchain.");
-        System.out.println("Usage: deploy [contractName or contractPath]");
+        System.out.println("Usage: deploy [contractPath]");
         System.out.println(
-                "contractName or contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println();
     }
 
     public static void callHelp() {
-        System.out.println("Call a contract by a function and paramters.");
-        System.out.println("Usage: call contractName contractAddress function parameters");
-        System.out.println("contractName -- The name of a contract.");
+        System.out.println("Call a contract by a function and parameters.");
+        System.out.println("Usage: call contractPath contractAddress function parameters");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("function -- The function of a contract.");
         System.out.println("parameters -- The parameters(splited by a space) of a function.");
@@ -457,8 +459,9 @@ public class HelpInfo {
 
     public static void deployByCNSHelp() {
         System.out.println("Deploy a contract on blockchain by CNS.");
-        System.out.println("Usage: deployByCNS contractName contractVersion");
-        System.out.println("contractName -- The name of a contract.");
+        System.out.println("Usage: deployByCNS contractPath contractVersion");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println(
                 "contractVersion -- The version of a contract. The maximum length of the version hex string is "
                         + CnsService.MAX_VERSION_LENGTH
@@ -478,10 +481,23 @@ public class HelpInfo {
 
     public static void queryCNSHelp() {
         System.out.println("Query CNS information by contract name and contract version.");
-        System.out.println("Usage: queryCNS contractName [contractVersion]");
+        System.out.println("Usage: queryCNS contractName contractVersion");
         System.out.println("contractName -- The name of a contract.");
         System.out.println(
-                "contractVersion -- (optional) The version of a contract. The maximum length of the version hex string is "
+                "contractVersion -- The version of a contract. The maximum length of the version hex string is "
+                        + CnsService.MAX_VERSION_LENGTH
+                        + ".");
+        System.out.println();
+    }
+
+    public static void registerCNSHelp() {
+        // // registerCNS contractAddress contractPath contractVersion
+        System.out.println("Register contract info to CNS.");
+        System.out.println("Usage: registerCNS contractPath contractAddress [contractVersion]");
+        System.out.println("contractPath -- Path of the contract file.");
+        System.out.println("contractAddress -- Address of the contract.");
+        System.out.println(
+                "contractVersion -- The version of a contract. The maximum length of the version hex string is "
                         + CnsService.MAX_VERSION_LENGTH
                         + ".");
         System.out.println();

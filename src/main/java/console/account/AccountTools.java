@@ -11,7 +11,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
@@ -106,6 +105,7 @@ public class AccountTools {
             throws UnrecoverableKeyException, InvalidKeySpecException, NoSuchAlgorithmException,
                     KeyStoreException, NoSuchProviderException, CertificateException, IOException {
         ECKeyPair ecKeyPair = null;
+        Credentials credentials = null;
         int privateKeyType = 0;
 
         if (accountPath.endsWith("p12")) {
@@ -114,25 +114,18 @@ public class AccountTools {
             p12Manager.setP12File(accountPath);
             p12Manager.setPassword(password);
             p12Manager.load();
-            ecKeyPair = p12Manager.getECKeyPair();
             privateKeyType = getPrivateKeyType(p12Manager.getPrivateKey());
+            credentials = GenCredential.create(ecKeyPair);
         } else {
             // pem
             PEMManager pem = new PEMManager();
             pem.setPemFile(accountPath);
             pem.load();
-
-            PrivateKey privateKey = pem.getPrivateKey();
-            PublicKey publicKey = pem.getPublicKey();
-
-            BigInteger biPrivate = new BigInteger(Hex.toHexString(privateKey.getEncoded()), 16);
-            BigInteger biPublic = new BigInteger(Hex.toHexString(publicKey.getEncoded()), 16);
-
-            ecKeyPair = new ECKeyPair(biPrivate, biPublic);
-            privateKeyType = getPrivateKeyType(privateKey);
+            ecKeyPair = pem.getECKeyPair();
+            privateKeyType = getPrivateKeyType(pem.getPrivateKey());
+            credentials = GenCredential.create(ecKeyPair);
         }
 
-        Credentials credentials = GenCredential.create(ecKeyPair.getPrivateKey().toString(16));
         logger.info(" loadAccount file: {}, address: {}", accountPath, credentials.getAddress());
 
         Account account = new Account(credentials);
@@ -153,6 +146,10 @@ public class AccountTools {
                         + (account.getPrivateKeyType() == EncryptType.SM2_TYPE
                                 ? "_gm.pem"
                                 : ".pem");
+
+        if (account.getPrivateKeyType() == EncryptType.SM2_TYPE) {
+            throw new UnsupportedOperationException(" Unsupported operation to save sm account.");
+        }
 
         File dir = new File(path);
         if (!dir.exists()) {

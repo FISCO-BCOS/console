@@ -29,9 +29,9 @@ function Usage() {
     LOG_INFO " \t packageName:"
     LOG_INFO " \t\t the package name of the generated Java class file"
     LOG_INFO " \t solidityFileOrDir:"
-    LOG_INFO " \t\t the solidity file path or the directory where solidity files is located, default: contracts/solidity"
+    LOG_INFO " \t\t (optional) the solidity file path or the directory where solidity files located, default: contracts/solidity"
     LOG_INFO " \t javaCodeOutputDir:"
-    LOG_INFO " \t\t the directory where the generated Java files are located, default: contracts/sdk/java"
+    LOG_INFO " \t\t (optional) the directory where the generated Java files located, default: contracts/sdk/java"
 }
 
 function check_java(){
