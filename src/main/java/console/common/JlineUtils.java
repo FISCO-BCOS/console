@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Set;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
 import org.fisco.bcos.web3j.abi.wrapper.ContractABIDefinition;
+import org.jline.builtins.Completers;
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
@@ -145,8 +146,6 @@ class ContractAddressCompleter extends StringsCompleterIgnoreCase {
         String buffer = reader.getBuffer().toString().trim();
         String[] ss = buffer.split(" ");
 
-        logger.info(" 00 ==> buffer:{}, length: {} ", buffer, ss.length);
-
         if (ss.length >= 2) {
 
             String contractName = ss[1];
@@ -185,6 +184,7 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
         logger.info(" 11 ==> buffer:{} , length: {}", buffer, ss.length);
 
         if (ss.length >= 3) {
+            // TO DO
             String contractName = PathUtils.removeSolPostfix(ss[1]);
 
             try {
@@ -198,6 +198,7 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
                 if (logger.isDebugEnabled()) {
                     logger.debug(" funcNames: {}", functionNames.toArray(new String[0]));
                 }
+
                 for (String funName : functionNames) {
                     candidates.add(
                             new Candidate(
@@ -209,6 +210,7 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
                                     null,
                                     true));
                 }
+
             } catch (Exception e) {
                 logger.trace("e: ", e);
             }
@@ -465,7 +467,6 @@ public class JlineUtils {
                         "listAccount",
                         "saveAccount",
                         "newAccount",
-                        "loadAccount",
                         "quit",
                         "exit",
                         "desc",
@@ -482,7 +483,11 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase()));
         }
 
-        Path path = FileSystems.getDefault().getPath(PathUtils.SOL_DIRECTORY, "");
+        Path solDefaultPath = FileSystems.getDefault().getPath(PathUtils.SOL_DIRECTORY, "");
+        Path currentPath = new File("").toPath();
+
+        // Path path = FileSystems.getDefault().getPath(PathUtils.SOL_DIRECTORY, "");
+
         commands =
                 Arrays.asList(
                         "deploy",
@@ -495,7 +500,10 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ConsoleFilesCompleter(path),
+                            new AggregateCompleter(
+                                    new ConsoleFilesCompleter(solDefaultPath)
+                                    // new Completers.DirectoriesCompleter(currentPath)
+                                    ),
                             new StringsCompleterIgnoreCase()));
         }
 
@@ -505,9 +513,25 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ConsoleFilesCompleter(path),
+                            new AggregateCompleter(
+                                    new ConsoleFilesCompleter(solDefaultPath)
+                                    // new Completers.DirectoriesCompleter(currentPath)
+                                    ),
                             new ContractAddressCompleter(deployContractManager),
                             new ContractMethodCompleter(),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("registerCNS");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new AggregateCompleter(
+                                    new ConsoleFilesCompleter(solDefaultPath)
+                                    // new Completers.DirectoriesCompleter(currentPath)
+                                    ),
                             new StringsCompleterIgnoreCase()));
         }
 
@@ -537,7 +561,10 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ConsoleFilesCompleter(path),
+                            new AggregateCompleter(
+                                    new ConsoleFilesCompleter(solDefaultPath)
+                                    // new Completers.DirectoriesCompleter(currentPath)
+                                    ),
                             new StringsCompleterIgnoreCase()));
         }
 
@@ -545,9 +572,7 @@ public class JlineUtils {
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter("0x"),
-                            new FilesCompleter(path)));
+                            new StringsCompleter(command), new StringsCompleter("0x")));
         }
         commands = Arrays.asList("setSystemConfigByKey", "getSystemConfigByKey");
 
@@ -585,7 +610,7 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ConsoleFilesCompleter(accountPath),
+                            new Completers.FilesCompleter(accountPath),
                             new StringsCompleterIgnoreCase()));
         }
 

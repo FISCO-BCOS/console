@@ -1,7 +1,5 @@
 package console.contract;
 
-import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
-
 import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
@@ -17,16 +15,6 @@ import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
@@ -52,6 +40,20 @@ import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 
 public class ContractImpl implements ContractFace {
 
@@ -230,28 +232,33 @@ public class ContractImpl implements ContractFace {
         }
 
         String contractName = params[1];
-        int from = 0;
+        int offset = 0;
         int count = 20;
 
         if (params.length > 2) {
-            from = Integer.valueOf(params[2]);
+            offset = Integer.valueOf(params[2]);
             if (params.length > 3) {
                 count = count = Integer.valueOf(params[3]);
             }
         }
 
-        logger.debug("contractName: {}, from: {}, count: {}", contractName, from, count);
+        logger.debug("contractName: {}, offset: {}, count: {}", contractName, offset, count);
 
         List<DeployContractManager.DeployedContract> deployContractList =
                 deployContractManager.getDeployContractList(String.valueOf(groupID), contractName);
-        System.out.println(contractName + " deployed contract count: " + deployContractList.size());
+        System.out.println(
+                "contract: "
+                        + contractName
+                        + " has been deployed "
+                        + deployContractList.size()
+                        + " times.");
 
-        if (from <= deployContractList.size()) {
-            if (from + count >= deployContractList.size()) {
-                count = deployContractList.size() - from;
+        if (offset <= deployContractList.size()) {
+            if (offset + count >= deployContractList.size()) {
+                count = deployContractList.size() - offset;
             }
 
-            for (int i = from; i < from + count; i++) {
+            for (int i = offset; i < offset + count; i++) {
                 System.out.printf(
                         "\t%3d. %s  %s\n",
                         i,
@@ -314,9 +321,7 @@ public class ContractImpl implements ContractFace {
                 ABIDefinitionFactory.loadABI(contractMetadata.abi);
         if (Objects.isNull(contractABIDefinition)) {
             System.out.println(" Unable to load " + contractName + " abi");
-            if (logger.isWarnEnabled()) {
-                logger.warn(" contract: {}, abi: {}", contractName, contractMetadata.abi);
-            }
+            logger.warn(" contract: {}, abi: {}", contractName, contractMetadata.abi);
             return;
         }
 
@@ -324,15 +329,14 @@ public class ContractImpl implements ContractFace {
                 contractABIDefinition.getMethodIDToFunctions();
 
         if (!methodIDToFunctions.isEmpty()) {
-            System.out.println(" \tMethod list: ");
-            System.out.println(
-                    " \t -------------------------------------------------------------- ");
+            System.out.println("Method list: ");
             System.out.printf(
-                    " \t%-5s \t%-5s \t%-10s \t%-10s\n",
+                    " %-20s|    %-10s|    %-10s  |    %-10s\n",
                     "name", "constant", "methodId", "signature");
+            System.out.println("  -------------------------------------------------------------- ");
             for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
                 System.out.printf(
-                        "  \t%-5s| \t%-5b| \t%-10s| \t%-10s\n",
+                        " %-20s|    %-10s|    %-10s  |    %-10s\n",
                         entry.getValue().getName(),
                         entry.getValue().isConstant(),
                         entry.getValue().getMethodId(),
@@ -345,20 +349,35 @@ public class ContractImpl implements ContractFace {
         Map<String, List<ABIDefinition>> events = contractABIDefinition.getEvents();
         if (!events.isEmpty()) {
             System.out.println();
-            System.out.println(" \tEvent list: ");
-            System.out.println(
-                    " \t -------------------------------------------------------------- ");
-            System.out.printf("\t  %-10s   %-66s   %-10s\n", "name", "topic", "signature");
+            System.out.println("Event list: ");
+            // System.out.println("  --------------------------------------------------------------
+            // ");
+            System.out.printf(" %-20s|   %-66s     %10s\n", "name", "topic", "signature");
+            System.out.println("  -------------------------------------------------------------- ");
             for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
 
                 System.out.printf(
-                        "\t %-10s|   %66s|   %-10s\n",
+                        " %-20s|   %-66s  |   %10s\n",
                         entry.getValue().getName(),
                         EventEncoder.buildEventSignature(
                                 entry.getValue().getMethodSignatureAsString()),
                         entry.getValue().getMethodSignatureAsString());
             }
         }
+    }
+
+    /**
+     *
+     * @param str
+     * @return
+     */
+    public static boolean isNumeric(String str){
+        for (int i = 0; i < str.length(); i++){
+            if (!Character.isDigit(str.charAt(i))){
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -380,6 +399,35 @@ public class ContractImpl implements ContractFace {
         File solFile = PathUtils.getSolFile(contractNameOrPath);
         String name = solFile.getName().split("\\.")[0];
 
+        String contractAddress = params[2];
+        if (contractAddress.toLowerCase().equals("latest")) { // latest
+            DeployContractManager.DeployedContract latestDeployContract = deployContractManager.getLatestDeployContract(String.valueOf(groupID), name);
+            if (latestDeployContract == null) {
+                System.out.println("contract " + name + " has not been deployed.");
+                System.out.println();
+                return;
+            }
+            contractAddress = latestDeployContract.getContractAddress();
+            logger.debug(" last deployed contract name: {}, contract: {}", name, latestDeployContract);
+        } else if (isNumeric(contractAddress)) {
+            int index = Integer.valueOf(contractAddress);
+            DeployContractManager.DeployedContract deployContractByIndex = deployContractManager.getDeployContractByIndex(String.valueOf(groupID), name, index);
+            if (deployContractByIndex == null) {
+                System.out.println("contract: " + name + " ,index: " + index + " not exist, please check if index is out of range.");
+                System.out.println();
+                return;
+            }
+            contractAddress = deployContractByIndex.getContractAddress();
+            logger.debug(" index deployed contract name: {}, index: {}, contract: {}", name, index, deployContractByIndex);
+        }
+        else {
+            Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
+            if (!convertAddr.isValid()) {
+                return;
+            }
+            contractAddress = convertAddr.getAddress();
+        }
+
         Class<?> contractClass = ContractClassFactory.compileContract(solFile);
         Method load =
                 contractClass.getMethod(
@@ -388,12 +436,7 @@ public class ContractImpl implements ContractFace {
                         Web3j.class,
                         Credentials.class,
                         ContractGasProvider.class);
-        String contractAddress = params[2];
-        Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
-        if (!convertAddr.isValid()) {
-            return;
-        }
-        contractAddress = convertAddr.getAddress();
+
         Object contractObject =
                 load.invoke(
                         null,
@@ -627,6 +670,7 @@ public class ContractImpl implements ContractFace {
                 return;
             }
         }
+
         if (name.endsWith(".sol")) {
             name = name.substring(0, name.length() - 4);
             if (contractVersion != null) {
@@ -638,6 +682,7 @@ public class ContractImpl implements ContractFace {
                 contractNameAndVersion = name;
             }
         }
+
         // get address from cns
         String contractAddress = "";
         CnsService cnsResolver =
@@ -831,5 +876,87 @@ public class ContractImpl implements ContractFace {
         System.out.println(table);
         ConsoleUtils.singleLine();
         System.out.println();
+    }
+
+    @Override
+    public void registerCNS(String[] params) throws Exception {
+        if (params.length < 2) {
+            HelpInfo.promptHelp("registerCNS");
+            return;
+        }
+        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
+            HelpInfo.registerCNSHelp();
+            return;
+        }
+        if (params.length < 4) {
+            HelpInfo.promptHelp("registerCNS");
+            return;
+        }
+
+        // registerCNS contractPath contractAddress contractVersion
+        String contractPath = params[1];
+        String contractAddress = params[2];
+        String contractVersion = params[3];
+
+        Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
+        if (!convertAddr.isValid()) {
+            return;
+        }
+        contractAddress = convertAddr.getAddress();
+
+        File solFile = PathUtils.getSolFile(contractPath);
+        String name = solFile.getName().split("\\.")[0];
+        String abi = "";
+
+        if (solFile.getName().endsWith(PathUtils.SOL_POSTFIX)) {
+            // solidity source file
+            abi = ConsoleUtils.compileSolForABI(name, solFile);
+        } else { // solidity abi file
+            byte[] bytes = Files.readAllBytes(solFile.toPath());
+            abi = new String(bytes);
+        }
+
+        CnsService cnsService =
+                new CnsService(web3j, accountManager.getCurrentAccountCredentials());
+        List<CnsInfo> qcns = cnsService.queryCnsByNameAndVersion(name, contractVersion);
+        if (qcns.size() != 0) {
+            ConsoleUtils.printJson(
+                    PrecompiledCommon.transferToJson(
+                            PrecompiledCommon.ContractNameAndVersionExist));
+            System.out.println();
+            return;
+        }
+
+        try {
+
+            if (logger.isDebugEnabled()) {
+                logger.debug(
+                        " contractAddress: {}, contractName: {}, contractVersion: {}, file: {}",
+                        contractAddress,
+                        name,
+                        contractVersion,
+                        solFile.getName());
+            }
+
+            // register cns
+            cnsService.registerCns(name, contractVersion, contractAddress, abi);
+
+            System.out.println(
+                    "registerCNS successfully, contract name: "
+                            + name
+                            + " ,contract address: "
+                            + contractAddress);
+
+            deployContractManager.addNewDeployContract(
+                    String.valueOf(groupID), name, contractAddress);
+            System.out.println();
+        } catch (Exception e) {
+            if (e.getMessage().contains("0x19")) {
+                ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
+                System.out.println();
+            } else {
+                throw e;
+            }
+        }
     }
 }

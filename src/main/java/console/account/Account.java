@@ -59,7 +59,7 @@ public class Account {
                 + credentials.getAddress()
                 + ", privateKeyType="
                 + privateKeyType
-                + ", newAccount="
+                + ", tempAccount="
                 + isTempAccount
                 + '}';
     }

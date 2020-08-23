@@ -124,7 +124,22 @@ public class AccountImpl implements AccountInterface {
 
         Map<String, Account> accountMap = accountManager.getAccountMap();
         System.out.println(" account list:");
+
         for (Account account : accountMap.values()) {
+            if (accountManager.isCurrentAccount(account)) {
+                System.out.println(
+                        "\t "
+                                + account.getCredentials().getAddress()
+                                + (account.isTempAccount() ? " (temporary account)" : "")
+                                + (accountManager.isCurrentAccount(account) ? " <= " : ""));
+                break;
+            }
+        }
+
+        for (Account account : accountMap.values()) {
+            if (accountManager.isCurrentAccount(account)) {
+                continue;
+            }
             System.out.println(
                     "\t "
                             + account.getCredentials().getAddress()

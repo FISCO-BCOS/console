@@ -44,9 +44,12 @@ public class AccountManager {
     }
 
     public boolean addAccount(Account account) {
-        Account account1 = accountMap.putIfAbsent(account.getCredentials().getAddress(), account);
+        if (accountMap.get(account.getCredentials().getAddress()) == null) {
+            accountMap.put(account.getCredentials().getAddress(), account);
+            return true;
+        }
         logger.info("addAccount, addresses: {}", accountMap.keySet().toArray(new String[0]));
-        return account1 != null;
+        return false;
     }
 
     public Account getAccount(String account) {

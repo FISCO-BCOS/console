@@ -133,6 +133,9 @@ public class ConsoleClient {
                     case "queryCNS":
                         contractFace.queryCNS(params);
                         break;
+                    case "registerCNS":
+                        contractFace.registerCNS(params);
+                        break;
                     case "switch":
                     case "s":
                         consoleInitializer.switchGroupID(params);

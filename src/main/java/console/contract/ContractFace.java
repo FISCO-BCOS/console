@@ -31,6 +31,8 @@ public interface ContractFace {
 
     void queryCNS(String[] params) throws Exception;
 
+    void registerCNS(String[] params) throws Exception;
+
     void getDeployLog(String[] params) throws Exception;
 
     void listDeployContractAddress(String[] params) throws Exception;
