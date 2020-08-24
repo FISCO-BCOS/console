@@ -470,7 +470,7 @@ public class HelpInfo {
     }
 
     public static void callByCNSHelp() {
-        System.out.println("Call a contract by a function and paramters by CNS.");
+        System.out.println("Call a contract by a function and parameters by CNS.");
         System.out.println("Usage: callByCNS contractName:contractVersion function parameters");
         System.out.println(
                 "contractName:contractVersion -- The name and version of a contract. If contract version is not provided, then the latest version of contract will be called.");

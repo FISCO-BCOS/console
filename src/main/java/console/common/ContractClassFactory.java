@@ -58,6 +58,38 @@ public class ContractClassFactory {
         return classLoader;
     }
 
+    /**
+     * @param name
+     * @param abi
+     * @return
+     * @throws Exception
+     */
+    public static Class<?> compileContract(String name, String abi) throws Exception {
+
+        try {
+            // compile solidity and generate java contract code first
+            ConsoleUtils.compileSolToJava(JAVA_PATH, PACKAGE_NAME, name, abi, ABI_PATH, BIN_PATH);
+        } catch (Exception e) {
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            throw new Exception(e.getMessage());
+        }
+
+        try {
+            dynamicCompileJavaToClass(name);
+        } catch (Exception e1) {
+            logger.error(" name: {}, error: {}", name, e1);
+            throw new Exception("Compile " + name + ".java failed.");
+        }
+
+        String contractName = PACKAGE_NAME + "." + name;
+        try {
+            return getContractClass(contractName);
+        } catch (Exception e) {
+            throw new Exception(
+                    "There is no " + name + ".class" + " in the directory of java/classes/temp");
+        }
+    }
+
     public static Class<?> compileContract(File solFile) throws Exception {
 
         String name = solFile.getName().split("\\.")[0];
