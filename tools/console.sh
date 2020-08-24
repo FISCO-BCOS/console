@@ -57,9 +57,8 @@ function check_java(){
        exit 1
    fi
 }
-if [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
-    Usage
-elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
+
+if [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
