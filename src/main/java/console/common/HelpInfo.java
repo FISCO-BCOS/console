@@ -119,6 +119,23 @@ public class HelpInfo {
             case "listOperators":
                 listOperatorsHelp();
                 break;
+            case "listAbi":
+                listAbiHelp();
+            case "loadAccount":
+                loadAccountHelp();
+                break;
+            case "switchAccount":
+                switchAccountHelp();
+                break;
+            case "newAccount":
+                newAccountHelp();
+                break;
+            case "listAccount":
+                listAccountHelp();
+                break;
+            case "saveAccount":
+                saveAccountHelp();
+                break;
             case "quit":
             case "q":
                 quitHelp();
@@ -178,6 +195,25 @@ public class HelpInfo {
                 "recordNumber -- (optional) The number of deployed contract records, "
                         + Common.DeployLogntegerRange
                         + "(default 20).");
+        System.out.println();
+    }
+
+    public static void listDeployContractAddressHelp() {
+        System.out.println("List the deployed addresses list of the specified contract.");
+        System.out.println("Usage: listDeployContractAddress [contractName] [offset] [count]");
+        System.out.println("contractName -- the contract name");
+        System.out.println("offset -- (optional) the start index of results (default 0).");
+        System.out.println("count -- (optional) the number of results (default 10).");
+        System.out.println();
+    }
+
+    public static void listAbiHelp() {
+        System.out.println("List functions and events info of the contract.");
+        System.out.println("Usage: listAbi [contractPath] [contractName]");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
+        System.out.println(
+                "contractName -- (optional) the contract name, default the same with the contract file");
         System.out.println();
     }
 
@@ -404,15 +440,17 @@ public class HelpInfo {
 
     public static void deployHelp() {
         System.out.println("Deploy a contract on blockchain.");
-        System.out.println("Usage: deploy contractName");
-        System.out.println("contractName -- The name of a contract.");
+        System.out.println("Usage: deploy [contractPath]");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println();
     }
 
     public static void callHelp() {
-        System.out.println("Call a contract by a function and paramters.");
-        System.out.println("Usage: call contractName contractAddress function parameters");
-        System.out.println("contractName -- The name of a contract.");
+        System.out.println("Call a contract by a function and parameters.");
+        System.out.println("Usage: call contractPath contractAddress function parameters");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println("contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("function -- The function of a contract.");
         System.out.println("parameters -- The parameters(splited by a space) of a function.");
@@ -421,8 +459,9 @@ public class HelpInfo {
 
     public static void deployByCNSHelp() {
         System.out.println("Deploy a contract on blockchain by CNS.");
-        System.out.println("Usage: deployByCNS contractName contractVersion");
-        System.out.println("contractName -- The name of a contract.");
+        System.out.println("Usage: deployByCNS contractPath contractVersion");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println(
                 "contractVersion -- The version of a contract. The maximum length of the version hex string is "
                         + CnsService.MAX_VERSION_LENGTH
@@ -431,7 +470,7 @@ public class HelpInfo {
     }
 
     public static void callByCNSHelp() {
-        System.out.println("Call a contract by a function and paramters by CNS.");
+        System.out.println("Call a contract by a function and parameters by CNS.");
         System.out.println("Usage: callByCNS contractName:contractVersion function parameters");
         System.out.println(
                 "contractName:contractVersion -- The name and version of a contract. If contract version is not provided, then the latest version of contract will be called.");
@@ -442,10 +481,24 @@ public class HelpInfo {
 
     public static void queryCNSHelp() {
         System.out.println("Query CNS information by contract name and contract version.");
-        System.out.println("Usage: queryCNS contractName [contractVersion]");
+        System.out.println("Usage: queryCNS contractName contractVersion");
         System.out.println("contractName -- The name of a contract.");
         System.out.println(
-                "contractVersion -- (optional) The version of a contract. The maximum length of the version hex string is "
+                "contractVersion -- The version of a contract. The maximum length of the version hex string is "
+                        + CnsService.MAX_VERSION_LENGTH
+                        + ".");
+        System.out.println();
+    }
+
+    public static void registerCNSHelp() {
+        // // registerCNS contractAddress contractPath contractVersion
+        System.out.println("Register contract info to CNS.");
+        System.out.println("Usage: registerCNS contractPath contractAddress [contractVersion]");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
+        System.out.println("contractAddress -- Address of the contract.");
+        System.out.println(
+                "contractVersion -- The version of a contract. The maximum length of the version hex string is "
                         + CnsService.MAX_VERSION_LENGTH
                         + ".");
         System.out.println();
@@ -761,6 +814,12 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void consoleHelp() {
+        System.out.println("Usage: ");
+        System.out.println("./console.sh -h");
+        System.out.println("./console.sh -v");
+    }
+
     public static void startHelp() {
         System.out.println("Please provide one of the following ways to start the console.");
         System.out.println("Usage: ");
@@ -768,5 +827,41 @@ public class HelpInfo {
         System.out.println("./start.sh groupID");
         System.out.println("./start.sh groupID -pem pemName");
         System.out.println("./start.sh groupID -p12 p12Name");
+    }
+
+    public static void newAccountHelp() {
+        System.out.println("create a new account for the transaction signature");
+        System.out.println("Usage: newAccount");
+        System.out.println();
+    }
+
+    public static void loadAccountHelp() {
+        System.out.println("load account for the transaction signature");
+        System.out.println("Usage: loadAccount accountPath");
+        System.out.println(
+                "accountPath -- The path of the account private key file, support .pem and .p12 format file");
+        System.out.println();
+    }
+
+    public static void switchAccountHelp() {
+        System.out.println("switch account for the transaction signature");
+        System.out.println("Usage: switchAccount accountAddress");
+        System.out.println("accountAddress -- The address of the account to switch");
+        System.out.println();
+    }
+
+    public static void saveAccountHelp() {
+        System.out.println("save the account to the file");
+        System.out.println("Usage: saveAccount accountAddress [saveDir]");
+        System.out.println("accountAddress -- The address of the account to save");
+        System.out.println(
+                "saveDir -- (optional) The directory of the account file to save, default: accounts/");
+        System.out.println();
+    }
+
+    public static void listAccountHelp() {
+        System.out.println("list all the accounts");
+        System.out.println("Usage: listAccount");
+        System.out.println();
     }
 }

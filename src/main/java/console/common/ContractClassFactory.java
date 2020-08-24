@@ -2,7 +2,6 @@ package console.common;
 
 import console.exception.ConsoleMessageException;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -17,7 +16,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import org.apache.commons.collections4.map.HashedMap;
@@ -41,13 +39,11 @@ public class ContractClassFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(ContractClassFactory.class);
 
-    public static final String SOLIDITY_PATH = "contracts/solidity/";
     public static final String JAVA_PATH = "contracts/console/java/";
     public static final String ABI_PATH = "contracts/console/abi/";
     public static final String BIN_PATH = "contracts/console/bin/";
     public static final String PACKAGE_NAME = "temp";
     public static final String TAR_GET_CLASSPATH = "contracts/console/java/classes/";
-    public static final String SOL_POSTFIX = ".sol";
 
     public static URLClassLoader initClassLoad() throws MalformedURLException {
         File clazzPath = new File(TAR_GET_CLASSPATH);
@@ -62,137 +58,98 @@ public class ContractClassFactory {
         return classLoader;
     }
 
-    public static Class<?> compileContract(String name) throws Exception {
+    /**
+     * @param name
+     * @param abi
+     * @return
+     * @throws Exception
+     */
+    public static Class<?> compileContract(String name, String abi) throws Exception {
+
         try {
-            name = removeSolPostfix(name);
-            dynamicCompileSolFilesToJava(name);
+            // compile solidity and generate java contract code first
+            ConsoleUtils.compileSolToJava(JAVA_PATH, PACKAGE_NAME, name, abi, ABI_PATH, BIN_PATH);
         } catch (Exception e) {
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             throw new Exception(e.getMessage());
         }
+
         try {
             dynamicCompileJavaToClass(name);
         } catch (Exception e1) {
             logger.error(" name: {}, error: {}", name, e1);
             throw new Exception("Compile " + name + ".java failed.");
         }
+
         String contractName = PACKAGE_NAME + "." + name;
         try {
-            return getContractClass2(contractName);
+            return getContractClass(contractName);
         } catch (Exception e) {
             throw new Exception(
                     "There is no " + name + ".class" + " in the directory of java/classes/temp");
         }
     }
 
-    public static String removeSolPostfix(String name) {
-        String tempName = "";
-        if (name.endsWith(SOL_POSTFIX)) {
-            tempName = name.substring(0, name.length() - SOL_POSTFIX.length());
-        } else {
-            tempName = name;
+    public static Class<?> compileContract(File solFile) throws Exception {
+
+        String name = solFile.getName().split("\\.")[0];
+        try {
+            // compile solidity and generate java contract code first
+            ConsoleUtils.compileSolToJava(JAVA_PATH, PACKAGE_NAME, solFile, ABI_PATH, BIN_PATH);
+        } catch (Exception e) {
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            throw new Exception(e.getMessage());
         }
-        return tempName;
+
+        try {
+            dynamicCompileJavaToClass(name);
+        } catch (Exception e1) {
+            logger.error(" name: {}, error: {}", name, e1);
+            throw new Exception("Compile " + name + ".java failed.");
+        }
+
+        String contractName = PACKAGE_NAME + "." + name;
+        try {
+            return getContractClass(contractName);
+        } catch (Exception e) {
+            throw new Exception(
+                    "There is no " + name + ".class" + " in the directory of java/classes/temp");
+        }
     }
 
     // dynamic compile target java code
     public static void dynamicCompileJavaToClass(String name) throws Exception {
+
+        File distDir = new File(TAR_GET_CLASSPATH);
+        if (!distDir.exists()) {
+            distDir.mkdirs();
+        }
 
         File sourceDir = new File(JAVA_PATH + "temp/");
         if (!sourceDir.exists()) {
             sourceDir.mkdirs();
         }
 
-        File distDir = new File(TAR_GET_CLASSPATH);
-        if (!distDir.exists()) {
-            distDir.mkdirs();
+        File javaFile = new File(sourceDir, name + ".java");
+        if (!javaFile.exists()) {
+            throw new Exception(name + ".java not exist, maybe generate contract code failed.");
         }
-        File[] javaFiles = sourceDir.listFiles();
-        for (File javaFile : javaFiles) {
-            if (!javaFile.getName().equals(name + ".java")) {
-                continue;
-            }
-            JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
-            int compileResult =
-                    javac.run(
-                            null,
-                            null,
-                            null,
-                            "-d",
-                            distDir.getAbsolutePath(),
-                            javaFile.getAbsolutePath());
-            if (compileResult != 0) {
-                System.err.println("compile failed!!");
-                System.out.println();
-                throw new Exception("compile failed, solidity file: " + name);
-            }
+
+        JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+        int compileResult =
+                javac.run(
+                        null,
+                        null,
+                        null,
+                        "-d",
+                        distDir.getAbsolutePath(),
+                        javaFile.getAbsolutePath());
+        if (compileResult != 0) {
+            throw new Exception("compile failed, contract: " + name);
         }
     }
 
-    public static void dynamicCompileSolFilesToJava(String name) throws IOException {
-        if (!name.endsWith(SOL_POSTFIX)) {
-            name = name + SOL_POSTFIX;
-        }
-        File solFileList = new File(SOLIDITY_PATH);
-        if (!solFileList.exists()) {
-            throw new IOException("Please checkout the directory " + SOLIDITY_PATH + " is exist.");
-        }
-        File solFile = new File(SOLIDITY_PATH + "/" + name);
-        if (!solFile.exists()) {
-            throw new IOException("There is no " + name + " in the directory of " + SOLIDITY_PATH);
-        }
-        String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
-        ConsoleUtils.compileSolToJava(
-                name, tempDirPath, PACKAGE_NAME, solFileList, ABI_PATH, BIN_PATH);
-    }
-
-    public static Class<?> getContractClass(String contractName)
-            throws ClassNotFoundException, MalformedURLException {
-
-        File clazzPath = new File(TAR_GET_CLASSPATH);
-
-        if (clazzPath.exists() && clazzPath.isDirectory()) {
-
-            int clazzPathLen = clazzPath.getAbsolutePath().length() + 1;
-
-            Stack<File> stack = new Stack<>();
-            stack.push(clazzPath);
-
-            while (!stack.isEmpty()) {
-                File path = stack.pop();
-                File[] classFiles =
-                        path.listFiles(
-                                new FileFilter() {
-                                    public boolean accept(File pathname) {
-                                        return pathname.isDirectory()
-                                                || pathname.getName().endsWith(".class");
-                                    }
-                                });
-                for (File subFile : classFiles) {
-                    if (subFile.isDirectory()) {
-                        stack.push(subFile);
-                    } else {
-                        String className = subFile.getAbsolutePath();
-                        if (className.contains("$")) {
-                            continue;
-                        }
-
-                        className = className.substring(clazzPathLen, className.length() - 6);
-                        className = className.replace(File.separatorChar, '.');
-
-                        if (contractName.equals(className)) {
-                            URLClassLoader classLoader = initClassLoad();
-                            return Class.forName(className, true, classLoader);
-                        }
-                    }
-                }
-            }
-        }
-
-        return Class.forName(contractName);
-    }
-
-    public static Class<?> getContractClass2(String contractName) throws ClassNotFoundException {
+    public static Class<?> getContractClass(String contractName) throws ClassNotFoundException {
         ContractClassLoader contractClassLoader = new ContractClassLoader(TAR_GET_CLASSPATH);
         return contractClassLoader.loadClass(contractName);
     }
@@ -412,6 +369,12 @@ public class ContractClassFactory {
 
             if (type[i] == String.class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
+                    obj[i] = params[i].substring(1, params[i].length() - 1);
+                } else {
+                    obj[i] = params[i];
+                }
+                /*
+                if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
                     try {
                         obj[i] = params[i].substring(1, params[i].length() - 1);
                     } catch (Exception e) {
@@ -425,6 +388,7 @@ public class ContractClassFactory {
                     System.out.println();
                     return null;
                 }
+                */
             } else if (type[i] == Boolean.class) {
                 try {
                     obj[i] = Boolean.parseBoolean(params[i]);
@@ -471,6 +435,20 @@ public class ContractClassFactory {
                 }
 
             } else if (type[i] == byte[].class) {
+                String bytesValue = "";
+                if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
+                    bytesValue = params[i].substring(1, params[i].length() - 1);
+                } else {
+                    bytesValue = params[i];
+                }
+
+                if (bytesValue.startsWith("0x")) {
+                    obj[i] = Numeric.hexStringToByteArray(bytesValue);
+                } else {
+                    obj[i] = bytesValue.getBytes();
+                }
+
+                /*
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
                     String bytesValue = params[i].substring(1, params[i].length() - 1);
                     if (bytesValue.startsWith("0x")) {
@@ -483,6 +461,7 @@ public class ContractClassFactory {
                     System.out.println();
                     return null;
                 }
+                */
             } else if (type[i] == List.class) {
 
                 if (params[i].startsWith("[") && params[i].endsWith("]")) {
@@ -495,7 +474,6 @@ public class ContractClassFactory {
                             for (int j = 0; j < ilist.length; j++) {
                                 paramsList.add(ilist[j].substring(1, ilist[j].length() - 1));
                             }
-
                         } else if (generics[i].contains("BigInteger")) {
                             paramsList = new ArrayList<BigInteger>();
                             for (int j = 0; j < ilist.length; j++) {
@@ -510,6 +488,11 @@ public class ContractClassFactory {
                                             ilist[j].substring(1, ilist[j].length() - 1).getBytes();
                                     paramsList.add(bytes);
                                 }
+                            }
+                        } else if (generics[i].contains("Boolean")) {
+                            paramsList = new ArrayList<Boolean>();
+                            for (int j = 0; j < ilist.length; j++) {
+                                paramsList.add(Boolean.parseBoolean(ilist[j]));
                             }
                         }
                         obj[i] = paramsList;

@@ -1,5 +1,7 @@
 package console.common;
 
+import console.account.Account;
+import console.account.AccountManager;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -11,6 +13,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
+import org.fisco.bcos.web3j.abi.wrapper.ContractABIDefinition;
+import org.jline.builtins.Completers;
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
@@ -30,6 +36,184 @@ import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+class SwitchAccountCompleter extends StringsCompleterIgnoreCase {
+    private static final Logger logger = LoggerFactory.getLogger(SwitchAccountCompleter.class);
+
+    private AccountManager accountManager;
+
+    public SwitchAccountCompleter(final AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    public AccountManager getAccountManager() {
+        return this.accountManager;
+    }
+
+    public void setAccountManager(final AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        Collection<Account> values = accountManager.getAccountMap().values();
+        Account currentAccount = accountManager.getCurrentAccount();
+        for (Account account : values) {
+            if (account.getCredentials()
+                    .getAddress()
+                    .equals(currentAccount.getCredentials().getAddress())) {
+                continue;
+            }
+
+            candidates.add(
+                    new Candidate(
+                            AttributedString.stripAnsi(account.getCredentials().getAddress()),
+                            account.getCredentials().getAddress(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            true));
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
+
+class SaveAccountCompleter extends StringsCompleterIgnoreCase {
+    private static final Logger logger = LoggerFactory.getLogger(SaveAccountCompleter.class);
+
+    private AccountManager accountManager;
+
+    public SaveAccountCompleter(final AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    public AccountManager getAccountManager() {
+        return this.accountManager;
+    }
+
+    public void setAccountManager(final AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        Collection<Account> values = accountManager.getAccountMap().values();
+        for (Account account : values) {
+            if (!account.isTempAccount()) {
+                continue;
+            }
+
+            candidates.add(
+                    new Candidate(
+                            AttributedString.stripAnsi(account.getCredentials().getAddress()),
+                            account.getCredentials().getAddress(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            true));
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
+
+class ContractAddressCompleter extends StringsCompleterIgnoreCase {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContractAddressCompleter.class);
+
+    public ContractAddressCompleter(final DeployContractManager deployContractManager) {
+        this.deployContractManager = deployContractManager;
+    }
+
+    private DeployContractManager deployContractManager;
+
+    public DeployContractManager getDeployContractManager() {
+        return this.deployContractManager;
+    }
+
+    public void setDeployContractManager(final DeployContractManager deployContractManager) {
+        this.deployContractManager = deployContractManager;
+    }
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        String buffer = reader.getBuffer().toString().trim();
+        String[] ss = buffer.split(" ");
+
+        if (ss.length >= 2) {
+
+            String contractName = ss[1];
+
+            List<DeployContractManager.DeployedContract> deployContractList =
+                    deployContractManager.getDeployContractList(
+                            deployContractManager.getGroupId(), contractName);
+
+            for (DeployContractManager.DeployedContract deployedContract : deployContractList) {
+                candidates.add(
+                        new Candidate(
+                                AttributedString.stripAnsi(deployedContract.getContractAddress()),
+                                deployedContract.getContractAddress(),
+                                null,
+                                null,
+                                null,
+                                null,
+                                true));
+            }
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
+
+class ContractMethodCompleter extends StringsCompleterIgnoreCase {
+
+    private static final Logger logger = LoggerFactory.getLogger(ContractMethodCompleter.class);
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        String buffer = reader.getBuffer().toString().trim();
+        String[] ss = buffer.split(" ");
+
+        if (ss.length >= 3) {
+            // TO DO
+            String contractName = PathUtils.removeSolPostfix(ss[1]);
+
+            try {
+                File solFile =
+                        new File(ContractClassFactory.ABI_PATH + "/" + contractName + ".abi");
+                byte[] bytes = Files.readAllBytes(solFile.toPath());
+
+                ContractABIDefinition contractABIDefinition =
+                        ABIDefinitionFactory.loadABI(new String(bytes));
+                Set<String> functionNames = contractABIDefinition.getFunctions().keySet();
+
+                for (String funName : functionNames) {
+                    candidates.add(
+                            new Candidate(
+                                    AttributedString.stripAnsi(funName),
+                                    funName,
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    true));
+                }
+
+            } catch (Exception e) {
+                logger.trace("e: ", e);
+            }
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
 
 class StringsCompleterIgnoreCase implements Completer {
 
@@ -64,6 +248,7 @@ class StringsCompleterIgnoreCase implements Completer {
         assert candidates != null;
 
         Buffer buffer = reader.getBuffer();
+
         String start = (buffer == null) ? "" : buffer.toString();
         int index = start.lastIndexOf(" ");
         String tmp = start.substring(index + 1, start.length()).toLowerCase();
@@ -193,7 +378,9 @@ public class JlineUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
 
-    public static LineReader getLineReader() throws IOException {
+    public static LineReader getLineReader(
+            DeployContractManager deployContractManager, AccountManager accountManager)
+            throws IOException {
 
         List<Completer> completers = new ArrayList<Completer>();
 
@@ -227,6 +414,8 @@ public class JlineUtils {
                         "getCode",
                         "getTotalTransactionCount",
                         "getDeployLog",
+                        "listDeployContractAddress",
+                        "listAbi",
                         "addSealer",
                         "addObserver",
                         "removeNode",
@@ -269,6 +458,10 @@ public class JlineUtils {
                         "freezeAccount",
                         "unfreezeAccount",
                         "getAccountStatus",
+                        "newAccount",
+                        "listAccount",
+                        "saveAccount",
+                        "newAccount",
                         "quit",
                         "exit",
                         "desc",
@@ -285,23 +478,96 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase()));
         }
 
-        Path path = FileSystems.getDefault().getPath("contracts/solidity/", "");
-        commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
+        Path solDefaultPath = FileSystems.getDefault().getPath(PathUtils.SOL_DIRECTORY, "");
+        Path currentPath = new File("").toPath();
+
+        // Path path = FileSystems.getDefault().getPath(PathUtils.SOL_DIRECTORY, "");
+
+        commands =
+                Arrays.asList(
+                        "deploy",
+                        "deployByCNS",
+                        "callByCNS",
+                        "queryCNS",
+                        "listDeployContractAddress");
 
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ConsoleFilesCompleter(path),
+                            new AggregateCompleter(
+                                    new ConsoleFilesCompleter(solDefaultPath)
+                                    // new Completers.DirectoriesCompleter(currentPath)
+                                    ),
                             new StringsCompleterIgnoreCase()));
         }
-        commands = Arrays.asList("getTransactionReceipt");
+
+        commands = Arrays.asList("call");
+
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter("0x"),
-                            new FilesCompleter(path)));
+                            new AggregateCompleter(
+                                    new ConsoleFilesCompleter(solDefaultPath)
+                                    // new Completers.DirectoriesCompleter(currentPath)
+                                    ),
+                            new ContractAddressCompleter(deployContractManager),
+                            new ContractMethodCompleter(),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("registerCNS");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new AggregateCompleter(
+                                    new ConsoleFilesCompleter(solDefaultPath)
+                                    // new Completers.DirectoriesCompleter(currentPath)
+                                    ),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("switchAccount");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new SwitchAccountCompleter(accountManager),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("saveAccount");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new SaveAccountCompleter(accountManager),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("listAbi");
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new AggregateCompleter(
+                                    new ConsoleFilesCompleter(solDefaultPath)
+                                    // new Completers.DirectoriesCompleter(currentPath)
+                                    ),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        commands = Arrays.asList("getTransactionReceipt");
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command), new StringsCompleter("0x")));
         }
         commands = Arrays.asList("setSystemConfigByKey", "getSystemConfigByKey");
 
@@ -330,6 +596,16 @@ public class JlineUtils {
                     new ArgumentCompleter(
                             new StringsCompleter(command),
                             new StringsCompleter(Common.ConsensusTimeout),
+                            new StringsCompleterIgnoreCase()));
+        }
+
+        Path accountPath = FileSystems.getDefault().getPath(PathUtils.ACCOUNT_DIRECTORY, "");
+        commands = Arrays.asList("loadAccount");
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new Completers.FilesCompleter(accountPath),
                             new StringsCompleterIgnoreCase()));
         }
 

@@ -1,7 +1,13 @@
 package console;
 
+import console.account.Account;
+import console.account.AccountImpl;
+import console.account.AccountInterface;
+import console.account.AccountManager;
+import console.account.AccountTools;
 import console.common.Common;
 import console.common.ContractClassFactory;
+import console.common.DeployContractManager;
 import console.common.HelpInfo;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
@@ -23,18 +29,13 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
-import java.security.interfaces.ECPrivateKey;
-import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.fisco.bcos.channel.client.P12Manager;
 import org.fisco.bcos.channel.client.PEMManager;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.EncryptType;
-import org.fisco.bcos.web3j.crypto.Keys;
-import org.fisco.bcos.web3j.crypto.gm.GenCredential;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
@@ -53,12 +54,12 @@ public class ConsoleInitializer {
 
     private ChannelEthereumService channelEthereumService;
     private ApplicationContext context;
-    private ECKeyPair keyPair;
     private StaticGasProvider gasProvider =
             new StaticGasProvider(new BigInteger("300000000"), new BigInteger("300000000"));
     private Web3j web3j = null;
-    private Credentials credentials;
-    private String privateKey = "";
+    private Account account = null;;
+    private AccountManager accountManager = null;
+    private DeployContractManager deployContractManager = null;
     private int groupID;
     public static final int InvalidRequest = 40009;
     public static final String ACCOUNT_DIR1 = "accounts/";
@@ -68,6 +69,7 @@ public class ConsoleInitializer {
     private PrecompiledFace precompiledFace;
     private PermissionFace permissionFace;
     private ContractFace contractFace;
+    private AccountInterface accountInterface;
 
     public void init(String[] args)
             throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
@@ -76,10 +78,12 @@ public class ConsoleInitializer {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
+        accountManager = new AccountManager();
+        deployContractManager = DeployContractManager.newGroupDeployedContractManager();
 
         switch (args.length) {
             case 0: // bash start.sh
-                useDefaultCredentials();
+                account = AccountTools.newAccount();
                 break;
             case 1: // bash start.sh groupID
                 if ("-l".equals(args[0])) { // input by scanner for log
@@ -87,17 +91,17 @@ public class ConsoleInitializer {
                 } else {
                     groupID = setGroupID(args[0]);
                 }
-                useDefaultCredentials();
+                account = AccountTools.newAccount();
                 break;
             case 2: // bash start.sh groupID -l
                 if ("-l".equals(args[1])) { // input by scanner for log
                     ConsoleClient.INPUT_FLAG = 1;
                     groupID = setGroupID(args[0]);
-                    useDefaultCredentials();
                 } else {
                     HelpInfo.startHelp();
                     close();
                 }
+                account = AccountTools.newAccount();
                 break;
             case 3: // ./start.sh groupID -pem pemName
                 handleAccountParam(args);
@@ -112,10 +116,19 @@ public class ConsoleInitializer {
                 }
         }
 
-        if (credentials == null) {
+        if (account == null) {
             System.out.println("Please provide a valid account.");
             close();
         }
+
+        if (!account.isTypeMatchingAccount()) {
+            System.out.println(
+                    " the loading private key is not available, private key type:"
+                            + AccountTools.getPrivateKeyTypeAsString(account.getPrivateKeyType())
+                            + " ,console encryptType: "
+                            + AccountTools.getPrivateKeyTypeAsString(EncryptType.encryptType));
+        }
+
         service.setGroupId(groupID);
         try {
             service.run();
@@ -152,25 +165,34 @@ public class ConsoleInitializer {
                 Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC3;
                 Common.TableExist = PrecompiledCommon.TableExist_RC3;
             }
+
+            accountManager.addAccount(account);
+            accountManager.setCurrentAccount(account);
+
             web3jFace = new Web3jImpl();
             web3jFace.setWeb3j(web3j);
             web3jFace.setGasProvider(gasProvider);
-            web3jFace.setCredentials(credentials);
+            web3jFace.setAccountManager(accountManager);
 
             precompiledFace = new PrecompiledImpl();
             precompiledFace.setWeb3j(web3j);
-            precompiledFace.setCredentials(credentials);
+            precompiledFace.setAccountManager(accountManager);
 
             permissionFace = new PermissionImpl();
             permissionFace.setWeb3j(web3j);
-            permissionFace.setCredentials(credentials);
+            permissionFace.setAccountManager(accountManager);
 
             contractFace = new ContractImpl();
             contractFace.setGroupID(groupID);
             contractFace.setGasProvider(gasProvider);
-            contractFace.setCredentials(credentials);
             contractFace.setWeb3j(web3j);
+            contractFace.setAccountManager(accountManager);
+            contractFace.setDeployContractManager(deployContractManager);
 
+            accountInterface = new AccountImpl();
+            accountInterface.setAccountManager(accountManager);
+
+            deployContractManager.setGroupId(String.valueOf(groupID));
         } catch (ResponseExcepiton e) {
             if (e.getCode() == InvalidRequest) {
                 System.out.println("Don't connect a removed node.");
@@ -184,27 +206,6 @@ public class ConsoleInitializer {
                     "Failed to connect to the node. Please check the node status and the console configuration.");
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             close();
-        }
-    }
-
-    private void checkAccountPrivateKey(ECParameterSpec ecParameterSpec, int encryptType) {
-
-        String name = ((ECNamedCurveSpec) ecParameterSpec).getName();
-        boolean accountPrivateKeyMatch =
-                ((EncryptType.ECDSA_TYPE != EncryptType.encryptType) && name.contains("sm2"))
-                        || ((EncryptType.ECDSA_TYPE == EncryptType.encryptType)
-                                && name.contains("secp256k1"));
-
-        logger.info(" name: {}, encrypt: {}", name, encryptType);
-
-        if (!accountPrivateKeyMatch) {
-            if (EncryptType.ECDSA_TYPE == EncryptType.encryptType) {
-                throw new IllegalArgumentException(
-                        " Load SM2 private key while configuration is ECSDA type");
-            } else {
-                throw new IllegalArgumentException(
-                        " Load ECSDA private key while configuration is SM2 type");
-            }
         }
     }
 
@@ -236,10 +237,10 @@ public class ConsoleInitializer {
             }
 
             ECKeyPair keyPair = pem.getECKeyPair();
-            credentials = Credentials.create(keyPair);
-
-            checkAccountPrivateKey(
-                    ((ECPrivateKey) pem.getPrivateKey()).getParams(), EncryptType.encryptType);
+            Credentials credentials = Credentials.create(keyPair);
+            account = new Account(credentials);
+            account.setTempAccount(false);
+            account.setPrivateKeyType(AccountTools.getPrivateKeyType(pem.getPrivateKey()));
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
@@ -276,19 +277,18 @@ public class ConsoleInitializer {
             ECKeyPair keyPair;
             try {
                 keyPair = p12Manager.getECKeyPair();
-                credentials = Credentials.create(keyPair);
+                Credentials credentials = Credentials.create(keyPair);
+                account = new Account(credentials);
+                account.setTempAccount(false);
+                account.setPrivateKeyType(
+                        AccountTools.getPrivateKeyType(p12Manager.getPrivateKey()));
             } catch (Exception e) {
                 System.out.println("The name for p12 account is error.");
                 close();
             }
-
-            checkAccountPrivateKey(
-                    ((ECPrivateKey) p12Manager.getPrivateKey()).getParams(),
-                    EncryptType.encryptType);
         } else if ("-l".equals(args[1])) {
             groupID = setGroupID(args[0]);
             ConsoleClient.INPUT_FLAG = 1;
-            useDefaultCredentials();
         } else {
             HelpInfo.startHelp();
             close();
@@ -308,14 +308,6 @@ public class ConsoleInitializer {
             close();
         }
         return null;
-    }
-
-    private void useDefaultCredentials()
-            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-                    NoSuchProviderException {
-        keyPair = Keys.createEcKeyPair();
-        privateKey = keyPair.getPrivateKey().toString(16);
-        credentials = GenCredential.create(privateKey);
     }
 
     public void switchGroupID(String[] params) throws IOException {
@@ -379,6 +371,7 @@ public class ConsoleInitializer {
         permissionFace.setWeb3j(web3j);
         contractFace.setWeb3j(web3j);
         contractFace.setGroupID(groupID);
+        deployContractManager.setGroupId(String.valueOf(groupID));
 
         System.out.println("Switched to group " + groupID + ".");
         System.out.println();
@@ -436,20 +429,16 @@ public class ConsoleInitializer {
         this.web3j = web3j;
     }
 
-    public Credentials getCredentials() {
-        return credentials;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public int getGroupID() {
         return this.groupID;
-    }
-
-    public void setGroupID(int groupID) {
-        this.groupID = groupID;
     }
 
     public Web3jFace getWeb3jFace() {
@@ -466,5 +455,21 @@ public class ConsoleInitializer {
 
     public ContractFace getContractFace() {
         return contractFace;
+    }
+
+    public AccountManager getAccountManager() {
+        return accountManager;
+    }
+
+    public void setAccountManager(AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    public AccountInterface getAccountInterface() {
+        return accountInterface;
+    }
+
+    public void setAccountInterface(AccountInterface accountInterface) {
+        this.accountInterface = accountInterface;
     }
 }

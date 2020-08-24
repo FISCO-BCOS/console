@@ -1,5 +1,6 @@
 package console;
 
+import console.account.AccountInterface;
 import console.common.ConsoleExceptionUtils;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
@@ -31,6 +32,7 @@ public class ConsoleClient {
     private static PrecompiledFace precompiledFace;
     private static PermissionFace permissionFace;
     private static ContractFace contractFace;
+    private static AccountInterface accountInterface;
 
     public static int INPUT_FLAG = 0;
 
@@ -47,7 +49,12 @@ public class ConsoleClient {
             precompiledFace = consoleInitializer.getPrecompiledFace();
             permissionFace = consoleInitializer.getPermissionFace();
             contractFace = consoleInitializer.getContractFace();
-            lineReader = JlineUtils.getLineReader();
+            accountInterface = consoleInitializer.getAccountInterface();
+
+            lineReader =
+                    JlineUtils.getLineReader(
+                            contractFace.getDeployContractManager(),
+                            contractFace.getAccountManager());
             sc = new Scanner(System.in);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
             keymap.bind(new Reference("beginning-of-line"), "\033[1~");
@@ -108,6 +115,12 @@ public class ConsoleClient {
                     case "getDeployLog":
                         contractFace.getDeployLog(params);
                         break;
+                    case "listDeployContractAddress":
+                        contractFace.listDeployContractAddress(params);
+                        break;
+                    case "listAbi":
+                        contractFace.listAbi(params);
+                        break;
                     case "call":
                         contractFace.call(params);
                         break;
@@ -119,6 +132,9 @@ public class ConsoleClient {
                         break;
                     case "queryCNS":
                         contractFace.queryCNS(params);
+                        break;
+                    case "registerCNS":
+                        contractFace.registerCNS(params);
                         break;
                     case "switch":
                     case "s":
@@ -349,6 +365,21 @@ public class ConsoleClient {
                     case "getAccountStatus":
                         permissionFace.getAccountStatus(params);
                         break;
+                    case "newAccount":
+                        accountInterface.newAccount(params);
+                        break;
+                    case "loadAccount":
+                        accountInterface.loadAccount(params);
+                        break;
+                    case "listAccount":
+                        accountInterface.listAccount(params);
+                        break;
+                    case "switchAccount":
+                        accountInterface.switchAccount(params);
+                        break;
+                    case "saveAccount":
+                        accountInterface.saveAccount(params);
+                        break;
                     default:
                         System.out.println(
                                 "Undefined command: \"" + params[0] + "\". Try \"help\".\n");
@@ -367,7 +398,7 @@ public class ConsoleClient {
                     System.out.println("The contract address is incorrect.");
                     System.out.println();
                 } else {
-                    ConsoleExceptionUtils.pringMessageDecodeingException(e);
+                    ConsoleExceptionUtils.printMessageDecodingException(e);
                 }
             } catch (IOException e) {
                 if (e.getMessage().startsWith("activeConnections")) {
@@ -392,7 +423,7 @@ public class ConsoleClient {
                 consoleInitializer.close();
             } catch (RuntimeException e) {
                 if (e.getCause() instanceof MessageDecodingException) {
-                    ConsoleExceptionUtils.pringMessageDecodeingException(
+                    ConsoleExceptionUtils.printMessageDecodingException(
                             new MessageDecodingException(e.getMessage()));
                 } else {
                     System.out.println(e.getMessage());

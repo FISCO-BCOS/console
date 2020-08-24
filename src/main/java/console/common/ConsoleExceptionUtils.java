@@ -10,7 +10,7 @@ public class ConsoleExceptionUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleExceptionUtils.class);
 
-    public static void pringMessageDecodeingException(MessageDecodingException e) {
+    public static void printMessageDecodingException(MessageDecodingException e) {
         String message = e.getMessage();
         Response t = null;
         try {

@@ -6,29 +6,8 @@ branches:
 matrix:
   fast_finish: true
   include:
-    - language: python
-      python: 3.6
-      dist: xenial
-      before_cache:
-      cache:
-      before_install:
-      script: |
-        bash .ci/ci_check_commit.sh
-
     - language: java
       jdk: openjdk8
-      os: linux
-      dist: xenial
-      sudo: required
-
-    - language: java
-      jdk: openjdk9
-      os: linux
-      dist: xenial
-      sudo: required
-
-    - language: java
-      jdk: openjdk10
       os: linux
       dist: xenial
       sudo: required
@@ -38,6 +17,12 @@ matrix:
       os: linux
       dist: xenial
       sudo: required
+
+#    - language: java
+#      jdk: oraclejdk14
+#      os: linux
+#      dist: xenial
+#      sudo: required
 
     # - language: java
     #   jdk: openjdk11
