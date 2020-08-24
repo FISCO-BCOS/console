@@ -1,6 +1,8 @@
 package console.account;
 
+import console.common.PathUtils;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -11,6 +13,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
@@ -74,7 +77,7 @@ public class AccountTools {
             ecKeyPair = ECKeyPair.create(keyPair);
         }
 
-        Credentials credentials = GenCredential.create(ecKeyPair); // GM or normal
+        Credentials credentials = GenCredential.create(ecKeyPair); // SM or normal
 
         if (logger.isDebugEnabled()) {
             int type = getPrivateKeyType(keyPair.getPrivate());
@@ -106,24 +109,39 @@ public class AccountTools {
                     KeyStoreException, NoSuchProviderException, CertificateException, IOException {
         ECKeyPair ecKeyPair = null;
         Credentials credentials = null;
+        KeyPair keyPair = null;
         int privateKeyType = 0;
 
+        File accountFile = PathUtils.getAccountFile(accountPath);
+        FileInputStream fileInputStream = new FileInputStream(accountFile);
+
         if (accountPath.endsWith("p12")) {
+            if (password == null) {
+                throw new UnsupportedOperationException(" password is null ");
+            }
             // p12
             P12Manager p12Manager = new P12Manager();
-            p12Manager.setP12File(accountPath);
+            p12Manager.load(fileInputStream, password);
             p12Manager.setPassword(password);
-            p12Manager.load();
             privateKeyType = getPrivateKeyType(p12Manager.getPrivateKey());
+            ecKeyPair = p12Manager.getECKeyPair();
             credentials = GenCredential.create(ecKeyPair);
+
+            PrivateKey privateKey = p12Manager.getPrivateKey();
+            PublicKey publicKey = p12Manager.getPublicKey();
+            keyPair = new KeyPair(publicKey, privateKey);
+
         } else {
             // pem
             PEMManager pem = new PEMManager();
-            pem.setPemFile(accountPath);
-            pem.load();
+            pem.load(fileInputStream);
             ecKeyPair = pem.getECKeyPair();
             privateKeyType = getPrivateKeyType(pem.getPrivateKey());
             credentials = GenCredential.create(ecKeyPair);
+
+            PrivateKey privateKey = pem.getPrivateKey();
+            PublicKey publicKey = pem.getPublicKey();
+            keyPair = new KeyPair(publicKey, privateKey);
         }
 
         logger.info(" loadAccount file: {}, address: {}", accountPath, credentials.getAddress());
@@ -131,6 +149,7 @@ public class AccountTools {
         Account account = new Account(credentials);
         account.setPrivateKeyType(privateKeyType);
         account.setTempAccount(false);
+        account.setKeyPair(keyPair);
 
         return account;
     }
@@ -146,10 +165,6 @@ public class AccountTools {
                         + (account.getPrivateKeyType() == EncryptType.SM2_TYPE
                                 ? "_gm.pem"
                                 : ".pem");
-
-        if (account.getPrivateKeyType() == EncryptType.SM2_TYPE) {
-            throw new UnsupportedOperationException(" Unsupported operation to save sm account.");
-        }
 
         File dir = new File(path);
         if (!dir.exists()) {

@@ -213,7 +213,7 @@ public class HelpInfo {
         System.out.println(
                 "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println(
-                "contractName -- the contract name, not required, default the same with the contract file");
+                "contractName -- (optional) the contract name, default the same with the contract file");
         System.out.println();
     }
 
@@ -494,7 +494,8 @@ public class HelpInfo {
         // // registerCNS contractAddress contractPath contractVersion
         System.out.println("Register contract info to CNS.");
         System.out.println("Usage: registerCNS contractPath contractAddress [contractVersion]");
-        System.out.println("contractPath -- Path of the contract file.");
+        System.out.println(
+                "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
         System.out.println("contractAddress -- Address of the contract.");
         System.out.println(
                 "contractVersion -- The version of a contract. The maximum length of the version hex string is "
@@ -838,7 +839,7 @@ public class HelpInfo {
         System.out.println("load account for the transaction signature");
         System.out.println("Usage: loadAccount accountPath");
         System.out.println(
-                "accountPath -- The path to the account private key file, support absolute path, relative path, default directory files");
+                "accountPath -- The path of the account private key file, support .pem and .p12 format file");
         System.out.println();
     }
 
@@ -851,9 +852,10 @@ public class HelpInfo {
 
     public static void saveAccountHelp() {
         System.out.println("save the account to the file");
-        System.out.println("Usage: saveAccount accountAddress saveDir");
+        System.out.println("Usage: saveAccount accountAddress [saveDir]");
         System.out.println("accountAddress -- The address of the account to save");
-        System.out.println("saveDir -- The directory of the account file to save");
+        System.out.println(
+                "saveDir -- (optional) The directory of the account file to save, default: accounts/");
         System.out.println();
     }
 
