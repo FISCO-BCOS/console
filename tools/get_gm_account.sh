@@ -3,7 +3,7 @@
 set -e
 pkcs12_file=""
 sm3_base64=""
-output_path="accounts_gm"
+output_path="accounts"
 sm3_bin="/tmp/sm3"
 sm3_tar="/tmp/sm3.tgz"
 TASSL_CMD="${HOME}/.fisco/tassl"
@@ -147,21 +147,22 @@ main()
     fi
     ${TASSL_CMD} genpkey -paramfile /tmp/gmsm2.param -out ${output_path}/ecprivkey.pem 2>/dev/null
     calculate_address_pem ${output_path}/ecprivkey.pem "true"
+    output_file_prefix=${output_path}/0x${accountAddress}_gm
     if [ -z "$pkcs12_file" ];then
-        mv ${output_path}/ecprivkey.pem ${output_path}/0x${accountAddress}.pem
+        mv ${output_path}/ecprivkey.pem ${output_file_prefix}.pem
         LOG_INFO "Account Address   : 0x${accountAddress}"
-        LOG_INFO "Private Key (pem) : ${output_path}/0x${accountAddress}.pem"
-        # echo "0x${privKey}" > ${output_path}/${accountAddress}.private.hex
-        ${TASSL_CMD} ec -in ${output_path}/0x${accountAddress}.pem -pubout -out ${output_path}/0x${accountAddress}.public.pem 2>/dev/null
-        LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.public.pem"
+        LOG_INFO "Private Key (pem) : ${output_file_prefix}.pem"
+        # echo "0x${privKey}" > ${output_file_prefix}.private.hex
+        ${TASSL_CMD} ec -in ${output_file_prefix}.pem -pubout -out ${output_file_prefix}.public.pem 2>/dev/null
+        LOG_INFO "Public  Key (pem) : ${output_file_prefix}.public.pem"
     else
         LOG_INFO "Note: the entered password cannot contain Chinese characters!"
-        ${TASSL_CMD} pkcs12 -export -name key -nocerts -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/0x${accountAddress}.p12" 2>/dev/null || $(rm ${output_path}/0x${accountAddress}.p12 && rm ${output_path}/ecprivkey.pem && exit 1)
-        ${TASSL_CMD} ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/0x${accountAddress}.public.pem 2>/dev/null
+        ${TASSL_CMD} pkcs12 -export -name key -nocerts -inkey "${output_path}/ecprivkey.pem" -out "${output_file_prefix}.p12" 2>/dev/null || $(rm ${output_file_prefix}.p12 && rm ${output_path}/ecprivkey.pem && exit 1)
+        ${TASSL_CMD} ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_file_prefix}.public.pem 2>/dev/null
 		rm ${output_path}/ecprivkey.pem
         LOG_INFO "Account Address   : 0x${accountAddress}"
-        LOG_INFO "Private Key (p12) : ${output_path}/0x${accountAddress}.p12"
-		LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.public.pem"
+        LOG_INFO "Private Key (p12) : ${output_file_prefix}.p12"
+		LOG_INFO "Public  Key (pem) : ${output_file_prefix}.public.pem"
     fi
     # LOG_INFO "Private Key (hex) : 0x${privKey}"
     # echo "0x${pubKey}" > ${output_path}/${accountAddress}.public.hex
