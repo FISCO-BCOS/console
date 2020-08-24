@@ -1,11 +1,23 @@
 package console.account;
 
 import console.common.PathUtils;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveSpec;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.fisco.bcos.channel.client.P12Manager;
+import org.fisco.bcos.channel.client.PEMManager;
+import org.fisco.bcos.web3j.crypto.Credentials;
+import org.fisco.bcos.web3j.crypto.ECKeyPair;
+import org.fisco.bcos.web3j.crypto.EncryptType;
+import org.fisco.bcos.web3j.crypto.gm.GenCredential;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -22,22 +34,6 @@ import java.security.interfaces.ECPrivateKey;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.fisco.bcos.channel.client.P12Manager;
-import org.fisco.bcos.channel.client.PEMManager;
-import org.fisco.bcos.web3j.crypto.Credentials;
-import org.fisco.bcos.web3j.crypto.ECKeyPair;
-import org.fisco.bcos.web3j.crypto.EncryptType;
-import org.fisco.bcos.web3j.crypto.gm.GenCredential;
-import org.fisco.bcos.web3j.crypto.gm.sm2.crypto.asymmetric.SM2KeyGenerator;
-import org.fisco.bcos.web3j.crypto.gm.sm2.crypto.asymmetric.SM2PrivateKey;
-import org.fisco.bcos.web3j.crypto.gm.sm2.crypto.asymmetric.SM2PublicKey;
-import org.fisco.bcos.web3j.crypto.gm.sm2.util.encoders.Hex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class AccountTools {
 
@@ -51,32 +47,16 @@ public class AccountTools {
     public static Account newAccount()
             throws NoSuchAlgorithmException, NoSuchProviderException,
                     InvalidAlgorithmParameterException {
+        String stdName =
+                (EncryptType.encryptType == EncryptType.SM2_TYPE) ? "sm2p256v1" : "secp256k1";
 
-        KeyPair keyPair = null;
-        ECKeyPair ecKeyPair = null;
-        if (EncryptType.encryptType == EncryptType.SM2_TYPE) {
-            SM2KeyGenerator generator = new SM2KeyGenerator();
-            keyPair = generator.generateKeyPair();
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC", "BC");
+        ECGenParameterSpec ecGenParameterSpec = new ECGenParameterSpec(stdName);
+        SecureRandom secureRandom = new SecureRandom();
+        keyPairGenerator.initialize(ecGenParameterSpec, secureRandom);
 
-            SM2PrivateKey sm2PrivateKey = (SM2PrivateKey) keyPair.getPrivate();
-            SM2PublicKey sm2PublicKey = (SM2PublicKey) keyPair.getPublic();
-
-            final byte[] privateKey = sm2PrivateKey.getEncoded();
-            final byte[] publicKey = sm2PublicKey.getEncoded();
-
-            BigInteger biPrivate = new BigInteger(Hex.toHexString(privateKey), 16);
-            BigInteger biPublic = new BigInteger(Hex.toHexString(publicKey), 16);
-
-            ecKeyPair = new ECKeyPair(biPrivate, biPublic);
-        } else {
-            KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("ECDSA", "BC");
-            ECGenParameterSpec ecGenParameterSpec = new ECGenParameterSpec("secp256k1");
-            SecureRandom secureRandom = new SecureRandom();
-            keyPairGenerator.initialize(ecGenParameterSpec, secureRandom);
-            keyPair = keyPairGenerator.generateKeyPair();
-            ecKeyPair = ECKeyPair.create(keyPair);
-        }
-
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        ECKeyPair ecKeyPair = ECKeyPair.create(keyPair);
         Credentials credentials = GenCredential.create(ecKeyPair); // SM or normal
 
         if (logger.isDebugEnabled()) {
@@ -201,7 +181,7 @@ public class AccountTools {
             case EncryptType.SM2_TYPE:
                 return "sm";
             case EncryptType.ECDSA_TYPE:
-                return "ecdsa";
+                return "ecc";
             default:
                 {
                     return "unknown";
@@ -219,14 +199,12 @@ public class AccountTools {
 
             if (name.contains("secp256k1")) {
                 return EncryptType.ECDSA_TYPE;
-            } else if (name.contains("sm2")) {
+            } else if (name.contains("sm2p256v1")) {
                 return EncryptType.SM2_TYPE;
             }
 
             throw new UnsupportedOperationException(
                     "Unsupported ec private key type, name: " + name);
-        } else if (privateKey instanceof SM2PrivateKey) {
-            return EncryptType.SM2_TYPE;
         }
 
         throw new UnsupportedOperationException(
