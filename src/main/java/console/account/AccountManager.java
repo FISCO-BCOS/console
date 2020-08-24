@@ -48,7 +48,6 @@ public class AccountManager {
             accountMap.put(account.getCredentials().getAddress(), account);
             return true;
         }
-        logger.info("addAccount, addresses: {}", accountMap.keySet().toArray(new String[0]));
         return false;
     }
 

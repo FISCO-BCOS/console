@@ -181,8 +181,6 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
         String buffer = reader.getBuffer().toString().trim();
         String[] ss = buffer.split(" ");
 
-        logger.info(" 11 ==> buffer:{} , length: {}", buffer, ss.length);
-
         if (ss.length >= 3) {
             // TO DO
             String contractName = PathUtils.removeSolPostfix(ss[1]);
@@ -195,9 +193,6 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
                 ContractABIDefinition contractABIDefinition =
                         ABIDefinitionFactory.loadABI(new String(bytes));
                 Set<String> functionNames = contractABIDefinition.getFunctions().keySet();
-                if (logger.isDebugEnabled()) {
-                    logger.debug(" funcNames: {}", functionNames.toArray(new String[0]));
-                }
 
                 for (String funName : functionNames) {
                     candidates.add(
