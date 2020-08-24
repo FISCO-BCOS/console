@@ -1,5 +1,7 @@
 package console.contract;
 
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
+
 import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
@@ -15,6 +17,17 @@ import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.math.BigInteger;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
@@ -24,6 +37,7 @@ import org.fisco.bcos.web3j.crypto.EncryptType;
 import org.fisco.bcos.web3j.precompile.cns.CnsInfo;
 import org.fisco.bcos.web3j.precompile.cns.CnsService;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
+import org.fisco.bcos.web3j.precompile.exception.PrecompileMessageException;
 import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
 import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
@@ -40,20 +54,6 @@ import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.math.BigInteger;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 
 public class ContractImpl implements ContractFace {
 
@@ -366,20 +366,6 @@ public class ContractImpl implements ContractFace {
         }
     }
 
-    /**
-     *
-     * @param str
-     * @return
-     */
-    public static boolean isNumeric(String str){
-        for (int i = 0; i < str.length(); i++){
-            if (!Character.isDigit(str.charAt(i))){
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public void call(String[] params) throws Exception {
         if (params.length < 2) {
@@ -395,32 +381,44 @@ public class ContractImpl implements ContractFace {
             return;
         }
 
-        String contractNameOrPath = params[1];
-        File solFile = PathUtils.getSolFile(contractNameOrPath);
+        String contractPath = params[1];
+        File solFile = PathUtils.getSolFile(contractPath);
         String name = solFile.getName().split("\\.")[0];
 
         String contractAddress = params[2];
         if (contractAddress.toLowerCase().equals("latest")) { // latest
-            DeployContractManager.DeployedContract latestDeployContract = deployContractManager.getLatestDeployContract(String.valueOf(groupID), name);
+            DeployContractManager.DeployedContract latestDeployContract =
+                    deployContractManager.getLatestDeployContract(String.valueOf(groupID), name);
             if (latestDeployContract == null) {
                 System.out.println("contract " + name + " has not been deployed.");
                 System.out.println();
                 return;
             }
             contractAddress = latestDeployContract.getContractAddress();
-            logger.debug(" last deployed contract name: {}, contract: {}", name, latestDeployContract);
-        } else if (isNumeric(contractAddress)) {
+            logger.debug(
+                    " last deployed contract name: {}, contract: {}", name, latestDeployContract);
+        } else if (ConsoleUtils.isNumeric(contractAddress)) {
             int index = Integer.valueOf(contractAddress);
-            DeployContractManager.DeployedContract deployContractByIndex = deployContractManager.getDeployContractByIndex(String.valueOf(groupID), name, index);
+            DeployContractManager.DeployedContract deployContractByIndex =
+                    deployContractManager.getDeployContractByIndex(
+                            String.valueOf(groupID), name, index);
             if (deployContractByIndex == null) {
-                System.out.println("contract: " + name + " ,index: " + index + " not exist, please check if index is out of range.");
+                System.out.println(
+                        "contract: "
+                                + name
+                                + " ,index: "
+                                + index
+                                + " not exist, please check if index is out of range.");
                 System.out.println();
                 return;
             }
             contractAddress = deployContractByIndex.getContractAddress();
-            logger.debug(" index deployed contract name: {}, index: {}, contract: {}", name, index, deployContractByIndex);
-        }
-        else {
+            logger.debug(
+                    " index deployed contract name: {}, index: {}, contract: {}",
+                    name,
+                    index,
+                    deployContractByIndex);
+        } else {
             Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
             if (!convertAddr.isValid()) {
                 return;
@@ -585,8 +583,8 @@ public class ContractImpl implements ContractFace {
             return;
         }
 
-        String contractNameOrPath = params[1];
-        File solFile = PathUtils.getSolFile(contractNameOrPath);
+        String contractPath = params[1];
+        File solFile = PathUtils.getSolFile(contractPath);
         String name = solFile.getName().split("\\.")[0];
 
         CnsService cnsService =
@@ -651,18 +649,20 @@ public class ContractImpl implements ContractFace {
             HelpInfo.promptHelp("callByCNS");
             return;
         }
+
         String contractNameAndVersion = params[1];
 
-        String contractNameOrPath = params[1];
-        File solFile = PathUtils.getSolFile(contractNameOrPath);
-        String name = solFile.getName().split("\\.")[0];
-
+        String contractName = contractNameAndVersion;
         String contractVersion = null;
+
         if (contractNameAndVersion.contains(":")) {
             String[] nameAndVersion = contractNameAndVersion.split(":");
             if (nameAndVersion.length == 2) {
-                name = nameAndVersion[0].trim();
+                contractName = nameAndVersion[0].trim();
                 contractVersion = nameAndVersion[1].trim();
+                if (!ContractClassFactory.checkVersion(contractVersion)) {
+                    return;
+                }
             } else {
                 System.out.println(
                         "Contract name and version has incorrect format. For example, contractName:contractVersion");
@@ -671,40 +671,27 @@ public class ContractImpl implements ContractFace {
             }
         }
 
-        if (name.endsWith(".sol")) {
-            name = name.substring(0, name.length() - 4);
-            if (contractVersion != null) {
-                if (!ContractClassFactory.checkVersion(contractVersion)) {
-                    return;
-                }
-                contractNameAndVersion = name + ":" + contractVersion;
-            } else {
-                contractNameAndVersion = name;
-            }
-        }
-
-        // get address from cns
-        String contractAddress = "";
         CnsService cnsResolver =
                 new CnsService(web3j, accountManager.getCurrentAccountCredentials());
-        try {
-            contractAddress =
-                    cnsResolver.getAddressByContractNameAndVersion(contractNameAndVersion);
-        } catch (Exception e) {
-            int i = e.getMessage().indexOf("ContractCallException");
-            if (i < 0) {
-                System.out.println(
-                        "Error when getting cns information (maybe the contract version does not exist), error info: ");
-                System.out.println(e.getMessage().toString());
-                System.out.println();
-            } else {
-                System.out.println(
-                        e.getMessage().substring(i + "ContractCallException".length() + 2));
-                System.out.println();
-            }
-            return;
+
+        List<CnsInfo> cnsInfos = null;
+        if (contractVersion != null && !contractVersion.isEmpty()) {
+            cnsInfos = cnsResolver.queryCnsByNameAndVersion(contractName, contractVersion);
+        } else {
+            cnsInfos = cnsResolver.queryCnsByName(contractName);
         }
-        Class<?> contractClass = ContractClassFactory.compileContract(solFile);
+
+        if (cnsInfos == null || cnsInfos.isEmpty()) {
+            throw new PrecompileMessageException("The contract version does not exist.");
+        }
+
+        String contractAddress = cnsInfos.get(cnsInfos.size() - 1).getAddress();
+        String abi = cnsInfos.get(cnsInfos.size() - 1).getAbi();
+        String version = cnsInfos.get(cnsInfos.size() - 1).getVersion();
+
+        logger.debug("contractAddress: {}, version: {}, abi: {}", contractAddress, version, abi);
+
+        Class<?> contractClass = ContractClassFactory.compileContract(contractName, abi);
         Method load =
                 contractClass.getMethod(
                         "load",
@@ -805,14 +792,12 @@ public class ContractImpl implements ContractFace {
         }
         System.out.println(returnObject);
         if (result instanceof TransactionReceipt) {
-            AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
-            String abi = abiAndBin.getAbi();
             TransactionReceipt receipt = (TransactionReceipt) result;
-            String version = PrecompiledCommon.BCOS_VERSION;
-            if (version == null
-                    || PrecompiledCommon.BCOS_RC1.equals(version)
-                    || PrecompiledCommon.BCOS_RC2.equals(version)
-                    || PrecompiledCommon.BCOS_RC3.equals(version)) {
+            String bcosVersion = PrecompiledCommon.BCOS_VERSION;
+            if (bcosVersion == null
+                    || PrecompiledCommon.BCOS_RC1.equals(bcosVersion)
+                    || PrecompiledCommon.BCOS_RC2.equals(bcosVersion)
+                    || PrecompiledCommon.BCOS_RC3.equals(bcosVersion)) {
                 TxDecodeUtil.setInputForReceipt(web3j, receipt);
             }
             if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {

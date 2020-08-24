@@ -182,6 +182,19 @@ public class ConsoleUtils {
         address.setAddress(newAddessStr);
     }
 
+    /**
+     * @param str
+     * @return
+     */
+    public static boolean isNumeric(String str) {
+        for (int i = 0; i < str.length(); i++) {
+            if (!Character.isDigit(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public static void Usage() {
         System.out.println(" Usage:");
         System.out.println(
@@ -312,6 +325,37 @@ public class ConsoleUtils {
                                 "-a", abiFile,
                                 "-b", binFile,
                                 "-s", smBinFile,
+                                "-p", packageName,
+                                "-o", javaDir)
+                        .toArray(new String[0]));
+    }
+
+    /**
+     * @param javaDir
+     * @param packageName
+     * @param abiDir
+     * @param binDir
+     * @throws IOException
+     */
+    public static void compileSolToJava(
+            String javaDir,
+            String packageName,
+            String contractName,
+            String abi,
+            String abiDir,
+            String binDir)
+            throws IOException {
+
+        FileUtils.writeStringToFile(new File(abiDir + contractName + ".abi"), abi);
+        FileUtils.writeStringToFile(new File(binDir + contractName + ".bin"), "");
+
+        String abiFile = abiDir + contractName + ".abi";
+        String binFile = binDir + contractName + ".bin";
+
+        SolidityFunctionWrapperGenerator.main(
+                Arrays.asList(
+                                "-a", abiFile,
+                                "-b", binFile,
                                 "-p", packageName,
                                 "-o", javaDir)
                         .toArray(new String[0]));
