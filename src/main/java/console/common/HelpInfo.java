@@ -815,9 +815,9 @@ public class HelpInfo {
     }
 
     public static void consoleHelp() {
-        System.out.println("Please provide one of the following ways to start the console.");
         System.out.println("Usage: ");
-        System.out.println("./console.sh");
+        System.out.println("./console.sh -h");
+        System.out.println("./console.sh -v");
     }
 
     public static void startHelp() {

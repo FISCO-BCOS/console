@@ -369,6 +369,12 @@ public class ContractClassFactory {
 
             if (type[i] == String.class) {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
+                    obj[i] = params[i].substring(1, params[i].length() - 1);
+                } else {
+                    obj[i] = params[i];
+                }
+                /*
+                if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
                     try {
                         obj[i] = params[i].substring(1, params[i].length() - 1);
                     } catch (Exception e) {
@@ -382,6 +388,7 @@ public class ContractClassFactory {
                     System.out.println();
                     return null;
                 }
+                */
             } else if (type[i] == Boolean.class) {
                 try {
                     obj[i] = Boolean.parseBoolean(params[i]);
@@ -428,6 +435,20 @@ public class ContractClassFactory {
                 }
 
             } else if (type[i] == byte[].class) {
+                String bytesValue = "";
+                if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
+                    bytesValue = params[i].substring(1, params[i].length() - 1);
+                } else {
+                    bytesValue = params[i];
+                }
+
+                if (bytesValue.startsWith("0x")) {
+                    obj[i] = Numeric.hexStringToByteArray(bytesValue);
+                } else {
+                    obj[i] = bytesValue.getBytes();
+                }
+
+                /*
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
                     String bytesValue = params[i].substring(1, params[i].length() - 1);
                     if (bytesValue.startsWith("0x")) {
@@ -440,6 +461,7 @@ public class ContractClassFactory {
                     System.out.println();
                     return null;
                 }
+                */
             } else if (type[i] == List.class) {
 
                 if (params[i].startsWith("[") && params[i].endsWith("]")) {

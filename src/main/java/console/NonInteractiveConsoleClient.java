@@ -30,6 +30,11 @@ public class NonInteractiveConsoleClient {
     @SuppressWarnings("resource")
     public static void main(String[] args) {
 
+        if (args.length == 0 || args[0].equals("-h") || args[0].equals("--help")) {
+            WelcomeInfo.help(args);
+            System.exit(0);
+        }
+
         ConsoleInitializer consoleInitializer = null;
         try {
             consoleInitializer = new ConsoleInitializer();
