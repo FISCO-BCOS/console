@@ -70,4 +70,23 @@ public class PathUtils {
 
         return solFile;
     }
+
+    /**
+     * @param accountFile
+     * @return
+     */
+    public static File getAccountFile(String accountFile) throws ConsoleMessageException {
+        File solFile = new File(ACCOUNT_DIRECTORY + File.separator + accountFile);
+        if (!solFile.exists()) {
+            /** Check if the file exists */
+            solFile = new File(accountFile);
+        }
+
+        /** file not exist */
+        if (!solFile.exists()) {
+            throw new ConsoleMessageException(accountFile + " does not exist ");
+        }
+
+        return solFile;
+    }
 }
