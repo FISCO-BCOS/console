@@ -813,6 +813,12 @@ public class HelpInfo {
         System.out.println();
     }
 
+    public static void consoleHelp() {
+        System.out.println("Please provide one of the following ways to start the console.");
+        System.out.println("Usage: ");
+        System.out.println("./console.sh");
+    }
+
     public static void startHelp() {
         System.out.println("Please provide one of the following ways to start the console.");
         System.out.println("Usage: ");
