@@ -134,7 +134,8 @@ public class ContractImpl implements ContractFace {
             deployContractManager.addNewDeployContract(
                     String.valueOf(groupID), name, contractAddress);
         } catch (Exception e) {
-            if (e.getMessage().contains("0x19")) {
+            logger.error("e: ", e);
+            if ((e.getMessage() != null) && e.getMessage().contains("0x19")) {
                 ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
                 System.out.println();
             } else {
@@ -473,7 +474,9 @@ public class ContractImpl implements ContractFace {
         if (argobj == null) {
             return;
         }
+
         RemoteCall<?> remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
+
         Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
             TransactionReceipt receipt = (TransactionReceipt) result;
