@@ -3,7 +3,6 @@ package console;
 import console.client.ConsoleClientFace;
 import console.client.ConsoleClientImpl;
 import console.common.Common;
-import console.common.HelpInfo;
 import console.contract.ConsoleContractFace;
 import console.contract.ConsoleContractImpl;
 import console.precompiled.PrecompiledFace;
@@ -58,19 +57,7 @@ public class ConsoleInitializer {
     }
 
     public void switchGroupID(String[] params) {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("switch");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("switch");
-            return;
-        }
         String groupIDStr = params[1];
-        if ("-h".equals(groupIDStr) || "--help".equals(groupIDStr)) {
-            HelpInfo.switchGroupIDHelp();
-            return;
-        }
         int toGroupID = 1;
         try {
             toGroupID = Integer.parseInt(groupIDStr);

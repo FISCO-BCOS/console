@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
-import console.common.HelpInfo;
 import console.common.TotalTransactionCountResult;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -33,36 +32,24 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getNodeVersion(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getNodeVersion")) {
-            return;
-        }
         ConsoleUtils.printJson(client.getNodeVersion().getNodeVersion().toString());
         System.out.println();
     }
 
     @Override
     public void getBlockNumber(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getBlockNumber")) {
-            return;
-        }
         System.out.println(client.getBlockNumber().getBlockNumber());
         System.out.println();
     }
 
     @Override
     public void getPbftView(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getPbftView")) {
-            return;
-        }
         System.out.println(client.getPbftView().getPbftView());
         System.out.println();
     }
 
     @Override
     public void getObserverList(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getObserverList")) {
-            return;
-        }
         String observers = client.getObserverList().getObserverList().toString();
         if ("[]".equals(observers)) {
             System.out.println("[]");
@@ -74,9 +61,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getSealerList(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getSealerList")) {
-            return;
-        }
         String sealers = client.getSealerList().getSealerList().toString();
         if ("[]".equals(sealers)) {
             System.out.println("[]");
@@ -88,73 +72,43 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getConsensusStatus(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getConsensusStatus")) {
-            return;
-        }
         ConsoleUtils.printJson(client.getConsensusStatus().getConsensusStatus().toString());
         System.out.println();
     }
 
     @Override
     public void getSyncStatus(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getSyncStatus")) {
-            return;
-        }
         ConsoleUtils.printJson(client.getSyncStatus().getSyncStatus().toString());
         System.out.println();
     }
 
     @Override
     public void getPeers(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getPeers")) {
-            return;
-        }
         ConsoleUtils.printJson(client.getPeers().getPeers().toString());
         System.out.println();
     }
 
     @Override
     public void getNodeIDList(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getNodeIDList")) {
-            return;
-        }
         ConsoleUtils.printJson(client.getNodeIDList().getNodeIDList().toString());
         System.out.println();
     }
 
     @Override
     public void getGroupPeers(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getGroupPeers")) {
-            return;
-        }
         ConsoleUtils.printJson(client.getGroupPeers().getGroupPeers().toString());
         System.out.println();
     }
 
     @Override
     public void getGroupList(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getGroupList")) {
-            return;
-        }
         System.out.println(client.getGroupList().getGroupList().toString());
         System.out.println();
     }
 
     @Override
     public void getBlockByHash(String[] params) throws IOException {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getBlockByHash");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("getBlockByHash");
-            return;
-        }
         String blockHash = params[1];
-        if ("-h".equals(blockHash) || "--help".equals(blockHash)) {
-            HelpInfo.getBlockByHashHelp();
-            return;
-        }
         if (ConsoleUtils.isInvalidHash(blockHash)) return;
         boolean flag = false;
         if (params.length == 3) {
@@ -174,19 +128,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getBlockByNumber(String[] params) throws IOException {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getBlockByNumber");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("getBlockByNumber");
-            return;
-        }
         String blockNumberStr = params[1];
-        if ("-h".equals(blockNumberStr) || "--help".equals(blockNumberStr)) {
-            HelpInfo.getBlockByNumberHelp();
-            return;
-        }
         int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
@@ -212,19 +154,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getBlockHeaderByHash(String[] params) throws IOException {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getBlockHeaderByHash");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("getBlockHeaderByHash");
-            return;
-        }
         String blockHash = params[1];
-        if ("-h".equals(blockHash) || "--help".equals(blockHash)) {
-            HelpInfo.getBlockHeaderByHashHelp();
-            return;
-        }
         if (ConsoleUtils.isInvalidHash(blockHash)) return;
 
         boolean flag = false;
@@ -246,19 +176,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getBlockHeaderByNumber(String[] params) throws IOException {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getBlockHeaderByNumber");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("getBlockHeaderByNumber");
-            return;
-        }
         String blockNumberStr = params[1];
-        if ("-h".equals(blockNumberStr) || "--help".equals(blockNumberStr)) {
-            HelpInfo.getBlockHeaderByNumberHelp();
-            return;
-        }
         int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
@@ -284,19 +202,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getBlockHashByNumber(String[] params) throws IOException {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getBlockHashByNumber");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("getBlockHashByNumber");
-            return;
-        }
         String blockNumberStr = params[1];
-        if ("-h".equals(blockNumberStr) || "--help".equals(blockNumberStr)) {
-            HelpInfo.getBlockHashByNumberHelp();
-            return;
-        }
         int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
@@ -310,19 +216,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getTransactionByHash(String[] params) {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getTransactionByHash");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("getTransactionByHash");
-            return;
-        }
         String transactionHash = params[1];
-        if ("-h".equals(transactionHash) || "--help".equals(transactionHash)) {
-            HelpInfo.getTransactionByHashHelp();
-            return;
-        }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
         JsonTransactionResponse transaction =
                 client.getTransactionByHash(transactionHash).getTransaction().get();
@@ -336,23 +230,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getTransactionByBlockHashAndIndex(String[] params) {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
-            return;
-        }
-        if (params.length > 4) {
-            HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
-            return;
-        }
         String blockHash = params[1];
-        if ("-h".equals(blockHash) || "--help".equals(blockHash)) {
-            HelpInfo.getTransactionByBlockHashAndIndexHelp();
-            return;
-        }
-        if (params.length < 3) {
-            HelpInfo.promptHelp("getTransactionByBlockHashAndIndex");
-            return;
-        }
         if (ConsoleUtils.isInvalidHash(blockHash)) {
             return;
         }
@@ -371,23 +249,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getTransactionByBlockNumberAndIndex(String[] params) {
         try {
-            if (params.length < 2) {
-                HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
-                return;
-            }
-            if (params.length > 4) {
-                HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
-                return;
-            }
             String blockNumberStr = params[1];
-            if ("-h".equals(blockNumberStr) || "--help".equals(blockNumberStr)) {
-                HelpInfo.getTransactionByBlockNumberAndIndexHelp();
-                return;
-            }
-            if (params.length < 3) {
-                HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
-                return;
-            }
             int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
             if (blockNumber == Common.InvalidReturnNumber) {
                 return;
@@ -403,10 +265,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                             .getTransaction()
                             .toString();
             ConsoleUtils.printJson(transactionJson);
-            /*
-            if (params.length == 4) {
-                TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
-            }*/
         } catch (ClientException e) {
             ConsoleUtils.printJson(e.getMessage());
         }
@@ -415,19 +273,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getTransactionReceipt(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getTransactionReceipt");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("getTransactionReceipt");
-            return;
-        }
         String transactionHash = params[1];
-        if ("-h".equals(transactionHash) || "--help".equals(transactionHash)) {
-            HelpInfo.getTransactionReceiptHelp();
-            return;
-        }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
 
         TransactionReceipt receipt =
@@ -451,21 +297,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getTransactionByHashWithProof(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getTransactionByHashWithProof");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("getTransactionByHashWithProof");
-            return;
-        }
         String transactionHash = params[1];
-        if ("-h".equals(transactionHash) || "--help".equals(transactionHash)) {
-            HelpInfo.getTransactionByHashWithProofHelp();
-            return;
-        }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-
         String transactionWithProof =
                 client.getTransactionByHashWithProof(transactionHash).getResult().toString();
 
@@ -480,19 +313,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getTransactionReceiptByHashWithProof(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getTransactionReceiptByHashWithProof");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("getTransactionReceiptByHashWithProof");
-            return;
-        }
         String transactionHash = params[1];
-        if ("-h".equals(transactionHash) || "--help".equals(transactionHash)) {
-            HelpInfo.getTransactionReceiptByHashWithProofHelp();
-            return;
-        }
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
 
         String transactionReceiptWithProof =
@@ -511,9 +332,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getPendingTxSize(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getPendingTxSize")) {
-            return;
-        }
         String size = client.getPendingTxSize().getResult();
         System.out.println(Numeric.decodeQuantity(size));
         System.out.println();
@@ -521,9 +339,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getPendingTransactions(String[] params) throws IOException {
-        if (HelpInfo.promptNoParams(params, "getPendingTransactions")) {
-            return;
-        }
         String pendingTransactions = client.getPendingTransaction().getResult().toString();
         if ("[]".equals(pendingTransactions)) System.out.println(pendingTransactions);
         else ConsoleUtils.printJson(pendingTransactions);
@@ -532,19 +347,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getCode(String[] params) throws IOException {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getCode");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("getCode");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.getCodeHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -563,10 +366,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getTotalTransactionCount(String[] params)
             throws JsonParseException, JsonMappingException, IOException {
-        if (HelpInfo.promptNoParams(params, "getTotalTransactionCount")) {
-            return;
-        }
-
         String transactionCount =
                 client.getTotalTransactionCount().getTotalTransactionCount().toString();
         TotalTransactionCountResult totalTransactionCountResult =
@@ -594,19 +393,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getSystemConfigByKey(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getSystemConfigByKey");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("getSystemConfigByKey");
-            return;
-        }
         String key = params[1];
-        if ("-h".equals(key) || "--help".equals(key)) {
-            HelpInfo.getSystemConfigByKeyHelp();
-            return;
-        }
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
                 || Common.RPBFTEpochSealerNum.equals(key)

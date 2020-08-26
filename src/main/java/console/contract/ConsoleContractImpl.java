@@ -4,7 +4,6 @@ import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
-import console.common.HelpInfo;
 import console.contract.exceptions.CompileContractException;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
@@ -61,14 +60,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void deploy(String[] params) throws ConsoleMessageException {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("deploy");
-            return;
-        }
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.deployHelp();
-            return;
-        }
         String contractName = params[1];
         List<String> inputParams = Arrays.asList(params).subList(1, params.length - 1);
         deployContract(contractName, inputParams);
@@ -77,7 +68,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     public TransactionResponse deployContract(String contractName, List<String> inputParams)
             throws ConsoleMessageException {
         try {
-
             AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
             String bin = abiAndBin.getBin();
             if (client.getCryptoInterface().getCryptoTypeConfig() == CryptoInterface.SM_TYPE) {
@@ -178,19 +168,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     public void getDeployLog(String[] params) throws Exception {
-
-        if (params.length > 2) {
-            HelpInfo.promptHelp("getDeployLog");
-            return;
-        }
         String queryRecordNumber = "";
         int recordNumber = Common.QueryLogCount;
         if (params.length == 2) {
             queryRecordNumber = params[1];
-            if ("-h".equals(queryRecordNumber) || "--help".equals(queryRecordNumber)) {
-                HelpInfo.getDeployLogHelp();
-                return;
-            }
             try {
                 recordNumber = Integer.parseInt(queryRecordNumber);
                 if (recordNumber <= 0 || recordNumber > 100) {
@@ -266,18 +247,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void call(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("call");
-            return;
-        }
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.callHelp();
-            return;
-        }
-        if (params.length < 4) {
-            HelpInfo.promptHelp("call");
-            return;
-        }
         String contractName = params[1];
         String contractAddressStr = params[2];
         // check contract address
@@ -355,18 +324,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void deployByCNS(String[] params) throws ConsoleMessageException {
         try {
-            if (params.length < 2) {
-                HelpInfo.promptHelp("deployByCNS");
-                return;
-            }
-            if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-                HelpInfo.deployByCNSHelp();
-                return;
-            }
-            if (params.length < 3) {
-                HelpInfo.promptHelp("deployByCNS");
-                return;
-            }
             String contractName = params[1];
             String contractVersion = params[2];
             contractName = ContractCompiler.removeSolPostfix(contractName);
@@ -390,18 +347,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @SuppressWarnings("rawtypes")
     @Override
     public void callByCNS(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("callByCNS");
-            return;
-        }
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.callByCNSHelp();
-            return;
-        }
-        if (params.length < 3) {
-            HelpInfo.promptHelp("callByCNS");
-            return;
-        }
         String contractNameAndVersion = params[1];
         String contractName = null;
         String contractVersion = null;

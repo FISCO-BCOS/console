@@ -2,7 +2,6 @@ package console.precompiled.permission;
 
 import console.common.Address;
 import console.common.ConsoleUtils;
-import console.common.HelpInfo;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
@@ -30,23 +29,8 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void grantUserTableManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantUserTableManager");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("grantUserTableManager");
-            return;
-        }
         String tableName = params[1];
-        if ("-h".equals(tableName) || "--help".equals(tableName)) {
-            HelpInfo.grantUserTableManagerHelp();
-            return;
-        }
-        if (params.length < 3) {
-            HelpInfo.promptHelp("grantUserTableManager");
-            return;
-        }
+
         String address = params[2];
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
@@ -59,23 +43,7 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void revokeUserTableManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokeUserTableManager");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("revokeUserTableManager");
-            return;
-        }
         String tableName = params[1];
-        if ("-h".equals(tableName) || "--help".equals(tableName)) {
-            HelpInfo.revokeUserTableManagerHelp();
-            return;
-        }
-        if (params.length < 3) {
-            HelpInfo.promptHelp("revokeUserTableManager");
-            return;
-        }
         String address = params[2];
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
@@ -88,19 +56,7 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void listUserTableManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("listUserTableManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("listUserTableManager");
-            return;
-        }
         String tableName = params[1];
-        if ("-h".equals(tableName) || "--help".equals(tableName)) {
-            HelpInfo.listUserTableManagerHelp();
-            return;
-        }
         List<PermissionInfo> permissions =
                 this.permissionService.queryPermissionByTableName(tableName);
         printPermissionInfo(permissions);
@@ -108,19 +64,7 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void grantDeployAndCreateManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantDeployAndCreateManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("grantDeployAndCreateManager");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.grantDeployAndCreateManagerHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -132,19 +76,7 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void revokeDeployAndCreateManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokeDeployAndCreateManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("revokeDeployAndCreateManager");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.revokeDeployAndCreateManagerHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -156,28 +88,13 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void listDeployAndCreateManager(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listDeployAndCreateManager")) {
-            return;
-        }
         List<PermissionInfo> permissions = this.permissionService.listDeployAndCreateManager();
         printPermissionInfo(permissions);
     }
 
     @Override
     public void grantNodeManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantNodeManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("grantNodeManager");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.grantNodeManagerHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -189,19 +106,7 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void revokeNodeManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokeNodeManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("revokeNodeManager");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.revokeNodeManagerHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -213,28 +118,13 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void listNodeManager(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listNodeManager")) {
-            return;
-        }
         List<PermissionInfo> permissions = this.permissionService.listNodeManager();
         printPermissionInfo(permissions);
     }
 
     @Override
     public void grantCNSManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantCNSManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("grantCNSManager");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.grantCNSManagerHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -246,19 +136,7 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void revokeCNSManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokeCNSManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("revokeCNSManager");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.revokeCNSManagerHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -270,28 +148,13 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void listCNSManager(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listCNSManager")) {
-            return;
-        }
         List<PermissionInfo> permissions = this.permissionService.listCNSManager();
         printPermissionInfo(permissions);
     }
 
     @Override
     public void grantSysConfigManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantSysConfigManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("grantSysConfigManager");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.grantSysConfigManagerHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -303,19 +166,7 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void revokeSysConfigManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokeSysConfigManager");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("revokeSysConfigManager");
-            return;
-        }
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.revokeSysConfigManagerHelp();
-            return;
-        }
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
             return;
@@ -327,30 +178,12 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void listSysConfigManager(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listSysConfigManager")) {
-            return;
-        }
         List<PermissionInfo> permissions = this.permissionService.listSysConfigManager();
         printPermissionInfo(permissions);
     }
 
     @Override
     public void listContractWritePermission(String[] params) throws Exception {
-
-        if (params.length < 2) {
-            HelpInfo.promptHelp("listContractWritePermission");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("listContractWritePermission");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.listContractWritePermissionHelp();
-            return;
-        }
-
         String address = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(address);
         if (!convertAddr.isValid()) {
@@ -363,21 +196,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void grantContractWritePermission(String[] params) throws Exception {
-
-        if ((params.length > 1) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
-            HelpInfo.grantContractWritePermissionHelp();
-            return;
-        }
-
-        if (params.length < 3) {
-            HelpInfo.promptHelp("grantContractWritePermission");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("grantContractWritePermission");
-            return;
-        }
-
         String contractAddress = params[1];
         String userAddress = params[2];
         Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
@@ -397,20 +215,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void revokeContractWritePermission(String[] params) throws Exception {
-        if ((params.length > 1) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
-            HelpInfo.revokeContractWritePermissionHelp();
-            return;
-        }
-
-        if (params.length < 3) {
-            HelpInfo.promptHelp("revokeContractWritePermission");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("revokeContractWritePermission");
-            return;
-        }
-
         String contractAddress = params[1];
         String userAddress = params[2];
         Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
@@ -430,21 +234,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void grantCommitteeMember(String[] params) throws Exception {
-
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantCommitteeMember");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("grantCommitteeMember");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.grantCommitteeMemberHelp();
-            return;
-        }
-
         String accountAddress = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
         if (!convertAddr.isValid()) {
@@ -456,20 +245,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void revokeCommitteeMember(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokeCommitteeMember");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("revokeCommitteeMember");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.revokeCommitteeMemberHelp();
-            return;
-        }
-
         String accountAddress = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
         if (!convertAddr.isValid()) {
@@ -482,29 +257,12 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void listCommitteeMembers(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listCommitteeMembers")) {
-            return;
-        }
         List<PermissionInfo> permissionInfos = this.chainGovernanceService.listCommitteeMembers();
         printPermissionInfo(permissionInfos);
     }
 
     @Override
     public void queryCommitteeMemberWeight(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("queryCommitteeMemberWeight");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("queryCommitteeMemberWeight");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.queryCommitteeMemberWeightHelp();
-            return;
-        }
-
         String accountAddress = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
         if (!convertAddr.isValid()) {
@@ -521,21 +279,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void updateCommitteeMemberWeight(String[] params) throws Exception {
-
-        if ((params.length >= 2) && ("-h".equals(params[1]) || "--help".equals(params[1]))) {
-            HelpInfo.updateCommitteeMemberWeightHelp();
-            return;
-        }
-
-        if (params.length < 3) {
-            HelpInfo.promptHelp("updateCommitteeMemberWeight");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("updateCommitteeMemberWeight");
-            return;
-        }
-
         String accountAddress = params[1];
 
         Integer weight = null;
@@ -563,20 +306,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void updateThreshold(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("updateThreshold");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("updateThreshold");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.updateThresholdHelp();
-            return;
-        }
-
         Integer threshold = null;
         try {
             threshold = Integer.parseInt(params[1]);
@@ -598,10 +327,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void queryThreshold(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "queryThreshold")) {
-            return;
-        }
-
         BigInteger threshold = this.chainGovernanceService.queryThreshold();
         System.out.println("Effective threshold : " + threshold + "%");
         System.out.println();
@@ -609,20 +334,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void grantOperator(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantOperator");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("grantOperator");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.grantOperatorHelp();
-            return;
-        }
-
         String accountAddress = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
         if (!convertAddr.isValid()) {
@@ -634,20 +345,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void revokeOperator(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("revokeOperator");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("revokeOperator");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.revokeOperatorHelp();
-            return;
-        }
-
         String accountAddress = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
         if (!convertAddr.isValid()) {
@@ -659,29 +356,12 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void listOperators(String[] params) throws Exception {
-        if (HelpInfo.promptNoParams(params, "listOperators")) {
-            return;
-        }
         List<PermissionInfo> permissionInfos = chainGovernanceService.listOperators();
         printPermissionInfo(permissionInfos);
     }
 
     @Override
     public void freezeAccount(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("freezeAccount");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("freezeAccount");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.freezeAccountHelp();
-            return;
-        }
-
         String accountAddress = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
         if (!convertAddr.isValid()) {
@@ -693,20 +373,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void unfreezeAccount(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("unfreezeAccount");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("unfreezeAccount");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.unfreezeAccountHelp();
-            return;
-        }
-
         String accountAddress = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
         if (!convertAddr.isValid()) {
@@ -718,20 +384,6 @@ public class PermissionImpl implements PermissionFace {
 
     @Override
     public void getAccountStatus(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("getAccountStatus");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("getAccountStatus");
-            return;
-        }
-
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.getAccountStatusHelp();
-            return;
-        }
-
         String accountAddress = params[1];
         Address convertAddr = ConsoleUtils.convertAddress(accountAddress);
         if (!convertAddr.isValid()) {
