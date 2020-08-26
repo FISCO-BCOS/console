@@ -215,12 +215,7 @@ public class ContractClassFactory {
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
                     obj[i + 3] = params[i].substring(1, params[i].length() - 1);
                 } else {
-                    throw new ConsoleMessageException(
-                            "The "
-                                    + (i + 1)
-                                    + "th parameter of "
-                                    + funcName
-                                    + " needs string value.");
+                    obj[i + 3] = params[i];
                 }
             } else if (type[i + 3] == Boolean.class) {
                 try {
@@ -264,21 +259,19 @@ public class ContractClassFactory {
                                     + ") value in the console.");
                 }
             } else if (type[i + 3] == byte[].class) {
+                String bytesValue = "";
                 if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    byte[] bytes2 = params[i].substring(1, params[i].length() - 1).getBytes();
-                    byte[] bytes1 = new byte[32];
-                    for (int j = 0; j < bytes2.length; j++) {
-                        bytes1[j] = bytes2[j];
-                    }
-                    obj[i + 3] = bytes1;
+                    bytesValue = params[i].substring(1, params[i].length() - 1);
                 } else {
-                    throw new ConsoleMessageException(
-                            "The "
-                                    + (i + 1)
-                                    + "th parameter of "
-                                    + funcName
-                                    + " needs byte string value.");
+                    bytesValue = params[i];
                 }
+
+                if (bytesValue.startsWith("0x")) {
+                    obj[i + 3] = Numeric.hexStringToByteArray(bytesValue);
+                } else {
+                    obj[i + 3] = bytesValue.getBytes();
+                }
+
             } else if (type[i + 3] == List.class) {
 
                 if (params[i].startsWith("[") && params[i].endsWith("]")) {
@@ -292,7 +285,11 @@ public class ContractClassFactory {
                     if (generic[i + 3].contains("String")) {
                         paramsList = new ArrayList<String>();
                         for (int j = 0; j < jlist.length; j++) {
-                            paramsList.add(jlist[j].substring(1, jlist[j].length() - 1));
+                            if (jlist[j].startsWith("\"") && jlist[j].endsWith("\"")) {
+                                paramsList.add(jlist[j].substring(1, jlist[j].length() - 1));
+                            } else {
+                                paramsList.add(jlist[j]);
+                            }
                         }
 
                     } else if (generic[i + 3].contains("BigInteger")) {
@@ -304,15 +301,17 @@ public class ContractClassFactory {
                     } else if (generic[i + 3].contains("byte[]")) {
                         paramsList = new ArrayList<byte[]>();
                         for (int j = 0; j < jlist.length; j++) {
+                            String bytesValue = "";
                             if (jlist[j].startsWith("\"") && jlist[j].endsWith("\"")) {
-                                byte[] bytes =
-                                        jlist[j].substring(1, jlist[j].length() - 1).getBytes();
-                                byte[] bytes1 = new byte[32];
-                                byte[] bytes2 = bytes;
-                                for (int k = 0; k < bytes2.length; k++) {
-                                    bytes1[k] = bytes2[k];
-                                }
-                                paramsList.add(bytes1);
+                                bytesValue = jlist[j].substring(1, jlist[j].length() - 1);
+                            } else {
+                                bytesValue = jlist[j];
+                            }
+
+                            if (bytesValue.startsWith("0x")) {
+                                paramsList.add(Numeric.hexStringToByteArray(bytesValue));
+                            } else {
+                                paramsList.add(bytesValue.getBytes());
                             }
                         }
                     }
@@ -373,22 +372,6 @@ public class ContractClassFactory {
                 } else {
                     obj[i] = params[i];
                 }
-                /*
-                if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    try {
-                        obj[i] = params[i].substring(1, params[i].length() - 1);
-                    } catch (Exception e) {
-                        System.out.println(
-                                "Please provide double quote for String type parameters.");
-                        System.out.println();
-                        return null;
-                    }
-                } else {
-                    System.out.println("Please provide double quote for String type parameters.");
-                    System.out.println();
-                    return null;
-                }
-                */
             } else if (type[i] == Boolean.class) {
                 try {
                     obj[i] = Boolean.parseBoolean(params[i]);
@@ -447,21 +430,6 @@ public class ContractClassFactory {
                 } else {
                     obj[i] = bytesValue.getBytes();
                 }
-
-                /*
-                if (params[i].startsWith("\"") && params[i].endsWith("\"")) {
-                    String bytesValue = params[i].substring(1, params[i].length() - 1);
-                    if (bytesValue.startsWith("0x")) {
-                        obj[i] = Numeric.hexStringToByteArray(bytesValue);
-                    } else {
-                        obj[i] = bytesValue.getBytes();
-                    }
-                } else {
-                    System.out.println("Please provide double quote for byte String.");
-                    System.out.println();
-                    return null;
-                }
-                */
             } else if (type[i] == List.class) {
 
                 if (params[i].startsWith("[") && params[i].endsWith("]")) {
@@ -472,7 +440,14 @@ public class ContractClassFactory {
                         if (generics[i].contains("String")) {
                             paramsList = new ArrayList<String>();
                             for (int j = 0; j < ilist.length; j++) {
-                                paramsList.add(ilist[j].substring(1, ilist[j].length() - 1));
+                                String stringValue = "";
+                                if (ilist[j].startsWith("\"") && ilist[j].endsWith("\"")) {
+                                    stringValue = ilist[j].substring(1, ilist[j].length() - 1);
+                                } else {
+                                    stringValue = ilist[j];
+                                }
+
+                                paramsList.add(stringValue);
                             }
                         } else if (generics[i].contains("BigInteger")) {
                             paramsList = new ArrayList<BigInteger>();
@@ -483,10 +458,18 @@ public class ContractClassFactory {
                         } else if (generics[i].contains("byte[]")) {
                             paramsList = new ArrayList<byte[]>();
                             for (int j = 0; j < ilist.length; j++) {
+
+                                String bytesValue = "";
                                 if (ilist[j].startsWith("\"") && ilist[j].endsWith("\"")) {
-                                    byte[] bytes =
-                                            ilist[j].substring(1, ilist[j].length() - 1).getBytes();
-                                    paramsList.add(bytes);
+                                    bytesValue = ilist[j].substring(1, ilist[j].length() - 1);
+                                } else {
+                                    bytesValue = ilist[j];
+                                }
+
+                                if (bytesValue.startsWith("0x")) {
+                                    paramsList.add(Numeric.hexStringToByteArray(bytesValue));
+                                } else {
+                                    paramsList.add(bytesValue.getBytes());
                                 }
                             }
                         } else if (generics[i].contains("Boolean")) {
