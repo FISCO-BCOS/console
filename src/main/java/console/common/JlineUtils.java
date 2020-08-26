@@ -197,89 +197,7 @@ public class JlineUtils {
 
         List<Completer> completers = new ArrayList<Completer>();
 
-        List<String> commands =
-                Arrays.asList(
-                        "help",
-                        "switch",
-                        "getBlockNumber",
-                        "getPbftView",
-                        "getSealerList",
-                        "getObserverList",
-                        "getConsensusStatus",
-                        "getSyncStatus",
-                        "getNodeVersion",
-                        "getPeers",
-                        "getNodeIDList",
-                        "getGroupPeers",
-                        "getGroupList",
-                        "getBlockByHash",
-                        "getBlockByNumber",
-                        "getBlockHeaderByHash",
-                        "getBlockHeaderByNumber",
-                        "getBlockHashByNumber",
-                        "getTransactionByHash",
-                        "getTransactionByBlockHashAndIndex",
-                        "getTransactionByBlockNumberAndIndex",
-                        "getTransactionByHashWithProof",
-                        "getTransactionReceiptByHashWithProof",
-                        "getPendingTransactions",
-                        "getPendingTxSize",
-                        "getCode",
-                        "getTotalTransactionCount",
-                        "getDeployLog",
-                        "addSealer",
-                        "addObserver",
-                        "removeNode",
-                        "grantContractWritePermission",
-                        "revokeContractWritePermission",
-                        "listContractWritePermission",
-                        "grantUserTableManager",
-                        "revokeUserTableManager",
-                        "listUserTableManager",
-                        "grantDeployAndCreateManager",
-                        "revokeDeployAndCreateManager",
-                        "listDeployAndCreateManager",
-                        "grantNodeManager",
-                        "revokeNodeManager",
-                        "listNodeManager",
-                        "grantCNSManager",
-                        "revokeCNSManager",
-                        "listCNSManager",
-                        "grantSysConfigManager",
-                        "revokeSysConfigManager",
-                        "listSysConfigManager",
-                        "listContractWritePermission",
-                        "grantContractWritePermission",
-                        "revokeContractWritePermission",
-                        "freezeContract",
-                        "unfreezeContract",
-                        "grantContractStatusManager",
-                        "getContractStatus",
-                        "listContractStatusManager",
-                        "grantCommitteeMember",
-                        "revokeCommitteeMember",
-                        "listCommitteeMembers",
-                        "grantOperator",
-                        "listOperators",
-                        "revokeOperator",
-                        "updateThreshold",
-                        "updateCommitteeMemberWeight",
-                        "queryThreshold",
-                        "queryCommitteeMemberWeight",
-                        "freezeAccount",
-                        "unfreezeAccount",
-                        "getAccountStatus",
-                        "quit",
-                        "exit",
-                        "desc",
-                        "create",
-                        "select",
-                        "insert",
-                        "update",
-                        "delete",
-                        "getCurrentAccount",
-                        "getCryptoType");
-
+        List<String> commands = SupportedCommand.getAllCommand();
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
@@ -288,7 +206,13 @@ public class JlineUtils {
         }
 
         Path path = FileSystems.getDefault().getPath("contracts/solidity/", "");
-        commands = Arrays.asList("deploy", "call", "deployByCNS", "callByCNS", "queryCNS");
+        commands =
+                Arrays.asList(
+                        SupportedCommand.DEPLOY.getCommand(),
+                        SupportedCommand.CALL.getCommand(),
+                        SupportedCommand.DEPLOY_BY_CNS.getCommand(),
+                        SupportedCommand.CALL_BY_CNS.getCommand(),
+                        SupportedCommand.QUERY_CNS.getCommand());
 
         for (String command : commands) {
             completers.add(
@@ -297,7 +221,7 @@ public class JlineUtils {
                             new ConsoleFilesCompleter(path),
                             new StringsCompleterIgnoreCase()));
         }
-        commands = Arrays.asList("getTransactionReceipt");
+        commands = Arrays.asList(SupportedCommand.GET_TRANSACTIONRECEIPT.getCommand());
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
@@ -305,7 +229,10 @@ public class JlineUtils {
                             new StringsCompleter("0x"),
                             new FilesCompleter(path)));
         }
-        commands = Arrays.asList("setSystemConfigByKey", "getSystemConfigByKey");
+        commands =
+                Arrays.asList(
+                        SupportedCommand.SET_SYSTEMCONFIGBYKEY.getCommand(),
+                        SupportedCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand());
 
         for (String command : commands) {
             completers.add(

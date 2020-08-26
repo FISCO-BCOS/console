@@ -3,129 +3,15 @@ package console.common;
 import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledConstant;
 
 public class HelpInfo {
-
     public static void promptHelp(String command) {
         System.out.println("Try '" + command + " -h or --help' for more information.");
         System.out.println();
     }
 
-    public static boolean promptNoParams(String[] params, String funcName) {
-        if (params.length == 2) {
-            if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-                helpNoParams(funcName);
-                return true;
-            } else {
-                promptHelp(funcName);
-                return true;
-            }
-        } else if (params.length > 2) {
-            promptHelp(funcName);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public static void helpNoParams(String func) {
-        switch (func) {
-            case "help":
-            case "h":
-                help();
-                break;
-            case "getBlockNumber":
-                getBlockNumberHelp();
-                break;
-            case "getPbftView":
-                getPbftViewHelp();
-                break;
-            case "getObserverList":
-                getObserverListHelp();
-                break;
-            case "getSealerList":
-                getSealerListHelp();
-                break;
-            case "getConsensusStatus":
-                getConsensusStatusHelp();
-                break;
-            case "getSyncStatus":
-                getSyncStatusHelp();
-                break;
-            case "getNodeVersion":
-                getNodeVersionHelp();
-                break;
-            case "getPeers":
-                getPeersHelp();
-                break;
-            case "getNodeIDList":
-                getNodeIDListHelp();
-                break;
-            case "getGroupPeers":
-                getGroupPeersHelp();
-                break;
-            case "getGroupList":
-                getGroupListHelp();
-                break;
-            case "getPendingTransactions":
-                getPendingTransactionsHelp();
-                break;
-            case "getPendingTxSize":
-                getPendingTxSizeHelp();
-                break;
-            case "getTotalTransactionCount":
-                getTotalTransactionCountHelp();
-                break;
-            case "listDeployAndCreateManager":
-                listDeployAndCreateManagerHelp();
-                break;
-            case "listNodeManager":
-                listNodeManagerHelp();
-                break;
-            case "listCNSManager":
-                listCNSManagerHelp();
-                break;
-            case "listSysConfigManager":
-                listSysConfigManagerHelp();
-                break;
-            case "listContractWritePermission":
-                listContractWritePermissionHelp();
-                break;
-            case "grantContractWritePermission":
-                grantContractWritePermissionHelp();
-                break;
-            case "revokeContractWritePermission":
-                revokeContractWritePermissionHelp();
-                break;
-            case "freezeContract":
-                freezeContractHelp();
-                break;
-            case "unfreezeContract":
-                unfreezeContractHelp();
-                break;
-            case "grantContractStatusManager":
-                grantContractStatusManagerHelp();
-                break;
-            case "listContractStatusManager":
-                listContractStatusManagerHelp();
-                break;
-            case "getContractStatus":
-                getContractStatusHelp();
-                break;
-            case "listCommitteeMembers":
-                listCommitteeMembersHelp();
-                break;
-            case "queryThreshold":
-                queryThresholdHelp();
-                break;
-            case "listOperators":
-                listOperatorsHelp();
-                break;
-            case "quit":
-            case "q":
-                quitHelp();
-                break;
-
-            default:
-                break;
+    public static void printHelp(String func) {
+        CommandInfo commandInfo = SupportedCommand.getCommandInfo(func);
+        if (commandInfo != null) {
+            commandInfo.printUsageInfo();
         }
     }
 

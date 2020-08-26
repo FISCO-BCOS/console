@@ -3,7 +3,6 @@ package console.precompiled;
 import console.common.CRUDParseUtils;
 import console.common.Common;
 import console.common.ConsoleUtils;
-import console.common.HelpInfo;
 import console.exception.ConsoleMessageException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,19 +47,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void addSealer(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("addSealer");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("addSealer");
-            return;
-        }
         String nodeId = params[1];
-        if ("-h".equals(nodeId) || "--help".equals(nodeId)) {
-            HelpInfo.addSealerHelp();
-            return;
-        }
         if (nodeId.length() != 128) {
             ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
         } else {
@@ -71,20 +58,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void addObserver(String[] params) throws Exception {
-
-        if (params.length < 2) {
-            HelpInfo.promptHelp("addObserver");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("addObserver");
-            return;
-        }
         String nodeId = params[1];
-        if ("-h".equals(nodeId) || "--help".equals(nodeId)) {
-            HelpInfo.addObserverHelp();
-            return;
-        }
         if (nodeId.length() != 128) {
             ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
         } else {
@@ -95,19 +69,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void removeNode(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("removeNode");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("removeNode");
-            return;
-        }
         String nodeId = params[1];
-        if ("-h".equals(nodeId) || "--help".equals(nodeId)) {
-            HelpInfo.removeNodeHelp();
-            return;
-        }
         if (nodeId.length() != 128) {
             ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
         } else {
@@ -118,23 +80,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void setSystemConfigByKey(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("setSystemConfigByKey");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("setSystemConfigByKey");
-            return;
-        }
         String key = params[1];
-        if ("-h".equals(key) || "--help".equals(key)) {
-            HelpInfo.setSystemConfigByKeyHelp();
-            return;
-        }
-        if (params.length < 3) {
-            HelpInfo.promptHelp("setSystemConfigByKey");
-            return;
-        }
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
                 || Common.RPBFTEpochSealerNum.equals(key)
@@ -219,19 +165,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void desc(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("desc");
-            return;
-        }
-        if (params.length > 2) {
-            HelpInfo.promptHelp("desc");
-            return;
-        }
         String tableName = params[1];
-        if ("-h".equals(tableName) || "--help".equals(tableName)) {
-            HelpInfo.showDescHelp();
-            return;
-        }
         if (tableName.length() > Common.SYS_TABLE_KEY_MAX_LENGTH) {
             throw new ConsoleMessageException(
                     "The table name length is greater than "
@@ -255,56 +189,21 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void freezeContract(String[] params) throws Exception {
-        if (params.length != 2) {
-            HelpInfo.promptHelp("freezeContract");
-            return;
-        }
-
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.freezeContractHelp();
-            return;
-        }
         ConsoleUtils.printRetCode(contractLifeCycleService.freeze(address));
         System.out.println();
     }
 
     @Override
     public void unfreezeContract(String[] params) throws Exception {
-        if (params.length != 2) {
-            HelpInfo.promptHelp("unfreezeContract");
-            return;
-        }
-
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.unfreezeContractHelp();
-            return;
-        }
         ConsoleUtils.printRetCode(contractLifeCycleService.unfreeze(address));
         System.out.println();
     }
 
     @Override
     public void grantContractStatusManager(String[] params) throws Exception {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("grantContractStatusManager");
-            return;
-        }
-        if (params.length > 3) {
-            HelpInfo.promptHelp("grantContractStatusManager");
-            return;
-        }
         String contractAddr = params[1];
-        if ("-h".equals(contractAddr) || "--help".equals(contractAddr)) {
-            HelpInfo.grantContractStatusManagerHelp();
-            return;
-        }
-        if (params.length < 3) {
-            HelpInfo.promptHelp("grantContractStatusManager");
-            return;
-        }
-
         String userAddr = params[2];
         ConsoleUtils.printJson(
                 contractLifeCycleService.grantManager(contractAddr, userAddr).getMessage());
@@ -313,32 +212,14 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void getContractStatus(String[] params) throws Exception {
-        if (params.length != 2) {
-            HelpInfo.promptHelp("getContractStatus");
-            return;
-        }
-
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.getContractStatusHelp();
-            return;
-        }
         ConsoleUtils.printJson(contractLifeCycleService.getContractStatus(address));
         System.out.println();
     }
 
     @Override
     public void listContractStatusManager(String[] params) throws Exception {
-        if (params.length != 2) {
-            HelpInfo.promptHelp("listContractStatusManager");
-            return;
-        }
-
         String address = params[1];
-        if ("-h".equals(address) || "--help".equals(address)) {
-            HelpInfo.listContractStatusManagerHelp();
-            return;
-        }
         ConsoleUtils.printJson(
                 ObjectMapperFactory.getObjectMapper()
                         .writeValueAsString(contractLifeCycleService.listManager(address)));
