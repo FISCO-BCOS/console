@@ -51,7 +51,7 @@ download_console(){
     else
         curl -#LO ${download_link}
     fi
-    tar -zxf ${package_name} && cd console && chmod +x *.sh
+    tar -zxf ${package_name} && chmod +x console*/*.sh
 }
 
 parse_params "$@"
