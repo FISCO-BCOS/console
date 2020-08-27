@@ -26,6 +26,8 @@ import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.crypto.CryptoInterface;
 
 public class SupportedCommand {
+    public static final String NODE_VERSION_2_0_0_RC3 = "2.0.0-rc3";
+    public static final String NODE_VERSION_2_3_0 = "2.3.0";
 
     public static final CommandInfo HELP =
             new CommandInfo(
@@ -218,7 +220,8 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1);
+                    1,
+                    NODE_VERSION_2_3_0);
     public static final CommandInfo UNFREEZE_CONTRACT =
             new CommandInfo(
                     "unfreezeContract",
@@ -237,7 +240,8 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1);
+                    1,
+                    NODE_VERSION_2_3_0);
     public static final CommandInfo GRANT_CONTRACT_STATUS =
             new CommandInfo(
                     "grantContractStatusManager",
@@ -258,7 +262,8 @@ public class SupportedCommand {
                         }
                     },
                     2,
-                    2);
+                    2,
+                    NODE_VERSION_2_3_0);
     public static final CommandInfo LIST_CONTRACT_STATUS =
             new CommandInfo(
                     "listContractStatusManager",
@@ -279,7 +284,8 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1);
+                    1,
+                    NODE_VERSION_2_3_0);
 
     public static final CommandInfo GET_CONTRACT_STATUS =
             new CommandInfo(
@@ -299,7 +305,8 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1);
+                    1,
+                    NODE_VERSION_2_3_0);
     public static final CommandInfo LIST_COMMITTEE_MEMBERS =
             new CommandInfo(
                     "listCommitteeMembers",
@@ -694,9 +701,11 @@ public class SupportedCommand {
                         @Override
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
-                            // TODO: queryCNS
+                            consoleInitializer.getPrecompiledFace().queryCNS(params);
                         }
-                    });
+                    },
+                    1,
+                    2);
     public static final CommandInfo ADDOBSERVER =
             new CommandInfo(
                     "addObserver",
@@ -999,7 +1008,8 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1);
+                    1,
+                    NODE_VERSION_2_0_0_RC3);
     public static final CommandInfo CREATE =
             new CommandInfo(
                     "create",
@@ -1010,7 +1020,8 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().createTable(inputDatas[0]);
                         }
-                    });
+                    },
+                    NODE_VERSION_2_0_0_RC3);
     public static final CommandInfo SELECT =
             new CommandInfo(
                     "select",
@@ -1021,7 +1032,8 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().select(inputDatas[0]);
                         }
-                    });
+                    },
+                    NODE_VERSION_2_0_0_RC3);
     public static final CommandInfo INSERT =
             new CommandInfo(
                     "insert",
@@ -1032,7 +1044,8 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().insert(inputDatas[0]);
                         }
-                    });
+                    },
+                    NODE_VERSION_2_0_0_RC3);
     public static final CommandInfo UPDATE =
             new CommandInfo(
                     "update",
@@ -1043,7 +1056,8 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().update(inputDatas[0]);
                         }
-                    });
+                    },
+                    NODE_VERSION_2_0_0_RC3);
     public static final CommandInfo DELETE =
             new CommandInfo(
                     "delete",
@@ -1054,7 +1068,8 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().remove(inputDatas[0]);
                         }
-                    });
+                    },
+                    NODE_VERSION_2_0_0_RC3);
     public static final CommandInfo GET_CURRENT_ACCOUNT =
             new CommandInfo(
                     "getCurrentAccount",
@@ -1585,6 +1600,157 @@ public class SupportedCommand {
                         }
                     },
                     1,
+                    1);
+
+    public static final CommandInfo START_GROUP =
+            new CommandInfo(
+                    "startGroup",
+                    "Start the specified group of the specified node",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.operateGroupHelp("startGroup", "started");
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().startGroup(params);
+                        }
+                    },
+                    1,
+                    2);
+
+    public static final CommandInfo STOP_GROUP =
+            new CommandInfo(
+                    "stopGroup",
+                    "Stop the specified group of the specified node",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.operateGroupHelp("stopGroup", "stopped");
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().stopGroup(params);
+                        }
+                    },
+                    1,
+                    2);
+
+    public static final CommandInfo REMOVE_GROUP =
+            new CommandInfo(
+                    "removeGroup",
+                    "Remove the specified group of the specified node",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.operateGroupHelp("removeGroup", "removed");
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().removeGroup(params);
+                        }
+                    },
+                    1,
+                    2);
+
+    public static final CommandInfo RECOVER_GROUP =
+            new CommandInfo(
+                    "recoverGroup",
+                    "Recover the specified group of the specified node",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.operateGroupHelp("recoverGroup", "recovered");
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().recoverGroup(params);
+                        }
+                    },
+                    1,
+                    2);
+
+    public static final CommandInfo QUERY_GROUP_STATUS =
+            new CommandInfo(
+                    "queryGroupStatus",
+                    "Query the status of the specified group of the specified node",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.operateGroupHelp("queryGroupStatus", "queried");
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().queryGroupStatus(params);
+                        }
+                    },
+                    1,
+                    2);
+
+    public static final CommandInfo GET_AVAILABLE_CONNECTIONS =
+            new CommandInfo(
+                    "getAvailableConnections",
+                    "Get the connection information of the nodes connected with the sdk",
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            ConsoleUtils.printJson(
+                                    consoleInitializer
+                                            .getBcosSDK()
+                                            .getChannel()
+                                            .getAvailablePeer()
+                                            .toString());
+                        }
+                    });
+
+    public static final CommandInfo GET_GROUP_CONNECTIONS =
+            new CommandInfo(
+                    "getGroupConnections",
+                    "Get the node information of the group connected to the SDK",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            System.out.println("getGroupConnections Usage:");
+                            System.out.println(
+                                    "GroupId: The group ID that needs to query node information, default is the current group");
+                            System.out.println();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            Integer groupId = consoleInitializer.getClient().getGroupId();
+                            if (params.length == 2) {
+                                groupId =
+                                        ConsoleUtils.proccessNonNegativeNumber(
+                                                "groupId", params[1]);
+                            }
+                            ConsoleUtils.printJson(
+                                    consoleInitializer
+                                            .getBcosSDK()
+                                            .getGroupManagerService()
+                                            .getGroupAvailablePeers(groupId)
+                                            .toString());
+                        }
+                    },
+                    0,
                     1);
 
     public static List<String> CRUD_COMMANDS =

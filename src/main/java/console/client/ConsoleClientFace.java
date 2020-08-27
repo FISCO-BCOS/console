@@ -59,4 +59,14 @@ public interface ConsoleClientFace {
     void getTotalTransactionCount(String[] params) throws IOException;
 
     void getSystemConfigByKey(String[] params) throws Exception;
+
+    void startGroup(String[] params);
+
+    void stopGroup(String[] params);
+
+    void removeGroup(String[] params);
+
+    void recoverGroup(String[] params);
+
+    void queryGroupStatus(String[] params);
 }

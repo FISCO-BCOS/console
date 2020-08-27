@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.contract.precompiled.contractmgr.ContractLifeCycleService;
 import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
@@ -35,6 +36,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
     private ContractLifeCycleService contractLifeCycleService;
+    private CnsService cnsService;
 
     public PrecompiledImpl(Client client) {
         this.client = client;
@@ -43,6 +45,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.tableCRUDService = new TableCRUDService(client, client.getCryptoInterface());
         this.contractLifeCycleService =
                 new ContractLifeCycleService(client, client.getCryptoInterface());
+        this.cnsService = new CnsService(client, client.getCryptoInterface());
     }
 
     @Override
@@ -503,5 +506,16 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         table.setKey(keyValue);
+    }
+
+    public void queryCNS(String[] params) throws Exception {
+        if (params.length == 2) {
+            // get contract name
+            ConsoleUtils.printJson(cnsService.selectByName(params[1]).toString());
+        }
+        if (params.length == 3) {
+            ConsoleUtils.printJson(
+                    cnsService.selectByNameAndVersion(params[1], params[2]).toString());
+        }
     }
 }

@@ -116,7 +116,7 @@ public class Console {
                                 + e.getErrorCode()
                                 + ", \"msg\":"
                                 + "\""
-                                + e.getErrorMessage()
+                                + e.getMessage()
                                 + "\"}");
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);

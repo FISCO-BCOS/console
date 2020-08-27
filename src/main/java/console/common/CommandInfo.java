@@ -34,6 +34,7 @@ public class CommandInfo {
     private final CommandImplement commandImplement;
     private int minParamLength = -1;
     private int maxParamLength = -1;
+    String minSupportVersion = null;
 
     public CommandInfo(String command, String desc, CommandImplement commandImplement) {
         this.command = command;
@@ -63,6 +64,15 @@ public class CommandInfo {
     public CommandInfo(
             String command,
             String desc,
+            CommandImplement commandImplement,
+            String minSupportVersion) {
+        this(command, desc, commandImplement);
+        this.minSupportVersion = minSupportVersion;
+    }
+
+    public CommandInfo(
+            String command,
+            String desc,
             UsageDisplay usageDisplay,
             CommandImplement commandImplement,
             int minParamLength,
@@ -70,6 +80,18 @@ public class CommandInfo {
         this(command, desc, usageDisplay, commandImplement);
         this.minParamLength = minParamLength;
         this.maxParamLength = maxParamlLength;
+    }
+
+    public CommandInfo(
+            String command,
+            String desc,
+            UsageDisplay usageDisplay,
+            CommandImplement commandImplement,
+            int minParamLength,
+            int maxParamlLength,
+            String minSupportVersion) {
+        this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamlLength);
+        this.minSupportVersion = minSupportVersion;
     }
 
     public CommandInfo(
@@ -156,6 +178,10 @@ public class CommandInfo {
         return false;
     }
 
+    public String getMinSupportVersion() {
+        return minSupportVersion;
+    }
+
     public void callCommand(ConsoleInitializer consoleInitializer, String[] params)
             throws Exception {
         if (maxParamLength != -1 && (params.length - 1) > maxParamLength) {
@@ -164,6 +190,12 @@ public class CommandInfo {
         }
         if (minParamLength != -1 && (params.length - 1) < minParamLength) {
             HelpInfo.printHelp(command);
+            return;
+        }
+        // check version
+        if (minSupportVersion != null
+                && !ConsoleUtils.checkVersion(
+                        this.getCommand(), consoleInitializer.getClient(), minSupportVersion)) {
             return;
         }
         // print help info
