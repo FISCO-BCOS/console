@@ -7,6 +7,7 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import console.exception.CompileSolidityException;
+import io.netty.util.NetUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -17,7 +18,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.commons.io.FileUtils;
+import org.fisco.bcos.sdk.channel.model.ChannelPrococolExceiption;
+import org.fisco.bcos.sdk.channel.model.EnumNodeVersion;
+import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
+import org.fisco.bcos.sdk.utils.Host;
 import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
@@ -367,5 +372,56 @@ public class ConsoleUtils {
     public static void doubleLine() {
         System.out.println(
                 "=============================================================================================");
+    }
+
+    public static boolean checkEndPoint(String endPoint) {
+        int index = endPoint.lastIndexOf(':');
+        if (index == -1) {
+            System.out.println("Invalid endpoint format, the endpoint format should be IP:Port");
+            return false;
+        }
+        String IP = endPoint.substring(0, index);
+        String port = endPoint.substring(index + 1);
+        if (!(NetUtil.isValidIpV4Address(IP) || NetUtil.isValidIpV6Address(IP))) {
+            System.out.println("Invalid IP " + IP);
+            return false;
+        }
+        if (!Host.validPort(port)) {
+            System.out.println("Invalid Port " + port);
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean checkVersion(
+            String command, Client client, String enumMinSupportVersion) {
+        try {
+            EnumNodeVersion.Version minSupportVersion =
+                    EnumNodeVersion.getClassVersion(enumMinSupportVersion);
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.getClassVersion(
+                            client.getClientNodeVersion().getNodeVersion().getSupportedVersion());
+            String errorMessage =
+                    "The fisco bcos node with supported_version lower than "
+                            + minSupportVersion.toVersionString()
+                            + " does not support the command "
+                            + command
+                            + " , current fisco-bcos supported_version: "
+                            + supportedVersion.toVersionString();
+            if (supportedVersion.getMajor() < minSupportVersion.getMajor()) {
+                System.out.println(errorMessage);
+                System.out.println();
+                return false;
+            }
+            if (supportedVersion.getMajor() == minSupportVersion.getMajor()
+                    && supportedVersion.getMinor() < minSupportVersion.getMinor()) {
+                System.out.println(errorMessage);
+                System.out.println();
+                return false;
+            }
+            return true;
+        } catch (ChannelPrococolExceiption e) {
+            return true;
+        }
     }
 }

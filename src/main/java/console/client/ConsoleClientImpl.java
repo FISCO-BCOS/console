@@ -1,7 +1,5 @@
 package console.client;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
@@ -84,7 +82,13 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getPeers(String[] params) throws IOException {
-        ConsoleUtils.printJson(client.getPeers().getPeers().toString());
+        if (params.length <= 1) {
+            ConsoleUtils.printJson(client.getPeers().getPeers().toString());
+        } else {
+            if (ConsoleUtils.checkEndPoint(params[1])) {
+                ConsoleUtils.printJson(client.getPeers(params[1]).getPeers().toString());
+            }
+        }
         System.out.println();
     }
 
@@ -96,13 +100,25 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getGroupPeers(String[] params) throws IOException {
-        ConsoleUtils.printJson(client.getGroupPeers().getGroupPeers().toString());
+        if (params.length <= 1) {
+            ConsoleUtils.printJson(client.getGroupPeers().getGroupPeers().toString());
+        } else {
+            if (ConsoleUtils.checkEndPoint(params[1])) {
+                ConsoleUtils.printJson(client.getGroupPeers(params[1]).getGroupPeers().toString());
+            }
+        }
         System.out.println();
     }
 
     @Override
     public void getGroupList(String[] params) throws IOException {
-        System.out.println(client.getGroupList().getGroupList().toString());
+        if (params.length <= 1) {
+            System.out.println(client.getGroupList().getGroupList().toString());
+        } else {
+            if (ConsoleUtils.checkEndPoint(params[1])) {
+                System.out.println(client.getGroupList(params[1]).getGroupList().toString());
+            }
+        }
         System.out.println();
     }
 
@@ -364,8 +380,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
-    public void getTotalTransactionCount(String[] params)
-            throws JsonParseException, JsonMappingException, IOException {
+    public void getTotalTransactionCount(String[] params) throws IOException {
         String transactionCount =
                 client.getTotalTransactionCount().getTotalTransactionCount().toString();
         TotalTransactionCountResult totalTransactionCountResult =
@@ -413,5 +428,57 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                             + ".");
         }
         System.out.println();
+    }
+
+    private Integer checkAndGetGroupId(String[] params) {
+        Integer groupId = client.getGroupId();
+        if (!ConsoleUtils.checkEndPoint(params[1])) {
+            return null;
+        }
+        if (params.length == 3) {
+            groupId = ConsoleUtils.proccessNonNegativeNumber("groupId", params[2]);
+        }
+        return groupId;
+    }
+
+    public void startGroup(String[] params) {
+        Integer groupId = checkAndGetGroupId(params);
+        if (groupId == null) {
+            return;
+        }
+        ConsoleUtils.printJson(client.startGroup(groupId, params[1]).getGroupStatus().toString());
+    }
+
+    public void stopGroup(String[] params) {
+        Integer groupId = checkAndGetGroupId(params);
+        if (groupId == null) {
+            return;
+        }
+        ConsoleUtils.printJson(client.stopGroup(groupId, params[1]).getGroupStatus().toString());
+    }
+
+    public void removeGroup(String[] params) {
+        Integer groupId = checkAndGetGroupId(params);
+        if (groupId == null) {
+            return;
+        }
+        ConsoleUtils.printJson(client.removeGroup(groupId, params[1]).getGroupStatus().toString());
+    }
+
+    public void recoverGroup(String[] params) {
+        Integer groupId = checkAndGetGroupId(params);
+        if (groupId == null) {
+            return;
+        }
+        ConsoleUtils.printJson(client.recoverGroup(groupId, params[1]).getGroupStatus().toString());
+    }
+
+    public void queryGroupStatus(String[] params) {
+        Integer groupId = checkAndGetGroupId(params);
+        if (groupId == null) {
+            return;
+        }
+        ConsoleUtils.printJson(
+                client.queryGroupStatus(groupId, params[1]).getGroupStatus().toString());
     }
 }

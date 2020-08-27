@@ -119,6 +119,9 @@ public class HelpInfo {
     public static void getPeersHelp() {
         System.out.println("Query peers currently connected to the client.");
         System.out.println("Usage: getPeers");
+        System.out.println(
+                "NodeEndPoint[Optional]: The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
         System.out.println();
     }
 
@@ -131,12 +134,18 @@ public class HelpInfo {
     public static void getGroupPeersHelp() {
         System.out.println("Query nodeId list for sealer and observer nodes.");
         System.out.println("Usage: getGroupPeers");
+        System.out.println(
+                "NodeEndPoint[Optional]: The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
         System.out.println();
     }
 
     public static void getGroupListHelp() {
         System.out.println("Query group list.");
         System.out.println("Usage: getGroupList");
+        System.out.println(
+                "NodeEndPoint[Optional]: The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
         System.out.println();
     }
 
@@ -616,6 +625,14 @@ public class HelpInfo {
         System.out.println("Usage: getSystemConfigByKey key");
         System.out.println(
                 "key -- The name of system config(tx_count_limit/tx_gas_limit/rpbft_epoch_block_num/rpbft_epoch_sealer_num/consensus_timeout supported currently).");
+        System.out.println();
+    }
+
+    public static void operateGroupHelp(String command, String operator) {
+        System.out.println(command + "Usage:");
+        System.out.println(
+                "EndPoint: the IP and Port information of the target node , the format is IP:Port");
+        System.out.println("GroupID: the group that should be " + operator);
         System.out.println();
     }
 
