@@ -32,11 +32,15 @@ public class ConsoleInitializer {
     private ConsoleContractFace consoleContractFace;
 
     public void init(String[] args) throws ConfigException {
-        String configFileName = "config-example.yaml";
+        String configFileName = "config.yaml";
         URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
         if (configUrl == null) {
             throw new ConfigException(
-                    "The configuration file " + configFileName + " doesn't exist!");
+                    "The configuration file "
+                            + configFileName
+                            + " doesn't exist! Please copy config-example.yaml to "
+                            + configFileName
+                            + ".");
         }
         String configFile = configUrl.getPath();
         bcosSDK = new BcosSDK(configFile);
