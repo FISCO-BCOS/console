@@ -9,6 +9,7 @@ import console.precompiled.PrecompiledFace;
 import console.precompiled.PrecompiledImpl;
 import console.precompiled.permission.PermissionFace;
 import console.precompiled.permission.PermissionImpl;
+import java.net.URL;
 import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.config.exceptions.ConfigException;
@@ -31,12 +32,13 @@ public class ConsoleInitializer {
     private ConsoleContractFace consoleContractFace;
 
     public void init(String[] args) throws ConfigException {
-        String configFile =
-                ConsoleInitializer.class
-                        .getClassLoader()
-                        .getResource("config-example.yaml")
-                        .getPath();
-
+        String configFileName = "config-example.yaml";
+        URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
+        if (configUrl == null) {
+            throw new ConfigException(
+                    "The configuration file " + configFileName + " doesn't exist!");
+        }
+        String configFile = configUrl.getPath();
         bcosSDK = new BcosSDK(configFile);
         // default group id is 1
         Integer groupId = Integer.valueOf(1);
