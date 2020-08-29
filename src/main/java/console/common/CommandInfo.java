@@ -133,7 +133,12 @@ public class CommandInfo {
     }
 
     public void printDescInfo() {
-        System.out.printf("* %-40s  %s\n", command, desc);
+        if (optionCommand != null) {
+            System.out.printf(
+                    "* %-40s  %s\n", command + "(" + optionCommand.toString() + ")", desc);
+        } else {
+            System.out.printf("* %-40s  %s\n", command, desc);
+        }
     }
 
     public void printUsageInfo() {

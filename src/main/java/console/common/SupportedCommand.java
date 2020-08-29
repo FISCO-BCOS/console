@@ -39,7 +39,8 @@ public class SupportedCommand {
                             printUsageInfo();
                         }
                     },
-                    new ArrayList<String>(Arrays.asList("h", "-h", "-help", "--h", "--help", "-H")),
+                    new ArrayList<String>(
+                            Arrays.asList("-h", "-help", "--h", "--H", "--help", "-H")),
                     new CommandInfo.CommandImplement() {
                         @Override
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
@@ -1803,8 +1804,14 @@ public class SupportedCommand {
         Set<String> keys = commandToCommandInfo.keySet();
         List<String> commandList = new ArrayList<String>(keys);
         Collections.sort(commandList);
+        List<String> outputtedCommand = new ArrayList<>();
         for (int i = 0; i < commandList.size(); i++) {
-            commandToCommandInfo.get(commandList.get(i)).printDescInfo();
+            CommandInfo commandInfo = commandToCommandInfo.get(commandList.get(i));
+            if (outputtedCommand.contains(commandInfo.getCommand())) {
+                continue;
+            }
+            commandInfo.printDescInfo();
+            outputtedCommand.add(commandInfo.getCommand());
         }
     }
 }
