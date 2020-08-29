@@ -10,6 +10,7 @@ import java.util.Objects;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
+import org.fisco.bcos.sdk.client.protocol.response.TotalTransactionCount;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
 import org.fisco.bcos.sdk.utils.Numeric;
@@ -381,23 +382,20 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getTotalTransactionCount(String[] params) throws IOException {
-        String transactionCount =
-                client.getTotalTransactionCount().getTotalTransactionCount().toString();
-        TotalTransactionCountResult totalTransactionCountResult =
-                ObjectMapperFactory.getObjectMapper()
-                        .readValue(transactionCount, TotalTransactionCountResult.class);
 
-        TotalTransactionCountResult.InnerTotalTransactionCountResult
-                innerTotalTransactionCountResult =
-                        totalTransactionCountResult.new InnerTotalTransactionCountResult();
+        TotalTransactionCount.TransactionCountInfo transactionCount =
+                client.getTotalTransactionCount().getTotalTransactionCount();
+
+        TotalTransactionCountResult innerTotalTransactionCountResult =
+                new TotalTransactionCountResult();
         innerTotalTransactionCountResult.setBlockNumber(
-                Numeric.decodeQuantity(totalTransactionCountResult.getBlockNumber()));
+                Numeric.decodeQuantity(transactionCount.getBlockNumber()));
         innerTotalTransactionCountResult.setTxSum(
-                Numeric.decodeQuantity(totalTransactionCountResult.getTxSum()));
+                Numeric.decodeQuantity(transactionCount.getTxSum()));
 
-        if (totalTransactionCountResult.getFailedTxSum() != null) {
+        if (transactionCount.getFailedTxSum() != null) {
             innerTotalTransactionCountResult.setFailedTxSum(
-                    Numeric.decodeQuantity(totalTransactionCountResult.getFailedTxSum()));
+                    Numeric.decodeQuantity(transactionCount.getFailedTxSum()));
         }
 
         ConsoleUtils.printJson(
