@@ -26,17 +26,17 @@ cryptoMaterial:
   certPath: conf
 
   # [Optional]. CA cert file path
-  # caCert: conf/ca.crt
+  # caCert:
 
   # [Optional]. SSL cert file path
-  # sslCert: conf/sdk.crt
+  # sslCert:
 
   # [Optional]. SSL key file path
-  # sslKey: conf/sdk.key
+  # sslKey:
 
   #[Optional]. if algorithm is sm, enSslCert and enSslKey is required
-  # enSslCert: conf/gmensdk.crt
-  # enSslKey: conf/gmensdk.key
+  # enSslCert:
+  # enSslKey:
 
 # [Required]. The peer list to connect
 peers:
@@ -61,6 +61,8 @@ AMOPKeys:
     privateKey: consumer_private_key.pem
 
 Account:
+  # The account file path(Default load account from keyStoreDir directory when accountFilePath is not configured)
+  # accountFilePath:
   # The directory where the account private key file is placed in
   keyStoreDir: account
   # The storage format of the account, default is pem
@@ -77,3 +79,5 @@ threadPool:
   # channelProcessorThreadSize: 16
   # The size of the thread pool used to process the transaction receipt notification
   # receiptProcessorThreadSize: 16
+  # the max blocking queue size of the thread pool
+  # maxBlockingQueueSize: 102400

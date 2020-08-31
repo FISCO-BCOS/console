@@ -18,7 +18,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.fisco.bcos.sdk.abi.ABICodec;
 import org.fisco.bcos.sdk.abi.ABICodecException;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
@@ -27,12 +26,12 @@ import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
 import org.fisco.bcos.sdk.contract.exceptions.ContractException;
+import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.crypto.CryptoInterface;
 import org.fisco.bcos.sdk.transaction.manager.AssembleTransactionManagerInterface;
 import org.fisco.bcos.sdk.transaction.manager.TransactionManagerFactory;
-import org.fisco.bcos.sdk.transaction.model.dto.CallRequest;
 import org.fisco.bcos.sdk.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.transaction.model.exception.TransactionBaseException;
@@ -74,11 +73,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 bin = abiAndBin.getSmBin();
             }
             TransactionResponse response =
-                    this.assembleTransactionManager.deployAndGetResponse(
-                            abiAndBin.getAbi(),
-                            bin,
-                            contractName,
-                            inputParams.stream().map(o -> (Object) o).collect(Collectors.toList()));
+                    this.assembleTransactionManager.deployAndGetResponseWithStringParams(
+                            abiAndBin.getAbi(), bin, inputParams);
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message:" + response.getReturnMessage());
@@ -88,13 +84,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractAddress = response.getTransactionReceipt().getContractAddress();
             System.out.println("Hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("contract address: " + contractAddress);
+            System.out.println();
             writeLog(contractName, contractAddress);
             // save the bin and abi
             ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
             // save the keyPair
             client.getCryptoInterface().getCryptoKeyPair().storeKeyPairWithPemFormat();
             return response;
-        } catch (ClientException | CompileContractException | IOException e) {
+        } catch (ClientException | CompileContractException | IOException | ABICodecException e) {
             throw new ConsoleMessageException("deploy contract failed for " + e.getMessage(), e);
         }
     }
@@ -279,18 +276,16 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     contractName,
                     functionName,
                     callParams.size());
-            String data =
-                    this.abiCodec.encodeMethodFromString(
-                            abiAndBin.getAbi(), functionName, callParams);
-            CallRequest callRequest =
-                    new CallRequest(
+            CallResponse response =
+                    assembleTransactionManager.sendCallWithStringParams(
                             client.getCryptoInterface().getCryptoKeyPair().getAddress(),
                             contractAddress,
-                            data,
-                            abiDefinition);
-            CallResponse response = assembleTransactionManager.sendCall(callRequest);
+                            abiAndBin.getAbi(),
+                            functionName,
+                            callParams);
             if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
-                System.out.println("Return values: " + response.getValues());
+                System.out.println("Return values: ");
+                ConsoleUtils.printJson(response.getValues());
             }
             System.out.println("Return messages: " + response.getReturnMessage());
             System.out.println("Return code: " + response.getReturnCode());
@@ -304,13 +299,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     contractName,
                     functionName,
                     callParams.size());
-
-            String data =
-                    this.abiCodec.encodeMethodFromString(
-                            abiAndBin.getAbi(), functionName, callParams);
             TransactionResponse response =
-                    assembleTransactionManager.sendTransactionAndGetResponse(
-                            contractAddress, abiAndBin.getAbi(), data);
+                    assembleTransactionManager.sendTransactionWithStringParamsAndGetResponse(
+                            contractAddress, abiAndBin.getAbi(), functionName, callParams);
             System.out.println("hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("Receipt message: " + response.getReceiptMessages());
             System.out.println("Return message: " + response.getReturnMessage());
@@ -348,7 +339,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void callByCNS(String[] params) throws Exception {
         String contractNameAndVersion = params[1];
-        String contractName = null;
+        String contractName = contractNameAndVersion;
         String contractVersion = null;
         if (contractNameAndVersion.contains(":")) {
             String[] nameAndVersion = contractNameAndVersion.split(":");
@@ -376,7 +367,13 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         // get address from cnsService
         String contractAddress = "";
         try {
-            contractAddress = cnsService.getContractAddress(contractName, contractVersion);
+            if (contractVersion != null) {
+                contractAddress = cnsService.getContractAddress(contractName, contractVersion);
+            } else {
+                List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
+                CnsInfo latestCNSInfo = cnsInfos.get(cnsInfos.size() - 1);
+                contractAddress = latestCNSInfo.getAddress();
+            }
         } catch (ContractException | ClientException e) {
             System.out.println(
                     "Error when getting cns information, error message: " + e.getMessage());
