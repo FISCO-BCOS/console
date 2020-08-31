@@ -100,7 +100,18 @@ public class Console {
                         inputParamString[0] = request;
                         commandInfo.callCommand(consoleInitializer, inputParamString);
                     } else {
-                        commandInfo.callCommand(consoleInitializer, params);
+                        String[] paramWithoutQuotation = new String[params.length];
+                        for (Integer i = 0; i < params.length; i++) {
+                            String param = params[i];
+                            paramWithoutQuotation[i] = param;
+                            // Remove the quotes around the input parameters
+                            if (param.length() >= 3
+                                    && param.startsWith("\"")
+                                    && param.endsWith("\"")) {
+                                paramWithoutQuotation[i] = param.substring(1, param.length() - 1);
+                            }
+                        }
+                        commandInfo.callCommand(consoleInitializer, paramWithoutQuotation);
                     }
                     // should exit
                     if (SupportedCommand.QUITE.commandEqual(params[0])) {
