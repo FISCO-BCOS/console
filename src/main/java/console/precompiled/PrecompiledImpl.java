@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.contract.exceptions.ContractException;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.contract.precompiled.contractmgr.ContractLifeCycleService;
@@ -23,6 +25,7 @@ import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledConstant;
 import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.model.RetCode;
+import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
 import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +49,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.contractLifeCycleService =
                 new ContractLifeCycleService(client, client.getCryptoInterface());
         this.cnsService = new CnsService(client, client.getCryptoInterface());
+        client.getCryptoInterface().getCryptoKeyPair().storeKeyPairWithPemFormat();
     }
 
     @Override
@@ -180,10 +184,15 @@ public class PrecompiledImpl implements PrecompiledFace {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
         try {
-            String tableInfo =
-                    ObjectMapperFactory.getObjectMapper()
-                            .writeValueAsString(tableCRUDService.desc(tableName));
-            ConsoleUtils.printJson(tableInfo);
+            List<Map<String, String>> tableDesc = tableCRUDService.desc(tableName);
+            if (tableDesc.size() == 0
+                    || tableDesc.get(0).get(PrecompiledConstant.KEY_FIELD_NAME).equals("")) {
+                System.out.println("Table \"" + tableName + "\" doesn't exist!");
+            } else {
+                String tableInfo =
+                        ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc);
+                ConsoleUtils.printJson(tableInfo);
+            }
             System.out.println();
         } catch (Exception e) {
             throw e;
@@ -253,14 +262,93 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
             } else {
-                System.out.println("Create '" + table.getTableName() + "' failed: ");
+                System.out.println("Create '" + table.getTableName() + "' failed ");
                 System.out.println(" ret message: " + result.getMessage());
                 System.out.println(" ret code: " + result.getCode());
             }
             System.out.println();
+        } catch (ContractException e) {
+            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+        } catch (ClientException e) {
+            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    private void outputErrorMessageForTableCRUD(
+            Table table, Entry entry, String command, int code, String message) {
+        System.out.println("call " + command + " failed!");
+        System.out.println("* code: " + code);
+        System.out.println("* message: " + message);
+        System.out.println();
+        if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
+            return;
+        }
+        if (table == null) {
+            System.out.println();
+            return;
+        }
+        String regexTableName = "[\\da-zA-z,$,_,@]+";
+        if (!table.getTableName().matches(regexTableName)) {
+            System.out.println("Invalid table name " + table.getTableName());
+            System.out.println(
+                    "* The table name must contain only numbers, letters or [$','_','@']");
+        }
+        if (table.getTableName().length() > PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH) {
+            System.out.println("Invalid table name " + table.getTableName());
+            System.out.println(
+                    "* The length of the table name must be no greater than "
+                            + PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH
+                            + ", current length of the table is "
+                            + table.getTableName().length());
+        }
+        if (table.getKey().length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
+            System.out.println("Invalid key name " + table.getKey());
+            System.out.println(
+                    "* The key length must be no greater than "
+                            + PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH
+                            + " , current length of the table is "
+                            + table.getKey().length());
+        }
+        if (table.getValueFields() != null) {
+            for (String field : table.getValueFields()) {
+                if (field.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
+                    System.out.println("Invalid filed " + field);
+
+                    System.out.println(
+                            "* Field length must be no greater than "
+                                    + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
+                                    + ", current length is: "
+                                    + field.length());
+                }
+            }
+        }
+        if (entry == null) {
+            System.out.println();
+            return;
+        }
+        Map<String, String> filedNameToValue = entry.getFieldNameToValue();
+        for (String key : filedNameToValue.keySet()) {
+            if (key.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
+                System.out.println("Invalid field name " + key);
+                System.out.println(
+                        "* Field length must be no greater than "
+                                + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
+                                + ", current length:"
+                                + key.length());
+            }
+            String value = filedNameToValue.get(key);
+            if (value.length() > PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
+                System.out.println("Invalid field value for " + key);
+                System.out.println(
+                        "* Value of Field must be no greater than: "
+                                + PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH
+                                + ", current length is "
+                                + value.length());
+            }
+        }
+        System.out.println();
     }
 
     @Override
@@ -308,6 +396,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             CRUDParseUtils.invalidSymbol(sql);
             System.out.println();
             return;
+        } catch (ContractException e) {
+            outputErrorMessageForTableCRUD(table, entry, sql, e.getErrorCode(), e.getMessage());
+        } catch (ClientException e) {
+            outputErrorMessageForTableCRUD(table, entry, sql, e.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             throw e;
         }
@@ -349,6 +441,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println(updateResult.getCode() + " row affected.");
             System.out.println();
+        } catch (ContractException e) {
+            outputErrorMessageForTableCRUD(table, entry, sql, e.getErrorCode(), e.getMessage());
+        } catch (ClientException e) {
+            outputErrorMessageForTableCRUD(table, entry, sql, e.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             throw e;
         }
@@ -385,6 +481,10 @@ public class PrecompiledImpl implements PrecompiledFace {
                 ConsoleUtils.printRetCode(removeResult);
             }
             System.out.println();
+        } catch (ContractException e) {
+            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+        } catch (ClientException e) {
+            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             throw e;
         }
@@ -438,6 +538,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             } else {
                 System.out.println(rows + " rows in set.");
             }
+        } catch (ContractException e) {
+            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+        } catch (ClientException e) {
+            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
         } catch (Exception e) {
             throw e;
         }

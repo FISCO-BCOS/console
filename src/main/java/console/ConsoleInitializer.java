@@ -32,34 +32,72 @@ public class ConsoleInitializer {
     private ConsoleContractFace consoleContractFace;
 
     public void init(String[] args) throws ConfigException {
-        String configFileName = "config.yaml";
-        URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
-        if (configUrl == null) {
-            throw new ConfigException(
-                    "The configuration file "
-                            + configFileName
-                            + " doesn't exist! Please copy config-example.yaml to "
-                            + configFileName
-                            + ".");
-        }
-        String configFile = configUrl.getPath();
-        bcosSDK = new BcosSDK(configFile);
-        // default group id is 1
         Integer groupId = Integer.valueOf(1);
-        if (args.length > 0) {
-            groupId = Integer.valueOf(args[0]);
-        }
-        this.client = bcosSDK.getClient(groupId);
         try {
+            String configFileName = "config.yaml";
+            URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
+            if (configUrl == null) {
+                throw new ConfigException(
+                        "The configuration file "
+                                + configFileName
+                                + " doesn't exist! Please copy config-example.yaml to "
+                                + configFileName
+                                + ".");
+            }
+            String configFile = configUrl.getPath();
+            bcosSDK = new BcosSDK(configFile);
+            if (args.length > 0) {
+                groupId = Integer.valueOf(args[0]);
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Init BcosSDK failed for invalid groupId \"" + args[0] + "\"");
+            System.out.println();
+            System.exit(0);
+        }
+        try {
+            this.client = bcosSDK.getClient(groupId);
+            loadAccount(this.client, args);
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.permissionFace = new PermissionImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
         } catch (Exception e) {
             System.out.println(
-                    "Failed to connect to the node. Please check the node status and the console configuration.");
+                    "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
+                            + e.getMessage());
+            System.exit(0);
             logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
+    }
+
+    private void printUsage() {}
+
+    private void loadAccount(Client client, String[] params) {
+        if (params.length <= 1) {
+            return;
+        }
+        if (params[1].compareToIgnoreCase("-pem") != 0
+                && params[1].compareToIgnoreCase("-p12") != 0) {
+            System.out.println("Invalid param " + params[1] + ", must be -pem or -p12");
+            System.exit(0);
+        }
+        String password = null;
+        if (params[1].compareToIgnoreCase("-pem") == 0 && params.length != 3) {
+            System.out.println(
+                    "Load account from the pem file failed! Please specified the pem file path");
+            System.exit(0);
+        }
+        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length != 4) {
+            System.out.println(
+                    "Load account from the p12 file failed! Please specified the p12 file path and the password");
+            System.exit(0);
+        }
+        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length == 4) {
+            password = params[3];
+        }
+        String accountFileFormat = params[1].substring(1);
+        String accountFile = params[2];
+        client.getCryptoInterface().loadAccount(accountFileFormat, accountFile, password);
     }
 
     public void switchGroupID(String[] params) {

@@ -2,7 +2,6 @@ package console;
 
 import console.client.ConsoleClientFace;
 import console.common.CommandInfo;
-import console.common.ConsoleExceptionUtils;
 import console.common.ConsoleUtils;
 import console.common.JlineUtils;
 import console.common.SupportedCommand;
@@ -16,7 +15,7 @@ import java.util.Scanner;
 import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.utils.exceptions.MessageDecodingException;
+import org.fisco.bcos.sdk.contract.exceptions.ContractException;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
 import org.jline.reader.EndOfFileException;
@@ -120,16 +119,19 @@ public class Console {
                                 + "\"}");
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
+            } catch (ContractException e) {
+                ConsoleUtils.printJson(
+                        "{\"code\":"
+                                + e.getErrorCode()
+                                + ", \"msg\":"
+                                + "\""
+                                + e.getMessage()
+                                + "\"}");
+                System.out.println();
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
             } catch (ClassNotFoundException e) {
                 System.out.println(e.getMessage() + " does not exist.");
                 System.out.println();
-            } catch (MessageDecodingException e) {
-                if (e.getMessage().contains("\"status\":\"0x1a\"")) {
-                    System.out.println("The contract address is incorrect.");
-                    System.out.println();
-                } else {
-                    ConsoleExceptionUtils.pringMessageDecodeingException(e);
-                }
             } catch (IOException e) {
                 if (e.getMessage().startsWith("activeConnections")) {
                     System.out.println(
@@ -149,17 +151,15 @@ public class Console {
                 System.out.println();
             } catch (UserInterruptException e) {
                 consoleInitializer.stop();
+                break;
             } catch (EndOfFileException e) {
                 consoleInitializer.stop();
+                break;
             } catch (RuntimeException e) {
-                if (e.getCause() instanceof MessageDecodingException) {
-                    ConsoleExceptionUtils.pringMessageDecodeingException(
-                            new MessageDecodingException(e.getMessage()));
-                } else {
-                    System.out.println(e.getMessage());
-                    System.out.println();
-                    logger.error(" message: {}, e: {}", e.getMessage(), e);
-                }
+
+                System.out.println(e.getMessage());
+                System.out.println();
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
 
             } catch (Exception e) {
                 System.out.println(e.getMessage());

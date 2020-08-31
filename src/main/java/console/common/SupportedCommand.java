@@ -376,9 +376,7 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getConsoleContractFace().getDeployLog(params);
                         }
-                    },
-                    1,
-                    1);
+                    });
     public static final CommandInfo SWITCH =
             new CommandInfo(
                     "switch",
