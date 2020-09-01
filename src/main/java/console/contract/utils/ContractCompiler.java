@@ -122,11 +122,17 @@ public class ContractCompiler {
     }
 
     public static AbiAndBin loadAbiAndBin(String contractName, String contractAddress)
-            throws IOException, CodeGenException {
+            throws IOException, CodeGenException, CompileContractException {
         String baseAbiPath = ABI_PATH + contractAddress + File.separator + contractName;
         String baseBinPath = BIN_PATH + contractAddress + File.separator + contractName;
         String baseSMBinPath =
                 BIN_PATH + contractAddress + File.separator + "sm" + File.separator + contractName;
+        if (!new File(baseAbiPath + ".abi").exists()
+                || !new File(baseBinPath + ".bin").exists()
+                || !new File(baseSMBinPath + ".bin").exists()) {
+            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
+            ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
+        }
         String abiContent = new String(CodeGenUtils.readBytes(new File(baseAbiPath + ".abi")));
         String binContent = new String(CodeGenUtils.readBytes(new File(baseBinPath + ".bin")));
         String smBinContent = new String(CodeGenUtils.readBytes(new File(baseSMBinPath + ".bin")));

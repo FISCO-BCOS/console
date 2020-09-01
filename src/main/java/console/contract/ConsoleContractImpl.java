@@ -264,7 +264,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractAddress,
             String functionName,
             List<String> callParams)
-            throws IOException, CodeGenException, TransactionBaseException, ABICodecException {
+            throws IOException, CodeGenException, TransactionBaseException, ABICodecException,
+                    CompileContractException {
         // load bin and abi
         AbiAndBin abiAndBin = ContractCompiler.loadAbiAndBin(contractName, contractAddress);
         // call
@@ -348,6 +349,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throw new ConsoleMessageException(
                     "deployByCNS failed for " + e.getMessage() + ", code: " + e.getErrorCode(), e);
         } catch (IOException | CodeGenException e) {
+            throw new ConsoleMessageException("deployByCNS failed for " + e.getMessage(), e);
+        } catch (CompileContractException e) {
             throw new ConsoleMessageException("deployByCNS failed for " + e.getMessage(), e);
         }
     }

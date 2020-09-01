@@ -14,21 +14,23 @@ certPath = "conf"
 peers=["127.0.0.1:20200", "127.0.0.1:20201"]
 
 # Configure a "need verify AMOP topic" as a topic message sender.
-[[AMOPKeys]]
+[[amop]]
 topicName = "t1"
 # Public keys of the nodes that you want to send AMOP message of this topic to.
 publicKeys = [ "consumer_public_key_1.pem", "consumer_public_key_2.pem" ]
 
 # Configure a "need verify AMOP topic" as a topic subscriber.
-[[AMOPKeys]]
+[[amop]]
 topicName = "t2"
 # Your private key that used to subscriber verification.
 privateKey = "consumer_private_key.pem"
 
-[Account]
+[account]
 # The directory where the account private key file is placed in
 keyStoreDir = "account"
- # The storage format of the account, support pem and p12, default is pem
+# The account file path(Default load account from keyStoreDir directory when accountFilePath is not configured)
+# accountFilePath = ""
+# The storage format of the account, support pem and p12, default is pem
 accountFileFormat = "pem"
 # The address of the account used to send transactions
 # When it's empty, use a randomly generated account to send transactions,
@@ -39,6 +41,6 @@ accountFileFormat = "pem"
 
 [threadPool]
 # The size of the thread pool used to process the callback of the channel
-channelProcessorThreadSize = 16
+channelProcessorThreadSize = "16"
 # The size of the thread pool used to process the transaction receipt notification
-receiptProcessorThreadSize = 16
+receiptProcessorThreadSize = "16"
