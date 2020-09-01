@@ -79,6 +79,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message:" + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
+                System.out.println();
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
@@ -318,8 +319,24 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractName = params[1];
             String contractVersion = params[2];
             contractName = ContractCompiler.removeSolPostfix(contractName);
+            // query the the contractName and version has been registered or not
+            List<CnsInfo> cnsInfos =
+                    cnsService.selectByNameAndVersion(contractName, contractVersion);
+            if (cnsInfos.size() > 0) {
+                System.out.println(
+                        "The version \""
+                                + contractVersion
+                                + "\" of contract \""
+                                + contractName
+                                + "\" already exists!");
+                System.out.println();
+                return;
+            }
             List<String> inputParams = Arrays.asList(params).subList(3, params.length);
             TransactionResponse response = deployContract(contractName, inputParams);
+            if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+                return;
+            }
             String contractAddress = response.getContractAddress();
             AbiAndBin abiAndBin = ContractCompiler.loadAbiAndBin(contractName, contractAddress);
             // register cns
