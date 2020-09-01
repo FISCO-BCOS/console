@@ -185,14 +185,11 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             List<Map<String, String>> tableDesc = tableCRUDService.desc(tableName);
-            if (tableDesc.size() == 0
-                    || tableDesc.get(0).get(PrecompiledConstant.KEY_FIELD_NAME).equals("")) {
-                System.out.println("Table \"" + tableName + "\" doesn't exist!");
-            } else {
-                String tableInfo =
-                        ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc);
-                ConsoleUtils.printJson(tableInfo);
+            if (!checkTableExistence(tableName, tableDesc)) {
+                return;
             }
+            String tableInfo = ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc);
+            ConsoleUtils.printJson(tableInfo);
             System.out.println();
         } catch (Exception e) {
             throw e;
@@ -358,6 +355,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         try {
             String tableName = CRUDParseUtils.parseInsertedTableName(sql);
             List<Map<String, String>> descTable = tableCRUDService.desc(tableName);
+            if (!checkTableExistence(table.getTableName(), descTable)) {
+                return;
+            }
             logger.debug(
                     "insert, tableName: {}, descTable: {}", tableName, descTable.get(0).toString());
             CRUDParseUtils.parseInsert(sql, table, entry, descTable.get(0));
@@ -426,6 +426,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         try {
             String tableName = table.getTableName();
             List<Map<String, String>> descTable = tableCRUDService.desc(tableName);
+            if (!checkTableExistence(table.getTableName(), descTable)) {
+                return;
+            }
             String keyName = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
             table.setKey(keyName);
             handleKey(table, condition);
@@ -469,6 +472,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             List<Map<String, String>> descTable = tableCRUDService.desc(table.getTableName());
+            if (!checkTableExistence(table.getTableName(), descTable)) {
+                return;
+            }
             table.setKey(descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME));
             handleKey(table, condition);
             RetCode removeResult =
@@ -488,6 +494,16 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (Exception e) {
             throw e;
         }
+    }
+
+    private boolean checkTableExistence(String tableName, List<Map<String, String>> descTable) {
+        if (descTable.size() == 0
+                || descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME).equals("")) {
+            System.out.println("The table \"" + tableName + "\" doesn't exist!");
+            System.out.println();
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -510,6 +526,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             List<Map<String, String>> descTable = tableCRUDService.desc(table.getTableName());
+            if (!checkTableExistence(table.getTableName(), descTable)) {
+                return;
+            }
             table.setKey(descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME));
             handleKey(table, condition);
             List<Map<String, String>> result =
