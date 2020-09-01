@@ -53,7 +53,7 @@ bash gradlew build
 bash gradlew test
 }
 
-cp src/test/resources/config-example.yaml src/test/resources/config.yaml
+cp src/test/resources/config-example.toml src/test/resources/config.toml
 LOG_INFO "------ download_build_chain---------"
 download_build_chain
 LOG_INFO "------ check_standard_node---------"

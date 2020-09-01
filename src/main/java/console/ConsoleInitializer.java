@@ -34,7 +34,7 @@ public class ConsoleInitializer {
     public void init(String[] args) throws ConfigException {
         Integer groupId = Integer.valueOf(1);
         try {
-            String configFileName = "config.yaml";
+            String configFileName = "config.toml";
             URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
             if (configUrl == null) {
                 throw new ConfigException(
