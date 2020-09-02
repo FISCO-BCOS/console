@@ -529,7 +529,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (!checkTableExistence(table.getTableName(), descTable)) {
                 return;
             }
-            table.setKey(descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME));
+            String keyField = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
+            table.setKey(keyField);
             handleKey(table, condition);
             List<Map<String, String>> result =
                     tableCRUDService.select(table.getTableName(), table.getKey(), condition);
@@ -542,7 +543,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             result = filterSystemColum(result);
             if ("*".equals(selectColumns.get(0))) {
                 selectColumns.clear();
-                selectColumns.add(table.getKey());
+                selectColumns.add(keyField);
                 String[] valueArr =
                         descTable.get(0).get(PrecompiledConstant.VALUE_FIELD_NAME).split(",");
                 selectColumns.addAll(Arrays.asList(valueArr));

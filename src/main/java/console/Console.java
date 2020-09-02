@@ -113,10 +113,6 @@ public class Console {
                         }
                         commandInfo.callCommand(consoleInitializer, paramWithoutQuotation);
                     }
-                    // should exit
-                    if (SupportedCommand.QUITE.commandEqual(params[0])) {
-                        break;
-                    }
                 } else {
                     System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
                 }

@@ -211,23 +211,18 @@ public class HelpInfo {
 
     public static void getTransactionByHashHelp() {
         System.out.println("Query information about a transaction requested by transaction hash.");
-        System.out.println("Usage: getTransactionByHash transactionHash [contractName]");
+        System.out.println("Usage: getTransactionByHash transactionHash");
         System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
-        System.out.println(
-                "[contractName] -- (optional) The name of a contract, which can be used to decode input when provided.");
         System.out.println();
     }
 
     public static void getTransactionByBlockHashAndIndexHelp() {
         System.out.println(
                 "Query information about a transaction by block hash and transaction index position.");
-        System.out.println(
-                "Usage: getTransactionByBlockHashAndIndex blockHash index [contractName]");
+        System.out.println("Usage: getTransactionByBlockHashAndIndex blockHash index");
         System.out.println("blockHash -- 32 Bytes - The hash of a block.");
         System.out.println(
                 "index -- Integer of a transaction index, " + Common.NonNegativeIntegerRange + ".");
-        System.out.println(
-                "[contractName] -- (optional) The name of a contract, which can be used to decode input when provided.");
         System.out.println();
     }
 
@@ -250,25 +245,20 @@ public class HelpInfo {
     public static void getTransactionByBlockNumberAndIndexHelp() {
         System.out.println(
                 "Query information about a transaction by block number and transaction index position.");
-        System.out.println(
-                "Usage: getTransactionByBlockNumberAndIndex blockNumber index [contractName]");
+        System.out.println("Usage: getTransactionByBlockNumberAndIndex blockNumber index");
         System.out.println(
                 "blockNumber -- Integer of a block number, "
                         + Common.NonNegativeIntegerRange
                         + ".");
         System.out.println(
                 "index -- Integer of a transaction index, " + Common.NonNegativeIntegerRange + ".");
-        System.out.println(
-                "[contractName] -- (optional) The name of a contract, which can be used to decode input when provided.");
         System.out.println();
     }
 
     public static void getTransactionReceiptHelp() {
         System.out.println("Query the receipt of a transaction by transaction hash.");
-        System.out.println("Usage: getTransactionReceipt transactionHash [contractName]");
+        System.out.println("Usage: getTransactionReceipt transactionHash");
         System.out.println("transactionHash -- 32 Bytes - The hash of a transaction.");
-        System.out.println(
-                "[contractName] -- (optional) The name of a contract, which can be used to decode input, output and event log when provided.");
         System.out.println();
     }
 
