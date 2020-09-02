@@ -40,7 +40,7 @@ public class SupportedCommand {
                         }
                     },
                     new ArrayList<String>(
-                            Arrays.asList("-h", "-help", "--h", "--H", "--help", "-H")),
+                            Arrays.asList("-h", "-help", "--h", "--H", "--help", "-H", "h")),
                     new CommandInfo.CommandImplement() {
                         @Override
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
@@ -985,7 +985,7 @@ public class SupportedCommand {
                         @Override
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
-                            consoleInitializer.stop();
+                            System.exit(0);
                         }
                     });
 
