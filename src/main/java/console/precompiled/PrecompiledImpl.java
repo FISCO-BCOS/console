@@ -6,6 +6,7 @@ import console.common.ConsoleUtils;
 import console.exception.ConsoleMessageException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -265,21 +266,57 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, null, sql, e.getErrorCode(), e.getMessage(), null);
         } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, null, sql, e.getErrorCode(), e.getMessage(), null);
         } catch (Exception e) {
             throw e;
         }
     }
 
+    private boolean checkTableField(List<Map<String, String>> descTable, Entry entry) {
+        if (descTable == null || descTable.size() == 0) {
+            return true;
+        }
+        List<String> descFieldList = new ArrayList<String>();
+        Collections.addAll(
+                descFieldList,
+                descTable.get(0).get(PrecompiledConstant.VALUE_FIELD_NAME).split(","));
+        // check field
+        if (entry != null) {
+            Set<String> fieldSet = entry.getFieldNameToValue().keySet();
+            for (String field : fieldSet) {
+                if (!descFieldList.contains(field)) {
+                    System.out.println(
+                            "Unknown field \""
+                                    + field
+                                    + "\", current supported fields are "
+                                    + descFieldList.toString());
+                    System.out.println();
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private void outputErrorMessageForTableCRUD(
-            Table table, Entry entry, String command, int code, String message) {
+            Table table,
+            Entry entry,
+            String command,
+            int code,
+            String message,
+            List<Map<String, String>> descTable) {
         System.out.println("call " + command + " failed!");
         System.out.println("* code: " + code);
         System.out.println("* message: " + message);
         System.out.println();
         if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
+            return;
+        }
+        if (!checkTableField(descTable, entry)) {
             return;
         }
         if (table == null) {
@@ -352,10 +389,11 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void insert(String sql) throws Exception {
         Table table = new Table();
         Entry entry = new Entry();
+        List<Map<String, String>> descTable = null;
         try {
             String tableName = CRUDParseUtils.parseInsertedTableName(sql);
-            List<Map<String, String>> descTable = tableCRUDService.desc(tableName);
-            if (!checkTableExistence(table.getTableName(), descTable)) {
+            descTable = tableCRUDService.desc(tableName);
+            if (!checkTableExistence(tableName, descTable)) {
                 return;
             }
             logger.debug(
@@ -379,7 +417,9 @@ public class PrecompiledImpl implements PrecompiledFace {
                     || insertResult.getCode() == 1) {
                 System.out.println("Insert OK: ");
                 ConsoleUtils.printRetCode(insertResult);
-                System.out.println(insertResult.getCode() + " row affected.");
+                if (insertResult.getCode() > 0) {
+                    System.out.println(insertResult.getCode() + " row affected.");
+                }
             } else {
                 System.out.println("Insert failed");
                 System.out.println("Ret message:" + insertResult.getMessage());
@@ -397,9 +437,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println();
             return;
         } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(table, entry, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(table, entry, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (Exception e) {
             throw e;
         }
@@ -410,6 +452,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         Table table = new Table();
         Entry entry = new Entry();
         Condition condition = new Condition();
+        List<Map<String, String>> descTable = null;
         try {
             CRUDParseUtils.parseUpdate(sql, table, entry, condition);
         } catch (ConsoleMessageException e) {
@@ -425,7 +468,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             String tableName = table.getTableName();
-            List<Map<String, String>> descTable = tableCRUDService.desc(tableName);
+            descTable = tableCRUDService.desc(tableName);
             if (!checkTableExistence(table.getTableName(), descTable)) {
                 return;
             }
@@ -442,12 +485,16 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println("Result of update " + tableName + " :");
                 ConsoleUtils.printRetCode(updateResult);
             }
-            System.out.println(updateResult.getCode() + " row affected.");
+            if (updateResult.getCode() > 0) {
+                System.out.println(updateResult.getCode() + " row affected.");
+            }
             System.out.println();
         } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(table, entry, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(table, entry, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (Exception e) {
             throw e;
         }
@@ -457,6 +504,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void remove(String sql) throws Exception {
         Table table = new Table();
         Condition condition = new Condition();
+        List<Map<String, String>> descTable = null;
         try {
             CRUDParseUtils.parseRemove(sql, table, condition);
         } catch (ConsoleMessageException e) {
@@ -471,7 +519,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
-            List<Map<String, String>> descTable = tableCRUDService.desc(table.getTableName());
+            descTable = tableCRUDService.desc(table.getTableName());
             if (!checkTableExistence(table.getTableName(), descTable)) {
                 return;
             }
@@ -488,9 +536,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             System.out.println();
         } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (Exception e) {
             throw e;
         }
@@ -511,6 +561,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         Table table = new Table();
         Condition condition = new Condition();
         List<String> selectColumns = new ArrayList<>();
+        List<Map<String, String>> descTable = null;
         try {
             CRUDParseUtils.parseSelect(sql, table, condition, selectColumns);
         } catch (ConsoleMessageException e) {
@@ -525,7 +576,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
-            List<Map<String, String>> descTable = tableCRUDService.desc(table.getTableName());
+            descTable = tableCRUDService.desc(table.getTableName());
             if (!checkTableExistence(table.getTableName(), descTable)) {
                 return;
             }
@@ -559,9 +610,11 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println(rows + " rows in set.");
             }
         } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(table, null, sql, e.getErrorCode(), e.getMessage());
+            outputErrorMessageForTableCRUD(
+                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (Exception e) {
             throw e;
         }
