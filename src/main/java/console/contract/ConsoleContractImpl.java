@@ -236,7 +236,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         List<ABIDefinition> abiDefinitions =
                 CodeGenUtils.loadContractAbiDefinition(abiAndBin.getAbi());
         for (ABIDefinition definition : abiDefinitions) {
-            if (definition.getName().equals(functionName)) {
+            if (definition.getName() != null && definition.getName().equals(functionName)) {
                 return definition;
             }
         }

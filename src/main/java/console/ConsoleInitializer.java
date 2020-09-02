@@ -9,6 +9,7 @@ import console.precompiled.PrecompiledFace;
 import console.precompiled.PrecompiledImpl;
 import console.precompiled.permission.PermissionFace;
 import console.precompiled.permission.PermissionImpl;
+import java.io.Console;
 import java.net.URL;
 import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
@@ -56,7 +57,7 @@ public class ConsoleInitializer {
         }
         try {
             this.client = bcosSDK.getClient(groupId);
-            loadAccount(this.client, args);
+            loadAccount(client, args);
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.permissionFace = new PermissionImpl(client);
@@ -70,8 +71,6 @@ public class ConsoleInitializer {
         }
     }
 
-    private void printUsage() {}
-
     private void loadAccount(Client client, String[] params) {
         if (params.length <= 1) {
             return;
@@ -81,19 +80,22 @@ public class ConsoleInitializer {
             System.out.println("Invalid param " + params[1] + ", must be -pem or -p12");
             System.exit(0);
         }
-        String password = null;
         if (params[1].compareToIgnoreCase("-pem") == 0 && params.length != 3) {
             System.out.println(
                     "Load account from the pem file failed! Please specified the pem file path");
             System.exit(0);
         }
-        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length != 4) {
+        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length != 3) {
             System.out.println(
-                    "Load account from the p12 file failed! Please specified the p12 file path and the password");
+                    "Load account from the p12 file failed! Please specified the p12 file path");
             System.exit(0);
         }
-        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length == 4) {
-            password = params[3];
+        String password = null;
+        if (params[1].compareToIgnoreCase("-p12") == 0) {
+            System.out.print("Enter p12 Password:");
+            Console cons = System.console();
+            char[] passwd = cons.readPassword();
+            password = new String(passwd);
         }
         String accountFileFormat = params[1].substring(1);
         String accountFile = params[2];
