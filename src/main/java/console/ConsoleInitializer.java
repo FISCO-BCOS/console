@@ -34,6 +34,7 @@ public class ConsoleInitializer {
 
     public void init(String[] args) throws ConfigException {
         Integer groupId = Integer.valueOf(1);
+        AccountInfo accountInfo = null;
         try {
             String configFileName = "config.toml";
             URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
@@ -47,6 +48,7 @@ public class ConsoleInitializer {
             }
             String configFile = configUrl.getPath();
             bcosSDK = new BcosSDK(configFile);
+            accountInfo = loadAccount(bcosSDK, args);
             if (args.length > 0) {
                 groupId = Integer.valueOf(args[0]);
             }
@@ -57,7 +59,14 @@ public class ConsoleInitializer {
         }
         try {
             this.client = bcosSDK.getClient(groupId);
-            loadAccount(client, args);
+            if (accountInfo != null) {
+                this.client
+                        .getCryptoInterface()
+                        .loadAccount(
+                                accountInfo.accountFileFormat,
+                                accountInfo.accountFile,
+                                accountInfo.password);
+            }
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.permissionFace = new PermissionImpl(client);
@@ -66,14 +75,50 @@ public class ConsoleInitializer {
             System.out.println(
                     "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
                             + e.getMessage());
-            System.exit(0);
             logger.error(" message: {}, e: {}", e.getMessage(), e);
+            System.exit(0);
         }
     }
 
-    private void loadAccount(Client client, String[] params) {
+    private class AccountInfo {
+        private String accountFileFormat;
+        private String accountFile;
+        private String password;
+
+        public AccountInfo(String accountFileFormat, String accountFile, String password) {
+            this.accountFile = accountFile;
+            this.accountFileFormat = accountFileFormat;
+            this.password = password;
+        }
+
+        public String getAccountFileFormat() {
+            return accountFileFormat;
+        }
+
+        public void setAccountFileFormat(String accountFileFormat) {
+            this.accountFileFormat = accountFileFormat;
+        }
+
+        public String getAccountFile() {
+            return accountFile;
+        }
+
+        public void setAccountFile(String accountFile) {
+            this.accountFile = accountFile;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+
+    private AccountInfo loadAccount(BcosSDK bcosSDK, String[] params) {
         if (params.length <= 1) {
-            return;
+            return null;
         }
         if (params[1].compareToIgnoreCase("-pem") != 0
                 && params[1].compareToIgnoreCase("-p12") != 0) {
@@ -99,7 +144,8 @@ public class ConsoleInitializer {
         }
         String accountFileFormat = params[1].substring(1);
         String accountFile = params[2];
-        client.getCryptoInterface().loadAccount(accountFileFormat, accountFile, password);
+        bcosSDK.getConfig().getAccountConfig().clearAccount();
+        return new AccountInfo(accountFileFormat, accountFile, password);
     }
 
     public void switchGroupID(String[] params) {

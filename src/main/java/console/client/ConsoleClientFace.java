@@ -69,4 +69,6 @@ public interface ConsoleClientFace {
     void recoverGroup(String[] params);
 
     void queryGroupStatus(String[] params);
+
+    void generateGroup(String[] params);
 }

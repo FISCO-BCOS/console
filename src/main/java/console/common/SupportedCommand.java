@@ -1709,12 +1709,10 @@ public class SupportedCommand {
                         @Override
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
-                            ConsoleUtils.printJson(
-                                    consoleInitializer
-                                            .getBcosSDK()
-                                            .getChannel()
-                                            .getAvailablePeer()
-                                            .toString());
+                            List<String> availablePeers =
+                                    consoleInitializer.getBcosSDK().getChannel().getAvailablePeer();
+                            Collections.sort(availablePeers);
+                            ConsoleUtils.printJson(availablePeers.toString());
                         }
                     });
 
@@ -1741,16 +1739,37 @@ public class SupportedCommand {
                                         ConsoleUtils.proccessNonNegativeNumber(
                                                 "groupId", params[1]);
                             }
-                            ConsoleUtils.printJson(
+                            List<String> groupConnections =
                                     consoleInitializer
                                             .getBcosSDK()
                                             .getGroupManagerService()
-                                            .getGroupAvailablePeers(groupId)
-                                            .toString());
+                                            .getGroupAvailablePeers(groupId);
+                            Collections.sort(groupConnections);
+                            ConsoleUtils.printJson(groupConnections.toString());
                         }
                     },
                     0,
                     1);
+
+    public static final CommandInfo GENERATE_GROUP =
+            new CommandInfo(
+                    "generateGroup",
+                    "Generate a group for the specified node",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.generateGroupHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().generateGroup(params);
+                        }
+                    },
+                    4,
+                    -1);
 
     public static List<String> CRUD_COMMANDS =
             new ArrayList<String>(

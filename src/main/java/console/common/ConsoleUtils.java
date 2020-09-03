@@ -100,6 +100,7 @@ public class ConsoleUtils {
                     }
                     break;
                 case '\\':
+                    sb.append("\\");
                     break;
                 default:
                     if (!(current == " ".charAt(0))) sb.append(current);

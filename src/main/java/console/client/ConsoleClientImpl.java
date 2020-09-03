@@ -4,8 +4,11 @@ import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.TotalTransactionCountResult;
+import console.contract.ConsoleContractImpl;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
@@ -15,9 +18,11 @@ import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
 import org.fisco.bcos.sdk.utils.Numeric;
 import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsoleClientImpl implements ConsoleClientFace {
-
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleContractImpl.class);
     private Client client;
 
     public ConsoleClientImpl(Client client) {
@@ -439,6 +444,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         return groupId;
     }
 
+    @Override
     public void startGroup(String[] params) {
         Integer groupId = checkAndGetGroupId(params);
         if (groupId == null) {
@@ -447,6 +453,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         ConsoleUtils.printJson(client.startGroup(groupId, params[1]).getGroupStatus().toString());
     }
 
+    @Override
     public void stopGroup(String[] params) {
         Integer groupId = checkAndGetGroupId(params);
         if (groupId == null) {
@@ -455,6 +462,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         ConsoleUtils.printJson(client.stopGroup(groupId, params[1]).getGroupStatus().toString());
     }
 
+    @Override
     public void removeGroup(String[] params) {
         Integer groupId = checkAndGetGroupId(params);
         if (groupId == null) {
@@ -463,6 +471,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         ConsoleUtils.printJson(client.removeGroup(groupId, params[1]).getGroupStatus().toString());
     }
 
+    @Override
     public void recoverGroup(String[] params) {
         Integer groupId = checkAndGetGroupId(params);
         if (groupId == null) {
@@ -471,6 +480,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         ConsoleUtils.printJson(client.recoverGroup(groupId, params[1]).getGroupStatus().toString());
     }
 
+    @Override
     public void queryGroupStatus(String[] params) {
         Integer groupId = checkAndGetGroupId(params);
         if (groupId == null) {
@@ -478,5 +488,41 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         }
         ConsoleUtils.printJson(
                 client.queryGroupStatus(groupId, params[1]).getGroupStatus().toString());
+    }
+
+    @Override
+    public void generateGroup(String[] params) {
+        String targetNode = params[1];
+        if (!ConsoleUtils.checkEndPoint(targetNode)) {
+            return;
+        }
+        int groupId = Integer.valueOf(params[2]);
+        long timestamp = Long.valueOf(params[3]);
+        boolean enableFreeStorage = false;
+        int startIndex = 4;
+        if (params[4].equals("true")) {
+            enableFreeStorage = true;
+            startIndex = 5;
+        }
+        if (params.equals("false")) {
+            enableFreeStorage = false;
+            startIndex = 5;
+        }
+
+        List<String> nodes = new ArrayList<>();
+        for (int i = startIndex; i < params.length; i++) {
+            nodes.add(params[i]);
+        }
+        logger.debug(
+                "generate group, targetNode:{}, groupId: {}, timestamp: {}, enableFreeStorage: {}, sealers: {}",
+                targetNode,
+                groupId,
+                timestamp,
+                enableFreeStorage,
+                nodes.toString());
+        ConsoleUtils.printJson(
+                client.generateGroup(groupId, timestamp, enableFreeStorage, nodes, targetNode)
+                        .getGroupStatus()
+                        .toString());
     }
 }

@@ -306,7 +306,7 @@ public class CRUDParseUtils {
         String tableName = tables.get(0).getName();
         table.setTableName(tableName);
 
-        // parse cloumns
+        // parse columns
         List<Column> columns = update.getColumns();
         List<Expression> expressions = update.getExpressions();
         int size = expressions.size();
