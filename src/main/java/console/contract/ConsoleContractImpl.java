@@ -77,7 +77,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             abiAndBin.getAbi(), bin, inputParams);
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
-                System.out.println("return message:" + response.getReturnMessage());
+                System.out.println("return message: " + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
                 System.out.println();
                 return response;
@@ -289,7 +289,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("Return values: ");
                 ConsoleUtils.printJson(response.getValues());
             }
-            System.out.println("Return messages: " + response.getReturnMessage());
+            System.out.println("Return message: " + response.getReturnMessage());
             System.out.println("Return code: " + response.getReturnCode());
         }
         // send transaction
@@ -343,7 +343,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // register cns
             cnsService.registerCNS(
                     contractName, contractVersion, contractAddress, abiAndBin.getAbi());
-            writeLog(contractName, contractAddress);
             System.out.println();
         } catch (ContractException e) {
             throw new ConsoleMessageException(
@@ -381,7 +380,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 cnsService);
         if (contractName.endsWith(".sol")) {
             contractName = contractName.substring(0, contractName.length() - 4);
-            // TODO: check the contract version
         }
 
         // get address from cnsService
@@ -391,12 +389,27 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 contractAddress = cnsService.getContractAddress(contractName, contractVersion);
             } else {
                 List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
+                if (cnsInfos.size() == 0) {
+                    System.out.println(
+                            "Can't find \""
+                                    + contractName
+                                    + "\" information from the cns list! Please deploy it by cns firstly!\n");
+                    return;
+                }
                 CnsInfo latestCNSInfo = cnsInfos.get(cnsInfos.size() - 1);
                 contractAddress = latestCNSInfo.getAddress();
             }
         } catch (ContractException | ClientException e) {
+            System.out.println("Error when getting cns information: ");
+            System.out.println("Error message: " + e.getMessage());
             System.out.println(
-                    "Error when getting cns information, error message: " + e.getMessage());
+                    "Please check the existence of the contract name \""
+                            + contractName
+                            + "\""
+                            + " and contractVersion \""
+                            + contractVersion
+                            + "\"");
+            System.out.println();
             return;
         }
         String functionName = params[2];

@@ -621,9 +621,21 @@ public class HelpInfo {
     public static void operateGroupHelp(String command, String operator) {
         System.out.println(command + "Usage:");
         System.out.println(
-                "EndPoint: the IP and Port information of the target node , the format is IP:Port");
+                "endPoint -- the IP and Port information of the target node , the format is IP:Port");
         System.out.println("GroupID: the group that should be " + operator);
         System.out.println();
+    }
+
+    public static void generateGroupHelp() {
+        System.out.println("generateGroup Usage:");
+        System.out.println(
+                "endPoint(required): The IP:Port information of the node need to generate a new group");
+        System.out.println("groupId(required): The groupId of the generated group");
+        System.out.println("timestamp(required): The timestamp of the group genesis block");
+        System.out.println(
+                "enableFreeStorage(optional): Enable the gas calculation mode of free storage or not, the default is false");
+        System.out.println(
+                "sealerList(required): The initial nodeID of the sealer list for the generated group. Different sealer NodeIDs are separated by spaces");
     }
 
     public static void showDescHelp() {
