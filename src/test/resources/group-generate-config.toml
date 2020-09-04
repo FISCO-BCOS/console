@@ -1,0 +1,12 @@
+# The peers to generate the group
+[groupPeers]
+peers=["127.0.0.1:20200", "127.0.0.1:20201"]
+
+# The consensus configuration of the generated group
+[consensus]
+# The sealerList
+# sealerList=[]
+
+[genesis]
+# The genesis timestamp, It is recommended to set to the current utcTime, which must be greater than 0
+# timestamp = ""

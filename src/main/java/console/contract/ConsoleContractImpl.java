@@ -46,7 +46,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     private Client client;
     private AssembleTransactionManagerInterface assembleTransactionManager;
     private CnsService cnsService;
-    private ABICodec abiCodec = new ABICodec();
+    private ABICodec abiCodec;
 
     public ConsoleContractImpl(Client client) throws Exception {
         this.client = client;
@@ -54,7 +54,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 TransactionManagerFactory.createAssembleTransactionManager(
                         client, client.getCryptoInterface());
         this.cnsService = new CnsService(client, client.getCryptoInterface());
-        this.abiCodec.setCryptoInterface(client.getCryptoInterface());
+        this.abiCodec = new ABICodec(client.getCryptoInterface());
     }
 
     @Override

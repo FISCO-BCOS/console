@@ -11,19 +11,21 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package console.common;
+package console.command.model;
 
 import console.ConsoleInitializer;
+import console.command.SupportedCommand;
+import console.common.ConsoleUtils;
 import java.util.List;
 
 public class CommandInfo {
     @FunctionalInterface
-    interface UsageDisplay {
+    public interface UsageDisplay {
         void printUsageInfo();
     }
 
     @FunctionalInterface
-    interface CommandImplement {
+    public interface CommandImplement {
         void call(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
     }
 

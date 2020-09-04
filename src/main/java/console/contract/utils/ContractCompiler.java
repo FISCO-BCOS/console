@@ -35,9 +35,11 @@ public class ContractCompiler {
     private static final Logger logger = LoggerFactory.getLogger(ContractCompiler.class);
 
     public static final String SOLIDITY_PATH = "contracts/solidity/";
-    public static final String ABI_PATH = "contracts/console/abi/";
-    public static final String BIN_PATH = "contracts/console/bin/";
+    public static final String COMPILED_PATH = "contracts/.compiled/";
     public static final String SOL_POSTFIX = ".sol";
+    private static final String SM_POSTFIX = ".sm";
+    private static final String BIN_POSTFIX = ".bin";
+    private static final String ABI_POSTFIX = ".abi";
 
     public static String removeSolPostfix(String name) {
         return (name.endsWith(SOL_POSTFIX)
@@ -64,7 +66,7 @@ public class ContractCompiler {
                                 + " in the directory of "
                                 + SOLIDITY_PATH);
             }
-            return compileSolToBinAndAbi(contractFile, ABI_PATH, BIN_PATH);
+            return compileSolToBinAndAbi(contractFile, COMPILED_PATH, COMPILED_PATH);
         } catch (IOException e) {
             throw new CompileContractException(
                     "compile " + contractFileName + " failed, error info: " + e.getMessage(), e);
@@ -112,30 +114,82 @@ public class ContractCompiler {
 
     public static void saveAbiAndBin(
             AbiAndBin abiAndBin, String contractName, String contractAddress) throws IOException {
-        String baseAbiPath = ABI_PATH + contractAddress + File.separator + contractName;
-        String baseBinPath = BIN_PATH + contractAddress + File.separator + contractName;
-        String baseSMBinPath =
-                BIN_PATH + contractAddress + File.separator + "sm" + File.separator + contractName;
-        FileUtils.writeStringToFile(new File(baseAbiPath + ".abi"), abiAndBin.getAbi());
-        FileUtils.writeStringToFile(new File(baseBinPath + ".bin"), abiAndBin.getBin());
-        FileUtils.writeStringToFile(new File(baseSMBinPath + ".bin"), abiAndBin.getSmBin());
+        File abiPath =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress
+                                + File.separator
+                                + contractName
+                                + ABI_POSTFIX);
+        File binPath =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress
+                                + File.separator
+                                + contractName
+                                + BIN_POSTFIX);
+        File smBinPath =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress
+                                + File.separator
+                                + contractName
+                                + SM_POSTFIX
+                                + BIN_POSTFIX);
+        FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());
+        FileUtils.writeStringToFile(binPath, abiAndBin.getBin());
+        FileUtils.writeStringToFile(smBinPath, abiAndBin.getSmBin());
     }
 
     public static AbiAndBin loadAbiAndBin(String contractName, String contractAddress)
             throws IOException, CodeGenException, CompileContractException {
-        String baseAbiPath = ABI_PATH + contractAddress + File.separator + contractName;
-        String baseBinPath = BIN_PATH + contractAddress + File.separator + contractName;
-        String baseSMBinPath =
-                BIN_PATH + contractAddress + File.separator + "sm" + File.separator + contractName;
-        if (!new File(baseAbiPath + ".abi").exists()
-                || !new File(baseBinPath + ".bin").exists()
-                || !new File(baseSMBinPath + ".bin").exists()) {
+        File abiPath =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress
+                                + File.separator
+                                + contractName
+                                + ABI_POSTFIX);
+        File binPath =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress
+                                + File.separator
+                                + contractName
+                                + BIN_POSTFIX);
+        File smBinPath =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress
+                                + File.separator
+                                + contractName
+                                + SM_POSTFIX
+                                + BIN_POSTFIX);
+        if (!abiPath.exists() || !binPath.exists() || !smBinPath.exists()) {
             AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
             ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
         }
-        String abiContent = new String(CodeGenUtils.readBytes(new File(baseAbiPath + ".abi")));
-        String binContent = new String(CodeGenUtils.readBytes(new File(baseBinPath + ".bin")));
-        String smBinContent = new String(CodeGenUtils.readBytes(new File(baseSMBinPath + ".bin")));
+        String abiContent = new String(CodeGenUtils.readBytes(abiPath));
+        String binContent = new String(CodeGenUtils.readBytes(binPath));
+        String smBinContent = new String(CodeGenUtils.readBytes(smBinPath));
         return new AbiAndBin(abiContent, binContent, smBinContent);
     }
 }

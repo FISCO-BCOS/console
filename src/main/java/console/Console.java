@@ -1,11 +1,11 @@
 package console;
 
 import console.client.ConsoleClientFace;
-import console.common.CommandInfo;
+import console.command.JlineUtils;
+import console.command.SupportedCommand;
+import console.command.model.CommandInfo;
+import console.command.model.WelcomeInfo;
 import console.common.ConsoleUtils;
-import console.common.JlineUtils;
-import console.common.SupportedCommand;
-import console.common.WelcomeInfo;
 import console.contract.ConsoleContractFace;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.permission.PermissionFace;
@@ -53,7 +53,7 @@ public class Console {
             permissionFace = consoleInitializer.getPermissionFace();
             consoleClientFace = consoleInitializer.getConsoleClientFace();
             consoleContractFace = consoleInitializer.getConsoleContractFace();
-            lineReader = JlineUtils.getLineReader();
+            lineReader = JlineUtils.getLineReader(client);
             sc = new Scanner(System.in);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
             keymap.bind(new Reference("beginning-of-line"), "\033[1~");

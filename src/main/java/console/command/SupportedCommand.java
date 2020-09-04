@@ -11,9 +11,15 @@
  * express or implied. See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package console.common;
+package console.command;
 
 import console.ConsoleInitializer;
+import console.command.model.CommandInfo;
+import console.command.model.HelpInfo;
+import console.common.Common;
+import console.common.ConsoleUtils;
+import console.contract.utils.ContractCompiler;
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1770,6 +1776,162 @@ public class SupportedCommand {
                     },
                     4,
                     -1);
+
+    public static final CommandInfo GENERATE_GROUP_WITH_FILE =
+            new CommandInfo(
+                    "generateGroupFromFile",
+                    "Generate group according to the specified file",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            System.out.println("generateGroupFromFile Usage:");
+                            System.out.println(
+                                    "groupId(required): The groupId of the generated group");
+                            System.out.println(
+                                    "configFilePath(required): The configuration file path of the generated group. "
+                                            + "For specific configuration options, please refer to group-generate-config.toml in the conf directory");
+                            System.out.println();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().generateGroupFromFile(params);
+                        }
+                    },
+                    2,
+                    2);
+
+    public static final CommandInfo LIST_DEPLOY_CONTRACT_ADDRESS =
+            new CommandInfo(
+                    "listDeployContractAddress",
+                    "List the contractAddress for the specified contract",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.listDeployContractAddressHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            String contractName = params[1];
+                            File contractFile =
+                                    new File(
+                                            ContractCompiler.COMPILED_PATH
+                                                    + File.separator
+                                                    + contractName);
+                            int recordNum = 20;
+                            if (params.length == 3) {
+                                recordNum =
+                                        ConsoleUtils.proccessNonNegativeNumber(
+                                                "recordNum", params[2]);
+                                if (recordNum == Common.InvalidReturnNumber) {
+                                    return;
+                                }
+                            }
+                            if (!contractFile.exists()) {
+                                System.out.println("Empty set");
+                                return;
+                            }
+                            int i = 0;
+                            for (String contractAddress : contractFile.list()) {
+                                System.out.println(contractAddress);
+                                i++;
+                                if (i == 20) {
+                                    break;
+                                }
+                            }
+                            System.out.println();
+                        }
+                    },
+                    1,
+                    2);
+
+    public static final CommandInfo REGISTER_CNS =
+            new CommandInfo(
+                    "registerCNS",
+                    "RegisterCNS information for the given contract",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.registerCNSHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPrecompiledFace().registerCNS(params);
+                        }
+                    },
+                    3,
+                    3);
+
+    public static final CommandInfo NEW_ACCOUNT =
+            new CommandInfo(
+                    "newAccount",
+                    "create account",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            System.out.println("create a new account");
+                            System.out.println("Usage: newAccount");
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().newAccount(params);
+                        }
+                    },
+                    0,
+                    0);
+
+    public static final CommandInfo LOAD_ACCOUNT =
+            new CommandInfo(
+                    "loadAccount",
+                    "Load account for the transaction signature",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.loadAccountHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().loadAccount(params);
+                        }
+                    },
+                    2,
+                    3);
+
+    public static final CommandInfo LIST_ACCOUNT =
+            new CommandInfo(
+                    "listAccount",
+                    "",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            System.out.println("list all the accounts");
+                            System.out.println("Usage: listAccount");
+                            System.out.println();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().listAccount(params);
+                        }
+                    },
+                    0,
+                    0);
 
     public static List<String> CRUD_COMMANDS =
             new ArrayList<String>(

@@ -1,4 +1,4 @@
-package console.precompiled;
+package console.precompiled.model;
 
 import java.util.List;
 
