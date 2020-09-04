@@ -1,4 +1,4 @@
-package console.common;
+package console.client.model;
 
 import java.math.BigInteger;
 

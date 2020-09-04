@@ -1,9 +1,13 @@
 package console.precompiled;
 
-import console.common.CRUDParseUtils;
+import console.common.AbiAndBin;
 import console.common.Common;
 import console.common.ConsoleUtils;
+import console.contract.exceptions.CompileContractException;
+import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
+import console.precompiled.model.CRUDParseUtils;
+import console.precompiled.model.Table;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -411,7 +415,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             table.setKey(keyValue);
             RetCode insertResult =
-                    tableCRUDService.insert(table.getTableName(), table.getKey(), entry, null);
+                    tableCRUDService.insert(table.getTableName(), table.getKey(), entry);
 
             if (insertResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
                     || insertResult.getCode() == 1) {
@@ -685,6 +689,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         table.setKey(keyValue);
     }
 
+    @Override
     public void queryCNS(String[] params) throws Exception {
         if (params.length == 2) {
             // get contract name
@@ -694,5 +699,27 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(
                     cnsService.selectByNameAndVersion(params[1], params[2]).toString());
         }
+    }
+
+    @Override
+    public void registerCNS(String[] params) throws Exception {
+        String contractName = params[1];
+        String contractAddress = params[2];
+        String contractVersion = params[3];
+        String abi = "";
+        try {
+            AbiAndBin abiAndBin = ContractCompiler.loadAbiAndBin(contractName, contractAddress);
+            abi = abiAndBin.getAbi();
+        } catch (CompileContractException e) {
+            logger.warn(
+                    "load abi for contract failed, contract name: {}, address: {}, e: {}",
+                    contractAddress,
+                    contractAddress,
+                    e.getMessage());
+        }
+        ConsoleUtils.printJson(
+                cnsService
+                        .registerCNS(contractName, contractVersion, contractAddress, abi)
+                        .toString());
     }
 }

@@ -1,10 +1,13 @@
 package console.client;
 
+import com.moandjiezana.toml.Toml;
+import console.client.model.GenerateGroupParam;
+import console.client.model.TotalTransactionCountResult;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
-import console.common.TotalTransactionCountResult;
 import console.contract.ConsoleContractImpl;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -14,6 +17,9 @@ import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
 import org.fisco.bcos.sdk.client.protocol.response.TotalTransactionCount;
+import org.fisco.bcos.sdk.config.ConfigOption;
+import org.fisco.bcos.sdk.crypto.CryptoInterface;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
 import org.fisco.bcos.sdk.utils.Numeric;
@@ -524,5 +530,144 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 client.generateGroup(groupId, timestamp, enableFreeStorage, nodes, targetNode)
                         .getGroupStatus()
                         .toString());
+    }
+
+    @Override
+    public void generateGroupFromFile(String[] params) {
+        Integer groupId = Integer.valueOf(params[1]);
+        File groupConfigFile = new File(params[2]);
+        if (!groupConfigFile.exists()) {
+            System.out.println(
+                    "Please make sure the group configuration file " + params[2] + " exists!");
+            return;
+        }
+        GenerateGroupParam generateGroupParam =
+                new Toml().read(groupConfigFile).to(GenerateGroupParam.class);
+        // check generateGroupParam
+        if (!generateGroupParam.checkGenerateGroupParam()) {
+            return;
+        }
+        logger.debug(
+                "generateGroupFromFile, peers: {}, timestamp: {}, sealerList: {}",
+                generateGroupParam.getGroupPeerInfo().toString(),
+                generateGroupParam.getTimestamp(),
+                generateGroupParam.getSealerListInfo());
+        for (String peer : generateGroupParam.getGroupPeerInfo()) {
+            ConsoleUtils.printJson(
+                    client.generateGroup(
+                                    groupId,
+                                    generateGroupParam.getTimestamp(),
+                                    false,
+                                    generateGroupParam.getSealerListInfo(),
+                                    peer)
+                            .getGroupStatus()
+                            .toString());
+        }
+    }
+
+    @Override
+    public void newAccount(String[] params) {
+        CryptoInterface cryptoInterface = client.getCryptoInterface();
+        CryptoKeyPair cryptoKeyPair = cryptoInterface.createKeyPair();
+        cryptoInterface.setConfig(cryptoInterface.getConfig());
+        // save the account
+        cryptoKeyPair.storeKeyPairWithPemFormat();
+        System.out.println("newAccount: " + cryptoKeyPair.getAddress());
+        System.out.println("AccountPath: " + cryptoKeyPair.getPemKeyStoreFilePath());
+        System.out.println(
+                "AccountType: "
+                        + (cryptoInterface.getCryptoTypeConfig() == CryptoInterface.ECDSA_TYPE
+                                ? "ecdsa"
+                                : "sm"));
+    }
+
+    @Override
+    public void loadAccount(String[] params) {
+        String accountPath = params[1];
+        if (!new File(accountPath).exists()) {
+            // try to load the account from the given address
+            String pemAccountPath =
+                    client.getCryptoInterface()
+                            .getCryptoKeyPair()
+                            .getPemKeyStoreFilePath(accountPath);
+            logger.debug("pemAccountPath: {}", pemAccountPath);
+            if (!new File(pemAccountPath).exists()) {
+                String p12AccountPath =
+                        client.getCryptoInterface()
+                                .getCryptoKeyPair()
+                                .getP12KeyStoreFilePath(accountPath);
+                logger.debug("p12AccountPath: {}", p12AccountPath);
+                if (!new File(p12AccountPath).exists()) {
+                    System.out.println("The account file " + accountPath + " doesn't exist!");
+                    return;
+                } else {
+                    accountPath = p12AccountPath;
+                }
+            } else {
+                accountPath = pemAccountPath;
+            }
+        }
+        String accountFormat = params[2];
+        if (accountFormat.equals("pem") && accountFormat.equals("p12")) {
+            System.out.println(
+                    "Load account failed! Only support \"pem\" and \"p12\" account now!");
+            return;
+        }
+        String accountPassword = null;
+        if (params.length == 4) {
+            accountPassword = params[3];
+        }
+        CryptoInterface cryptoInterface = client.getCryptoInterface();
+        cryptoInterface.loadAccount(accountFormat, accountPath, accountPassword);
+        System.out.println("Load account " + params[1] + " success!");
+        System.out.println();
+    }
+
+    @Override
+    public void listAccount(String[] params) {
+        List<String> accountList = listAccount(this.client);
+        if (accountList.size() == 0) {
+            System.out.println("Empty set");
+            return;
+        }
+        for (int i = 0; i < accountList.size(); i++) {
+            System.out.println(accountList.get(i));
+        }
+        System.out.println();
+    }
+
+    public static String getAccountDir(Client client) {
+        ConfigOption configOption = client.getCryptoInterface().getConfig();
+        String accountFilePath = configOption.getAccountConfig().getAccountFilePath();
+        String subDir = CryptoKeyPair.ECDSA_ACCOUNT_SUBDIR;
+        if (client.getCryptoInterface().getCryptoTypeConfig() == CryptoInterface.SM_TYPE) {
+            subDir = CryptoKeyPair.GM_ACCOUNT_SUBDIR;
+        }
+        // load account from the given path
+        if (accountFilePath == null || accountFilePath.equals("")) {
+            accountFilePath =
+                    configOption.getAccountConfig().getKeyStoreDir() + File.separator + subDir;
+        }
+        return accountFilePath;
+    }
+
+    public static List<String> listAccount(Client client) {
+        List<String> accountList = new ArrayList<>();
+        File accountFile = new File(getAccountDir(client));
+        if (!accountFile.exists()) {
+            return accountList;
+        }
+        for (String account : accountFile.list()) {
+            logger.debug("account is: {}", account);
+            String[] accountAddressList = account.split("\\.");
+            if (accountAddressList.length == 0) {
+                continue;
+            }
+            String accountAddress = accountAddressList[0];
+            if (!accountList.contains(accountAddress)) {
+                accountList.add(accountAddress);
+            }
+        }
+        return accountList;
     }
 }

@@ -36,4 +36,6 @@ public interface PrecompiledFace {
     void listContractStatusManager(String[] params) throws Exception;
 
     void queryCNS(String[] params) throws Exception;
+
+    void registerCNS(String[] params) throws Exception;
 }

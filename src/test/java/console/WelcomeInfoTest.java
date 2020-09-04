@@ -2,7 +2,7 @@ package console;
 
 import static org.junit.Assert.assertTrue;
 
-import console.common.WelcomeInfo;
+import console.command.model.WelcomeInfo;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.SystemOutRule;

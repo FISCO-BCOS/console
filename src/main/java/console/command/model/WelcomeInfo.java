@@ -1,4 +1,7 @@
-package console.common;
+package console.command.model;
+
+import console.common.ConsoleUtils;
+import console.common.ConsoleVersion;
 
 public class WelcomeInfo {
 

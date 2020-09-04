@@ -66,6 +66,7 @@ jar {
 		}
 		copy {
 			from file('src/test/resources/config-example.toml')
+			from file('src/test/resources/group-generate-config.toml')
       		from file('src/main/resources/log4j.properties')
 			into 'dist/conf'
 		}

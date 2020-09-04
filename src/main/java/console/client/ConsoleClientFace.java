@@ -71,4 +71,12 @@ public interface ConsoleClientFace {
     void queryGroupStatus(String[] params);
 
     void generateGroup(String[] params);
+
+    void generateGroupFromFile(String[] params);
+
+    void newAccount(String[] params);
+
+    void loadAccount(String[] params);
+
+    void listAccount(String[] params);
 }

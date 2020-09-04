@@ -1,7 +1,7 @@
-package console.common;
+package console.precompiled.model;
 
+import console.common.Common;
 import console.exception.ConsoleMessageException;
-import console.precompiled.Table;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

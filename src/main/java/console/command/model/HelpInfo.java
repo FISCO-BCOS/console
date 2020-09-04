@@ -1,5 +1,7 @@
-package console.common;
+package console.command.model;
 
+import console.command.SupportedCommand;
+import console.common.Common;
 import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledConstant;
 
 public class HelpInfo {
@@ -329,10 +331,16 @@ public class HelpInfo {
         System.out.println("Query CNS information by contract name and contract version.");
         System.out.println("Usage: queryCNS contractName [contractVersion]");
         System.out.println("contractName -- The name of a contract.");
-        System.out.println(
-                "contractVersion -- (optional) The version of a contract. The maximum length of the version hex string is "
-                        + PrecompiledConstant.CNS_MAX_VERSION_LENGTH
-                        + ".");
+        System.out.println("contractVersion -- (optional) The version of a contract. ");
+        System.out.println();
+    }
+
+    public static void registerCNSHelp() {
+        System.out.println("Register CNS information by contract name and contract version.");
+        System.out.println("Usage: registerCNS contractName contractAddress contractVersion");
+        System.out.println("contractName -- The name of a contract.");
+        System.out.println("contractAddress -- The address of a contract.");
+        System.out.println("contractVersion -- (optional) The version of a contract.");
         System.out.println();
     }
 
@@ -633,8 +641,6 @@ public class HelpInfo {
         System.out.println("groupId(required): The groupId of the generated group");
         System.out.println("timestamp(required): The timestamp of the group genesis block");
         System.out.println(
-                "enableFreeStorage(optional): Enable the gas calculation mode of free storage or not, the default is false");
-        System.out.println(
                 "sealerList(required): The initial nodeID of the sealer list for the generated group. Different sealer NodeIDs are separated by spaces");
     }
 
@@ -664,6 +670,24 @@ public class HelpInfo {
                             + " is undefined of the contract.");
         }
         System.out.println();
+    }
+
+    public static void loadAccountHelp() {
+        System.out.println("Load account for the transaction signature");
+        System.out.println("Usage: loadAccount accountPath accountFormat [password]");
+        System.out.println(
+                "accountPath -- The path of the account key file, support .pem and .p12 format file; or the account address");
+        System.out.println("accountFormat -- The account file format, support pem and p12 now");
+        System.out.println("password -- Password used to access the account file");
+        System.out.println();
+    }
+
+    public static void listDeployContractAddressHelp() {
+        System.out.println("List the contractAddress for the specified contract");
+        System.out.println("Usage: listDeployContractAddress contractName [recordNumber]");
+        System.out.println("contractName -- The name of the contract");
+        System.out.println(
+                "recordNumber -- (optional) The number of deployed contract records, (default 20).");
     }
 
     public static void startHelp() {
