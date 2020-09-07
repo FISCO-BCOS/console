@@ -567,15 +567,25 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         }
         for (String peer : generateGroupParam.getGroupPeerInfo()) {
             System.out.println("* Result of " + peer + ":");
-            ConsoleUtils.printJson(
-                    client.generateGroup(
-                                    groupId,
-                                    generateGroupParam.getTimestamp(),
-                                    false,
-                                    generateGroupParam.getSealerListInfo(),
-                                    peer)
-                            .getGroupStatus()
-                            .toString());
+            try {
+                ConsoleUtils.printJson(
+                        client.generateGroup(
+                                        groupId,
+                                        generateGroupParam.getTimestamp(),
+                                        false,
+                                        generateGroupParam.getSealerListInfo(),
+                                        peer)
+                                .getGroupStatus()
+                                .toString());
+            } catch (ClientException e) {
+                ConsoleUtils.printJson(
+                        "{\"code\":"
+                                + e.getErrorCode()
+                                + ", \"msg\":"
+                                + "\""
+                                + e.getMessage()
+                                + "\"}");
+            }
             System.out.println();
         }
     }

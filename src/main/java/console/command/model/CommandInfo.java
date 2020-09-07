@@ -148,6 +148,7 @@ public class CommandInfo {
             usageDisplay.printUsageInfo();
         } else {
             printDescInfo();
+            System.out.println();
         }
     }
 
