@@ -16,6 +16,8 @@ public class Common {
     public static int ConsensusTimeoutMax = Integer.MAX_VALUE / 1000;
 
     public static final int InvalidReturnNumber = -100;
+    public static final long InvalidLongValue = Long.MIN_VALUE;
+
     public static final int QueryLogCount = 20;
     public static final int LogMaxCount = 10000;
     public static final String GroupIDRange = "from 1 to 32767";

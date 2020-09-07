@@ -116,6 +116,25 @@ public class ConsoleUtils {
         }
     }
 
+    public static long processLong(String name, String number) {
+        try {
+            return Long.parseLong(number);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid " + name + ": \"" + number + "\"!");
+            System.out.println(
+                    "Please provide "
+                            + name
+                            + " by integer mode, larger than "
+                            + Long.MIN_VALUE
+                            + " and smaller than "
+                            + Long.MAX_VALUE
+                            + ".");
+            System.out.println();
+            logger.debug("processLong for {} failed, error info: {}", name, e.getMessage());
+            return Common.InvalidLongValue;
+        }
+    }
+
     public static int proccessNonNegativeNumber(String name, String intStr) {
         int intParam = 0;
         try {
@@ -131,6 +150,7 @@ public class ConsoleUtils {
                 return Common.InvalidReturnNumber;
             }
         } catch (NumberFormatException e) {
+            System.out.println("Invalid " + name + ": \"" + intStr + "\"!");
             System.out.println(
                     "Please provide "
                             + name
