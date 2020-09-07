@@ -444,8 +444,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         if (!ConsoleUtils.checkEndPoint(params[1])) {
             return null;
         }
-        if (params.length == 3) {
+        if (params.length >= 3) {
             groupId = ConsoleUtils.proccessNonNegativeNumber("groupId", params[2]);
+            if (groupId == Common.InvalidReturnNumber) {
+                groupId = null;
+            }
         }
         return groupId;
     }
@@ -498,12 +501,16 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void generateGroup(String[] params) {
-        String targetNode = params[1];
-        if (!ConsoleUtils.checkEndPoint(targetNode)) {
+        Integer groupId = checkAndGetGroupId(params);
+        if (groupId == null) {
             return;
         }
-        int groupId = Integer.valueOf(params[2]);
-        long timestamp = Long.valueOf(params[3]);
+        String targetNode = params[1];
+        // check timestamp
+        long timestamp = ConsoleUtils.processLong("timestamp", params[3]);
+        if (timestamp == Common.InvalidLongValue) {
+            return;
+        }
         boolean enableFreeStorage = false;
         int startIndex = 4;
         if (params[4].equals("true")) {
@@ -534,7 +541,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void generateGroupFromFile(String[] params) {
-        Integer groupId = Integer.valueOf(params[1]);
+        int groupId = ConsoleUtils.proccessNonNegativeNumber("groupId", params[1]);
+        if (groupId == Common.InvalidReturnNumber) {
+            return;
+        }
+
         File groupConfigFile = new File(params[2]);
         if (!groupConfigFile.exists()) {
             System.out.println(
@@ -548,11 +559,14 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return;
         }
         logger.debug(
-                "generateGroupFromFile, peers: {}, timestamp: {}, sealerList: {}",
+                "generateGroupFromFile, peers: {}, sealerList: {}",
                 generateGroupParam.getGroupPeerInfo().toString(),
-                generateGroupParam.getTimestamp(),
                 generateGroupParam.getSealerListInfo());
+        if (generateGroupParam.getTimestamp() == Common.InvalidLongValue) {
+            return;
+        }
         for (String peer : generateGroupParam.getGroupPeerInfo()) {
+            System.out.println("* Result of " + peer + ":");
             ConsoleUtils.printJson(
                     client.generateGroup(
                                     groupId,
@@ -562,6 +576,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                                     peer)
                             .getGroupStatus()
                             .toString());
+            System.out.println();
         }
     }
 
