@@ -5,7 +5,6 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import console.exception.CompileSolidityException;
 import io.netty.util.NetUtil;
 import java.io.File;
@@ -23,7 +22,6 @@ import org.fisco.bcos.sdk.channel.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.utils.Host;
-import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -40,15 +38,6 @@ public class ConsoleUtils {
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
-    }
-
-    public static void printRetCode(Object retCode) {
-        try {
-            System.out.println(
-                    formatJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(retCode)));
-        } catch (JsonProcessingException e) {
-            System.out.println(retCode.toString());
-        }
     }
 
     public static String formatJson(String jsonStr) {

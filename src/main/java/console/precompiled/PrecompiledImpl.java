@@ -61,9 +61,9 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void addSealer(String[] params) throws Exception {
         String nodeId = params[1];
         if (nodeId.length() != 128) {
-            ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printRetCode(this.consensusService.addSealer(nodeId));
+            ConsoleUtils.printJson(this.consensusService.addSealer(nodeId).toString());
         }
         System.out.println();
     }
@@ -72,9 +72,9 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void addObserver(String[] params) throws Exception {
         String nodeId = params[1];
         if (nodeId.length() != 128) {
-            ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printRetCode(this.consensusService.addObserver(nodeId));
+            ConsoleUtils.printJson(this.consensusService.addObserver(nodeId).toString());
         }
         System.out.println();
     }
@@ -83,9 +83,9 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void removeNode(String[] params) throws Exception {
         String nodeId = params[1];
         if (nodeId.length() != 128) {
-            ConsoleUtils.printRetCode(PrecompiledRetCode.CODE_INVALID_NODEID);
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printRetCode(this.consensusService.removeNode(nodeId));
+            ConsoleUtils.printJson(this.consensusService.removeNode(nodeId).toString());
         }
         System.out.println();
     }
@@ -135,7 +135,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                         || Common.RPBFTEpochBlockNum.equals(key)) {
                     System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
                 }
-                ConsoleUtils.printRetCode(this.systemConfigService.setValueByKey(key, value + ""));
+                ConsoleUtils.printJson(
+                        this.systemConfigService.setValueByKey(key, value + "").toString());
             } catch (NumberFormatException e) {
                 if (Common.TxCountLimit.equals(key)
                         || Common.RPBFTEpochSealerNum.equals(key)
@@ -204,14 +205,14 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void freezeContract(String[] params) throws Exception {
         String address = params[1];
-        ConsoleUtils.printRetCode(contractLifeCycleService.freeze(address));
+        ConsoleUtils.printJson(contractLifeCycleService.freeze(address).toString());
         System.out.println();
     }
 
     @Override
     public void unfreezeContract(String[] params) throws Exception {
         String address = params[1];
-        ConsoleUtils.printRetCode(contractLifeCycleService.unfreeze(address));
+        ConsoleUtils.printJson(contractLifeCycleService.unfreeze(address).toString());
         System.out.println();
     }
 
@@ -420,7 +421,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (insertResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
                     || insertResult.getCode() == 1) {
                 System.out.println("Insert OK: ");
-                ConsoleUtils.printRetCode(insertResult);
+                ConsoleUtils.printJson(insertResult.toString());
                 if (insertResult.getCode() > 0) {
                     System.out.println(insertResult.getCode() + " row affected.");
                 }
@@ -484,10 +485,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (updateResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
                     || updateResult.getCode() == 1) {
                 System.out.println("Update OK: ");
-                ConsoleUtils.printRetCode(updateResult);
+                ConsoleUtils.printJson(updateResult.toString());
             } else {
                 System.out.println("Result of update " + tableName + " :");
-                ConsoleUtils.printRetCode(updateResult);
+                ConsoleUtils.printJson(updateResult.toString());
             }
             if (updateResult.getCode() > 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
@@ -536,7 +537,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println("Remove OK, " + removeResult + " row affected.");
             } else {
                 System.out.println("Result of remove " + table.getTableName() + " :");
-                ConsoleUtils.printRetCode(removeResult);
+                ConsoleUtils.printJson(removeResult.toString());
             }
             System.out.println();
         } catch (ContractException e) {
