@@ -123,6 +123,47 @@ public class JlineUtils {
                         new AccountCompleter(client),
                         new AccountFileFormatCompleter()));
 
+        completers.add(
+                new ArgumentCompleter(
+                        new StringsCompleterIgnoreCase(SupportedCommand.NEW_ACCOUNT.getCommand()),
+                        new AccountFileFormatCompleter()));
+        // completer for permission releated command
+        commands =
+                Arrays.asList(
+                        SupportedCommand.GRANT_OPERATOR.getCommand(),
+                        SupportedCommand.GRANT_COMMMITTEE_MEMBER.getCommand(),
+                        SupportedCommand.GRANT_CNS_MANAGER.getCommand(),
+                        SupportedCommand.GRANT_SYSCONFIG_MANAGER.getCommand(),
+                        SupportedCommand.GRANT_DEPLOY_AND_CREATE_MANAGER.getCommand(),
+                        SupportedCommand.GRANT_NODE_MANAGER.getCommand(),
+                        SupportedCommand.REVOKE_OPERATOR.getCommand(),
+                        SupportedCommand.REVOKE_COMMMITTEE_MEMBER.getCommand(),
+                        SupportedCommand.REVOKE_CNS_MANAGER.getCommand(),
+                        SupportedCommand.REVOKE_SYSCONFIG_MANAGER.getCommand(),
+                        SupportedCommand.REVOKE_DEPLOY_AND_CREATE_MANAGER.getCommand(),
+                        SupportedCommand.REVOKE_NODE_MANAGER.getCommand(),
+                        SupportedCommand.FREEZE_ACCOUNT.getCommand(),
+                        SupportedCommand.UNFREEZE_ACCOUNT.getCommand(),
+                        SupportedCommand.UPDATE_COMMITTEE_MEMBER_WEIGHT.getCommand());
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command), new AccountCompleter(client)));
+        }
+
+        commands =
+                Arrays.asList(
+                        SupportedCommand.GRANT_CONTRACT_STATUS.getCommand(),
+                        SupportedCommand.GRANT_CONTRACT_WRITE.getCommand(),
+                        SupportedCommand.REVOKE_CONTRACT_WRITE.getCommand());
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new ContractAddressCompleter(),
+                            new AccountCompleter(client)));
+        }
+
         Terminal terminal =
                 TerminalBuilder.builder()
                         .nativeSignals(true)

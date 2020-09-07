@@ -1729,10 +1729,7 @@ public class SupportedCommand {
                     new CommandInfo.UsageDisplay() {
                         @Override
                         public void printUsageInfo() {
-                            System.out.println("getGroupConnections Usage:");
-                            System.out.println(
-                                    "GroupId: The group ID that needs to query node information, default is the current group");
-                            System.out.println();
+                            HelpInfo.getGroupConnectionsHelp();
                         }
                     },
                     new CommandInfo.CommandImplement() {
@@ -1784,13 +1781,7 @@ public class SupportedCommand {
                     new CommandInfo.UsageDisplay() {
                         @Override
                         public void printUsageInfo() {
-                            System.out.println("generateGroupFromFile Usage:");
-                            System.out.println(
-                                    "groupId(required): The groupId of the generated group");
-                            System.out.println(
-                                    "configFilePath(required): The configuration file path of the generated group. "
-                                            + "For specific configuration options, please refer to group-generate-config.toml in the conf directory");
-                            System.out.println();
+                            HelpInfo.generateGroupFromFileHelp();
                         }
                     },
                     new CommandInfo.CommandImplement() {
@@ -1877,8 +1868,7 @@ public class SupportedCommand {
                     new CommandInfo.UsageDisplay() {
                         @Override
                         public void printUsageInfo() {
-                            System.out.println("create a new account");
-                            System.out.println("Usage: newAccount");
+                            HelpInfo.newAccountHelp();
                         }
                     },
                     new CommandInfo.CommandImplement() {
@@ -1889,7 +1879,7 @@ public class SupportedCommand {
                         }
                     },
                     0,
-                    0);
+                    2);
 
     public static final CommandInfo LOAD_ACCOUNT =
             new CommandInfo(
@@ -1919,7 +1909,7 @@ public class SupportedCommand {
                         @Override
                         public void printUsageInfo() {
                             System.out.println("list all the accounts");
-                            System.out.println("Usage: listAccount");
+                            System.out.println("Usage: \nlistAccount");
                             System.out.println();
                         }
                     },

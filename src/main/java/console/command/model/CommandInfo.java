@@ -191,6 +191,13 @@ public class CommandInfo {
 
     public void callCommand(ConsoleInitializer consoleInitializer, String[] params)
             throws Exception {
+        // print help info
+        if (params.length >= 2) {
+            if (SupportedCommand.HELP.getOptionCommand().contains(params[1])) {
+                HelpInfo.printHelp(command);
+                return;
+            }
+        }
         if (maxParamLength != -1 && (params.length - 1) > maxParamLength) {
             HelpInfo.promptHelp(command);
             return;
@@ -204,13 +211,6 @@ public class CommandInfo {
                 && !ConsoleUtils.checkVersion(
                         this.getCommand(), consoleInitializer.getClient(), minSupportVersion)) {
             return;
-        }
-        // print help info
-        if (params.length >= 2) {
-            if (SupportedCommand.HELP.getOptionCommand().contains(params[1])) {
-                HelpInfo.printHelp(command);
-                return;
-            }
         }
         commandImplement.call(consoleInitializer, params);
     }

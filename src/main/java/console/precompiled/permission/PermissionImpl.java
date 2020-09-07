@@ -38,7 +38,8 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.grantPermission(tableName, address));
+        ConsoleUtils.printJson(
+                this.permissionService.grantPermission(tableName, address).toString());
         System.out.println();
     }
 
@@ -51,7 +52,8 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.revokePermission(tableName, address));
+        ConsoleUtils.printJson(
+                this.permissionService.revokePermission(tableName, address).toString());
         System.out.println();
     }
 
@@ -71,7 +73,8 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.grantDeployAndCreateManager(address));
+        ConsoleUtils.printJson(
+                this.permissionService.grantDeployAndCreateManager(address).toString());
         System.out.println();
     }
 
@@ -83,7 +86,8 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.revokeDeployAndCreateManager(address));
+        ConsoleUtils.printJson(
+                this.permissionService.revokeDeployAndCreateManager(address).toString());
         System.out.println();
     }
 
@@ -101,7 +105,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.grantNodeManager(address));
+        ConsoleUtils.printJson(this.permissionService.grantNodeManager(address).toString());
         System.out.println();
     }
 
@@ -113,7 +117,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.revokeNodeManager(address));
+        ConsoleUtils.printJson(this.permissionService.revokeNodeManager(address).toString());
         System.out.println();
     }
 
@@ -131,7 +135,7 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         address = convertAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.grantCNSManager(address));
+        ConsoleUtils.printJson(this.permissionService.grantCNSManager(address).toString());
         System.out.println();
     }
 
@@ -142,8 +146,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(
-                this.permissionService.revokeCNSManager(convertAddr.getAddress()));
+        ConsoleUtils.printJson(
+                this.permissionService.revokeCNSManager(convertAddr.getAddress()).toString());
         System.out.println();
     }
 
@@ -160,8 +164,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(
-                this.permissionService.grantSysConfigManager(convertAddr.getAddress()));
+        ConsoleUtils.printJson(
+                this.permissionService.grantSysConfigManager(convertAddr.getAddress()).toString());
         System.out.println();
     }
 
@@ -172,8 +176,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(
-                this.permissionService.revokeSysConfigManager(convertAddr.getAddress()));
+        ConsoleUtils.printJson(
+                this.permissionService.revokeSysConfigManager(convertAddr.getAddress()).toString());
         System.out.println();
     }
 
@@ -210,7 +214,8 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         userAddress = convertUserAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.grantWrite(contractAddress, userAddress));
+        ConsoleUtils.printJson(
+                this.permissionService.grantWrite(contractAddress, userAddress).toString());
         System.out.println();
     }
 
@@ -229,7 +234,8 @@ public class PermissionImpl implements PermissionFace {
             return;
         }
         userAddress = convertUserAddr.getAddress();
-        ConsoleUtils.printRetCode(this.permissionService.revokeWrite(contractAddress, userAddress));
+        ConsoleUtils.printJson(
+                this.permissionService.revokeWrite(contractAddress, userAddress).toString());
         System.out.println();
     }
 
@@ -240,7 +246,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(chainGovernanceService.grantCommitteeMember(accountAddress));
+        ConsoleUtils.printJson(
+                chainGovernanceService.grantCommitteeMember(accountAddress).toString());
         System.out.println();
     }
 
@@ -251,8 +258,8 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(
-                this.chainGovernanceService.revokeCommitteeMember(accountAddress));
+        ConsoleUtils.printJson(
+                this.chainGovernanceService.revokeCommitteeMember(accountAddress).toString());
         System.out.println();
     }
 
@@ -299,9 +306,10 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(
-                this.chainGovernanceService.updateCommitteeMemberWeight(
-                        accountAddress, BigInteger.valueOf(weight)));
+        ConsoleUtils.printJson(
+                this.chainGovernanceService
+                        .updateCommitteeMemberWeight(accountAddress, BigInteger.valueOf(weight))
+                        .toString());
         System.out.println();
     }
 
@@ -321,8 +329,10 @@ public class PermissionImpl implements PermissionFace {
             System.out.println();
             return;
         }
-        ConsoleUtils.printRetCode(
-                this.chainGovernanceService.updateThreshold(BigInteger.valueOf(threshold)));
+        ConsoleUtils.printJson(
+                this.chainGovernanceService
+                        .updateThreshold(BigInteger.valueOf(threshold))
+                        .toString());
         System.out.println();
     }
 
@@ -340,7 +350,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(chainGovernanceService.grantOperator(accountAddress));
+        ConsoleUtils.printJson(chainGovernanceService.grantOperator(accountAddress).toString());
         System.out.println();
     }
 
@@ -351,7 +361,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(chainGovernanceService.revokeOperator(accountAddress));
+        ConsoleUtils.printJson(chainGovernanceService.revokeOperator(accountAddress).toString());
         System.out.println();
     }
 
@@ -368,7 +378,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(chainGovernanceService.freezeAccount(accountAddress));
+        ConsoleUtils.printJson(chainGovernanceService.freezeAccount(accountAddress).toString());
         System.out.println();
     }
 
@@ -379,7 +389,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(chainGovernanceService.unfreezeAccount(accountAddress));
+        ConsoleUtils.printJson(chainGovernanceService.unfreezeAccount(accountAddress).toString());
         System.out.println();
     }
 
@@ -390,7 +400,7 @@ public class PermissionImpl implements PermissionFace {
         if (!convertAddr.isValid()) {
             return;
         }
-        ConsoleUtils.printRetCode(chainGovernanceService.getAccountStatus(accountAddress));
+        ConsoleUtils.printJson(chainGovernanceService.getAccountStatus(accountAddress));
         System.out.println();
     }
 

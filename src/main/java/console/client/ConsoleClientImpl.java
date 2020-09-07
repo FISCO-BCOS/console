@@ -567,13 +567,33 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void newAccount(String[] params) {
+        String accountFormat = "pem";
+        if (params.length >= 2) {
+            accountFormat = params[1];
+        }
+        if (!accountFormat.equals("pem") && !accountFormat.equals("p12")) {
+            System.out.println(
+                    "Invalid account format \""
+                            + accountFormat
+                            + "\" only support \"pem\" and \"p12\" now!");
+            return;
+        }
+        String password = "";
+        if (accountFormat.equals("p12") && params.length == 3) {
+            password = params[2];
+        }
         CryptoInterface cryptoInterface = client.getCryptoInterface();
         CryptoKeyPair cryptoKeyPair = cryptoInterface.createKeyPair();
         cryptoInterface.setConfig(cryptoInterface.getConfig());
-        // save the account
-        cryptoKeyPair.storeKeyPairWithPemFormat();
+        if (accountFormat.equals("pem")) {
+            // save the account
+            cryptoKeyPair.storeKeyPairWithPemFormat();
+            System.out.println("AccountPath: " + cryptoKeyPair.getPemKeyStoreFilePath());
+        } else {
+            cryptoKeyPair.storeKeyPairWithP12Format(password);
+            System.out.println("AccountPath: " + cryptoKeyPair.getP12KeyStoreFilePath());
+        }
         System.out.println("newAccount: " + cryptoKeyPair.getAddress());
-        System.out.println("AccountPath: " + cryptoKeyPair.getPemKeyStoreFilePath());
         System.out.println(
                 "AccountType: "
                         + (cryptoInterface.getCryptoTypeConfig() == CryptoInterface.ECDSA_TYPE
