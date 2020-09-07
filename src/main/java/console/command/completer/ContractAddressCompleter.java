@@ -1,5 +1,6 @@
 package console.command.completer;
 
+import console.common.ConsoleUtils;
 import console.contract.utils.ContractCompiler;
 import java.io.File;
 import java.util.List;
@@ -25,12 +26,13 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
             if (!contractDir.exists()) {
                 return;
             }
-            String[] contractAddressList = contractDir.list();
-            for (String contractAddress : contractAddressList) {
+            File[] contractAddressFiles = contractDir.listFiles();
+            ConsoleUtils.sortFiles(contractAddressFiles);
+            for (File contractAddressFile : contractAddressFiles) {
                 candidates.add(
                         new Candidate(
-                                AttributedString.stripAnsi(contractAddress),
-                                contractAddress,
+                                AttributedString.stripAnsi(contractAddressFile.getName()),
+                                contractAddressFile.getName(),
                                 null,
                                 null,
                                 null,

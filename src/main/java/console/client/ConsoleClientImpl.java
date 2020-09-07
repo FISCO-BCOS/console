@@ -599,6 +599,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                         + (cryptoInterface.getCryptoTypeConfig() == CryptoInterface.ECDSA_TYPE
                                 ? "ecdsa"
                                 : "sm"));
+        System.out.println();
     }
 
     @Override
@@ -677,9 +678,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         if (!accountFile.exists()) {
             return accountList;
         }
-        for (String account : accountFile.list()) {
-            logger.debug("account is: {}", account);
-            String[] accountAddressList = account.split("\\.");
+        File[] accountFileList = accountFile.listFiles();
+        ConsoleUtils.sortFiles(accountFileList);
+        for (File accountFileItem : accountFileList) {
+            logger.debug("account is: {}", accountFileItem.getName());
+            String[] accountAddressList = accountFileItem.getName().split("\\.");
             if (accountAddressList.length == 0) {
                 continue;
             }

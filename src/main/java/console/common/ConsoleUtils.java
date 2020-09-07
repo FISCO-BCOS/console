@@ -14,6 +14,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.apache.commons.io.FileUtils;
@@ -413,5 +414,23 @@ public class ConsoleUtils {
         } catch (ChannelPrococolExceiption e) {
             return true;
         }
+    }
+
+    public static void sortFiles(File[] files) {
+        Arrays.sort(
+                files,
+                new Comparator<File>() {
+                    @Override
+                    public int compare(File o1, File o2) {
+                        long diff = o1.lastModified() - o2.lastModified();
+                        if (diff > 0) return -1;
+                        else if (diff == 0) return 0;
+                        else return 1;
+                    }
+
+                    public boolean equals(Object obj) {
+                        return true;
+                    }
+                });
     }
 }

@@ -342,9 +342,9 @@ public class HelpInfo {
     public static void registerCNSHelp() {
         System.out.println("Register CNS information by contract name and contract version.");
         System.out.println("Usage: \nregisterCNS contractName contractAddress contractVersion");
-        System.out.println("* contractName -- The name of a contract.");
-        System.out.println("* contractAddress -- The address of a contract.");
-        System.out.println("* contractVersion -- (optional) The version of a contract.");
+        System.out.println("* contractName[Required] -- The name of a contract.");
+        System.out.println("* contractAddress[Required] -- The address of a contract.");
+        System.out.println("* contractVersion[Required] -- The version of a contract.");
         System.out.println();
     }
 
@@ -645,7 +645,7 @@ public class HelpInfo {
         System.out.println("* groupId(required) -- The groupId of the generated group");
         System.out.println("* timestamp(required) -- The timestamp of the group genesis block");
         System.out.println(
-                "* sealerList(required) -- The initial nodeID of the sealer list for the generated group. Different sealer NodeIDs are separated by spaces");
+                "* sealerList(required) -- The initial nodeID of the sealer list for the generated group. Different sealer NodeIDs are separated by spaces\n");
     }
 
     public static void generateGroupFromFileHelp() {
@@ -711,7 +711,7 @@ public class HelpInfo {
         System.out.println("Usage: \nlistDeployContractAddress contractName [recordNumber]");
         System.out.println("contractName -- The name of the contract");
         System.out.println(
-                "recordNumber -- (optional) The number of deployed contract records, (default 20).");
+                "recordNumber -- (optional) The number of deployed contract records, (default 20).\n");
     }
 
     public static void getGroupConnectionsHelp() {
@@ -727,6 +727,6 @@ public class HelpInfo {
         System.out.println("./start.sh");
         System.out.println("./start.sh groupID");
         System.out.println("./start.sh groupID -pem pemName");
-        System.out.println("./start.sh groupID -p12 p12Name");
+        System.out.println("./start.sh groupID -p12 p12Name\n");
     }
 }
