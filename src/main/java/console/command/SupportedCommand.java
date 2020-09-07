@@ -1824,14 +1824,17 @@ public class SupportedCommand {
                                 }
                             }
                             if (!contractFile.exists()) {
-                                System.out.println("Empty set");
+                                System.out.println(
+                                        "Contract \"" + contractName + "\" doesn't exist!\n");
                                 return;
                             }
                             int i = 0;
-                            for (String contractAddress : contractFile.list()) {
-                                System.out.println(contractAddress);
+                            File[] contractFileList = contractFile.listFiles();
+                            ConsoleUtils.sortFiles(contractFileList);
+                            for (File contractAddressFile : contractFileList) {
+                                System.out.println(contractAddressFile.getName());
                                 i++;
-                                if (i == 20) {
+                                if (i == recordNum) {
                                     break;
                                 }
                             }
