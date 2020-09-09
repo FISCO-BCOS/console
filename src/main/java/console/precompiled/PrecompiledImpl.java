@@ -721,11 +721,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         if (abi.equals("")) {
             System.out.println(
-                    "Warn: \nThe abi of contract "
+                    "Warn: \nPlease make sure the existence of the contract, contractName: "
                             + contractName
-                            + " with address "
-                            + contractAddress
-                            + " is empty! \nPlease make sure the existence of contractAddress "
+                            + ", contractAddress: "
                             + contractAddress
                             + "!");
         }
@@ -733,5 +731,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                 cnsService
                         .registerCNS(contractName, contractVersion, contractAddress, abi)
                         .toString());
+        System.out.println();
     }
 }
