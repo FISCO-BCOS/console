@@ -79,13 +79,11 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
-                System.out.println();
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
             System.out.println("Hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("contract address: " + contractAddress);
-            System.out.println();
             writeLog(contractName, contractAddress);
             // save the bin and abi
             ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
@@ -159,7 +157,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             pw.close();
         } catch (IOException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         }
@@ -175,17 +172,15 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 if (recordNumber <= 0 || recordNumber > 100) {
                     System.out.println(
                             "Please provide record number by integer mode, "
-                                    + Common.DeployLogntegerRange
+                                    + Common.DeployLogIntegerRange
                                     + ".");
-                    System.out.println();
                     return;
                 }
             } catch (NumberFormatException e) {
                 System.out.println(
                         "Please provide record number by integer mode, "
-                                + Common.DeployLogntegerRange
+                                + Common.DeployLogIntegerRange
                                 + ".");
-                System.out.println();
                 return;
             }
         }
@@ -219,9 +214,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             if ("".equals(stringBuilder.toString())) {
                 System.out.println("Empty set.");
-                System.out.println();
             } else {
-                System.out.println();
                 System.out.println(stringBuilder.toString());
             }
         } catch (Exception e) {
@@ -310,7 +303,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("Event: " + response.getEvents());
             }
-            System.out.println();
         }
     }
 
@@ -330,7 +322,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                 + "\" of contract \""
                                 + contractName
                                 + "\" already exists!");
-                System.out.println();
                 return;
             }
             List<String> inputParams = Arrays.asList(params).subList(3, params.length);
@@ -343,7 +334,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // register cns
             cnsService.registerCNS(
                     contractName, contractVersion, contractAddress, abiAndBin.getAbi());
-            System.out.println();
         } catch (ContractException e) {
             throw new ConsoleMessageException(
                     "deployByCNS failed for " + e.getMessage() + ", code: " + e.getErrorCode(), e);
@@ -368,7 +358,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             } else {
                 System.out.println(
                         "Contract name and version has incorrect format. For example, contractName:contractVersion");
-                System.out.println();
                 return;
             }
         }
@@ -409,7 +398,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             + " and contractVersion \""
                             + contractVersion
                             + "\"");
-            System.out.println();
             return;
         }
         String functionName = params[2];

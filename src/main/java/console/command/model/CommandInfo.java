@@ -148,8 +148,8 @@ public class CommandInfo {
             usageDisplay.printUsageInfo();
         } else {
             printDescInfo();
-            System.out.println();
         }
+        System.out.println();
     }
 
     public UsageDisplay getUsageDisplay() {
@@ -214,5 +214,6 @@ public class CommandInfo {
             return;
         }
         commandImplement.call(consoleInitializer, params);
+        System.out.println();
     }
 }

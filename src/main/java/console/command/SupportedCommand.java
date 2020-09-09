@@ -652,7 +652,7 @@ public class SupportedCommand {
                             consoleInitializer.getConsoleContractFace().call(params);
                         }
                     },
-                    2,
+                    3,
                     -1);
     public static final CommandInfo DEPLOY_BY_CNS =
             new CommandInfo(
@@ -998,7 +998,7 @@ public class SupportedCommand {
     public static final CommandInfo DESC =
             new CommandInfo(
                     "desc",
-                    " Description table information",
+                    "Description table information",
                     new CommandInfo.UsageDisplay() {
                         @Override
                         public void printUsageInfo() {
@@ -1089,7 +1089,6 @@ public class SupportedCommand {
                                             .getCryptoInterface()
                                             .getCryptoKeyPair()
                                             .getAddress());
-                            System.out.println();
                         }
                     });
     public static final CommandInfo GET_CRYPTO_TYPE =
@@ -1117,7 +1116,6 @@ public class SupportedCommand {
                                             + (sslCryptoType == CryptoInterface.ECDSA_TYPE
                                                     ? "ECDSA"
                                                     : "SM"));
-                            System.out.println();
                         }
                     });
 
@@ -1838,7 +1836,6 @@ public class SupportedCommand {
                                     break;
                                 }
                             }
-                            System.out.println();
                         }
                     },
                     1,
@@ -1867,7 +1864,7 @@ public class SupportedCommand {
     public static final CommandInfo NEW_ACCOUNT =
             new CommandInfo(
                     "newAccount",
-                    "create account",
+                    "Create account",
                     new CommandInfo.UsageDisplay() {
                         @Override
                         public void printUsageInfo() {
@@ -1907,13 +1904,12 @@ public class SupportedCommand {
     public static final CommandInfo LIST_ACCOUNT =
             new CommandInfo(
                     "listAccount",
-                    "",
+                    "List the current saved account list",
                     new CommandInfo.UsageDisplay() {
                         @Override
                         public void printUsageInfo() {
                             System.out.println("list all the accounts");
                             System.out.println("Usage: \nlistAccount");
-                            System.out.println();
                         }
                     },
                     new CommandInfo.CommandImplement() {

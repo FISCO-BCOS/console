@@ -111,7 +111,6 @@ public class ConsoleUtils {
             return false;
         } else {
             System.out.println("Please provide a valid hash.");
-            System.out.println();
             return true;
         }
     }
@@ -129,7 +128,6 @@ public class ConsoleUtils {
                             + " and smaller than "
                             + Long.MAX_VALUE
                             + ".");
-            System.out.println();
             logger.debug("processLong for {} failed, error info: {}", name, e.getMessage());
             return Common.InvalidLongValue;
         }
@@ -144,16 +142,15 @@ public class ConsoleUtils {
         int intParam = 0;
         try {
             intParam = Integer.parseInt(intStr);
-            if (intParam < minValue) {
+            if (intParam < minValue || (maxValue > minValue && intParam > maxValue)) {
                 System.out.println(
-                        "Please provide "
+                        "Please provide \""
                                 + name
-                                + " by non-negative integer mode between "
+                                + "\" by non-negative integer mode between "
                                 + minValue
                                 + " and "
                                 + maxValue
                                 + ".");
-                System.out.println();
                 return Common.InvalidReturnNumber;
             }
         } catch (NumberFormatException e) {
@@ -164,7 +161,6 @@ public class ConsoleUtils {
                             + " by non-negative integer mode, "
                             + Common.NonNegativeIntegerRange
                             + ".");
-            System.out.println();
             return Common.InvalidReturnNumber;
         }
         return intParam;
@@ -196,7 +192,6 @@ public class ConsoleUtils {
         }
         if (!address.isValid()) {
             System.out.println("Please provide a valid address.");
-            System.out.println();
         }
         return address;
     }
@@ -428,13 +423,11 @@ public class ConsoleUtils {
                             + supportedVersion.toVersionString();
             if (supportedVersion.getMajor() < minSupportVersion.getMajor()) {
                 System.out.println(errorMessage);
-                System.out.println();
                 return false;
             }
             if (supportedVersion.getMajor() == minSupportVersion.getMajor()
                     && supportedVersion.getMinor() < minSupportVersion.getMinor()) {
                 System.out.println(errorMessage);
-                System.out.println();
                 return false;
             }
             return true;

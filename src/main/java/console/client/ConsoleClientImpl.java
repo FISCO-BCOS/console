@@ -43,19 +43,16 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getNodeVersion(String[] params) throws IOException {
         ConsoleUtils.printJson(client.getNodeVersion().getNodeVersion().toString());
-        System.out.println();
     }
 
     @Override
     public void getBlockNumber(String[] params) throws IOException {
         System.out.println(client.getBlockNumber().getBlockNumber());
-        System.out.println();
     }
 
     @Override
     public void getPbftView(String[] params) throws IOException {
         System.out.println(client.getPbftView().getPbftView());
-        System.out.println();
     }
 
     @Override
@@ -66,7 +63,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         } else {
             ConsoleUtils.printJson(observers);
         }
-        System.out.println();
     }
 
     @Override
@@ -77,19 +73,16 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         } else {
             ConsoleUtils.printJson(sealers);
         }
-        System.out.println();
     }
 
     @Override
     public void getConsensusStatus(String[] params) throws IOException {
         ConsoleUtils.printJson(client.getConsensusStatus().getConsensusStatus().toString());
-        System.out.println();
     }
 
     @Override
     public void getSyncStatus(String[] params) throws IOException {
         ConsoleUtils.printJson(client.getSyncStatus().getSyncStatus().toString());
-        System.out.println();
     }
 
     @Override
@@ -101,13 +94,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 ConsoleUtils.printJson(client.getPeers(params[1]).getPeers().toString());
             }
         }
-        System.out.println();
     }
 
     @Override
     public void getNodeIDList(String[] params) throws IOException {
         ConsoleUtils.printJson(client.getNodeIDList().getNodeIDList().toString());
-        System.out.println();
     }
 
     @Override
@@ -119,7 +110,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 ConsoleUtils.printJson(client.getGroupPeers(params[1]).getGroupPeers().toString());
             }
         }
-        System.out.println();
     }
 
     @Override
@@ -131,7 +121,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 System.out.println(client.getGroupList(params[1]).getGroupList().toString());
             }
         }
-        System.out.println();
     }
 
     @Override
@@ -146,12 +135,10 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 flag = false;
             } else {
                 System.out.println("Please provide true or false for the second parameter.");
-                System.out.println();
                 return;
             }
         }
         ConsoleUtils.printJson(client.getBlockByHash(blockHash, flag).getBlock().toString());
-        System.out.println();
     }
 
     @Override
@@ -169,7 +156,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 flag = false;
             } else {
                 System.out.println("Please provide true or false for the second parameter.");
-                System.out.println();
                 return;
             }
         }
@@ -177,7 +163,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 client.getBlockByNumber(BigInteger.valueOf(blockNumber), flag)
                         .getBlock()
                         .toString());
-        System.out.println();
     }
 
     @Override
@@ -193,13 +178,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 flag = false;
             } else {
                 System.out.println("Please provide true or false for the second parameter.");
-                System.out.println();
                 return;
             }
         }
         ConsoleUtils.printJson(
                 client.getBlockHeaderByHash(blockHash, flag).getBlockHeader().toString());
-        System.out.println();
     }
 
     @Override
@@ -217,7 +200,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 flag = false;
             } else {
                 System.out.println("Please provide true or false for the second parameter.");
-                System.out.println();
                 return;
             }
         }
@@ -225,7 +207,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 client.getBlockHeaderByNumber(BigInteger.valueOf(blockNumber), flag)
                         .getBlockHeader()
                         .toString());
-        System.out.println();
     }
 
     @Override
@@ -239,7 +220,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 client.getBlockHashByNumber(BigInteger.valueOf(blockNumber))
                         .getBlockHashByNumber()
                         .toString());
-        System.out.println();
     }
 
     @Override
@@ -253,7 +233,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return;
         }
         ConsoleUtils.printJson(transaction.toString());
-        System.out.println();
     }
 
     @Override
@@ -271,7 +250,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 client.getTransactionByBlockHashAndIndex(blockHash, BigInteger.valueOf(index))
                         .getTransaction()
                         .toString());
-        System.out.println();
     }
 
     @Override
@@ -296,7 +274,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         } catch (ClientException e) {
             ConsoleUtils.printJson(e.getMessage());
         }
-        System.out.println();
     }
 
     @Override
@@ -308,7 +285,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 client.getTransactionReceipt(transactionHash).getTransactionReceipt().get();
         if (Objects.isNull(receipt) || Objects.isNull(receipt.getTransactionHash())) {
             System.out.println("This transaction hash doesn't exist.");
-            System.out.println();
             return;
         }
 
@@ -318,9 +294,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                                     receipt.getStatus(), receipt.getMessage())
                             .getMessage());
         }
-
         ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(receipt));
-        System.out.println();
     }
 
     @Override
@@ -332,11 +306,9 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
         if (Objects.isNull(transactionWithProof) || "".equals(transactionWithProof)) {
             System.out.println("This transaction hash doesn't exist.");
-            System.out.println();
             return;
         }
         ConsoleUtils.printJson(transactionWithProof);
-        System.out.println();
     }
 
     @Override
@@ -349,20 +321,15 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
         if (Objects.isNull(transactionReceiptWithProof) || "".equals(transactionReceiptWithProof)) {
             System.out.println("This transaction hash doesn't exist.");
-            System.out.println();
             return;
         }
-
         ConsoleUtils.printJson(transactionReceiptWithProof);
-
-        System.out.println();
     }
 
     @Override
     public void getPendingTxSize(String[] params) throws IOException {
         String size = client.getPendingTxSize().getResult();
         System.out.println(Numeric.decodeQuantity(size));
-        System.out.println();
     }
 
     @Override
@@ -370,7 +337,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         String pendingTransactions = client.getPendingTransaction().getResult().toString();
         if ("[]".equals(pendingTransactions)) System.out.println(pendingTransactions);
         else ConsoleUtils.printJson(pendingTransactions);
-        System.out.println();
     }
 
     @Override
@@ -384,11 +350,9 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         String code = client.getCode(address).getCode();
         if ("0x".equals(code)) {
             System.out.println("This address doesn't exist.");
-            System.out.println();
             return;
         }
         ConsoleUtils.printJson(code);
-        System.out.println();
     }
 
     @Override
@@ -412,7 +376,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         ConsoleUtils.printJson(
                 ObjectMapperFactory.getObjectMapper()
                         .writeValueAsString(innerTotalTransactionCountResult));
-        System.out.println();
     }
 
     @Override
@@ -436,7 +399,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                             + Common.TxGasLimit
                             + ".");
         }
-        System.out.println();
     }
 
     private Integer checkAndGetGroupId(String[] params) {
@@ -445,7 +407,9 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return null;
         }
         if (params.length >= 3) {
-            groupId = ConsoleUtils.proccessNonNegativeNumber("groupId", params[2]);
+            groupId =
+                    ConsoleUtils.proccessNonNegativeNumber(
+                            "groupId", params[2], 1, Common.MaxGroupID);
             if (groupId == Common.InvalidReturnNumber) {
                 groupId = null;
             }
@@ -541,7 +505,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void generateGroupFromFile(String[] params) {
-        int groupId = ConsoleUtils.proccessNonNegativeNumber("groupId", params[1]);
+        int groupId =
+                ConsoleUtils.proccessNonNegativeNumber("groupId", params[1], 1, Common.MaxGroupID);
         if (groupId == Common.InvalidReturnNumber) {
             return;
         }
@@ -586,7 +551,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                                 + e.getMessage()
                                 + "\"}");
             }
-            System.out.println();
         }
     }
 
@@ -624,7 +588,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                         + (cryptoInterface.getCryptoTypeConfig() == CryptoInterface.ECDSA_TYPE
                                 ? "ecdsa"
                                 : "sm"));
-        System.out.println();
     }
 
     @Override
@@ -666,7 +629,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         CryptoInterface cryptoInterface = client.getCryptoInterface();
         cryptoInterface.loadAccount(accountFormat, accountPath, accountPassword);
         System.out.println("Load account " + params[1] + " success!");
-        System.out.println();
     }
 
     @Override
@@ -679,7 +641,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         for (int i = 0; i < accountList.size(); i++) {
             System.out.println(accountList.get(i));
         }
-        System.out.println();
     }
 
     public static String getAccountDir(Client client) {

@@ -20,21 +20,18 @@ public class HelpInfo {
     public static void help() {
         System.out.println("Provide help information.");
         System.out.println("Usage: help");
-        System.out.println();
     }
 
     public static void freezeContractHelp() {
         System.out.println("Freeze the contract.");
         System.out.println("Usage: \nfreezeContract contractAddress");
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
-        System.out.println();
     }
 
     public static void unfreezeContractHelp() {
         System.out.println("Unfreeze the contract.");
         System.out.println("Usage: \nunfreezeContract contractAddress");
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
-        System.out.println();
     }
 
     public static void grantContractStatusManagerHelp() {
@@ -42,21 +39,18 @@ public class HelpInfo {
         System.out.println("Usage: \ngrantContractStatusManager contractAddress userAddress");
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
         System.out.println("* userAddress: 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void getContractStatusHelp() {
         System.out.println("Get the status of the contract.");
         System.out.println("Usage: \ngetContractStatus contractAddress");
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
-        System.out.println();
     }
 
     public static void listContractStatusManagerHelp() {
         System.out.println("List the authorization of the contract.");
         System.out.println("Usage: \nlistContractStatusManager contractAddress");
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
-        System.out.println();
     }
 
     public static void getDeployLogHelp() {
@@ -64,58 +58,49 @@ public class HelpInfo {
         System.out.println("Usage: \ngetDeployLog [recordNumber]");
         System.out.println(
                 "* recordNumber -- (optional) The number of deployed contract records, "
-                        + Common.DeployLogntegerRange
+                        + Common.DeployLogIntegerRange
                         + "(default 20).");
-        System.out.println();
     }
 
     public static void getBlockNumberHelp() {
         System.out.println("Query the number of most recent block.");
         System.out.println("Usage: \ngetBlockNumber");
-        System.out.println();
     }
 
     public static void switchGroupIDHelp() {
         System.out.println("Switch to a specific group by group ID.");
         System.out.println("Usage: \nswitch groupId");
         System.out.println("* groupId -- The ID of a group, " + Common.PositiveIntegerRange + ".");
-        System.out.println();
     }
 
     public static void getPbftViewHelp() {
         System.out.println("Query the pbft view of node.");
         System.out.println("Usage: \ngetPbftView");
-        System.out.println();
     }
 
     public static void getObserverListHelp() {
         System.out.println("Query nodeId list for observer nodes.");
         System.out.println("Usage: \ngetObserverList");
-        System.out.println();
     }
 
     public static void getSealerListHelp() {
         System.out.println("Query nodeId list for sealer nodes.");
         System.out.println("Usage: \ngetSealerList");
-        System.out.println();
     }
 
     public static void getConsensusStatusHelp() {
         System.out.println("Query consensus status.");
         System.out.println("Usage: \ngetConsensusStatus");
-        System.out.println();
     }
 
     public static void getSyncStatusHelp() {
         System.out.println("Query sync status.");
         System.out.println("Usage: \ngetSyncStatus");
-        System.out.println();
     }
 
     public static void getNodeVersionHelp() {
         System.out.println("Query the current node version.");
         System.out.println("Usage: \ngetNodeVersion");
-        System.out.println();
     }
 
     public static void getPeersHelp() {
@@ -124,13 +109,11 @@ public class HelpInfo {
         System.out.println(
                 "* NodeEndPoint[Optional] -- The requested node information, the format is IP:Port, "
                         + "the list of all connected nodes can be obtained through getAvailableConnections");
-        System.out.println();
     }
 
     public static void getNodeIDListHelp() {
         System.out.println("Query nodeId list for all connected nodes.");
         System.out.println("Usage: \ngetNodeIDList");
-        System.out.println();
     }
 
     public static void getGroupPeersHelp() {
@@ -139,7 +122,6 @@ public class HelpInfo {
         System.out.println(
                 "* NodeEndPoint[Optional] -- The requested node information, the format is IP:Port, "
                         + "the list of all connected nodes can be obtained through getAvailableConnections");
-        System.out.println();
     }
 
     public static void getGroupListHelp() {
@@ -148,13 +130,11 @@ public class HelpInfo {
         System.out.println(
                 "* NodeEndPoint[Optional] -- The requested node information, the format is IP:Port, "
                         + "the list of all connected nodes can be obtained through getAvailableConnections");
-        System.out.println();
     }
 
     public static void quitHelp() {
         System.out.println("Quit console.");
         System.out.println("Usage: \nquit or exit");
-        System.out.println();
     }
 
     public static void getBlockByHashHelp() {
@@ -163,7 +143,6 @@ public class HelpInfo {
         System.out.println("* blockHash -- 32 Bytes - The hash of a block.");
         System.out.println(
                 "* boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
-        System.out.println();
     }
 
     public static void getBlockByNumberHelp() {
@@ -175,7 +154,6 @@ public class HelpInfo {
                         + ".");
         System.out.println(
                 "* boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
-        System.out.println();
     }
 
     public static void getBlockHeaderByHashHelp() {
@@ -184,7 +162,6 @@ public class HelpInfo {
         System.out.println("* blockHash -- 32 Bytes - The hash of a block.");
         System.out.println(
                 "* boolean -- (optional) If true the signature list will also be returned.");
-        System.out.println();
     }
 
     public static void getBlockHeaderByNumberHelp() {
@@ -198,7 +175,6 @@ public class HelpInfo {
 
         System.out.println(
                 "* boolean -- (optional) If true the signature list will also be returned.");
-        System.out.println();
     }
 
     public static void getBlockHashByNumberHelp() {
@@ -208,14 +184,12 @@ public class HelpInfo {
                 "* blockNumber -- Integer of a block number, "
                         + Common.NonNegativeIntegerRange
                         + ".");
-        System.out.println();
     }
 
     public static void getTransactionByHashHelp() {
         System.out.println("Query information about a transaction requested by transaction hash.");
         System.out.println("Usage: \ngetTransactionByHash transactionHash");
         System.out.println("* transactionHash -- 32 Bytes - The hash of a transaction.");
-        System.out.println();
     }
 
     public static void getTransactionByBlockHashAndIndexHelp() {
@@ -227,7 +201,6 @@ public class HelpInfo {
                 "* index -- Integer of a transaction index, "
                         + Common.NonNegativeIntegerRange
                         + ".");
-        System.out.println();
     }
 
     public static void getTransactionByHashWithProofHelp() {
@@ -235,7 +208,6 @@ public class HelpInfo {
                 "Query information about the transaction and proof by transaction hash.");
         System.out.println("Usage: \ngetTransactionByHashWithProof transactionHash");
         System.out.println("* transactionHash -- 32 Bytes - The hash of a transaction.");
-        System.out.println();
     }
 
     public static void getTransactionReceiptByHashWithProofHelp() {
@@ -243,7 +215,6 @@ public class HelpInfo {
                 "Query information about the transaction receipt and proof by transaction hash.");
         System.out.println("Usage: \ngetTransactionReceiptByHashWithProof transactionHash");
         System.out.println("* transactionHash -- 32 Bytes - The hash of a transaction.");
-        System.out.println();
     }
 
     public static void getTransactionByBlockNumberAndIndexHelp() {
@@ -258,46 +229,39 @@ public class HelpInfo {
                 "* index -- Integer of a transaction index, "
                         + Common.NonNegativeIntegerRange
                         + ".");
-        System.out.println();
     }
 
     public static void getTransactionReceiptHelp() {
         System.out.println("Query the receipt of a transaction by transaction hash.");
         System.out.println("Usage: \ngetTransactionReceipt transactionHash");
         System.out.println("* transactionHash -- 32 Bytes - The hash of a transaction.");
-        System.out.println();
     }
 
     public static void getPendingTransactionsHelp() {
         System.out.println("Query pending transactions.");
         System.out.println("Usage: \ngetPendingTransactions");
-        System.out.println();
     }
 
     public static void getPendingTxSizeHelp() {
         System.out.println("Query pending transactions size.");
         System.out.println("Usage: \ngetPendingTxSize");
-        System.out.println();
     }
 
     public static void getCodeHelp() {
         System.out.println("Query code at a given address.");
         System.out.println("Usage: \ngetCode address");
-        System.out.println("address -- 20 Bytes - The address of a contract.");
-        System.out.println();
+        System.out.println("* address -- 20 Bytes - The address of a contract.");
     }
 
     public static void getTotalTransactionCountHelp() {
         System.out.println("Query total transaction count.");
         System.out.println("Usage: \ngetTotalTransactionCount");
-        System.out.println();
     }
 
     public static void deployHelp() {
         System.out.println("Deploy a contract on blockchain.");
         System.out.println("Usage: \ndeploy contractName");
         System.out.println("* contractName -- The name of a contract.");
-        System.out.println();
     }
 
     public static void callHelp() {
@@ -307,7 +271,6 @@ public class HelpInfo {
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("* function -- The function of a contract.");
         System.out.println("* parameters -- The parameters(splited by a space) of a function.");
-        System.out.println();
     }
 
     public static void deployByCNSHelp() {
@@ -318,7 +281,6 @@ public class HelpInfo {
                 "* contractVersion -- The version of a contract. The maximum length of the version hex string is "
                         + PrecompiledConstant.CNS_MAX_VERSION_LENGTH
                         + ".");
-        System.out.println();
     }
 
     public static void callByCNSHelp() {
@@ -328,7 +290,6 @@ public class HelpInfo {
                 "* contractName:contractVersion -- The name and version of a contract. If contract version is not provided, then the latest version of contract will be called.");
         System.out.println("* function -- The function of a contract.");
         System.out.println("* parameters -- The parameters(splited by a space) of a function.");
-        System.out.println();
     }
 
     public static void queryCNSHelp() {
@@ -336,7 +297,6 @@ public class HelpInfo {
         System.out.println("Usage: \nqueryCNS contractName [contractVersion]");
         System.out.println("* contractName -- The name of a contract.");
         System.out.println("* contractVersion -- (optional) The version of a contract. ");
-        System.out.println();
     }
 
     public static void registerCNSHelp() {
@@ -345,37 +305,24 @@ public class HelpInfo {
         System.out.println("* contractName[Required] -- The name of a contract.");
         System.out.println("* contractAddress[Required] -- The address of a contract.");
         System.out.println("* contractVersion[Required] -- The version of a contract.");
-        System.out.println();
     }
 
     public static void addObserverHelp() {
         System.out.println("Add an observer node.");
         System.out.println("Usage: \naddObserver nodeId");
-        System.out.println(
-                "* nodeId -- The nodeId of a node. The length of the node hex string is "
-                        + Common.NodeIdLength
-                        + ".");
-        System.out.println();
+        System.out.println("* nodeId -- The nodeId of a node.");
     }
 
     public static void addSealerHelp() {
         System.out.println("Add a sealer node.");
         System.out.println("Usage: \naddSealer nodeId");
-        System.out.println(
-                "* nodeId -- The nodeId of a node. The length of the node hex string is "
-                        + Common.NodeIdLength
-                        + ".");
-        System.out.println();
+        System.out.println("* nodeId -- The nodeId of a node.");
     }
 
     public static void removeNodeHelp() {
         System.out.println("Remove a node.");
         System.out.println("Usage: \nremoveNode nodeId");
-        System.out.println(
-                "* nodeId -- The nodeId of a node. The length of the node hex string is "
-                        + Common.NodeIdLength
-                        + ".");
-        System.out.println();
+        System.out.println("* nodeId -- The nodeId of a node.");
     }
 
     public static void grantUserTableManagerHelp() {
@@ -383,7 +330,6 @@ public class HelpInfo {
         System.out.println("Usage: \ngrantUserTableManager tableName address");
         System.out.println("* tableName -- The name of a table.");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void revokeUserTableManagerHelp() {
@@ -391,14 +337,12 @@ public class HelpInfo {
         System.out.println("Usage: \nrevokeUserTableManager tableName address");
         System.out.println("* tableName -- The name of a table.");
         System.out.println("* address -- 20 Bytes - The The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void listUserTableManagerHelp() {
         System.out.println("Query permission for user table information.");
         System.out.println("Usage: \nlistUserTableManager tableName");
         System.out.println("* tableName -- The name of a table.");
-        System.out.println();
     }
 
     public static void grantDeployAndCreateManagerHelp() {
@@ -406,7 +350,6 @@ public class HelpInfo {
                 "Grant permission for deploy contract and create user table by address.");
         System.out.println("Usage: \ngrantDeployAndCreateManager address");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void revokeDeployAndCreateManagerHelp() {
@@ -414,81 +357,69 @@ public class HelpInfo {
                 "Revoke permission for deploy contract and create user table by address.");
         System.out.println("Usage: \nrevokeDeployAndCreateManager address");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void listDeployAndCreateManagerHelp() {
         System.out.println(
                 "Query permission information for deploy contract and create user table.");
         System.out.println("Usage: \nlistDeployAndCreateManager");
-        System.out.println();
     }
 
     public static void grantNodeManagerHelp() {
         System.out.println("Grant permission for node configuration by address.");
         System.out.println("Usage: \ngrantNodeManager address");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void revokeNodeManagerHelp() {
         System.out.println("Revoke permission for node configuration by address.");
         System.out.println("Usage: \nrevokeNodeManager address");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void listNodeManagerHelp() {
         System.out.println("Query permission information for node configuration.");
         System.out.println("Usage: \nlistNodeManager");
-        System.out.println();
     }
 
     public static void grantCNSManagerHelp() {
         System.out.println("Grant permission for CNS by address.");
         System.out.println("Usage: \ngrantCNSManager address");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void revokeCNSManagerHelp() {
         System.out.println("Revoke permission for CNS by address.");
         System.out.println("Usage: \nrevokeCNSManager address");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void listCNSManagerHelp() {
         System.out.println("Query permission information for CNS.");
         System.out.println("Usage: \nlistCNSManager");
-        System.out.println();
     }
 
     public static void grantSysConfigManagerHelp() {
         System.out.println("Grant permission for system configuration by address.");
         System.out.println("Usage: \ngrantSysConfigManager address");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void revokeSysConfigManagerHelp() {
         System.out.println("Revoke permission for system configuration by address.");
         System.out.println("Usage: \nrevokeSysConfigManager address");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void listSysConfigManagerHelp() {
         System.out.println("Query permission information for system configuration.");
         System.out.println("Usage: \nlistSysConfigManager");
-        System.out.println();
     }
 
     public static void listContractWritePermissionHelp() {
         System.out.println("Query write permission information by address.");
         System.out.println("Usage: \nlistContractWritePermission");
         System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void grantContractWritePermissionHelp() {
@@ -496,7 +427,6 @@ public class HelpInfo {
         System.out.println("Usage: \ngrantContractWritePermission");
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("* userAddress -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void revokeContractWritePermissionHelp() {
@@ -504,34 +434,29 @@ public class HelpInfo {
         System.out.println("Usage: \nrevokeWritePermission");
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("* userAddress -- 20 Bytes - The address of a tx.origin.");
-        System.out.println();
     }
 
     public static void listCommitteeMembersHelp() {
         System.out.println("List committee members.");
         System.out.println("Usage: \nlistCommitteeMembers");
-        System.out.println();
     }
 
     public static void grantCommitteeMemberHelp() {
         System.out.println("Grant committee member.");
         System.out.println("Usage: \ngrantCommitteeMember account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println();
     }
 
     public static void revokeCommitteeMemberHelp() {
         System.out.println("Revoke committee member.");
         System.out.println("Usage: \nrevokeCommitteeMember account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println();
     }
 
     public static void queryCommitteeMemberWeightHelp() {
         System.out.println("Query committee member weight.");
         System.out.println("Usage: \nqueryCommitteeMemberWeight account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println();
     }
 
     public static void updateCommitteeMemberWeightHelp() {
@@ -539,61 +464,52 @@ public class HelpInfo {
         System.out.println("Usage: \nupdateCommitteeMemberWeight account weight");
         System.out.println("* account -- 20 Bytes - The address of a account.");
         System.out.println("* weight -- int - The weight of the account.");
-        System.out.println();
     }
 
     public static void queryThresholdHelp() {
         System.out.println("Query committee threshold.");
         System.out.println("Usage: \nqueryThreshold");
-        System.out.println();
     }
 
     public static void updateThresholdHelp() {
         System.out.println("Update committee threshold.");
         System.out.println("Usage: \nupdateThreshold threshold");
         System.out.println("* threshold -- int - The threshold of the committee.");
-        System.out.println();
     }
 
     public static void listOperatorsHelp() {
         System.out.println("List operator members.");
         System.out.println("Usage: \nlistOperators");
-        System.out.println();
     }
 
     public static void grantOperatorHelp() {
         System.out.println("Grant operator.");
         System.out.println("Usage: \ngrantOperator account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println();
     }
 
     public static void revokeOperatorHelp() {
         System.out.println("Revoke operator.");
         System.out.println("Usage: \nrevokeOperator account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println();
     }
 
     public static void freezeAccountHelp() {
         System.out.println("Freeze account.");
         System.out.println("Usage: \nfreezeAccount account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println();
     }
 
     public static void unfreezeAccountHelp() {
         System.out.println("Unfreeze account.");
         System.out.println("Usage: \nunfreezeAccount account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println();
     }
 
     public static void getAccountStatusHelp() {
         System.out.println("Account status.");
         System.out.println("Usage: \ngetAccountStatus account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println();
     }
 
     public static void setSystemConfigByKeyHelp() {
@@ -619,7 +535,6 @@ public class HelpInfo {
                 "      -- the value of  consensus_timeout (seconds)"
                         + Common.ConsensusTimeoutRange
                         + "(default 3s).");
-        System.out.println();
     }
 
     public static void getSystemConfigByKeyHelp() {
@@ -627,7 +542,6 @@ public class HelpInfo {
         System.out.println("Usage: \ngetSystemConfigByKey key");
         System.out.println(
                 "* key -- The name of system config(tx_count_limit/tx_gas_limit/rpbft_epoch_block_num/rpbft_epoch_sealer_num/consensus_timeout supported currently).");
-        System.out.println();
     }
 
     public static void operateGroupHelp(String command, String operator) {
@@ -635,7 +549,6 @@ public class HelpInfo {
         System.out.println(
                 "* endPoint[Required] -- the IP and Port information of the target node , the format is IP:Port");
         System.out.println("* groupId[Required] -- the group that should be " + operator);
-        System.out.println();
     }
 
     public static void generateGroupHelp() {
@@ -654,14 +567,12 @@ public class HelpInfo {
         System.out.println(
                 "* groupConfigFilePath(required) -- The configuration file path of the generated group. "
                         + "For specific configuration options, please refer to group-generate-config.toml in the conf directory");
-        System.out.println();
     }
 
     public static void showDescHelp() {
         System.out.println("Description table information.");
         System.out.println("Usage: \ndesc tableName");
         System.out.println("* tableName -- The name of the table.");
-        System.out.println();
     }
 
     public static void promptNoFunc(String contractName, String funcName, int lenParams) {
@@ -682,7 +593,6 @@ public class HelpInfo {
                             + " parameters"
                             + " is undefined of the contract.");
         }
-        System.out.println();
     }
 
     public static void loadAccountHelp() {
@@ -693,7 +603,6 @@ public class HelpInfo {
         System.out.println(
                 "* accountFormat[Required] -- The account file format, support \\\"pem\\\" and \\\"p12\\\" now!\"");
         System.out.println("* password[Required] -- Password used to access the account file");
-        System.out.println();
     }
 
     public static void newAccountHelp() {
@@ -703,7 +612,6 @@ public class HelpInfo {
                 "* accountFormat[Optional] -- The account file format, support \"pem\" and \"p12\" now, default is \"pem\".");
         System.out.println(
                 "* password[Optional] -- The password of the p12 account file. Default is empty string.");
-        System.out.println();
     }
 
     public static void listDeployContractAddressHelp() {
@@ -718,7 +626,6 @@ public class HelpInfo {
         System.out.println("Usage:\ngetGroupConnections groupId");
         System.out.println(
                 "* groupId[Required]: The group ID that needs to query node information, default is the current group.");
-        System.out.println();
     }
 
     public static void startHelp() {
