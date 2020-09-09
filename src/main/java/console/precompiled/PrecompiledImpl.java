@@ -65,7 +65,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         } else {
             ConsoleUtils.printJson(this.consensusService.addSealer(nodeId).toString());
         }
-        System.out.println();
     }
 
     @Override
@@ -76,7 +75,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         } else {
             ConsoleUtils.printJson(this.consensusService.addObserver(nodeId).toString());
         }
-        System.out.println();
     }
 
     @Override
@@ -87,7 +85,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         } else {
             ConsoleUtils.printJson(this.consensusService.removeNode(nodeId).toString());
         }
-        System.out.println();
     }
 
     @Override
@@ -110,7 +107,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                                 "Please provide value by positive integer mode, "
                                         + Common.PositiveIntegerRange
                                         + ".");
-                        System.out.println();
                         return;
                     }
                 } else if (Common.TxGasLimit.equals(key) && value < Common.TxGasLimitMin) {
@@ -118,7 +114,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                             "Please provide value by positive integer mode, "
                                     + Common.TxGasLimitRange
                                     + ".");
-                    System.out.println();
                     return;
                 } else if (Common.ConsensusTimeout.equals(key)
                         && (value < Common.ConsensusTimeoutMin
@@ -127,7 +122,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                             "Please provide value by positive integer mode, "
                                     + Common.ConsensusTimeoutRange
                                     + ".");
-                    System.out.println();
                     return;
                 }
 
@@ -156,7 +150,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                                     + Common.ConsensusTimeoutRange
                                     + ".");
                 }
-                System.out.println();
                 return;
             }
         } else {
@@ -173,18 +166,11 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + Common.ConsensusTimeout
                             + " .");
         }
-        System.out.println();
     }
 
     @Override
     public void desc(String[] params) throws Exception {
         String tableName = params[1];
-        if (tableName.length() > Common.SYS_TABLE_KEY_MAX_LENGTH) {
-            throw new ConsoleMessageException(
-                    "The table name length is greater than "
-                            + Common.SYS_TABLE_KEY_MAX_LENGTH
-                            + ".");
-        }
         CRUDParseUtils.invalidSymbol(tableName);
         if (tableName.endsWith(";")) {
             tableName = tableName.substring(0, tableName.length() - 1);
@@ -196,7 +182,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             String tableInfo = ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc);
             ConsoleUtils.printJson(tableInfo);
-            System.out.println();
         } catch (Exception e) {
             throw e;
         }
@@ -206,14 +191,12 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void freezeContract(String[] params) throws Exception {
         String address = params[1];
         ConsoleUtils.printJson(contractLifeCycleService.freeze(address).toString());
-        System.out.println();
     }
 
     @Override
     public void unfreezeContract(String[] params) throws Exception {
         String address = params[1];
         ConsoleUtils.printJson(contractLifeCycleService.unfreeze(address).toString());
-        System.out.println();
     }
 
     @Override
@@ -222,14 +205,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         String userAddr = params[2];
         ConsoleUtils.printJson(
                 contractLifeCycleService.grantManager(contractAddr, userAddr).getMessage());
-        System.out.println();
     }
 
     @Override
     public void getContractStatus(String[] params) throws Exception {
         String address = params[1];
         ConsoleUtils.printJson(contractLifeCycleService.getContractStatus(address));
-        System.out.println();
     }
 
     @Override
@@ -238,7 +219,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         ConsoleUtils.printJson(
                 ObjectMapperFactory.getObjectMapper()
                         .writeValueAsString(contractLifeCycleService.listManager(address)));
-        System.out.println();
     }
 
     @Override
@@ -248,13 +228,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             CRUDParseUtils.parseCreateTable(sql, table);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             CRUDParseUtils.invalidSymbol(sql);
-            System.out.println();
             return;
         }
         try {
@@ -269,7 +247,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println(" ret message: " + result.getMessage());
                 System.out.println(" ret code: " + result.getCode());
             }
-            System.out.println();
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
                     table, null, sql, e.getErrorCode(), e.getMessage(), null);
@@ -289,17 +266,20 @@ public class PrecompiledImpl implements PrecompiledFace {
         Collections.addAll(
                 descFieldList,
                 descTable.get(0).get(PrecompiledConstant.VALUE_FIELD_NAME).split(","));
+        String key = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
         // check field
         if (entry != null) {
             Set<String> fieldSet = entry.getFieldNameToValue().keySet();
             for (String field : fieldSet) {
+                if (field.equals(key)) {
+                    continue;
+                }
                 if (!descFieldList.contains(field)) {
                     System.out.println(
                             "Unknown field \""
                                     + field
                                     + "\", current supported fields are "
                                     + descFieldList.toString());
-                    System.out.println();
                     return false;
                 }
             }
@@ -317,7 +297,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         System.out.println("call " + command + " failed!");
         System.out.println("* code: " + code);
         System.out.println("* message: " + message);
-        System.out.println();
         if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
             return;
         }
@@ -325,7 +304,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         if (table == null) {
-            System.out.println();
             return;
         }
         String regexTableName = "[\\da-zA-z,$,_,@]+";
@@ -364,7 +342,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         if (entry == null) {
-            System.out.println();
             return;
         }
         Map<String, String> filedNameToValue = entry.getFieldNameToValue();
@@ -387,7 +364,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                                 + value.length());
             }
         }
-        System.out.println();
     }
 
     @Override
@@ -430,16 +406,13 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println("Ret message:" + insertResult.getMessage());
                 System.out.println("Ret code: " + insertResult.getCode());
             }
-            System.out.println();
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement, error message: " + e.getMessage());
             CRUDParseUtils.invalidSymbol(sql);
-            System.out.println();
             return;
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
@@ -462,13 +435,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             CRUDParseUtils.parseUpdate(sql, table, entry, condition);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             CRUDParseUtils.invalidSymbol(sql);
-            System.out.println();
             return;
         }
         try {
@@ -493,7 +464,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (updateResult.getCode() > 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
             }
-            System.out.println();
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
                     table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
@@ -514,13 +484,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             CRUDParseUtils.parseRemove(sql, table, condition);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             CRUDParseUtils.invalidSymbol(sql);
-            System.out.println();
             return;
         }
         try {
@@ -534,12 +502,11 @@ public class PrecompiledImpl implements PrecompiledFace {
                     tableCRUDService.remove(table.getTableName(), table.getKey(), condition);
             if (removeResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
                     || removeResult.getCode() == 1) {
-                System.out.println("Remove OK, " + removeResult + " row affected.");
+                System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
             } else {
                 System.out.println("Result of remove " + table.getTableName() + " :");
                 ConsoleUtils.printJson(removeResult.toString());
             }
-            System.out.println();
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
                     table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
@@ -555,7 +522,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (descTable.size() == 0
                 || descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME).equals("")) {
             System.out.println("The table \"" + tableName + "\" doesn't exist!");
-            System.out.println();
             return false;
         }
         return true;
@@ -571,13 +537,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             CRUDParseUtils.parseSelect(sql, table, condition, selectColumns);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            System.out.println();
             logger.error(" message: {}, e: {}", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
             CRUDParseUtils.invalidSymbol(sql);
-            System.out.println();
             return;
         }
         try {
@@ -593,7 +557,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             int rows = 0;
             if (result.size() == 0) {
                 System.out.println("Empty set.");
-                System.out.println();
                 return;
             }
             result = filterSystemColum(result);
@@ -623,7 +586,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (Exception e) {
             throw e;
         }
-        System.out.println();
     }
 
     private List<Map<String, String>> getSelectedColumn(
@@ -721,11 +683,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         if (abi.equals("")) {
             System.out.println(
-                    "Warn: \nThe abi of contract "
+                    "Warn: \nPlease make sure the existence of the contract, contractName: "
                             + contractName
-                            + " with address "
-                            + contractAddress
-                            + " is empty! \nPlease make sure the existence of contractAddress "
+                            + ", contractAddress: "
                             + contractAddress
                             + "!");
         }
