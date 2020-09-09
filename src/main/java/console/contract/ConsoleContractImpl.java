@@ -1,10 +1,10 @@
 package console.contract;
 
-import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.exceptions.CompileContractException;
+import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import java.io.BufferedReader;

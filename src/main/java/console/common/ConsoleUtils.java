@@ -136,15 +136,22 @@ public class ConsoleUtils {
     }
 
     public static int proccessNonNegativeNumber(String name, String intStr) {
+        return proccessNonNegativeNumber(name, intStr, 0, Integer.MAX_VALUE);
+    }
+
+    public static int proccessNonNegativeNumber(
+            String name, String intStr, Integer minValue, Integer maxValue) {
         int intParam = 0;
         try {
             intParam = Integer.parseInt(intStr);
-            if (intParam < 0) {
+            if (intParam < minValue) {
                 System.out.println(
                         "Please provide "
                                 + name
-                                + " by non-negative integer mode, "
-                                + Common.NonNegativeIntegerRange
+                                + " by non-negative integer mode between "
+                                + minValue
+                                + " and "
+                                + maxValue
                                 + ".");
                 System.out.println();
                 return Common.InvalidReturnNumber;
