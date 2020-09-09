@@ -1818,7 +1818,7 @@ public class SupportedCommand {
                             if (params.length == 3) {
                                 recordNum =
                                         ConsoleUtils.proccessNonNegativeNumber(
-                                                "recordNum", params[2]);
+                                                "recordNum", params[2], 1, Integer.MAX_VALUE);
                                 if (recordNum == Common.InvalidReturnNumber) {
                                     return;
                                 }

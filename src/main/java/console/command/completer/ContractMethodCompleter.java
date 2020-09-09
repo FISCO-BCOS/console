@@ -1,6 +1,6 @@
 package console.command.completer;
 
-import console.common.AbiAndBin;
+import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import java.util.List;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;

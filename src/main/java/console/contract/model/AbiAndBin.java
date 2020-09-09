@@ -1,9 +1,9 @@
-package console.common;
+package console.contract.model;
 
 public class AbiAndBin {
-    private String abi;
-    private String bin;
-    private String smBin;
+    private String abi = "";
+    private String bin = "";
+    private String smBin = "";
 
     public AbiAndBin() {}
 

@@ -1,9 +1,9 @@
 package console.precompiled;
 
-import console.common.AbiAndBin;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.exceptions.CompileContractException;
+import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
@@ -709,7 +709,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         String contractVersion = params[3];
         String abi = "";
         try {
-            AbiAndBin abiAndBin = ContractCompiler.loadAbiAndBin(contractName, contractAddress);
+            AbiAndBin abiAndBin =
+                    ContractCompiler.loadAbiAndBin(contractName, contractAddress, false);
             abi = abiAndBin.getAbi();
         } catch (CompileContractException e) {
             logger.warn(
@@ -717,6 +718,16 @@ public class PrecompiledImpl implements PrecompiledFace {
                     contractAddress,
                     contractAddress,
                     e.getMessage());
+        }
+        if (abi.equals("")) {
+            System.out.println(
+                    "Warn: \nThe abi of contract "
+                            + contractName
+                            + " with address "
+                            + contractAddress
+                            + " is empty! \nPlease make sure the existence of contractAddress "
+                            + contractAddress
+                            + "!");
         }
         ConsoleUtils.printJson(
                 cnsService

@@ -19,8 +19,8 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
-import console.common.AbiAndBin;
 import console.contract.exceptions.CompileContractException;
+import console.contract.model.AbiAndBin;
 import java.io.File;
 import java.io.IOException;
 import org.apache.commons.io.FileUtils;
@@ -151,6 +151,12 @@ public class ContractCompiler {
     }
 
     public static AbiAndBin loadAbiAndBin(String contractName, String contractAddress)
+            throws CompileContractException, IOException, CodeGenException {
+        return loadAbiAndBin(contractName, contractAddress, true);
+    }
+
+    public static AbiAndBin loadAbiAndBin(
+            String contractName, String contractAddress, boolean needCompile)
             throws IOException, CodeGenException, CompileContractException {
         File abiPath =
                 new File(
@@ -184,8 +190,12 @@ public class ContractCompiler {
                                 + SM_POSTFIX
                                 + BIN_POSTFIX);
         if (!abiPath.exists() || !binPath.exists() || !smBinPath.exists()) {
-            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
-            ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
+            if (needCompile) {
+                AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
+                ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
+            } else {
+                return new AbiAndBin();
+            }
         }
         String abiContent = new String(CodeGenUtils.readBytes(abiPath));
         String binContent = new String(CodeGenUtils.readBytes(binPath));
