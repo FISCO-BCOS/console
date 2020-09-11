@@ -500,12 +500,9 @@ public class PrecompiledImpl implements PrecompiledFace {
             handleKey(table, condition);
             RetCode removeResult =
                     tableCRUDService.remove(table.getTableName(), table.getKey(), condition);
-            if (removeResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
-                    || removeResult.getCode() == 1) {
+
+            if (removeResult.getCode() > 0) {
                 System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
-            } else {
-                System.out.println("Result of remove " + table.getTableName() + " :");
-                ConsoleUtils.printJson(removeResult.toString());
             }
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
