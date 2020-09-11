@@ -619,7 +619,7 @@ public class HelpInfo {
         System.out.println("Usage: \nlistDeployContractAddress contractName [recordNumber]");
         System.out.println("contractName -- The name of the contract");
         System.out.println(
-                "recordNumber -- (optional) The number of deployed contract records, (default 20).\n");
+                "recordNumber -- (optional) The number of deployed contract records, (default 20).");
     }
 
     public static void getGroupConnectionsHelp() {
@@ -634,6 +634,6 @@ public class HelpInfo {
         System.out.println("./start.sh");
         System.out.println("./start.sh groupID");
         System.out.println("./start.sh groupID -pem pemName");
-        System.out.println("./start.sh groupID -p12 p12Name\n");
+        System.out.println("./start.sh groupID -p12 p12Name");
     }
 }
