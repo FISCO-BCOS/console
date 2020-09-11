@@ -1811,6 +1811,8 @@ public class SupportedCommand {
                                     new File(
                                             ContractCompiler.COMPILED_PATH
                                                     + File.separator
+                                                    + consoleInitializer.getClient().getGroupId()
+                                                    + File.separator
                                                     + contractName);
                             int recordNum = 20;
                             if (params.length == 3) {

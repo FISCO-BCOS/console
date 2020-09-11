@@ -4,6 +4,7 @@ import console.common.ConsoleUtils;
 import console.contract.utils.ContractCompiler;
 import java.io.File;
 import java.util.List;
+import org.fisco.bcos.sdk.client.Client;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -15,6 +16,12 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
 
     private static final Logger logger = LoggerFactory.getLogger(ContractAddressCompleter.class);
 
+    private Client client;
+
+    public ContractAddressCompleter(Client client) {
+        this.client = client;
+    }
+
     @Override
     public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
         String buffer = reader.getBuffer().toString().trim();
@@ -22,7 +29,12 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
         if (ss.length >= 2) {
             String contractName = ss[1];
             File contractDir =
-                    new File(ContractCompiler.COMPILED_PATH + File.separator + contractName);
+                    new File(
+                            ContractCompiler.COMPILED_PATH
+                                    + File.separator
+                                    + client.getGroupId()
+                                    + File.separator
+                                    + contractName);
             if (!contractDir.exists()) {
                 return;
             }

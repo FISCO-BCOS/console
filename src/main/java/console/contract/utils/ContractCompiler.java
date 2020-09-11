@@ -113,10 +113,13 @@ public class ContractCompiler {
     }
 
     public static void saveAbiAndBin(
-            AbiAndBin abiAndBin, String contractName, String contractAddress) throws IOException {
+            Integer groupId, AbiAndBin abiAndBin, String contractName, String contractAddress)
+            throws IOException {
         File abiPath =
                 new File(
                         COMPILED_PATH
+                                + File.separator
+                                + groupId
                                 + File.separator
                                 + contractName
                                 + File.separator
@@ -128,6 +131,8 @@ public class ContractCompiler {
                 new File(
                         COMPILED_PATH
                                 + File.separator
+                                + groupId
+                                + File.separator
                                 + contractName
                                 + File.separator
                                 + contractAddress
@@ -137,6 +142,8 @@ public class ContractCompiler {
         File smBinPath =
                 new File(
                         COMPILED_PATH
+                                + File.separator
+                                + groupId
                                 + File.separator
                                 + contractName
                                 + File.separator
@@ -150,17 +157,20 @@ public class ContractCompiler {
         FileUtils.writeStringToFile(smBinPath, abiAndBin.getSmBin());
     }
 
-    public static AbiAndBin loadAbiAndBin(String contractName, String contractAddress)
+    public static AbiAndBin loadAbiAndBin(
+            Integer groupId, String contractName, String contractAddress)
             throws CompileContractException, IOException, CodeGenException {
-        return loadAbiAndBin(contractName, contractAddress, true);
+        return loadAbiAndBin(groupId, contractName, contractAddress, true);
     }
 
     public static AbiAndBin loadAbiAndBin(
-            String contractName, String contractAddress, boolean needCompile)
+            Integer groupId, String contractName, String contractAddress, boolean needCompile)
             throws IOException, CodeGenException, CompileContractException {
         File abiPath =
                 new File(
                         COMPILED_PATH
+                                + File.separator
+                                + groupId
                                 + File.separator
                                 + contractName
                                 + File.separator
@@ -172,6 +182,8 @@ public class ContractCompiler {
                 new File(
                         COMPILED_PATH
                                 + File.separator
+                                + groupId
+                                + File.separator
                                 + contractName
                                 + File.separator
                                 + contractAddress
@@ -181,6 +193,8 @@ public class ContractCompiler {
         File smBinPath =
                 new File(
                         COMPILED_PATH
+                                + File.separator
+                                + groupId
                                 + File.separator
                                 + contractName
                                 + File.separator
@@ -192,7 +206,7 @@ public class ContractCompiler {
         if (!abiPath.exists() || !binPath.exists() || !smBinPath.exists()) {
             if (needCompile) {
                 AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
-                ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
+                ContractCompiler.saveAbiAndBin(groupId, abiAndBin, contractName, contractAddress);
             } else {
                 return new AbiAndBin();
             }

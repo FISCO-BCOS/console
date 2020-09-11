@@ -86,7 +86,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             System.out.println("contract address: " + contractAddress);
             writeLog(contractName, contractAddress);
             // save the bin and abi
-            ContractCompiler.saveAbiAndBin(abiAndBin, contractName, contractAddress);
+            ContractCompiler.saveAbiAndBin(
+                    client.getGroupId(), abiAndBin, contractName, contractAddress);
             // save the keyPair
             client.getCryptoInterface().getCryptoKeyPair().storeKeyPairWithPemFormat();
             return response;
@@ -260,7 +261,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throws IOException, CodeGenException, TransactionBaseException, ABICodecException,
                     CompileContractException {
         // load bin and abi
-        AbiAndBin abiAndBin = ContractCompiler.loadAbiAndBin(contractName, contractAddress);
+        AbiAndBin abiAndBin =
+                ContractCompiler.loadAbiAndBin(client.getGroupId(), contractName, contractAddress);
         // call
         ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
         if (abiDefinition != null && abiDefinition.isConstant()) {
@@ -300,7 +302,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             System.out.println("hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("Receipt message: " + response.getReceiptMessages());
             System.out.println("Return message: " + response.getReturnMessage());
-            if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            if (response.getEvents() != null && !response.getEvents().equals("")) {
                 System.out.println("Event: " + response.getEvents());
             }
         }
@@ -330,7 +332,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return;
             }
             String contractAddress = response.getContractAddress();
-            AbiAndBin abiAndBin = ContractCompiler.loadAbiAndBin(contractName, contractAddress);
+            AbiAndBin abiAndBin =
+                    ContractCompiler.loadAbiAndBin(
+                            client.getGroupId(), contractName, contractAddress);
             // register cns
             cnsService.registerCNS(
                     contractName, contractVersion, contractAddress, abiAndBin.getAbi());

@@ -672,7 +672,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         String abi = "";
         try {
             AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbiAndBin(contractName, contractAddress, false);
+                    ContractCompiler.loadAbiAndBin(
+                            client.getGroupId(), contractName, contractAddress, false);
             abi = abiAndBin.getAbi();
         } catch (CompileContractException e) {
             logger.warn(

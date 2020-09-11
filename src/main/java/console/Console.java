@@ -1,19 +1,13 @@
 package console;
 
-import console.client.ConsoleClientFace;
 import console.command.JlineUtils;
 import console.command.SupportedCommand;
 import console.command.model.CommandInfo;
 import console.command.model.WelcomeInfo;
 import console.common.ConsoleUtils;
-import console.contract.ConsoleContractFace;
-import console.precompiled.PrecompiledFace;
-import console.precompiled.permission.PermissionFace;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
-import org.fisco.bcos.sdk.BcosSDK;
-import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.contract.exceptions.ContractException;
 import org.jline.keymap.KeyMap;
@@ -29,13 +23,6 @@ public class Console {
 
     private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
-    private static Client client;
-    private static BcosSDK bcosSDK;
-    private static PrecompiledFace precompiledFace;
-    private static PermissionFace permissionFace;
-    private static ConsoleClientFace consoleClientFace;
-    private static ConsoleContractFace consoleContractFace;
-
     public static int INPUT_FLAG = 0;
 
     @SuppressWarnings("resource")
@@ -47,13 +34,7 @@ public class Console {
         try {
             consoleInitializer = new ConsoleInitializer();
             consoleInitializer.init(args);
-            client = consoleInitializer.getClient();
-            bcosSDK = consoleInitializer.getBcosSDK();
-            precompiledFace = consoleInitializer.getPrecompiledFace();
-            permissionFace = consoleInitializer.getPermissionFace();
-            consoleClientFace = consoleInitializer.getConsoleClientFace();
-            consoleContractFace = consoleInitializer.getConsoleContractFace();
-            lineReader = JlineUtils.getLineReader(client);
+            lineReader = JlineUtils.getLineReader(consoleInitializer.getClient());
             sc = new Scanner(System.in);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
             keymap.bind(new Reference("beginning-of-line"), "\033[1~");
@@ -112,6 +93,10 @@ public class Console {
                             }
                         }
                         commandInfo.callCommand(consoleInitializer, paramWithoutQuotation);
+                        if (commandInfo.getCommand().equals(SupportedCommand.SWITCH.getCommand())) {
+                            // update the client when switch group
+                            lineReader = JlineUtils.getLineReader(consoleInitializer.getClient());
+                        }
                     }
                 } else {
                     System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
@@ -174,17 +159,5 @@ public class Console {
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
             }
         }
-    }
-
-    public static void setClient(Client client) {
-        Console.client = client;
-    }
-
-    public static void setPrecompiledFace(PrecompiledFace precompiledFace) {
-        Console.precompiledFace = precompiledFace;
-    }
-
-    public static void setConsoleContractFace(ConsoleContractFace consoleContractFace) {
-        Console.consoleContractFace = consoleContractFace;
     }
 }

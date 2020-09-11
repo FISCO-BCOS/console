@@ -66,8 +66,8 @@ public class JlineUtils {
                             new AggregateCompleter(
                                     new ConsoleFilesCompleter(
                                             new File(ContractCompiler.SOLIDITY_PATH))),
-                            new ContractAddressCompleter(),
-                            new ContractMethodCompleter(),
+                            new ContractAddressCompleter(client),
+                            new ContractMethodCompleter(client),
                             new StringsCompleterIgnoreCase()));
         }
 
@@ -115,7 +115,7 @@ public class JlineUtils {
                 new ArgumentCompleter(
                         new StringsCompleter(SupportedCommand.REGISTER_CNS.getCommand()),
                         new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                        new ContractAddressCompleter()));
+                        new ContractAddressCompleter(client)));
 
         completers.add(
                 new ArgumentCompleter(
@@ -160,7 +160,7 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ContractAddressCompleter(),
+                            new ContractAddressCompleter(client),
                             new AccountCompleter(client)));
         }
 
