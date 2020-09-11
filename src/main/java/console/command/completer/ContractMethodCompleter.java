@@ -4,6 +4,7 @@ import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import java.util.List;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
@@ -15,6 +16,11 @@ import org.slf4j.LoggerFactory;
 public class ContractMethodCompleter extends StringsCompleterIgnoreCase {
 
     private static final Logger logger = LoggerFactory.getLogger(ContractMethodCompleter.class);
+    private Client client;
+
+    public ContractMethodCompleter(Client client) {
+        this.client = client;
+    }
 
     @Override
     public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
@@ -26,7 +32,9 @@ public class ContractMethodCompleter extends StringsCompleterIgnoreCase {
             String contractName = ContractCompiler.removeSolPostfix(ss[1]);
             String contractAddress = ss[2];
             try {
-                AbiAndBin abiAndBin = ContractCompiler.loadAbiAndBin(contractName, contractAddress);
+                AbiAndBin abiAndBin =
+                        ContractCompiler.loadAbiAndBin(
+                                client.getGroupId(), contractName, contractAddress);
                 List<ABIDefinition> abiDefinitions =
                         CodeGenUtils.loadContractAbiDefinition(abiAndBin.getAbi());
                 for (ABIDefinition definition : abiDefinitions) {
