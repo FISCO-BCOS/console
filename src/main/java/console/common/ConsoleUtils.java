@@ -5,7 +5,6 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
-import console.exception.CompileSolidityException;
 import io.netty.util.NetUtil;
 import java.io.File;
 import java.io.IOException;
@@ -261,7 +260,7 @@ public class ConsoleUtils {
             }
 
             String contractName = solFile.getName().split("\\.")[0];
-
+            System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
             /** ecdsa compile */
             SolidityCompiler.Result res =
                     SolidityCompiler.compile(solFile, false, true, ABI, BIN, INTERFACE, METADATA);
@@ -271,7 +270,12 @@ public class ConsoleUtils {
                     res.getOutput(),
                     res.getErrors());
             if (res.isFailed() || "".equals(res.getOutput())) {
-                throw new CompileSolidityException(" Compile error: " + res.getErrors());
+                System.out.println(
+                        "ERROR：Compile solidity "
+                                + solFile.getName()
+                                + " failed, error message: "
+                                + res.getErrors());
+                continue;
             }
 
             /** sm compile */
@@ -283,7 +287,12 @@ public class ConsoleUtils {
                     smRes.getOutput(),
                     smRes.getErrors());
             if (smRes.isFailed() || "".equals(smRes.getOutput())) {
-                throw new CompileSolidityException(" Compile SM error: " + res.getErrors());
+                System.out.println(
+                        "ERROR：Compile SM for solidity "
+                                + solFile.getName()
+                                + " failed, error message: "
+                                + res.getErrors());
+                continue;
             }
 
             CompilationResult result = CompilationResult.parse(res.getOutput());
@@ -312,6 +321,7 @@ public class ConsoleUtils {
                                     "-p", packageName,
                                     "-o", tempDirPath)
                             .toArray(new String[0]));
+            System.out.println("INFO: Compile SM for solidity " + solFile.getName() + " success.");
         }
     }
 
