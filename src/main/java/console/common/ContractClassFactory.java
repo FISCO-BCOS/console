@@ -136,6 +136,12 @@ public class ContractClassFactory {
         }
 
         JavaCompiler javac = ToolProvider.getSystemJavaCompiler();
+        /** Can not find JavaCompiler, the full JDK environment is required */
+        if (javac == null) {
+            throw new UnsupportedOperationException(
+                    "Can not find JavaCompiler, maybe it is currently a JRE environment, the full JDK environment is required.");
+        }
+
         int compileResult =
                 javac.run(
                         null,
