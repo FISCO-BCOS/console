@@ -106,23 +106,28 @@ class ContractAddressCompleter extends StringsCompleterIgnoreCase {
         String[] ss = buffer.split(" ");
 
         if (ss.length >= 2) {
+            try {
+                File solFile = PathUtils.getSolFile(ss[1]);
+                String contractName = solFile.getName().split("\\.")[0];
 
-            String contractName = ss[1];
+                List<DeployContractManager.DeployedContract> deployContractList =
+                        deployContractManager.getDeployContractList(
+                                deployContractManager.getGroupId(), contractName);
 
-            List<DeployContractManager.DeployedContract> deployContractList =
-                    deployContractManager.getDeployContractList(
-                            deployContractManager.getGroupId(), contractName);
-
-            for (DeployContractManager.DeployedContract deployedContract : deployContractList) {
-                candidates.add(
-                        new Candidate(
-                                AttributedString.stripAnsi(deployedContract.getContractAddress()),
-                                deployedContract.getContractAddress(),
-                                null,
-                                null,
-                                null,
-                                null,
-                                true));
+                for (DeployContractManager.DeployedContract deployedContract : deployContractList) {
+                    candidates.add(
+                            new Candidate(
+                                    AttributedString.stripAnsi(
+                                            deployedContract.getContractAddress()),
+                                    deployedContract.getContractAddress(),
+                                    null,
+                                    null,
+                                    null,
+                                    null,
+                                    true));
+                }
+            } catch (Exception e) {
+                logger.error("e: {}", e);
             }
         }
 
@@ -142,15 +147,12 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
 
         if (ss.length >= 3) {
             // TO DO
-            String contractName = PathUtils.removeSolPostfix(ss[1]);
-
             try {
-                File solFile =
-                        new File(ContractClassFactory.ABI_PATH + "/" + contractName + ".abi");
-                byte[] bytes = Files.readAllBytes(solFile.toPath());
+                File solFile = PathUtils.getSolFile(ss[1]);
+                String abi =
+                        ConsoleUtils.compileSolForABI(solFile.getName().split("\\.")[0], solFile);
 
-                ContractABIDefinition contractABIDefinition =
-                        ABIDefinitionFactory.loadABI(new String(bytes));
+                ContractABIDefinition contractABIDefinition = ABIDefinitionFactory.loadABI(abi);
                 Set<String> functionNames = contractABIDefinition.getFunctions().keySet();
 
                 for (String funName : functionNames) {
@@ -166,7 +168,7 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
                 }
 
             } catch (Exception e) {
-                logger.trace("e: ", e);
+                logger.error("e: {}", e);
             }
         }
 
@@ -327,7 +329,7 @@ class ConsoleFilesCompleter extends FilesCompleter {
                         }
                     });
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            // System.out.println(e.getMessage());
             logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
     }
@@ -453,10 +455,7 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new AggregateCompleter(
-                                    new ConsoleFilesCompleter(solDefaultPath)
-                                    // new Completers.DirectoriesCompleter(currentPath)
-                                    ),
+                            new ConsoleFilesCompleter(solDefaultPath),
                             new StringsCompleterIgnoreCase()));
         }
 
@@ -466,10 +465,7 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new AggregateCompleter(
-                                    new ConsoleFilesCompleter(solDefaultPath)
-                                    // new Completers.DirectoriesCompleter(currentPath)
-                                    ),
+                            new ConsoleFilesCompleter(solDefaultPath),
                             new ContractAddressCompleter(deployContractManager),
                             new ContractMethodCompleter(),
                             new StringsCompleterIgnoreCase()));
@@ -481,10 +477,7 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new AggregateCompleter(
-                                    new ConsoleFilesCompleter(solDefaultPath)
-                                    // new Completers.DirectoriesCompleter(currentPath)
-                                    ),
+                            new ConsoleFilesCompleter(solDefaultPath),
                             new StringsCompleterIgnoreCase()));
         }
 
@@ -504,10 +497,7 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new AggregateCompleter(
-                                    new ConsoleFilesCompleter(solDefaultPath)
-                                    // new Completers.DirectoriesCompleter(currentPath)
-                                    ),
+                            new ConsoleFilesCompleter(solDefaultPath),
                             new StringsCompleterIgnoreCase()));
         }
 
