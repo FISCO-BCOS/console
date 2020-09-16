@@ -9,6 +9,7 @@ import console.common.Common;
 import console.common.ContractClassFactory;
 import console.common.DeployContractManager;
 import console.common.HelpInfo;
+import console.common.PathUtils;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
 import console.precompiled.PrecompiledFace;
@@ -84,6 +85,7 @@ public class ConsoleInitializer {
         switch (args.length) {
             case 0: // bash start.sh
                 account = AccountTools.newAccount();
+                AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
                 break;
             case 1: // bash start.sh groupID
                 if ("-l".equals(args[0])) { // input by scanner for log
@@ -92,6 +94,7 @@ public class ConsoleInitializer {
                     groupID = setGroupID(args[0]);
                 }
                 account = AccountTools.newAccount();
+                AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
                 break;
             case 2: // bash start.sh groupID -l
                 if ("-l".equals(args[1])) { // input by scanner for log
@@ -102,6 +105,7 @@ public class ConsoleInitializer {
                     close();
                 }
                 account = AccountTools.newAccount();
+                AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
                 break;
             case 3: // ./start.sh groupID -pem pemName
                 handleAccountParam(args);
@@ -125,7 +129,7 @@ public class ConsoleInitializer {
             System.out.println(
                     " the loading private key is not available, private key type:"
                             + AccountTools.getPrivateKeyTypeAsString(account.getPrivateKeyType())
-                            + " ,console encryptType: "
+                            + " ,console configuration encryptType: "
                             + AccountTools.getPrivateKeyTypeAsString(EncryptType.encryptType));
         }
 
@@ -239,7 +243,6 @@ public class ConsoleInitializer {
             ECKeyPair keyPair = pem.getECKeyPair();
             Credentials credentials = Credentials.create(keyPair);
             account = new Account(credentials);
-            account.setTempAccount(false);
             account.setPrivateKeyType(AccountTools.getPrivateKeyType(pem.getPrivateKey()));
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
@@ -279,7 +282,6 @@ public class ConsoleInitializer {
                 keyPair = p12Manager.getECKeyPair();
                 Credentials credentials = Credentials.create(keyPair);
                 account = new Account(credentials);
-                account.setTempAccount(false);
                 account.setPrivateKeyType(
                         AccountTools.getPrivateKeyType(p12Manager.getPrivateKey()));
             } catch (Exception e) {

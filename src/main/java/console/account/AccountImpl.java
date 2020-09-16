@@ -41,7 +41,7 @@ public class AccountImpl implements AccountInterface {
         }
 
         String accountPath = params[1];
-        String password = null;
+        String password = "";
         if (params.length > 2) {
             password = params[2];
         }
@@ -130,7 +130,6 @@ public class AccountImpl implements AccountInterface {
                 System.out.println(
                         "\t "
                                 + account.getCredentials().getAddress()
-                                + (account.isTempAccount() ? " (temporary account)" : "")
                                 + (accountManager.isCurrentAccount(account) ? " <= " : ""));
                 break;
             }
@@ -140,57 +139,7 @@ public class AccountImpl implements AccountInterface {
             if (accountManager.isCurrentAccount(account)) {
                 continue;
             }
-            System.out.println(
-                    "\t "
-                            + account.getCredentials().getAddress()
-                            + (account.isTempAccount() ? " (temporary account)" : "")
-                            + (accountManager.isCurrentAccount(account) ? " <== " : ""));
-        }
-
-        System.out.println();
-    }
-
-    @Override
-    public void saveAccount(String[] params) {
-        if (params.length < 2) {
-            HelpInfo.promptHelp("saveAccount");
-            return;
-        }
-
-        if (params.length > 3) {
-            HelpInfo.promptHelp("saveAccount");
-            return;
-        }
-
-        // saveAccount [accountAddress] [savePath]
-        if ("-h".equals(params[1]) || "--help".equals(params[1])) {
-            HelpInfo.saveAccountHelp();
-            return;
-        }
-
-        String accountAddress = params[1];
-        accountAddress = Numeric.prependHexPrefix(accountAddress);
-
-        String path = null;
-        if (params.length > 2) {
-            path = params[2];
-        } else {
-            path = PathUtils.ACCOUNT_DIRECTORY;
-        }
-
-        try {
-            Account account = accountManager.getAccount(accountAddress);
-            if (account == null) {
-                System.out.println(" account:" + accountAddress + " not exist.");
-            } else {
-                AccountTools.saveAccount(account, path);
-                account.setTempAccount(false);
-                System.out.println(
-                        " save account: " + accountAddress + " successfully, path: " + path);
-            }
-        } catch (Exception e) {
-            logger.error("e: ", e);
-            System.out.println("load " + accountAddress + " failed, error: " + e.getMessage());
+            System.out.println("\t " + account.getCredentials().getAddress());
         }
 
         System.out.println();
@@ -206,6 +155,7 @@ public class AccountImpl implements AccountInterface {
 
         try {
             Account account = AccountTools.newAccount();
+            AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
             accountManager.addAccount(account);
             System.out.println(
                     " new account successfully, account address:"

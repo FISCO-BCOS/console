@@ -64,7 +64,6 @@ public class AccountTools {
         }
 
         Account account = new Account(credentials);
-        account.setTempAccount(true);
         account.setKeyPair(keyPair);
         account.setPrivateKeyType(EncryptType.encryptType);
         logger.info(" newAccount: {}", account);
@@ -127,7 +126,6 @@ public class AccountTools {
 
         Account account = new Account(credentials);
         account.setPrivateKeyType(privateKeyType);
-        account.setTempAccount(false);
         account.setKeyPair(keyPair);
 
         return account;
@@ -180,7 +178,7 @@ public class AccountTools {
             case EncryptType.SM2_TYPE:
                 return "sm";
             case EncryptType.ECDSA_TYPE:
-                return "ecc";
+                return "ecdsa";
             default:
                 {
                     return "unknown";
