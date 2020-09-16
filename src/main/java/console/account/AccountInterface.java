@@ -10,7 +10,5 @@ public interface AccountInterface {
 
     void listAccount(String[] params);
 
-    void saveAccount(String[] params);
-
     void newAccount(String[] params);
 }
