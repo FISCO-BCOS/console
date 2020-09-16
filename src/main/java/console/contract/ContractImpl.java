@@ -43,6 +43,7 @@ import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
+import org.fisco.bcos.web3j.protocol.core.methods.response.Code;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.fisco.bcos.web3j.tuples.generated.Tuple2;
 import org.fisco.bcos.web3j.tx.Contract;
@@ -50,6 +51,7 @@ import org.fisco.bcos.web3j.tx.RevertResolver;
 import org.fisco.bcos.web3j.tx.exceptions.ContractCallException;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.fisco.bcos.web3j.utils.Numeric;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -64,6 +66,10 @@ public class ContractImpl implements ContractFace {
     private DeployContractManager deployContractManager;
     private StaticGasProvider gasProvider;
     private Web3j web3j;
+
+    public Web3j getWeb3j() {
+        return this.web3j;
+    }
 
     @Override
     public void setGroupID(int groupID) {
@@ -469,7 +475,7 @@ public class ContractImpl implements ContractFace {
         }
         Method func = contractClass.getMethod(funcName, parameterType);
         Object[] argobj =
-                ContractClassFactory.getPrametersObject(
+                ContractClassFactory.getParametersObject(
                         funcName, parameterType, newParams, generic);
         if (argobj == null) {
             return;
@@ -736,7 +742,7 @@ public class ContractImpl implements ContractFace {
         }
         Method func = contractClass.getMethod(funcName, parameterType);
         Object[] argobj =
-                ContractClassFactory.getPrametersObject(
+                ContractClassFactory.getParametersObject(
                         funcName, parameterType, newParams, generic);
         if (argobj == null) {
             return;
@@ -883,8 +889,8 @@ public class ContractImpl implements ContractFace {
 
         // registerCNS contractPath contractAddress contractVersion
         String contractPath = params[1];
-        String contractAddress = params[2];
-        String contractVersion = params[3];
+        String contractVersion = params[2];
+        String contractAddress = params[3];
 
         Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
         if (!convertAddr.isValid()) {
@@ -894,8 +900,17 @@ public class ContractImpl implements ContractFace {
 
         File solFile = PathUtils.getSolFile(contractPath);
         String name = solFile.getName().split("\\.")[0];
-        String abi = "";
 
+        /** check if contractAddress exist */
+        Code code = getWeb3j().getCode(contractAddress).send();
+        if (code.getCode() == null || Numeric.cleanHexPrefix(code.getCode()).isEmpty()) {
+            ConsoleUtils.printJson(
+                    PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidTableNotExist));
+            System.out.println();
+            return;
+        }
+
+        String abi = "";
         if (solFile.getName().endsWith(PathUtils.SOL_POSTFIX)) {
             // solidity source file
             abi = ConsoleUtils.compileSolForABI(name, solFile);
@@ -924,6 +939,10 @@ public class ContractImpl implements ContractFace {
                         name,
                         contractVersion,
                         solFile.getName());
+            }
+
+            if (!ContractClassFactory.checkVersion(contractVersion)) {
+                return;
             }
 
             // register cns
