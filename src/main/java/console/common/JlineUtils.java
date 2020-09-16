@@ -81,43 +81,6 @@ class SwitchAccountCompleter extends StringsCompleterIgnoreCase {
     }
 }
 
-class SaveAccountCompleter extends StringsCompleterIgnoreCase {
-    private static final Logger logger = LoggerFactory.getLogger(SaveAccountCompleter.class);
-
-    private AccountManager accountManager;
-
-    public SaveAccountCompleter(final AccountManager accountManager) {
-        this.accountManager = accountManager;
-    }
-
-    public AccountManager getAccountManager() {
-        return this.accountManager;
-    }
-
-    public void setAccountManager(final AccountManager accountManager) {
-        this.accountManager = accountManager;
-    }
-
-    @Override
-    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
-
-        Collection<Account> values = accountManager.getAccountMap().values();
-        for (Account account : values) {
-            candidates.add(
-                    new Candidate(
-                            AttributedString.stripAnsi(account.getCredentials().getAddress()),
-                            account.getCredentials().getAddress(),
-                            null,
-                            null,
-                            null,
-                            null,
-                            true));
-        }
-
-        super.complete(reader, commandLine, candidates);
-    }
-}
-
 class ContractAddressCompleter extends StringsCompleterIgnoreCase {
 
     private static final Logger logger = LoggerFactory.getLogger(ContractAddressCompleter.class);
