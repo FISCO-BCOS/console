@@ -47,7 +47,7 @@ public class ConsoleInitializer {
                                 + ".");
             }
             String configFile = configUrl.getPath();
-            bcosSDK = new BcosSDK(configFile);
+            bcosSDK = BcosSDK.build(configFile);
             accountInfo = loadAccount(bcosSDK, args);
             if (args.length > 0) {
                 groupId = Integer.valueOf(args[0]);
