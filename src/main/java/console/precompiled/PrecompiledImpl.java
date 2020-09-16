@@ -398,7 +398,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                     || insertResult.getCode() == 1) {
                 System.out.println("Insert OK: ");
                 ConsoleUtils.printJson(insertResult.toString());
-                if (insertResult.getCode() > 0) {
+                if (insertResult.getCode() >= 0) {
                     System.out.println(insertResult.getCode() + " row affected.");
                 }
             } else {
@@ -461,7 +461,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println("Result of update " + tableName + " :");
                 ConsoleUtils.printJson(updateResult.toString());
             }
-            if (updateResult.getCode() > 0) {
+            if (updateResult.getCode() >= 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
             }
         } catch (ContractException e) {
@@ -501,7 +501,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             RetCode removeResult =
                     tableCRUDService.remove(table.getTableName(), table.getKey(), condition);
 
-            if (removeResult.getCode() > 0) {
+            if (removeResult.getCode() >= 0) {
                 System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
             }
         } catch (ContractException e) {

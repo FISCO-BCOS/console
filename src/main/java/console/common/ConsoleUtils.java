@@ -433,11 +433,13 @@ public class ConsoleUtils {
                             + supportedVersion.toVersionString();
             if (supportedVersion.getMajor() < minSupportVersion.getMajor()) {
                 System.out.println(errorMessage);
+                System.out.println();
                 return false;
             }
             if (supportedVersion.getMajor() == minSupportVersion.getMajor()
                     && supportedVersion.getMinor() < minSupportVersion.getMinor()) {
                 System.out.println(errorMessage);
+                System.out.println();
                 return false;
             }
             return true;

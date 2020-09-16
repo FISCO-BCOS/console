@@ -289,13 +289,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         // send transaction
         else {
-            logger.debug(
-                    "sendTransactionAndGetResponse request, params: {}, contractAddress: {}, contractName: {}, functionName: {}, paramSize:{}",
+            logger.trace(
+                    "sendTransactionAndGetResponse request, params: {}, contractAddress: {}, contractName: {}, functionName: {}, paramSize:{},  abiDefinition: {}",
                     callParams.toString(),
                     contractAddress,
                     contractName,
                     functionName,
-                    callParams.size());
+                    callParams.size(),
+                    abiDefinition.toString());
             TransactionResponse response =
                     assembleTransactionManager.sendTransactionWithStringParamsAndGetResponse(
                             contractAddress, abiAndBin.getAbi(), functionName, callParams);
@@ -379,7 +380,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String contractAddress = "";
         try {
             if (contractVersion != null) {
-                contractAddress = cnsService.getContractAddress(contractName, contractVersion);
+                List<CnsInfo> cnsInfos =
+                        cnsService.selectByNameAndVersion(contractName, contractVersion);
+                if (cnsInfos == null || cnsInfos.isEmpty()) {
+                    System.out.println(
+                            "Can't find \""
+                                    + contractName
+                                    + ":"
+                                    + contractVersion
+                                    + "\" information from the cns list! Please deploy it by cns firstly!\n");
+                    return;
+                }
             } else {
                 List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
                 if (cnsInfos.size() == 0) {
