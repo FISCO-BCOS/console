@@ -377,9 +377,6 @@ public class ConsoleClient {
                     case "switchAccount":
                         accountInterface.switchAccount(params);
                         break;
-                    case "saveAccount":
-                        accountInterface.saveAccount(params);
-                        break;
                     default:
                         System.out.println(
                                 "Undefined command: \"" + params[0] + "\". Try \"help\".\n");

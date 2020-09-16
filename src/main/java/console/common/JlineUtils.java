@@ -103,10 +103,6 @@ class SaveAccountCompleter extends StringsCompleterIgnoreCase {
 
         Collection<Account> values = accountManager.getAccountMap().values();
         for (Account account : values) {
-            if (!account.isTempAccount()) {
-                continue;
-            }
-
             candidates.add(
                     new Candidate(
                             AttributedString.stripAnsi(account.getCredentials().getAddress()),
@@ -460,7 +456,6 @@ public class JlineUtils {
                         "getAccountStatus",
                         "newAccount",
                         "listAccount",
-                        "saveAccount",
                         "newAccount",
                         "quit",
                         "exit",
@@ -537,16 +532,6 @@ public class JlineUtils {
                     new ArgumentCompleter(
                             new StringsCompleter(command),
                             new SwitchAccountCompleter(accountManager),
-                            new StringsCompleterIgnoreCase()));
-        }
-
-        commands = Arrays.asList("saveAccount");
-
-        for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new SaveAccountCompleter(accountManager),
                             new StringsCompleterIgnoreCase()));
         }
 

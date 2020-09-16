@@ -133,9 +133,6 @@ public class HelpInfo {
             case "listAccount":
                 listAccountHelp();
                 break;
-            case "saveAccount":
-                saveAccountHelp();
-                break;
             case "quit":
             case "q":
                 quitHelp();
@@ -830,7 +827,8 @@ public class HelpInfo {
     }
 
     public static void newAccountHelp() {
-        System.out.println("create a new account for the transaction signature");
+        System.out.println(
+                "create a new account for the transaction signature, the account private file will be recorded in the \'accounts/\' directory automatically");
         System.out.println("Usage: newAccount");
         System.out.println();
     }
@@ -847,15 +845,6 @@ public class HelpInfo {
         System.out.println("switch account for the transaction signature");
         System.out.println("Usage: switchAccount accountAddress");
         System.out.println("accountAddress -- The address of the account to switch");
-        System.out.println();
-    }
-
-    public static void saveAccountHelp() {
-        System.out.println("save the account to the file");
-        System.out.println("Usage: saveAccount accountAddress [saveDir]");
-        System.out.println("accountAddress -- The address of the account to save");
-        System.out.println(
-                "saveDir -- (optional) The directory of the account file to save, default: accounts/");
         System.out.println();
     }
 

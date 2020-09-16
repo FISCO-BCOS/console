@@ -10,8 +10,6 @@ public class Account {
     private KeyPair keyPair;
     /** EncryptType.SM2_TYPE or EncryptType.ECDSA */
     private int privateKeyType;
-    /** if this account temporary account */
-    private boolean isTempAccount = false;
 
     public Account(Credentials credentials) {
         this.credentials = credentials;
@@ -23,14 +21,6 @@ public class Account {
 
     public void setCredentials(Credentials credentials) {
         this.credentials = credentials;
-    }
-
-    public boolean isTempAccount() {
-        return isTempAccount;
-    }
-
-    public void setTempAccount(boolean tempAccount) {
-        isTempAccount = tempAccount;
     }
 
     public int getPrivateKeyType() {
@@ -59,8 +49,6 @@ public class Account {
                 + credentials.getAddress()
                 + ", privateKeyType="
                 + privateKeyType
-                + ", tempAccount="
-                + isTempAccount
                 + '}';
     }
 
