@@ -41,7 +41,7 @@ public class AccountImpl implements AccountInterface {
         }
 
         String accountPath = params[1];
-        String password = null;
+        String password = "";
         if (params.length > 2) {
             password = params[2];
         }
