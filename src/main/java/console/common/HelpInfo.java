@@ -200,7 +200,7 @@ public class HelpInfo {
         System.out.println("Usage: listDeployContractAddress [contractName] [offset] [count]");
         System.out.println("contractName -- the contract name");
         System.out.println("offset -- (optional) the start index of results (default 0).");
-        System.out.println("count -- (optional) the number of results (default 10).");
+        System.out.println("count -- (optional) the number of results (default 20).");
         System.out.println();
     }
 
