@@ -62,5 +62,5 @@ if [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
-   java -cp "apps/*:conf/:lib/*:classes/:accounts/" console.NonInteractiveConsoleClient $@
+   java -cp "apps/*:conf/:lib/*:classes/:accounts/" console.NonInteractiveConsoleClient "$@"
 fi
