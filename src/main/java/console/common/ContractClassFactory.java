@@ -357,7 +357,7 @@ public class ContractClassFactory {
     }
 
     @SuppressWarnings("rawtypes")
-    public static Object[] getPrametersObject(
+    public static Object[] getParametersObject(
             String funcName, Class[] type, String[] params, String[] generics)
             throws ConsoleMessageException {
         if (type.length != params.length) {
