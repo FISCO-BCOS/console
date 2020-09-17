@@ -3,6 +3,7 @@ package console.precompiled.model;
 import console.common.Common;
 import console.exception.ConsoleMessageException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -370,15 +371,20 @@ public class CRUDParseUtils {
         }
     }
 
-    private static Condition getWhereClause(Expression expr, Condition condition) {
-
+    private static Condition getWhereClause(Expression expr, Condition condition)
+            throws ConsoleMessageException {
+        Set<String> keySet = new HashSet<>();
+        Set<String> conflictKeys = new HashSet<>();
         expr.accept(
                 new ExpressionVisitorAdapter() {
-
                     @Override
                     protected void visitBinaryExpression(BinaryExpression expr) {
                         if (expr instanceof ComparisonOperator) {
                             String key = trimQuotes(expr.getLeftExpression().toString());
+                            if (keySet.contains(key)) {
+                                conflictKeys.add(key);
+                            }
+                            keySet.add(key);
                             String operation = expr.getStringExpression();
                             String value = trimQuotes(expr.getRightExpression().toString());
                             switch (operation) {
@@ -407,6 +413,11 @@ public class CRUDParseUtils {
                         super.visitBinaryExpression(expr);
                     }
                 });
+        if (conflictKeys.size() > 0) {
+            throw new ConsoleMessageException(
+                    "Wrong condition! There cannot be the same field in the same condition! The conflicting field is: "
+                            + conflictKeys.toString());
+        }
         return condition;
     }
 
