@@ -258,53 +258,65 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractAddress,
             String functionName,
             List<String> callParams)
-            throws IOException, CodeGenException, TransactionBaseException, ABICodecException,
-                    CompileContractException {
-        // load bin and abi
-        AbiAndBin abiAndBin =
-                ContractCompiler.loadAbiAndBin(client.getGroupId(), contractName, contractAddress);
-        // call
-        ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
-        if (abiDefinition != null && abiDefinition.isConstant()) {
-            logger.debug(
-                    "sendCall request, params: {}, contractAddress: {}, contractName: {}, functionName:{}, paramSize: {}",
-                    callParams.toString(),
-                    contractAddress,
-                    contractName,
-                    functionName,
-                    callParams.size());
-            CallResponse response =
-                    assembleTransactionManager.sendCallWithStringParams(
-                            client.getCryptoInterface().getCryptoKeyPair().getAddress(),
-                            contractAddress,
-                            abiAndBin.getAbi(),
-                            functionName,
-                            callParams);
-            if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
-                System.out.println("Return values: ");
-                ConsoleUtils.printJson(response.getValues());
+            throws IOException, CodeGenException, ABICodecException, CompileContractException {
+        try {
+            // load bin and abi
+            AbiAndBin abiAndBin =
+                    ContractCompiler.loadAbiAndBin(
+                            client.getGroupId(), contractName, contractAddress);
+            // call
+            ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
+            if (abiDefinition != null && abiDefinition.isConstant()) {
+                logger.debug(
+                        "sendCall request, params: {}, contractAddress: {}, contractName: {}, functionName:{}, paramSize: {}",
+                        callParams.toString(),
+                        contractAddress,
+                        contractName,
+                        functionName,
+                        callParams.size());
+                CallResponse response =
+                        assembleTransactionManager.sendCallWithStringParams(
+                                client.getCryptoInterface().getCryptoKeyPair().getAddress(),
+                                contractAddress,
+                                abiAndBin.getAbi(),
+                                functionName,
+                                callParams);
+                if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+                    System.out.println("Return values: ");
+                    ConsoleUtils.printJson(response.getValues());
+                }
+                System.out.println("Return message: " + response.getReturnMessage());
+                System.out.println("Return code: " + response.getReturnCode());
             }
-            System.out.println("Return message: " + response.getReturnMessage());
-            System.out.println("Return code: " + response.getReturnCode());
-        }
-        // send transaction
-        else {
-            logger.trace(
-                    "sendTransactionAndGetResponse request, params: {}, contractAddress: {}, contractName: {}, functionName: {}, paramSize:{},  abiDefinition: {}",
-                    callParams.toString(),
-                    contractAddress,
-                    contractName,
-                    functionName,
-                    callParams.size(),
-                    abiDefinition.toString());
-            TransactionResponse response =
-                    assembleTransactionManager.sendTransactionWithStringParamsAndGetResponse(
-                            contractAddress, abiAndBin.getAbi(), functionName, callParams);
-            System.out.println("hash: " + response.getTransactionReceipt().getTransactionHash());
-            System.out.println("Receipt message: " + response.getReceiptMessages());
-            System.out.println("Return message: " + response.getReturnMessage());
-            if (response.getEvents() != null && !response.getEvents().equals("")) {
-                System.out.println("Event: " + response.getEvents());
+            // send transaction
+            else {
+                logger.trace(
+                        "sendTransactionAndGetResponse request, params: {}, contractAddress: {}, contractName: {}, functionName: {}, paramSize:{},  abiDefinition: {}",
+                        callParams.toString(),
+                        contractAddress,
+                        contractName,
+                        functionName,
+                        callParams.size(),
+                        abiDefinition.toString());
+                TransactionResponse response =
+                        assembleTransactionManager.sendTransactionWithStringParamsAndGetResponse(
+                                contractAddress, abiAndBin.getAbi(), functionName, callParams);
+                System.out.println(
+                        "hash: " + response.getTransactionReceipt().getTransactionHash());
+                System.out.println("Receipt message: " + response.getReceiptMessages());
+                System.out.println("Return message: " + response.getReturnMessage());
+                if (response.getEvents() != null && !response.getEvents().equals("")) {
+                    System.out.println("Event: " + response.getEvents());
+                }
+            }
+
+        } catch (TransactionBaseException e) {
+            System.out.println(
+                    "call for " + contractName + " failed, contractAddress is " + contractAddress);
+            if (e.getRetCode() != null) {
+                ConsoleUtils.printJson(e.getRetCode().toString());
+            } else {
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -397,6 +409,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                     + "\" information from the cns list! Please deploy it by cns firstly!\n");
                     return;
                 }
+                contractAddress = cnsInfos.get(0).getAddress();
             } else {
                 List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
                 if (cnsInfos.size() == 0) {

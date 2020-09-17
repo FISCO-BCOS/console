@@ -174,9 +174,9 @@ public class CRUDParseUtils {
             return false;
         } else {
             String keyField = tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME);
-            String[] allFields = new String[itemArr.length];
-            allFields[0] = keyField;
             String[] valueFields = tableDesc.get(PrecompiledConstant.VALUE_FIELD_NAME).split(",");
+            String[] allFields = new String[valueFields.length + 1];
+            allFields[0] = keyField;
             System.arraycopy(valueFields, 0, allFields, 1, valueFields.length);
             for (int i = 0; i < itemArr.length; i++) {
                 entry.getFieldNameToValue().put(allFields[i], trimQuotes(itemArr[i]));

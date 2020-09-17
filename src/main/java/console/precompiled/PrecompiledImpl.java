@@ -204,7 +204,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         String contractAddr = params[1];
         String userAddr = params[2];
         ConsoleUtils.printJson(
-                contractLifeCycleService.grantManager(contractAddr, userAddr).getMessage());
+                contractLifeCycleService.grantManager(contractAddr, userAddr).toString());
     }
 
     @Override
@@ -244,8 +244,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
             } else {
                 System.out.println("Create '" + table.getTableName() + "' failed ");
-                System.out.println(" ret message: " + result.getMessage());
-                System.out.println(" ret code: " + result.getCode());
+                ConsoleUtils.printJson(result.toString());
             }
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
@@ -452,6 +451,10 @@ public class PrecompiledImpl implements PrecompiledFace {
                 return;
             }
             String keyName = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
+            if (entry.getFieldNameToValue().containsKey(keyName)) {
+                System.out.println("Please don't set the key field \"" + keyName + "\".");
+                return;
+            }
             table.setKey(keyName);
             handleKey(table, condition);
             RetCode updateResult =
