@@ -11,6 +11,7 @@ import console.common.ContractClassFactory;
 import console.common.DeployContractManager;
 import console.common.HelpInfo;
 import console.common.PathUtils;
+import console.common.StatusCodeLink;
 import console.common.TxDecodeUtil;
 import console.exception.CompileSolidityException;
 import console.exception.ConsoleMessageException;
@@ -20,9 +21,9 @@ import io.bretty.console.table.Table;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +46,11 @@ import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
 import org.fisco.bcos.web3j.protocol.core.methods.response.Code;
 import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
-import org.fisco.bcos.web3j.tuples.generated.Tuple2;
+import org.fisco.bcos.web3j.protocol.exceptions.TransactionException;
 import org.fisco.bcos.web3j.tx.Contract;
-import org.fisco.bcos.web3j.tx.RevertResolver;
-import org.fisco.bcos.web3j.tx.exceptions.ContractCallException;
 import org.fisco.bcos.web3j.tx.gas.ContractGasProvider;
 import org.fisco.bcos.web3j.tx.gas.StaticGasProvider;
+import org.fisco.bcos.web3j.tx.txdecode.BaseException;
 import org.fisco.bcos.web3j.utils.Numeric;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
@@ -461,7 +461,7 @@ public class ContractImpl implements ContractFace {
                             + " with "
                             + newParams.length
                             + " parameter"
-                            + " is undefined of the contract.");
+                            + " is undefined in the contract.");
         }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
@@ -485,74 +485,17 @@ public class ContractImpl implements ContractFace {
 
         Object result = remoteCall.send();
         if (result instanceof TransactionReceipt) {
-            TransactionReceipt receipt = (TransactionReceipt) result;
-
-            Tuple2<Boolean, String> booleanStringTuple2 =
-                    RevertResolver.tryResolveRevertMessage(receipt);
-
-            if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
-                throw new ContractCallException(
-                        "The execution of the contract rolled back"
-                                + (booleanStringTuple2.getValue1()
-                                        ? ", " + booleanStringTuple2.getValue2()
-                                        : "")
-                                + ".");
-            }
-            if (StatusCode.CallAddressError.equals(receipt.getStatus())) {
-                System.out.println("The contract address is incorrect.");
-                System.out.println();
-                return;
-            }
-            if (!StatusCode.Success.equals(receipt.getStatus())) {
-                System.out.println(
-                        StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage())
-                                + (booleanStringTuple2.getValue1()
-                                        ? ", " + booleanStringTuple2.getValue2()
-                                        : "")
-                                + ".");
-                System.out.println();
-                return;
-            }
-            String output = receipt.getOutput();
-            if (!"0x".equals(output)) {
-                int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
-                if (code == Common.TableExist) {
-                    ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.TableExist));
-                    System.out.println();
-                    return;
-                }
-                if (code == Common.PermissionCode) {
-                    ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
-                    System.out.println();
-                    return;
-                }
-            }
-        }
-        String returnObject =
-                ContractClassFactory.getReturnObject(
-                        contractClass, funcName, parameterType, result);
-        if (returnObject == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
-            return;
-        }
-        System.out.println(returnObject);
-        if (result instanceof TransactionReceipt) {
             AbiAndBin abiAndBin = TxDecodeUtil.readAbiAndBin(name);
-            String abi = abiAndBin.getAbi();
-            TransactionReceipt receipt = (TransactionReceipt) result;
-            String version = PrecompiledCommon.BCOS_VERSION;
-            if (version == null
-                    || PrecompiledCommon.BCOS_RC1.equals(version)
-                    || PrecompiledCommon.BCOS_RC2.equals(version)
-                    || PrecompiledCommon.BCOS_RC3.equals(version)) {
-                TxDecodeUtil.setInputForReceipt(web3j, receipt);
+            handleTransactionReceipt(abiAndBin.getAbi(), (TransactionReceipt) result);
+        } else {
+            String returnObject =
+                    ContractClassFactory.getReturnObject(
+                            contractClass, funcName, parameterType, result);
+            if (returnObject == null) {
+                HelpInfo.promptNoFunc(params[1], funcName, params.length - 4);
+                return;
             }
-            if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
-                TxDecodeUtil.decodeOutput(abi, receipt);
-            }
-            if (receipt.getLogs() != null && receipt.getLogs().size() != 0) {
-                TxDecodeUtil.decodeEventLog(abi, receipt);
-            }
+            System.out.println(returnObject);
         }
         System.out.println();
     }
@@ -727,7 +670,7 @@ public class ContractImpl implements ContractFace {
                             + " with "
                             + newParams.length
                             + " parameter"
-                            + " is undefined of the contract.");
+                            + " is undefined in the contract.");
         }
         String[] generic = new String[method.getParameterCount()];
         Type[] classType = method.getParameterTypes();
@@ -749,72 +692,18 @@ public class ContractImpl implements ContractFace {
         }
         RemoteCall<?> remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
         Object result = remoteCall.send();
+        logger.info(" ====>>> " + result.getClass().getName());
         if (result instanceof TransactionReceipt) {
-            TransactionReceipt receipt = (TransactionReceipt) result;
-
-            Tuple2<Boolean, String> booleanStringTuple2 =
-                    RevertResolver.tryResolveRevertMessage(receipt);
-            if (booleanStringTuple2.getValue1()) {
-                throw new ContractCallException(booleanStringTuple2.getValue2());
-            }
-
-            if (StatusCode.RevertInstruction.equals(receipt.getStatus())) {
-                throw new ContractCallException(
-                        "The execution of the contract rolled back"
-                                + (booleanStringTuple2.getValue1()
-                                        ? ", " + booleanStringTuple2.getValue2()
-                                        : "")
-                                + ".");
-            }
-            if (StatusCode.CallAddressError.equals(receipt.getStatus())) {
-                System.out.println("The contract address is incorrect.");
-                System.out.println();
+            handleTransactionReceipt(abi, (TransactionReceipt) result);
+        } else {
+            String returnObject =
+                    ContractClassFactory.getReturnObject(
+                            contractClass, funcName, parameterType, result);
+            if (returnObject == null) {
+                HelpInfo.promptNoFunc(params[1], funcName, params.length - 3);
                 return;
             }
-            if (!StatusCode.Success.equals(receipt.getStatus())) {
-                System.out.println(
-                        StatusCode.getStatusMessage(receipt.getStatus(), receipt.getMessage()));
-                System.out.println();
-                return;
-            }
-            String output = receipt.getOutput();
-            if (!"0x".equals(output)) {
-                int code = new BigInteger(output.substring(2, output.length()), 16).intValue();
-                if (code == Common.TableExist) {
-                    ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.TableExist));
-                    System.out.println();
-                    return;
-                }
-                if (code == Common.PermissionCode) {
-                    ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
-                    System.out.println();
-                    return;
-                }
-            }
-        }
-        String returnObject =
-                ContractClassFactory.getReturnObject(
-                        contractClass, funcName, parameterType, result);
-        if (returnObject == null) {
-            HelpInfo.promptNoFunc(params[1], funcName, params.length - 3);
-            return;
-        }
-        System.out.println(returnObject);
-        if (result instanceof TransactionReceipt) {
-            TransactionReceipt receipt = (TransactionReceipt) result;
-            String bcosVersion = PrecompiledCommon.BCOS_VERSION;
-            if (bcosVersion == null
-                    || PrecompiledCommon.BCOS_RC1.equals(bcosVersion)
-                    || PrecompiledCommon.BCOS_RC2.equals(bcosVersion)
-                    || PrecompiledCommon.BCOS_RC3.equals(bcosVersion)) {
-                TxDecodeUtil.setInputForReceipt(web3j, receipt);
-            }
-            if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
-                TxDecodeUtil.decodeOutput(abi, receipt);
-            }
-            if (receipt.getLogs() != null && receipt.getLogs().size() != 0) {
-                TxDecodeUtil.decodeEventLog(abi, receipt);
-            }
+            System.out.println(returnObject);
         }
         System.out.println();
     }
@@ -964,6 +853,55 @@ public class ContractImpl implements ContractFace {
             } else {
                 throw e;
             }
+        }
+    }
+
+    public void handleTransactionReceipt(String abi, TransactionReceipt receipt)
+            throws IOException, BaseException, TransactionException {
+
+        System.out.println("transaction hash: " + receipt.getTransactionHash());
+
+        /*
+        printf the whole transaction receipt
+         */
+        // ConsoleUtils.singleLine();
+        // System.out.println("transaction receipt:");
+        // ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(receipt));
+
+        ConsoleUtils.singleLine();
+        System.out.println("status: " + receipt.getStatus());
+        if (StatusCode.Success.equals(receipt.getStatus())) {
+            System.out.println("description: " + "transaction executed successfully");
+        } else {
+            String errorMessage = StatusCode.getStatusMessage(receipt.getStatus());
+            /*
+            decode revert message in format of Error(string)
+             */
+            //            Tuple2<Boolean, String> hasRevertMsg =
+            // RevertResolver.tryResolveRevertMessage(receipt);
+            //            if (hasRevertMsg.getValue1()) {
+            //                errorMessage = (errorMessage + ", " + hasRevertMsg.getValue2());
+            //            }
+            System.out.println(
+                    "description: "
+                            + errorMessage
+                            + " ,please refer to "
+                            + StatusCodeLink.txReceiptStatusLink);
+            return;
+        }
+
+        String version = PrecompiledCommon.BCOS_VERSION;
+        if (version == null
+                || PrecompiledCommon.BCOS_RC1.equals(version)
+                || PrecompiledCommon.BCOS_RC2.equals(version)
+                || PrecompiledCommon.BCOS_RC3.equals(version)) {
+            TxDecodeUtil.setInputForReceipt(web3j, receipt);
+        }
+        if (!Common.EMPTY_OUTPUT.equals(receipt.getOutput())) {
+            TxDecodeUtil.decodeOutput(abi, receipt);
+        }
+        if (receipt.getLogs() != null && receipt.getLogs().size() != 0) {
+            TxDecodeUtil.decodeEventLog(abi, receipt);
         }
     }
 }
