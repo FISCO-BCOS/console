@@ -337,8 +337,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     ContractCompiler.loadAbiAndBin(
                             client.getGroupId(), contractName, contractAddress);
             // register cns
-            cnsService.registerCNS(
-                    contractName, contractVersion, contractAddress, abiAndBin.getAbi());
+            ConsoleUtils.printJson(
+                    cnsService
+                            .registerCNS(
+                                    contractName,
+                                    contractVersion,
+                                    contractAddress,
+                                    abiAndBin.getAbi())
+                            .toString());
         } catch (ContractException e) {
             throw new ConsoleMessageException(
                     "deployByCNS failed for " + e.getMessage() + ", code: " + e.getErrorCode(), e);
