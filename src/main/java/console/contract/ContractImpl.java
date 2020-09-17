@@ -1,7 +1,5 @@
 package console.contract;
 
-import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
-
 import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
@@ -18,17 +16,6 @@ import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
@@ -39,8 +26,6 @@ import org.fisco.bcos.web3j.precompile.cns.CnsInfo;
 import org.fisco.bcos.web3j.precompile.cns.CnsService;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.precompile.exception.PrecompileMessageException;
-import org.fisco.bcos.web3j.precompile.permission.PermissionInfo;
-import org.fisco.bcos.web3j.precompile.permission.PermissionService;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.StatusCode;
 import org.fisco.bcos.web3j.protocol.core.RemoteCall;
@@ -56,6 +41,20 @@ import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 
 public class ContractImpl implements ContractFace {
 
@@ -132,7 +131,7 @@ public class ContractImpl implements ContractFace {
                             params,
                             2);
             Contract contract = (Contract) remoteCall.send();
-            TransactionReceipt transactionReceipt = contract.getTransactionReceipt().get();
+            // TransactionReceipt transactionReceipt = contract.getTransactionReceipt().get();
             String contractAddress = contract.getContractAddress();
             System.out.println("contract address: " + contractAddress);
             System.out.println();
@@ -514,6 +513,11 @@ public class ContractImpl implements ContractFace {
             HelpInfo.promptHelp("deployByCNS");
             return;
         }
+
+        /*
+        The node performs permission detection, remove it from console
+         */
+        /*
         PermissionService permissionTableService =
                 new PermissionService(web3j, accountManager.getCurrentAccountCredentials());
         List<PermissionInfo> permissions = permissionTableService.listCNSManager();
@@ -533,7 +537,7 @@ public class ContractImpl implements ContractFace {
             ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
             System.out.println();
             return;
-        }
+        }*/
 
         String contractPath = params[1];
         File solFile = PathUtils.getSolFile(contractPath);
