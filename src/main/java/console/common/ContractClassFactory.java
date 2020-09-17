@@ -173,7 +173,7 @@ public class ContractClassFactory {
             throw new ConsoleMessageException(
                     "The method constructor with "
                             + contractClass.getName()
-                            + " is undefined of the contract.");
+                            + " is undefined in the contract.");
         }
 
         Type[] classType = method.getParameterTypes();
@@ -182,7 +182,7 @@ public class ContractClassFactory {
                     "The method constructor with "
                             + (params.length - num)
                             + " parameter"
-                            + " is undefined of the contract.");
+                            + " is undefined in the contract.");
         }
         String[] generic = new String[method.getParameterCount()];
         for (int i = 0; i < classType.length; i++) {
@@ -367,7 +367,7 @@ public class ContractClassFactory {
                             + " with "
                             + params.length
                             + " parameter"
-                            + " is undefined of the contract.");
+                            + " is undefined in the contract.");
         }
         Object[] obj = new Object[params.length];
         for (int i = 0; i < obj.length; i++) {
@@ -548,7 +548,8 @@ public class ContractClassFactory {
 
                 } else if (typeName.contains("TransactionReceipt")) {
                     TransactionReceipt resultTx = (TransactionReceipt) result;
-                    return "transaction hash: " + resultTx.getTransactionHash();
+                    return "";
+                    // return "transaction hash: " + resultTx.getTransactionHash();
                 } else if ("org.fisco.bcos.web3j.protocol.core.RemoteCall<byte[]>"
                         .equals(typeName)) {
                     byte[] bresult = (byte[]) result;
