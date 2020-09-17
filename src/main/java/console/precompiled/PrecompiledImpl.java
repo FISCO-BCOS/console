@@ -400,6 +400,9 @@ public class PrecompiledImpl implements PrecompiledFace {
                 ConsoleUtils.printJson(insertResult.toString());
                 if (insertResult.getCode() >= 0) {
                     System.out.println(insertResult.getCode() + " row affected.");
+                } else {
+                    System.out.println("Result of insert for " + table.getTableName() + ":");
+                    ConsoleUtils.printJson(insertResult.toString());
                 }
             } else {
                 System.out.println("Insert failed");
@@ -453,17 +456,13 @@ public class PrecompiledImpl implements PrecompiledFace {
             handleKey(table, condition);
             RetCode updateResult =
                     tableCRUDService.update(table.getTableName(), table.getKey(), entry, condition);
-            if (updateResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
-                    || updateResult.getCode() == 1) {
-                System.out.println("Update OK: ");
-                ConsoleUtils.printJson(updateResult.toString());
+            if (updateResult.getCode() >= 0) {
+                System.out.println(updateResult.getCode() + " row affected.");
             } else {
                 System.out.println("Result of update " + tableName + " :");
                 ConsoleUtils.printJson(updateResult.toString());
             }
-            if (updateResult.getCode() >= 0) {
-                System.out.println(updateResult.getCode() + " row affected.");
-            }
+
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
                     table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
@@ -503,6 +502,9 @@ public class PrecompiledImpl implements PrecompiledFace {
 
             if (removeResult.getCode() >= 0) {
                 System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
+            } else {
+                System.out.println("Result of Remove " + table.getTableName() + " :");
+                ConsoleUtils.printJson(removeResult.toString());
             }
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
