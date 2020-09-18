@@ -22,6 +22,7 @@ import org.fisco.bcos.sdk.channel.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.utils.Host;
+import org.fisco.bcos.sdk.utils.Numeric;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -35,6 +36,8 @@ public class ConsoleUtils {
     public static final String JAVA_PATH = "contracts/sdk/java/";
     public static final String ABI_PATH = "contracts/sdk/abi/";
     public static final String BIN_PATH = "contracts/sdk/bin/";
+    public static final int ADDRESS_SIZE = 160;
+    public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
@@ -464,5 +467,10 @@ public class ConsoleUtils {
                         return true;
                     }
                 });
+    }
+
+    public static boolean isValidAddress(String address) {
+        String addressNoPrefix = Numeric.cleanHexPrefix(address);
+        return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX;
     }
 }

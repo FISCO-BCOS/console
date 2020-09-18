@@ -41,6 +41,9 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
             File[] contractAddressFiles = contractDir.listFiles();
             ConsoleUtils.sortFiles(contractAddressFiles);
             for (File contractAddressFile : contractAddressFiles) {
+                if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                    continue;
+                }
                 candidates.add(
                         new Candidate(
                                 AttributedString.stripAnsi(contractAddressFile.getName()),
