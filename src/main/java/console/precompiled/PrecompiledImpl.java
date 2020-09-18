@@ -319,10 +319,20 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + ", current length of the table is "
                             + table.getTableName().length());
         }
-        if (table.getKey().length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
-            System.out.println("Invalid key name " + table.getKey());
+        if (table.getKeyFieldName() != null
+                && table.getKeyFieldName().length()
+                        > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
+            System.out.println("Invalid key \"" + table.getKeyFieldName() + "\"");
             System.out.println(
-                    "* The key length must be no greater than "
+                    "* The length of the key must be no greater than "
+                            + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
+                            + " , current length of the table is "
+                            + table.getKeyFieldName().length());
+        }
+        if (table.getKey().length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
+            System.out.println("Invalid key value " + table.getKey());
+            System.out.println(
+                    "* The value of the key must be no greater than "
                             + PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH
                             + " , current length of the table is "
                             + table.getKey().length());
@@ -330,7 +340,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (table.getValueFields() != null) {
             for (String field : table.getValueFields()) {
                 if (field.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-                    System.out.println("Invalid filed " + field);
+                    System.out.println("Invalid field: " + field);
 
                     System.out.println(
                             "* Field length must be no greater than "
@@ -343,8 +353,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (entry == null) {
             return;
         }
-        Map<String, String> filedNameToValue = entry.getFieldNameToValue();
-        for (String key : filedNameToValue.keySet()) {
+        Map<String, String> fieldNameToValue = entry.getFieldNameToValue();
+        for (String key : fieldNameToValue.keySet()) {
             if (key.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
                 System.out.println("Invalid field name " + key);
                 System.out.println(
@@ -353,7 +363,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                                 + ", current length:"
                                 + key.length());
             }
-            String value = filedNameToValue.get(key);
+            String value = fieldNameToValue.get(key);
             if (value.length() > PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
                 System.out.println("Invalid field value for " + key);
                 System.out.println(
