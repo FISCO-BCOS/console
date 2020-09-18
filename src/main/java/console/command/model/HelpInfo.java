@@ -597,12 +597,11 @@ public class HelpInfo {
 
     public static void loadAccountHelp() {
         System.out.println("Load account for the transaction signature");
-        System.out.println("Usage: \nloadAccount accountPath accountFormat [password]");
+        System.out.println("Usage: \nloadAccount accountPath accountFormat");
         System.out.println(
                 "* accountPath[Required] -- The path of the account key file, support .pem and .p12 format file; or the account address");
         System.out.println(
                 "* accountFormat[Required] -- The account file format, support \\\"pem\\\" and \\\"p12\\\" now!\"");
-        System.out.println("* password[Required] -- Password used to access the account file");
     }
 
     public static void newAccountHelp() {

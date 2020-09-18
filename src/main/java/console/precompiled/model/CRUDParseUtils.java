@@ -66,6 +66,7 @@ public class CRUDParseUtils {
             String type = index.getType().toLowerCase();
             if (PRIMARY_KEY.equals(type)) {
                 table.setKey(index.getColumnsNames().get(0));
+                table.setKeyFieldName(index.getColumnsNames().get(0));
             } else {
                 throw new ConsoleMessageException(
                         "Please provide only one primary key for the table.");

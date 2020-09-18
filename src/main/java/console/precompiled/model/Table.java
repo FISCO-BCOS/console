@@ -6,6 +6,7 @@ public class Table {
 
     private String tableName;
     private String key;
+    private String keyFieldName;
     private List<String> valueFields;
     private String optional = "";
 
@@ -13,6 +14,14 @@ public class Table {
 
     public String getTableName() {
         return tableName;
+    }
+
+    public String getKeyFieldName() {
+        return keyFieldName;
+    }
+
+    public void setKeyFieldName(String keyFieldName) {
+        this.keyFieldName = keyFieldName;
     }
 
     public String getKey() {

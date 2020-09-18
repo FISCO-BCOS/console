@@ -7,6 +7,7 @@ import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.ConsoleContractImpl;
+import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -272,7 +273,13 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                             .toString();
             ConsoleUtils.printJson(transactionJson);
         } catch (ClientException e) {
-            ConsoleUtils.printJson(e.getMessage());
+            ConsoleUtils.printJson(
+                    "{\"code\":"
+                            + e.getErrorCode()
+                            + ", \"msg\":"
+                            + "\""
+                            + e.getErrorMessage()
+                            + "\"}");
         }
     }
 
@@ -548,7 +555,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                                 + e.getErrorCode()
                                 + ", \"msg\":"
                                 + "\""
-                                + e.getMessage()
+                                + e.getErrorMessage()
                                 + "\"}");
             }
         }
@@ -593,38 +600,39 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void loadAccount(String[] params) {
         String accountPath = params[1];
-        if (!new File(accountPath).exists()) {
-            // try to load the account from the given address
-            String pemAccountPath =
-                    client.getCryptoInterface()
-                            .getCryptoKeyPair()
-                            .getPemKeyStoreFilePath(accountPath);
-            logger.debug("pemAccountPath: {}", pemAccountPath);
-            if (!new File(pemAccountPath).exists()) {
-                String p12AccountPath =
-                        client.getCryptoInterface()
-                                .getCryptoKeyPair()
-                                .getP12KeyStoreFilePath(accountPath);
-                logger.debug("p12AccountPath: {}", p12AccountPath);
-                if (!new File(p12AccountPath).exists()) {
-                    System.out.println("The account file " + accountPath + " doesn't exist!");
-                    return;
-                } else {
-                    accountPath = p12AccountPath;
-                }
-            } else {
-                accountPath = pemAccountPath;
-            }
-        }
         String accountFormat = params[2];
-        if (accountFormat.equals("pem") && accountFormat.equals("p12")) {
+        if (!accountFormat.equals("pem") && !accountFormat.equals("p12")) {
             System.out.println(
                     "Load account failed! Only support \"pem\" and \"p12\" account now!");
             return;
         }
+        if (!new File(accountPath).exists()) {
+            // try to load the account from the given address
+            if (accountFormat.equals("pem")) {
+                accountPath =
+                        client.getCryptoInterface()
+                                .getCryptoKeyPair()
+                                .getPemKeyStoreFilePath(accountPath);
+                logger.debug("pemAccountPath: {}", accountPath);
+            }
+            if (accountFormat.equals("p12")) {
+                accountPath =
+                        client.getCryptoInterface()
+                                .getCryptoKeyPair()
+                                .getP12KeyStoreFilePath(accountPath);
+                logger.debug("p12AccountPath: {}", accountPath);
+            }
+            if (!new File(accountPath).exists()) {
+                System.out.println("The account file " + accountPath + " doesn't exist!");
+                return;
+            }
+        }
         String accountPassword = null;
-        if (params.length == 4) {
-            accountPassword = params[3];
+        if (accountFormat.equals("p12")) {
+            System.out.print("Enter p12 Password:");
+            Console cons = System.console();
+            char[] passwd = cons.readPassword();
+            accountPassword = new String(passwd);
         }
         CryptoInterface cryptoInterface = client.getCryptoInterface();
         cryptoInterface.loadAccount(accountFormat, accountPath, accountPassword);

@@ -102,12 +102,16 @@ public class Console {
                     System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
                 }
             } catch (ClientException e) {
+                String errorMessage = e.getMessage();
+                if (e.getErrorMessage() != null) {
+                    errorMessage = e.getErrorMessage();
+                }
                 ConsoleUtils.printJson(
                         "{\"code\":"
                                 + e.getErrorCode()
                                 + ", \"msg\":"
                                 + "\""
-                                + e.getMessage()
+                                + errorMessage
                                 + "\"}");
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
