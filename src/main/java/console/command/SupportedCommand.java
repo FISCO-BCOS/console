@@ -1832,6 +1832,9 @@ public class SupportedCommand {
                             File[] contractFileList = contractFile.listFiles();
                             ConsoleUtils.sortFiles(contractFileList);
                             for (File contractAddressFile : contractFileList) {
+                                if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                                    continue;
+                                }
                                 System.out.println(contractAddressFile.getName());
                                 i++;
                                 if (i == recordNum) {

@@ -1,6 +1,7 @@
 package console.command.completer;
 
 import console.client.ConsoleClientImpl;
+import console.common.ConsoleUtils;
 import java.io.File;
 import java.util.List;
 import org.fisco.bcos.sdk.client.Client;
@@ -25,6 +26,9 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
         String accountFileDir = ConsoleClientImpl.getAccountDir(client);
         // list the account
         for (String account : accountList) {
+            if (!ConsoleUtils.isValidAddress(account)) {
+                continue;
+            }
             candidates.add(
                     new Candidate(
                             AttributedString.stripAnsi(account),
