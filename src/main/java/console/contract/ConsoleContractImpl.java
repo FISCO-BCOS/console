@@ -25,15 +25,16 @@ import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
-import org.fisco.bcos.sdk.contract.exceptions.ContractException;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
-import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledRetCode;
-import org.fisco.bcos.sdk.crypto.CryptoInterface;
-import org.fisco.bcos.sdk.transaction.manager.AssembleTransactionManagerInterface;
-import org.fisco.bcos.sdk.transaction.manager.TransactionManagerFactory;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.model.CryptoType;
+import org.fisco.bcos.sdk.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.transaction.manager.AssembleTransactionProcessorInterface;
+import org.fisco.bcos.sdk.transaction.manager.TransactionProcessorFactory;
 import org.fisco.bcos.sdk.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
+import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.transaction.model.exception.TransactionBaseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,17 +45,18 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     public static String DEPLOY_METHOD = "deploy";
 
     private Client client;
-    private AssembleTransactionManagerInterface assembleTransactionManager;
+    private AssembleTransactionProcessorInterface assembleTransactionProcessor;
     private CnsService cnsService;
     private ABICodec abiCodec;
 
     public ConsoleContractImpl(Client client) throws Exception {
         this.client = client;
-        this.assembleTransactionManager =
-                TransactionManagerFactory.createAssembleTransactionManager(
-                        client, client.getCryptoInterface());
-        this.cnsService = new CnsService(client, client.getCryptoInterface());
-        this.abiCodec = new ABICodec(client.getCryptoInterface());
+        CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
+        this.assembleTransactionProcessor =
+                TransactionProcessorFactory.createAssembleTransactionProcessor(
+                        client, cryptoKeyPair);
+        this.cnsService = new CnsService(client, cryptoKeyPair);
+        this.abiCodec = new ABICodec(client.getCryptoSuite());
     }
 
     @Override
@@ -69,11 +71,11 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         try {
             AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
             String bin = abiAndBin.getBin();
-            if (client.getCryptoInterface().getCryptoTypeConfig() == CryptoInterface.SM_TYPE) {
+            if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE) {
                 bin = abiAndBin.getSmBin();
             }
             TransactionResponse response =
-                    this.assembleTransactionManager.deployAndGetResponseWithStringParams(
+                    this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
                             abiAndBin.getAbi(), bin, inputParams);
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
@@ -89,7 +91,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             ContractCompiler.saveAbiAndBin(
                     client.getGroupId(), abiAndBin, contractName, contractAddress);
             // save the keyPair
-            client.getCryptoInterface().getCryptoKeyPair().storeKeyPairWithPemFormat();
+            client.getCryptoSuite().getCryptoKeyPair().storeKeyPairWithPemFormat();
             return response;
         } catch (ClientException | CompileContractException | IOException | ABICodecException e) {
             throw new ConsoleMessageException("deploy contract failed for " + e.getMessage(), e);
@@ -274,9 +276,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         contractName,
                         functionName,
                         callParams.size());
+                CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
                 CallResponse response =
-                        assembleTransactionManager.sendCallWithStringParams(
-                                client.getCryptoInterface().getCryptoKeyPair().getAddress(),
+                        assembleTransactionProcessor.sendCallWithStringParams(
+                                cryptoKeyPair.getAddress(),
                                 contractAddress,
                                 abiAndBin.getAbi(),
                                 functionName,
@@ -299,7 +302,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         callParams.size(),
                         abiDefinition.toString());
                 TransactionResponse response =
-                        assembleTransactionManager.sendTransactionWithStringParamsAndGetResponse(
+                        assembleTransactionProcessor.sendTransactionWithStringParamsAndGetResponse(
                                 contractAddress, abiAndBin.getAbi(), functionName, callParams);
                 System.out.println(
                         "hash: " + response.getTransactionReceipt().getTransactionHash());

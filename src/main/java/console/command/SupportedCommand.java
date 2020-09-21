@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.crypto.CryptoInterface;
+import org.fisco.bcos.sdk.model.CryptoType;
 
 public class SupportedCommand {
     public static final String NODE_VERSION_2_0_0_RC3 = "2.0.0-rc3";
@@ -1086,7 +1086,7 @@ public class SupportedCommand {
                             System.out.println(
                                     consoleInitializer
                                             .getClient()
-                                            .getCryptoInterface()
+                                            .getCryptoSuite()
                                             .getCryptoKeyPair()
                                             .getAddress());
                         }
@@ -1101,11 +1101,10 @@ public class SupportedCommand {
                                 throws Exception {
                             Client client = consoleInitializer.getClient();
                             // get ledger cryptoType
-                            int ledgerCryptoType =
-                                    client.getCryptoInterface().getCryptoTypeConfig();
+                            int ledgerCryptoType = client.getCryptoSuite().getCryptoTypeConfig();
                             System.out.println(
                                     "ledger crypto type: "
-                                            + (ledgerCryptoType == CryptoInterface.ECDSA_TYPE
+                                            + (ledgerCryptoType == CryptoType.ECDSA_TYPE
                                                     ? "ECDSA"
                                                     : "SM"));
 
@@ -1113,7 +1112,7 @@ public class SupportedCommand {
                             int sslCryptoType = consoleInitializer.getBcosSDK().getSSLCryptoType();
                             System.out.println(
                                     "ssl crypto type: "
-                                            + (sslCryptoType == CryptoInterface.ECDSA_TYPE
+                                            + (sslCryptoType == CryptoType.ECDSA_TYPE
                                                     ? "ECDSA"
                                                     : "SM"));
                         }
@@ -1900,7 +1899,7 @@ public class SupportedCommand {
                         @Override
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
-                            consoleInitializer.getConsoleClientFace().loadAccount(params);
+                            consoleInitializer.loadAccount(params);
                         }
                     },
                     2,

@@ -39,7 +39,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
-import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledConstant;
+import org.fisco.bcos.sdk.model.PrecompiledConstant;
 
 public class CRUDParseUtils {
     public static final String PRIMARY_KEY = "primary key";
@@ -179,6 +179,13 @@ public class CRUDParseUtils {
             String[] allFields = new String[valueFields.length + 1];
             allFields[0] = keyField;
             System.arraycopy(valueFields, 0, allFields, 1, valueFields.length);
+            if (allFields.length != itemArr.length) {
+                throw new ConsoleMessageException(
+                        "Column count doesn't match value count, fields size: "
+                                + allFields.length
+                                + ", provided field value size: "
+                                + itemArr.length);
+            }
             for (int i = 0; i < itemArr.length; i++) {
                 entry.getFieldNameToValue().put(allFields[i], trimQuotes(itemArr[i]));
             }

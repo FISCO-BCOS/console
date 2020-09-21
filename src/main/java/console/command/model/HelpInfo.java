@@ -2,7 +2,7 @@ package console.command.model;
 
 import console.command.SupportedCommand;
 import console.common.Common;
-import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledConstant;
+import org.fisco.bcos.sdk.model.PrecompiledConstant;
 
 public class HelpInfo {
     public static void promptHelp(String command) {

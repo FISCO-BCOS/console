@@ -18,7 +18,6 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.contract.exceptions.ContractException;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.contract.precompiled.contractmgr.ContractLifeCycleService;
@@ -26,11 +25,13 @@ import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
-import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledConstant;
-import org.fisco.bcos.sdk.contract.precompiled.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.contract.precompiled.sysconfig.SystemConfigService;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.model.PrecompiledConstant;
+import org.fisco.bcos.sdk.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
+import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,13 +49,13 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     public PrecompiledImpl(Client client) {
         this.client = client;
-        this.consensusService = new ConsensusService(client, client.getCryptoInterface());
-        this.systemConfigService = new SystemConfigService(client, client.getCryptoInterface());
-        this.tableCRUDService = new TableCRUDService(client, client.getCryptoInterface());
-        this.contractLifeCycleService =
-                new ContractLifeCycleService(client, client.getCryptoInterface());
-        this.cnsService = new CnsService(client, client.getCryptoInterface());
-        client.getCryptoInterface().getCryptoKeyPair().storeKeyPairWithPemFormat();
+        CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
+        this.consensusService = new ConsensusService(client, cryptoKeyPair);
+        this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
+        this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
+        this.contractLifeCycleService = new ContractLifeCycleService(client, cryptoKeyPair);
+        this.cnsService = new CnsService(client, cryptoKeyPair);
+        cryptoKeyPair.storeKeyPairWithPemFormat();
     }
 
     @Override
@@ -403,21 +404,14 @@ public class PrecompiledImpl implements PrecompiledFace {
             RetCode insertResult =
                     tableCRUDService.insert(table.getTableName(), table.getKey(), entry);
 
-            if (insertResult.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()
-                    || insertResult.getCode() == 1) {
+            if (insertResult.getCode() >= 0) {
                 System.out.println("Insert OK: ");
-                ConsoleUtils.printJson(insertResult.toString());
-                if (insertResult.getCode() >= 0) {
-                    System.out.println(insertResult.getCode() + " row affected.");
-                } else {
-                    System.out.println("Result of insert for " + table.getTableName() + ":");
-                    ConsoleUtils.printJson(insertResult.toString());
-                }
+                System.out.println(insertResult.getCode() + " row affected.");
             } else {
-                System.out.println("Insert failed");
-                System.out.println("Ret message:" + insertResult.getMessage());
-                System.out.println("Ret code: " + insertResult.getCode());
+                System.out.println("Result of insert for " + table.getTableName() + ":");
+                ConsoleUtils.printJson(insertResult.toString());
             }
+
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             logger.error(" message: {}, e: {}", e.getMessage(), e);

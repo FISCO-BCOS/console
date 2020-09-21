@@ -10,11 +10,12 @@ import console.precompiled.PrecompiledImpl;
 import console.precompiled.permission.PermissionFace;
 import console.precompiled.permission.PermissionImpl;
 import java.io.Console;
+import java.io.File;
 import java.net.URL;
 import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.config.exceptions.ConfigException;
-import org.fisco.bcos.sdk.crypto.CryptoInterface;
+import org.fisco.bcos.sdk.crypto.CryptoSuite;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +62,7 @@ public class ConsoleInitializer {
             this.client = bcosSDK.getClient(groupId);
             if (accountInfo != null) {
                 this.client
-                        .getCryptoInterface()
+                        .getCryptoSuite()
                         .loadAccount(
                                 accountInfo.accountFileFormat,
                                 accountInfo.accountFile,
@@ -190,6 +191,52 @@ public class ConsoleInitializer {
         }
     }
 
+    public void loadAccount(String[] params) throws Exception {
+        String accountPath = params[1];
+        String accountFormat = params[2];
+        if (!accountFormat.equals("pem") && !accountFormat.equals("p12")) {
+            System.out.println(
+                    "Load account failed! Only support \"pem\" and \"p12\" account now!");
+            return;
+        }
+        if (!new File(accountPath).exists()) {
+            // try to load the account from the given address
+            if (accountFormat.equals("pem")) {
+                accountPath =
+                        client.getCryptoSuite()
+                                .getCryptoKeyPair()
+                                .getPemKeyStoreFilePath(accountPath);
+                logger.debug("pemAccountPath: {}", accountPath);
+            }
+            if (accountFormat.equals("p12")) {
+                accountPath =
+                        client.getCryptoSuite()
+                                .getCryptoKeyPair()
+                                .getP12KeyStoreFilePath(accountPath);
+                logger.debug("p12AccountPath: {}", accountPath);
+            }
+            if (!new File(accountPath).exists()) {
+                System.out.println("The account file " + accountPath + " doesn't exist!");
+                return;
+            }
+        }
+        String accountPassword = null;
+        if (accountFormat.equals("p12")) {
+            System.out.print("Enter p12 Password:");
+            Console cons = System.console();
+            char[] passwd = cons.readPassword();
+            accountPassword = new String(passwd);
+        }
+        CryptoSuite cryptoSuite = client.getCryptoSuite();
+        cryptoSuite.loadAccount(accountFormat, accountPath, accountPassword);
+        // update the objects with new CryptoKeyPair
+        this.consoleClientFace = new ConsoleClientImpl(client);
+        this.precompiledFace = new PrecompiledImpl(client);
+        this.permissionFace = new PermissionImpl(client);
+        this.consoleContractFace = new ConsoleContractImpl(client);
+        System.out.println("Load account " + params[1] + " success!");
+    }
+
     public void stop() {
         this.bcosSDK.stopAll();
     }
@@ -200,10 +247,6 @@ public class ConsoleInitializer {
 
     public BcosSDK getBcosSDK() {
         return bcosSDK;
-    }
-
-    public CryptoInterface getCredentials() {
-        return client.getCryptoInterface();
     }
 
     public int getGroupID() {
