@@ -9,10 +9,11 @@ import java.math.BigInteger;
 import java.security.InvalidParameterException;
 import java.util.List;
 import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.contract.exceptions.ContractException;
 import org.fisco.bcos.sdk.contract.precompiled.permission.ChainGovernanceService;
 import org.fisco.bcos.sdk.contract.precompiled.permission.PermissionInfo;
 import org.fisco.bcos.sdk.contract.precompiled.permission.PermissionService;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 
 public class PermissionImpl implements PermissionFace {
 
@@ -22,10 +23,10 @@ public class PermissionImpl implements PermissionFace {
 
     public PermissionImpl(Client client) {
         this.client = client;
-        this.permissionService = new PermissionService(client, client.getCryptoInterface());
-        this.chainGovernanceService =
-                new ChainGovernanceService(client, client.getCryptoInterface());
-        client.getCryptoInterface().getCryptoKeyPair().storeKeyPairWithPemFormat();
+        CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
+        this.permissionService = new PermissionService(client, cryptoKeyPair);
+        this.chainGovernanceService = new ChainGovernanceService(client, cryptoKeyPair);
+        cryptoKeyPair.storeKeyPairWithPemFormat();
     }
 
     @Override

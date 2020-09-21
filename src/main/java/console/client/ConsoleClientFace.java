@@ -76,7 +76,5 @@ public interface ConsoleClientFace {
 
     void newAccount(String[] params);
 
-    void loadAccount(String[] params);
-
     void listAccount(String[] params);
 }

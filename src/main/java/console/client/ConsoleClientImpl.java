@@ -7,7 +7,6 @@ import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.ConsoleContractImpl;
-import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -19,8 +18,9 @@ import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
 import org.fisco.bcos.sdk.client.protocol.response.TotalTransactionCount;
 import org.fisco.bcos.sdk.config.ConfigOption;
-import org.fisco.bcos.sdk.crypto.CryptoInterface;
+import org.fisco.bcos.sdk.crypto.CryptoSuite;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.model.CryptoType;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
 import org.fisco.bcos.sdk.utils.Numeric;
@@ -578,9 +578,9 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         if (accountFormat.equals("p12") && params.length == 3) {
             password = params[2];
         }
-        CryptoInterface cryptoInterface = client.getCryptoInterface();
-        CryptoKeyPair cryptoKeyPair = cryptoInterface.createKeyPair();
-        cryptoInterface.setConfig(cryptoInterface.getConfig());
+        CryptoSuite cryptoSuite = client.getCryptoSuite();
+        CryptoKeyPair cryptoKeyPair = cryptoSuite.createKeyPair();
+        cryptoSuite.setConfig(cryptoSuite.getConfig());
         if (accountFormat.equals("pem")) {
             // save the account
             cryptoKeyPair.storeKeyPairWithPemFormat();
@@ -592,51 +592,9 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         System.out.println("newAccount: " + cryptoKeyPair.getAddress());
         System.out.println(
                 "AccountType: "
-                        + (cryptoInterface.getCryptoTypeConfig() == CryptoInterface.ECDSA_TYPE
+                        + (cryptoSuite.getCryptoTypeConfig() == CryptoType.ECDSA_TYPE
                                 ? "ecdsa"
                                 : "sm"));
-    }
-
-    @Override
-    public void loadAccount(String[] params) {
-        String accountPath = params[1];
-        String accountFormat = params[2];
-        if (!accountFormat.equals("pem") && !accountFormat.equals("p12")) {
-            System.out.println(
-                    "Load account failed! Only support \"pem\" and \"p12\" account now!");
-            return;
-        }
-        if (!new File(accountPath).exists()) {
-            // try to load the account from the given address
-            if (accountFormat.equals("pem")) {
-                accountPath =
-                        client.getCryptoInterface()
-                                .getCryptoKeyPair()
-                                .getPemKeyStoreFilePath(accountPath);
-                logger.debug("pemAccountPath: {}", accountPath);
-            }
-            if (accountFormat.equals("p12")) {
-                accountPath =
-                        client.getCryptoInterface()
-                                .getCryptoKeyPair()
-                                .getP12KeyStoreFilePath(accountPath);
-                logger.debug("p12AccountPath: {}", accountPath);
-            }
-            if (!new File(accountPath).exists()) {
-                System.out.println("The account file " + accountPath + " doesn't exist!");
-                return;
-            }
-        }
-        String accountPassword = null;
-        if (accountFormat.equals("p12")) {
-            System.out.print("Enter p12 Password:");
-            Console cons = System.console();
-            char[] passwd = cons.readPassword();
-            accountPassword = new String(passwd);
-        }
-        CryptoInterface cryptoInterface = client.getCryptoInterface();
-        cryptoInterface.loadAccount(accountFormat, accountPath, accountPassword);
-        System.out.println("Load account " + params[1] + " success!");
     }
 
     @Override
@@ -652,10 +610,10 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     public static String getAccountDir(Client client) {
-        ConfigOption configOption = client.getCryptoInterface().getConfig();
+        ConfigOption configOption = client.getCryptoSuite().getConfig();
         String accountFilePath = configOption.getAccountConfig().getAccountFilePath();
         String subDir = CryptoKeyPair.ECDSA_ACCOUNT_SUBDIR;
-        if (client.getCryptoInterface().getCryptoTypeConfig() == CryptoInterface.SM_TYPE) {
+        if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE) {
             subDir = CryptoKeyPair.GM_ACCOUNT_SUBDIR;
         }
         // load account from the given path

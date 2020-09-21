@@ -21,17 +21,13 @@ googleJavaFormat {
   options style: 'AOSP'
 }
 
-check.dependsOn.remove(test)
-check.dependsOn.remove(verifyGoogleJavaFormat)
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
     compile 'org.fisco-bcos:solcJ:0.4.25.1'
     //compile 'org.fisco-bcos:solcJ:0.6.10.0'
     //compile 'org.fisco-bcos:solcJ:0.5.2.0'
-    compile ('org.fisco-bcos:java-sdk:1.0.0-SNAPSHOT') {
-                exclude group: "org.fisco-bcos", module: "solcJ"
-            }
+    compile ('org.fisco-bcos:java-sdk:0.1.0-SNAPSHOT')
     compile 'org.jline:jline:3.12.0'
     compile 'io.bretty:console-table-builder:1.2'
     compile 'com.github.jsqlparser:jsqlparser:2.0'
@@ -53,6 +49,24 @@ sourceSets {
             srcDir 'src/main/resources'
         }
     }
+	integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+            srcDir file('sdk-demo/src/main')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+configurations {
+    integrationTestCompile.extendsFrom testCompile
+    integrationTestRuntime.extendsFrom testRuntime
+}
+
+task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
 jar {

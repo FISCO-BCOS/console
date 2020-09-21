@@ -41,6 +41,7 @@ check_standard_node()
   prepare_environment
   ## run integration test
   bash gradlew test --info
+  bash gradlew integrationTest --info
 }
 
 check_basic()
@@ -51,9 +52,10 @@ bash gradlew verifyGoogleJavaFormat
 bash gradlew build
 # test
 bash gradlew test
+bash gradlew integrationTest --info
 }
 
-cp src/test/resources/config-example.toml src/test/resources/config.toml
+cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
 LOG_INFO "------ download_build_chain---------"
 download_build_chain
 LOG_INFO "------ check_standard_node---------"
