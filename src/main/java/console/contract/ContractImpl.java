@@ -1,5 +1,7 @@
 package console.contract;
 
+import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
+
 import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
@@ -16,6 +18,17 @@ import console.exception.ConsoleMessageException;
 import io.bretty.console.table.Alignment;
 import io.bretty.console.table.ColumnFormatter;
 import io.bretty.console.table.Table;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.fisco.bcos.web3j.abi.EventEncoder;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
@@ -41,20 +54,6 @@ import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 
 public class ContractImpl implements ContractFace {
 
@@ -696,7 +695,7 @@ public class ContractImpl implements ContractFace {
         }
         RemoteCall<?> remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
         Object result = remoteCall.send();
-        logger.info(" ====>>> " + result.getClass().getName());
+        // logger.info(" ====>>> " + result.getClass().getName());
         if (result instanceof TransactionReceipt) {
             handleTransactionReceipt(abi, (TransactionReceipt) result);
         } else {
@@ -873,7 +872,7 @@ public class ContractImpl implements ContractFace {
         // ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(receipt));
 
         ConsoleUtils.singleLine();
-        System.out.println("status: " + receipt.getStatus());
+        System.out.println("transaction status: " + receipt.getStatus());
         if (StatusCode.Success.equals(receipt.getStatus())) {
             System.out.println("description: " + "transaction executed successfully");
         } else {
@@ -889,7 +888,7 @@ public class ContractImpl implements ContractFace {
             System.out.println(
                     "description: "
                             + errorMessage
-                            + " ,please refer to "
+                            + ", please refer to "
                             + StatusCodeLink.txReceiptStatusLink);
             return;
         }
