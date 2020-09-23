@@ -631,6 +631,9 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return accountList;
         }
         File[] accountFileList = accountFile.listFiles();
+        if (accountFileList == null || accountFileList.length == 0) {
+            return accountList;
+        }
         ConsoleUtils.sortFiles(accountFileList);
         for (File accountFileItem : accountFileList) {
             logger.debug("account is: {}", accountFileItem.getName());

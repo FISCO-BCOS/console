@@ -1829,6 +1829,9 @@ public class SupportedCommand {
                             }
                             int i = 0;
                             File[] contractFileList = contractFile.listFiles();
+                            if (contractFileList == null || contractFileList.length == 0) {
+                                return;
+                            }
                             ConsoleUtils.sortFiles(contractFileList);
                             for (File contractAddressFile : contractFileList) {
                                 if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {

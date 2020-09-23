@@ -40,8 +40,11 @@ import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.model.PrecompiledConstant;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CRUDParseUtils {
+    private static final Logger logger = LoggerFactory.getLogger(CRUDParseUtils.class);
     public static final String PRIMARY_KEY = "primary key";
 
     public static void parseCreateTable(String sql, Table table)
@@ -252,29 +255,34 @@ public class CRUDParseUtils {
         }
     }
 
+    private static void checkExpression(Expression expression) throws ConsoleMessageException {
+        if (expression instanceof OrExpression) {
+            throw new ConsoleMessageException("The OrExpression is not supported.");
+        }
+        if (expression instanceof NotExpression) {
+            throw new ConsoleMessageException("The NotExpression is not supported.");
+        }
+        if (expression instanceof InExpression) {
+            throw new ConsoleMessageException("The InExpression is not supported.");
+        }
+        if (expression instanceof LikeExpression) {
+            logger.debug("The LikeExpression is not supported.");
+            throw new ConsoleMessageException("The LikeExpression is not supported.");
+        }
+        if (expression instanceof SubSelect) {
+            throw new ConsoleMessageException("The SubSelect is not supported.");
+        }
+        if (expression instanceof IsNullExpression) {
+            throw new ConsoleMessageException("The IsNullExpression is not supported.");
+        }
+    }
+
     private static Condition handleExpression(Condition condition, Expression expr)
             throws ConsoleMessageException {
         if (expr instanceof BinaryExpression) {
             condition = getWhereClause((BinaryExpression) (expr), condition);
         }
-        if (expr instanceof OrExpression) {
-            throw new ConsoleMessageException("The OrExpression is not supported.");
-        }
-        if (expr instanceof NotExpression) {
-            throw new ConsoleMessageException("The NotExpression is not supported.");
-        }
-        if (expr instanceof InExpression) {
-            throw new ConsoleMessageException("The InExpression is not supported.");
-        }
-        if (expr instanceof LikeExpression) {
-            throw new ConsoleMessageException("The LikeExpression is not supported.");
-        }
-        if (expr instanceof SubSelect) {
-            throw new ConsoleMessageException("The SubSelect is not supported.");
-        }
-        if (expr instanceof IsNullExpression) {
-            throw new ConsoleMessageException("The IsNullExpression is not supported.");
-        }
+        checkExpression(expr);
         Map<String, Map<ConditionOperator, String>> conditions = condition.getConditions();
         Set<String> keys = conditions.keySet();
         for (String key : keys) {
@@ -383,6 +391,7 @@ public class CRUDParseUtils {
             throws ConsoleMessageException {
         Set<String> keySet = new HashSet<>();
         Set<String> conflictKeys = new HashSet<>();
+        Set<String> unsupportedConditions = new HashSet<>();
         expr.accept(
                 new ExpressionVisitorAdapter() {
                     @Override
@@ -417,6 +426,12 @@ public class CRUDParseUtils {
                                 default:
                                     break;
                             }
+                        } else {
+                            try {
+                                checkExpression(expr);
+                            } catch (ConsoleMessageException e) {
+                                unsupportedConditions.add(e.getMessage());
+                            }
                         }
                         super.visitBinaryExpression(expr);
                     }
@@ -425,6 +440,11 @@ public class CRUDParseUtils {
             throw new ConsoleMessageException(
                     "Wrong condition! There cannot be the same field in the same condition! The conflicting field is: "
                             + conflictKeys.toString());
+        }
+        if (unsupportedConditions.size() > 0) {
+            throw new ConsoleMessageException(
+                    "Wrong condition! Find unsupported conditions! message: "
+                            + unsupportedConditions.toString());
         }
         return condition;
     }
