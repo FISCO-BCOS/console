@@ -39,6 +39,9 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                 return;
             }
             File[] contractAddressFiles = contractDir.listFiles();
+            if (contractAddressFiles == null || contractAddressFiles.length == 0) {
+                return;
+            }
             ConsoleUtils.sortFiles(contractAddressFiles);
             for (File contractAddressFile : contractAddressFiles) {
                 if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {

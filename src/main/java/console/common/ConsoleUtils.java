@@ -464,6 +464,9 @@ public class ConsoleUtils {
     }
 
     public static void sortFiles(File[] files) {
+        if (files == null || files.length <= 1) {
+            return;
+        }
         Arrays.sort(
                 files,
                 new Comparator<File>() {
