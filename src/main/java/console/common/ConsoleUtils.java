@@ -117,9 +117,21 @@ public class ConsoleUtils {
         }
     }
 
-    public static long processLong(String name, String number) {
+    public static long processLong(String name, String number, long minValue, long maxValue) {
         try {
-            return Long.parseLong(number);
+            long value = Long.parseLong(number);
+            if (value < minValue || (maxValue > minValue && value > maxValue)) {
+                System.out.println(
+                        "Please provide \""
+                                + name
+                                + "\" by integer mode between "
+                                + minValue
+                                + " and "
+                                + maxValue
+                                + ".");
+                return Common.InvalidLongValue;
+            }
+            return value;
         } catch (NumberFormatException e) {
             System.out.println("Invalid " + name + ": \"" + number + "\"!");
             System.out.println(
