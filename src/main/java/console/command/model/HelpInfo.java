@@ -171,7 +171,6 @@ public class HelpInfo {
                 "* blockNumber -- Integer of a block number, "
                         + Common.NonNegativeIntegerRange
                         + ".");
-        System.out.println("* blockHash -- 32 Bytes - The hash of a block.");
 
         System.out.println(
                 "* boolean -- (optional) If true the signature list will also be returned.");

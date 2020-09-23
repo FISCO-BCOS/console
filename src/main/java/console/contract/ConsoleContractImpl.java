@@ -268,6 +268,15 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             client.getGroupId(), contractName, contractAddress);
             // call
             ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
+            if (abiDefinition == null) {
+                System.out.println(
+                        "call contract \""
+                                + contractName
+                                + "\" failed ! Please check the existence of method \""
+                                + functionName
+                                + "\"");
+                return;
+            }
             if (abiDefinition != null && abiDefinition.isConstant()) {
                 logger.debug(
                         "sendCall request, params: {}, contractAddress: {}, contractName: {}, functionName:{}, paramSize: {}",

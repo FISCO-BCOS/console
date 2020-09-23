@@ -27,7 +27,7 @@ dependencies {
     compile 'org.fisco-bcos:solcJ:0.4.25.1'
     //compile 'org.fisco-bcos:solcJ:0.6.10.0'
     //compile 'org.fisco-bcos:solcJ:0.5.2.0'
-    compile ('org.fisco-bcos:java-sdk:0.1.0-SNAPSHOT')
+    compile ('org.fisco-bcos.java-sdk:java-sdk:1.0.0-SNAPSHOT')
     compile 'org.jline:jline:3.12.0'
     compile 'io.bretty:console-table-builder:1.2'
     compile 'com.github.jsqlparser:jsqlparser:2.0'
@@ -83,8 +83,8 @@ jar {
 			into 'dist/lib'
 		}
 		copy {
-			from file('src/test/resources/config-example.toml')
-			from file('src/test/resources/group-generate-config.toml')
+			from file('src/integration-test/resources/config-example.toml')
+			from file('src/integration-test/resources/group-generate-config.toml')
       		from file('src/main/resources/log4j.properties')
 			into 'dist/conf'
 		}
