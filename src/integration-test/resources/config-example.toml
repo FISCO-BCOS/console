@@ -1,46 +1,54 @@
 [cryptoMaterial]
-certPath = "conf"
-# CA cert file path
-# caCert = "conf/ca.crt"
-# SSL cert file path
-# sslCert = "conf/sdk.crt"
-# SSL key file path
-# sslKey = "conf/sdk.key"
-# enSslCert = "conf/gm/gmensdk.crt"
-# enSslKey = "conf/gm/gmensdk.key"
+
+certPath = "conf"                           # The certification path  
+
+# The following configurations take the certPath by default if commented
+# caCert = "conf/ca.crt"                    # CA cert file path
+                                            # If connect to the GM node, default CA cert path is ${certPath}/gm/gmca.crt
+
+# sslCert = "conf/sdk.crt"                  # SSL cert file path
+                                            # If connect to the GM node, the default SDK cert path is ${certPath}/gm/gmsdk.crt
+
+# sslKey = "conf/sdk.key"                   # SSL key file path
+                                            # If connect to the GM node, the default SDK privateKey path is ${certPath}/gm/gmsdk.key
+
+# enSslCert = "conf/gm/gmensdk.crt"         # GM encryption cert file path
+                                            # default load the GM SSL encryption cert from ${certPath}/gm/gmensdk.crt
+
+# enSslKey = "conf/gm/gmensdk.key"          # GM ssl cert file path
+                                            # default load the GM SSL encryption privateKey from ${certPath}/gm/gmensdk.key
 
 [network]
-# The peer list to connect
-peers=["127.0.0.1:20200", "127.0.0.1:20201"]
+peers=["127.0.0.1:20200", "127.0.0.1:20201"]    # The peer list to connect
 
-# Configure a "need verify AMOP topic" as a topic message sender.
-[[amop]]
-# topicName = "t1"
-# Public keys of the nodes that you want to send AMOP message of this topic to.
-# publicKeys = [ "consumer_public_key_1.pem", "consumer_public_key_2.pem" ]
+# Configure a private topic as a topic message sender.
+# [[amop]]
+# topicName = "PrivateTopic1"
+# publicKeys = [ "conf/amop/consumer_public_key_1.pem" ]    # Public keys of the nodes that you want to send AMOP message of this topic to.
 
-# Configure a "need verify AMOP topic" as a topic subscriber.
-[[amop]]
-# topicName = "t2"
-# Your private key that used to subscriber verification.
-# privateKey = "consumer_private_key.pem"
+# Configure a private topic as a topic subscriber.
+# [[amop]]
+# topicName = "PrivateTopic2"
+# privateKey = "conf/amop/consumer_private_key.p12"         # Your private key that used to subscriber verification.
+# password = "123456"
 
 [account]
-# The directory where the account private key file is placed in
-keyStoreDir = "account"
-# The account file path(Default load account from keyStoreDir directory when accountFilePath is not configured)
-# accountFilePath = ""
-# The storage format of the account, support pem and p12, default is pem
-accountFileFormat = "pem"
-# The address of the account used to send transactions
-# When it's empty, use a randomly generated account to send transactions,
-# and the randomly generated account information is stored in tmp sub-directory of keyStoreDir
-# accountAddress = ""
-# The password used to load the account private key file
-# password = ""
+keyStoreDir = "account"         # The directory to load/store the account file, default is "account"
+# accountFilePath = ""          # The account file path (default load from the path specified by the keyStoreDir)
+accountFileFormat = "pem"       # The storage format of account file (Default is "pem", "p12" as an option)
+
+# accountAddress = ""           # The transactions sending account address
+                                # Default is a randomly generated account
+                                # The randomly generated account is stored in the path specified by the keyStoreDir
+
+# password = ""                 # The password used to load the account file
 
 [threadPool]
-# The size of the thread pool used to process the callback of the channel
-channelProcessorThreadSize = "16"
-# The size of the thread pool used to process the transaction receipt notification
-receiptProcessorThreadSize = "16"
+# channelProcessorThreadSize = "16"         # The size of the thread pool to process channel callback
+                                            # Default is the number of cpu cores
+
+# receiptProcessorThreadSize = "16"         # The size of the thread pool to process transaction receipt notification
+                                            # Default is the number of cpu cores
+
+maxBlockingQueueSize = "102400"             # The max blocking queue size of the thread pool
+
