@@ -611,17 +611,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     public static String getAccountDir(Client client) {
         ConfigOption configOption = client.getCryptoSuite().getConfig();
-        String accountFilePath = configOption.getAccountConfig().getAccountFilePath();
         String subDir = CryptoKeyPair.ECDSA_ACCOUNT_SUBDIR;
         if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE) {
             subDir = CryptoKeyPair.GM_ACCOUNT_SUBDIR;
         }
-        // load account from the given path
-        if (accountFilePath == null || accountFilePath.equals("")) {
-            accountFilePath =
-                    configOption.getAccountConfig().getKeyStoreDir() + File.separator + subDir;
-        }
-        return accountFilePath;
+        return configOption.getAccountConfig().getKeyStoreDir() + File.separator + subDir;
     }
 
     public static List<String> listAccount(Client client) {
