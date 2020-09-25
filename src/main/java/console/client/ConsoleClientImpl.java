@@ -478,7 +478,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         }
         String targetNode = params[1];
         // check timestamp
-        long timestamp = ConsoleUtils.processLong("timestamp", params[3], 0, Long.MAX_VALUE);
+        long timestamp = ConsoleUtils.processLong("timestamp", params[3], 0, Long.MAX_VALUE - 1);
         if (timestamp == Common.InvalidLongValue) {
             return;
         }
