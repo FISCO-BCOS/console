@@ -17,6 +17,7 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
     private static final Logger logger = LoggerFactory.getLogger(ContractAddressCompleter.class);
 
     private Client client;
+    private static int defaultRecordNum = 20;
 
     public ContractAddressCompleter(Client client) {
         this.client = client;
@@ -43,6 +44,7 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                 return;
             }
             ConsoleUtils.sortFiles(contractAddressFiles);
+            int recordNum = 0;
             for (File contractAddressFile : contractAddressFiles) {
                 if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
                     continue;
@@ -56,6 +58,10 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                                 null,
                                 null,
                                 true));
+                recordNum++;
+                if (recordNum == defaultRecordNum) {
+                    break;
+                }
             }
         }
         super.complete(reader, commandLine, candidates);

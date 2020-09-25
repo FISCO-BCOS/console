@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 public class AccountCompleter extends StringsCompleterIgnoreCase {
     private static final Logger logger = LoggerFactory.getLogger(AccountCompleter.class);
     private Client client;
+    public static int defaultRecordNum = 20;
 
     public AccountCompleter(Client client) {
         this.client = client;
@@ -24,6 +25,7 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
     public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
         List<String> accountList = ConsoleClientImpl.listAccount(client);
         String accountFileDir = ConsoleClientImpl.getAccountDir(client);
+        int recordNum = 0;
         // list the account
         for (String account : accountList) {
             if (!ConsoleUtils.isValidAddress(account)) {
@@ -55,6 +57,10 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
                             null,
                             null,
                             true));
+            recordNum++;
+            if (recordNum == defaultRecordNum) {
+                break;
+            }
         }
 
         super.complete(reader, commandLine, candidates);
