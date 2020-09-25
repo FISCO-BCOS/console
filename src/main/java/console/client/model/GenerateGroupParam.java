@@ -50,7 +50,7 @@ public class GenerateGroupParam {
 
     public Long getTimestamp() {
         if (timestamp != null) {
-            return ConsoleUtils.processLong("timestamp", timestamp, 0, Long.MAX_VALUE);
+            return ConsoleUtils.processLong("timestamp", timestamp, 0, Long.MAX_VALUE - 1);
         }
         if (genesis == null
                 || genesis.get(TIMESTAMP_KEY) == null
@@ -62,7 +62,7 @@ public class GenerateGroupParam {
         } else {
             timestamp = genesis.get(TIMESTAMP_KEY);
         }
-        return ConsoleUtils.processLong("timestamp", timestamp, 0, Long.MAX_VALUE);
+        return ConsoleUtils.processLong("timestamp", timestamp, 0, Long.MAX_VALUE - 1);
     }
 
     public Map<String, String> getGenesis() {
