@@ -139,6 +139,11 @@ public class CRUDParseUtils {
             throws JSQLParserException, ConsoleMessageException {
         Statement statement = CCJSqlParserUtil.parse(sql);
         Insert insert = (Insert) statement;
+        String valueFieldString = tableDesc.get(PrecompiledConstant.VALUE_FIELD_NAME);
+        String[] valueFields = valueFieldString.split(",");
+        String expectedValueField =
+                tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME) + ", " + valueFieldString;
+        int expectedValueNum = valueFields.length + 1;
 
         if (insert.getSelect() != null) {
             throw new ConsoleMessageException("The insert select clause is not supported.");
@@ -162,6 +167,15 @@ public class CRUDParseUtils {
             if (columns.size() != itemArr.length) {
                 throw new ConsoleMessageException("Column count doesn't match value count.");
             }
+            if (expectedValueNum != columns.size()) {
+                throw new ConsoleMessageException(
+                        "Column count doesn't match value count, fields size: "
+                                + valueFields.length
+                                + ", provided field value size: "
+                                + columns.size()
+                                + ", expected field list: "
+                                + expectedValueField);
+            }
             List<String> columnNames = new ArrayList<>();
             for (Column column : columns) {
                 String columnName = trimQuotes(column.toString());
@@ -178,17 +192,18 @@ public class CRUDParseUtils {
             return false;
         } else {
             String keyField = tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME);
-            String[] valueFields = tableDesc.get(PrecompiledConstant.VALUE_FIELD_NAME).split(",");
-            String[] allFields = new String[valueFields.length + 1];
-            allFields[0] = keyField;
-            System.arraycopy(valueFields, 0, allFields, 1, valueFields.length);
-            if (allFields.length != itemArr.length) {
+            if (expectedValueNum != itemArr.length) {
                 throw new ConsoleMessageException(
                         "Column count doesn't match value count, fields size: "
-                                + allFields.length
+                                + valueFields.length
                                 + ", provided field value size: "
-                                + itemArr.length);
+                                + itemArr.length
+                                + ", expected field list: "
+                                + expectedValueField);
             }
+            String[] allFields = new String[itemArr.length];
+            allFields[0] = keyField;
+            System.arraycopy(valueFields, 0, allFields, 1, valueFields.length);
             for (int i = 0; i < itemArr.length; i++) {
                 entry.getFieldNameToValue().put(allFields[i], trimQuotes(itemArr[i]));
             }

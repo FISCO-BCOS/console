@@ -16,6 +16,7 @@ import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.config.exceptions.ConfigException;
 import org.fisco.bcos.sdk.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -171,7 +172,10 @@ public class ConsoleInitializer {
             return;
         }
         try {
+            // load the original account
+            CryptoKeyPair cryptoKeyPair = this.client.getCryptoSuite().getCryptoKeyPair();
             this.client = bcosSDK.getClient(toGroupID);
+            this.client.getCryptoSuite().setCryptoKeyPair(cryptoKeyPair);
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.permissionFace = new PermissionImpl(client);
