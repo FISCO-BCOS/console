@@ -31,6 +31,10 @@ public class JlineUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
 
+    public static LineReader getLineReader() throws IOException {
+        return createLineReader(new ArrayList<Completer>());
+    }
+
     public static LineReader getLineReader(Client client) throws IOException {
 
         List<Completer> completers = new ArrayList<Completer>();
@@ -163,7 +167,10 @@ public class JlineUtils {
                             new ContractAddressCompleter(client),
                             new AccountCompleter(client)));
         }
+        return createLineReader(completers);
+    }
 
+    public static LineReader createLineReader(List<Completer> completers) throws IOException {
         Terminal terminal =
                 TerminalBuilder.builder()
                         .nativeSignals(true)

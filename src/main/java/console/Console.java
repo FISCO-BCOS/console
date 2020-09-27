@@ -25,6 +25,14 @@ public class Console {
 
     public static int INPUT_FLAG = 0;
 
+    public static LineReader createLineReader(ConsoleInitializer consoleInitializer)
+            throws IOException {
+        if (consoleInitializer.DisableAutoCompleter) {
+            return JlineUtils.getLineReader();
+        }
+        return JlineUtils.getLineReader(consoleInitializer.getClient());
+    }
+
     @SuppressWarnings("resource")
     public static void main(String[] args) {
 
@@ -34,7 +42,7 @@ public class Console {
         try {
             consoleInitializer = new ConsoleInitializer();
             consoleInitializer.init(args);
-            lineReader = JlineUtils.getLineReader(consoleInitializer.getClient());
+            lineReader = createLineReader(consoleInitializer);
             sc = new Scanner(System.in);
             KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
             keymap.bind(new Reference("beginning-of-line"), "\033[1~");
@@ -95,7 +103,7 @@ public class Console {
                         commandInfo.callCommand(consoleInitializer, paramWithoutQuotation);
                         if (commandInfo.getCommand().equals(SupportedCommand.SWITCH.getCommand())) {
                             // update the client when switch group
-                            lineReader = JlineUtils.getLineReader(consoleInitializer.getClient());
+                            lineReader = createLineReader(consoleInitializer);
                         }
                     }
                 } else {
