@@ -13,6 +13,7 @@ targetCompatibility = 1.8
 
 repositories {
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    maven { url "https://oss.sonatype.org/service/local/staging/deploy/maven2"}
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     mavenCentral()
 }
@@ -27,7 +28,7 @@ dependencies {
     compile 'org.fisco-bcos:solcJ:0.4.25.1'
     //compile 'org.fisco-bcos:solcJ:0.6.10.0'
     //compile 'org.fisco-bcos:solcJ:0.5.2.0'
-    compile ('org.fisco-bcos.java-sdk:java-sdk:1.0.0-SNAPSHOT')
+    compile ('org.fisco-bcos.java-sdk:java-sdk:2.6.1.09271-rc1-SNAPSHOT')
     compile 'org.jline:jline:3.12.0'
     compile 'io.bretty:console-table-builder:1.2'
     compile 'com.github.jsqlparser:jsqlparser:2.0'
