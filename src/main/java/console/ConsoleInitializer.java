@@ -33,6 +33,7 @@ public class ConsoleInitializer {
     private PrecompiledFace precompiledFace;
     private PermissionFace permissionFace;
     private ConsoleContractFace consoleContractFace;
+    public static boolean DisableAutoCompleter = false;
 
     public void init(String[] args) throws ConfigException {
         Integer groupId = Integer.valueOf(1);
@@ -50,9 +51,23 @@ public class ConsoleInitializer {
             }
             String configFile = configUrl.getPath();
             bcosSDK = BcosSDK.build(configFile);
-            accountInfo = loadAccount(bcosSDK, args);
-            if (args.length > 0) {
+            // bash start.sh -l
+            if (args.length == 1) {
+                if ("-l".equals(args[0])) { // input by scanner for log
+                    DisableAutoCompleter = true;
+                } else {
+                    groupId = Integer.valueOf(args[0]);
+                }
+            }
+            // bash start.sh groupID -l
+            if (args.length >= 2) {
                 groupId = Integer.valueOf(args[0]);
+                if ("-l".equals(args[1])) { // input by scanner for log
+                    DisableAutoCompleter = true;
+                }
+            }
+            if (args.length == 3) {
+                accountInfo = loadAccount(bcosSDK, args);
             }
         } catch (NumberFormatException e) {
             System.out.println("Init BcosSDK failed for invalid groupId \"" + args[0] + "\"");
