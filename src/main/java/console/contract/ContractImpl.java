@@ -167,7 +167,7 @@ public class ContractImpl implements ContractFace {
                 if (recordNumber <= 0 || recordNumber > 100) {
                     System.out.println(
                             "Please provide record number by integer mode, "
-                                    + Common.DeployLogntegerRange
+                                    + Common.DeployLongIntegerRange
                                     + ".");
                     System.out.println();
                     return;
@@ -175,7 +175,7 @@ public class ContractImpl implements ContractFace {
             } catch (NumberFormatException e) {
                 System.out.println(
                         "Please provide record number by integer mode, "
-                                + Common.DeployLogntegerRange
+                                + Common.DeployLongIntegerRange
                                 + ".");
                 System.out.println();
                 return;
@@ -225,7 +225,7 @@ public class ContractImpl implements ContractFace {
 
     @Override
     public void listDeployContractAddress(String[] params) throws Exception {
-        // listDeployContractAddress [contractName] [from] [count]
+        // listDeployContractAddress [contractName] [offset] [count]
         if (params.length < 2) {
             HelpInfo.promptHelp("listDeployContractAddress");
             return;
@@ -241,9 +241,15 @@ public class ContractImpl implements ContractFace {
         int count = 20;
 
         if (params.length > 2) {
-            offset = Integer.valueOf(params[2]);
+            offset = ConsoleUtils.processNonNegativeNumber("offset", params[2]);
+            if (offset == Common.InvalidReturnNumber) {
+                return;
+            }
             if (params.length > 3) {
-                count = count = Integer.valueOf(params[3]);
+                count = ConsoleUtils.processPositiveIntegerNumber("count", params[3]);
+                if (count == Common.InvalidReturnNumber) {
+                    return;
+                }
             }
         }
 
