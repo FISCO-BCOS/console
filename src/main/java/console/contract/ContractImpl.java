@@ -781,8 +781,8 @@ public class ContractImpl implements ContractFace {
 
         // registerCNS contractPath contractAddress contractVersion
         String contractPath = params[1];
-        String contractVersion = params[2];
-        String contractAddress = params[3];
+        String contractAddress = params[2];
+        String contractVersion = params[3];
 
         Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
         if (!convertAddr.isValid()) {
