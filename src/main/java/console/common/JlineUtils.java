@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 import org.fisco.bcos.web3j.abi.wrapper.ABIDefinitionFactory;
 import org.fisco.bcos.web3j.abi.wrapper.ContractABIDefinition;
-import org.jline.builtins.Completers;
 import org.jline.builtins.Completers.FilesCompleter;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
@@ -36,6 +35,45 @@ import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+class LoadAccountCompleter extends StringsCompleterIgnoreCase {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoadAccountCompleter.class);
+
+    @Override
+    public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
+
+        try {
+            File accountsDir = new File(PathUtils.ACCOUNT_DIRECTORY);
+            File[] accountFiles = accountsDir.listFiles();
+            for (File file : accountFiles) {
+                String fileName = file.getName();
+
+                if (!(fileName.endsWith(".pem") || fileName.endsWith(".p12"))) {
+                    continue;
+                }
+                // exclude public file
+                if (fileName.contains("public.pem")) {
+                    continue;
+                }
+
+                candidates.add(
+                        new Candidate(
+                                AttributedString.stripAnsi(fileName),
+                                fileName,
+                                null,
+                                null,
+                                null,
+                                null,
+                                true));
+            }
+        } catch (Exception e) {
+            logger.debug("e:", e);
+        }
+
+        super.complete(reader, commandLine, candidates);
+    }
+}
 
 class SwitchAccountCompleter extends StringsCompleterIgnoreCase {
     private static final Logger logger = LoggerFactory.getLogger(SwitchAccountCompleter.class);
@@ -543,13 +581,12 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase()));
         }
 
-        Path accountPath = FileSystems.getDefault().getPath(PathUtils.ACCOUNT_DIRECTORY, "");
         commands = Arrays.asList("loadAccount");
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new Completers.FilesCompleter(accountPath),
+                            new LoadAccountCompleter(),
                             new StringsCompleterIgnoreCase()));
         }
 
