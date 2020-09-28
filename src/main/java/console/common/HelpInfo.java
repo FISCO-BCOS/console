@@ -489,14 +489,14 @@ public class HelpInfo {
     public static void registerCNSHelp() {
         // // registerCNS contractAddress contractPath contractVersion
         System.out.println("Register contract info to CNS.");
-        System.out.println("Usage: registerCNS contractPath contractVersion contractAddress");
+        System.out.println("Usage: registerCNS contractPath contractAddress contractVersion ");
         System.out.println(
                 "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
+        System.out.println("contractAddress -- Address of the contract.");
         System.out.println(
                 "contractVersion -- The version of a contract. The maximum length of the version hex string is "
                         + CnsService.MAX_VERSION_LENGTH
                         + ".");
-        System.out.println("contractAddress -- Address of the contract.");
         System.out.println();
     }
 
