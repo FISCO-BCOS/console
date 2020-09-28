@@ -190,7 +190,7 @@ public class HelpInfo {
         System.out.println("Usage: getDeployLog [recordNumber]");
         System.out.println(
                 "recordNumber -- (optional) The number of deployed contract records, "
-                        + Common.DeployLogntegerRange
+                        + Common.DeployLongIntegerRange
                         + "(default 20).");
         System.out.println();
     }

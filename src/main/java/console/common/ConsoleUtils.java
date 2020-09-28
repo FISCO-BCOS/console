@@ -135,6 +135,23 @@ public class ConsoleUtils {
         return intParam;
     }
 
+    public static int processPositiveIntegerNumber(String name, String intStr) {
+        int intParam = 0;
+        try {
+            intParam = Integer.parseInt(intStr);
+            if (intParam <= 0) {
+                System.out.println("Please provide " + name + " by positive integer mode.");
+                System.out.println();
+                return Common.InvalidReturnNumber;
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Please provide " + name + " by positive integer mode.");
+            System.out.println();
+            return Common.InvalidReturnNumber;
+        }
+        return intParam;
+    }
+
     public static Address convertAddress(String addressStr) {
         Address address = new Address();
         if (addressStr.length() > Address.ValidLen) {
