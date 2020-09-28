@@ -68,7 +68,7 @@ class LoadAccountCompleter extends StringsCompleterIgnoreCase {
                                 true));
             }
         } catch (Exception e) {
-            logger.debug("e:", e);
+            logger.debug("e: ", e);
         }
 
         super.complete(reader, commandLine, candidates);
@@ -171,7 +171,7 @@ class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                     addressCount++;
                 }
             } catch (Exception e) {
-                logger.error("e: {}", e);
+                logger.debug("e: ", e);
             }
         }
 
@@ -212,7 +212,7 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
                 }
 
             } catch (Exception e) {
-                logger.error("e: {}", e);
+                logger.debug("e: ", e);
             }
         }
 
@@ -373,8 +373,7 @@ class ConsoleFilesCompleter extends FilesCompleter {
                         }
                     });
         } catch (IOException e) {
-            // System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.debug("e: ", e);
         }
     }
 }
