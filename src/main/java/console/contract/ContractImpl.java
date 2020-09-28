@@ -11,6 +11,7 @@ import console.common.ContractClassFactory;
 import console.common.DeployContractManager;
 import console.common.HelpInfo;
 import console.common.PathUtils;
+import console.common.PrecompiledUtility;
 import console.common.StatusCodeLink;
 import console.common.TxDecodeUtil;
 import console.exception.CompileSolidityException;
@@ -844,16 +845,20 @@ public class ContractImpl implements ContractFace {
             }
 
             // register cns
-            cnsService.registerCns(name, contractVersion, contractAddress, abi);
+            TransactionReceipt receipt =
+                    cnsService.registerCnsAndRetReceipt(
+                            name, contractVersion, contractAddress, abi);
+            if (receipt.isStatusOK()) { // deal with precompiled return
+                String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
+                ConsoleUtils.printJson(result);
+                if (result.contains("success")) {
+                    deployContractManager.addNewDeployContract(
+                            String.valueOf(groupID), name, contractAddress);
+                }
+            } else { // deal with transaction result
+                PrecompiledUtility.handleTransactionReceipt(receipt);
+            }
 
-            System.out.println(
-                    "registerCNS successfully, contract name: "
-                            + name
-                            + " ,contract address: "
-                            + contractAddress);
-
-            deployContractManager.addNewDeployContract(
-                    String.valueOf(groupID), name, contractAddress);
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
