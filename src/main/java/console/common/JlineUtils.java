@@ -114,7 +114,12 @@ class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                         deployContractManager.getDeployContractList(
                                 deployContractManager.getGroupId(), contractName);
 
+                int addressCount = 0;
+                final int addressCompleterCount = 10;
                 for (DeployContractManager.DeployedContract deployedContract : deployContractList) {
+                    if (addressCount >= addressCompleterCount) {
+                        break;
+                    }
                     candidates.add(
                             new Candidate(
                                     AttributedString.stripAnsi(
@@ -125,6 +130,7 @@ class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                                     null,
                                     null,
                                     true));
+                    addressCount++;
                 }
             } catch (Exception e) {
                 logger.error("e: {}", e);
