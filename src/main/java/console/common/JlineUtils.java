@@ -190,11 +190,24 @@ class ContractMethodCompleter extends StringsCompleterIgnoreCase {
         String[] ss = buffer.split(" ");
 
         if (ss.length >= 3) {
-            // TO DO
             try {
+                String abi = null;
                 File solFile = PathUtils.getSolFile(ss[1]);
-                String abi =
-                        ConsoleUtils.compileSolForABI(solFile.getName().split("\\.")[0], solFile);
+                String contractName = solFile.getName().split("\\.")[0];
+                /*
+                Read abi content from abi directory
+                 */
+                try {
+                    File abiFile =
+                            new File(ContractClassFactory.ABI_PATH + "/" + contractName + ".abi");
+                    byte[] abiBytes = Files.readAllBytes(abiFile.toPath());
+                    abi = new String(abiBytes);
+                } catch (Exception e) {
+                    /*
+                    compile the solidity and get abi
+                     */
+                    abi = ConsoleUtils.compileSolForABI(contractName, solFile);
+                }
 
                 ContractABIDefinition contractABIDefinition = ABIDefinitionFactory.loadABI(abi);
                 Set<String> functionNames = contractABIDefinition.getFunctions().keySet();
