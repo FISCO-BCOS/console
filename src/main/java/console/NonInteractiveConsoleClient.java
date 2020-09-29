@@ -31,7 +31,7 @@ public class NonInteractiveConsoleClient {
     public static void main(String[] args) {
 
         if (args.length == 0 || args[0].equals("-h") || args[0].equals("--help")) {
-            WelcomeInfo.help(args);
+            WelcomeInfo.nonInterHelp(args);
             System.exit(0);
         }
 
@@ -179,125 +179,8 @@ public class NonInteractiveConsoleClient {
                 case "setSystemConfigByKey":
                     precompiledFace.setSystemConfigByKey(params);
                     break;
-                case "grantUserTableManager":
-                    permissionFace.grantUserTableManager(params);
-                    break;
-                case "revokeUserTableManager":
-                    permissionFace.revokeUserTableManager(params);
-                    break;
-                case "listUserTableManager":
-                    permissionFace.listUserTableManager(params);
-                    break;
-                case "grantDeployAndCreateManager":
-                    permissionFace.grantDeployAndCreateManager(params);
-                    break;
-                case "revokeDeployAndCreateManager":
-                    permissionFace.revokeDeployAndCreateManager(params);
-                    break;
-                case "listDeployAndCreateManager":
-                    permissionFace.listDeployAndCreateManager(params);
-                    break;
-                case "grantNodeManager":
-                    permissionFace.grantNodeManager(params);
-                    break;
-                case "revokeNodeManager":
-                    permissionFace.revokeNodeManager(params);
-                    break;
-                case "listNodeManager":
-                    permissionFace.listNodeManager(params);
-                    break;
-                case "grantCNSManager":
-                    permissionFace.grantCNSManager(params);
-                    break;
-                case "revokeCNSManager":
-                    permissionFace.revokeCNSManager(params);
-                    break;
-                case "listCNSManager":
-                    permissionFace.listCNSManager(params);
-                    break;
-                case "grantSysConfigManager":
-                    permissionFace.grantSysConfigManager(params);
-                    break;
-                case "revokeSysConfigManager":
-                    permissionFace.revokeSysConfigManager(params);
-                    break;
-                case "listSysConfigManager":
-                    permissionFace.listSysConfigManager(params);
-                    break;
-                case "listContractWritePermission":
-                    permissionFace.listContractWritePermission(params);
-                    break;
-                case "grantContractWritePermission":
-                    permissionFace.grantContractWritePermission(params);
-                    break;
-                case "revokeContractWritePermission":
-                    permissionFace.revokeContractWritePermission(params);
-                    break;
-                case "freezeContract":
-                    precompiledFace.freezeContract(params);
-                    break;
-                case "unfreezeContract":
-                    precompiledFace.unfreezeContract(params);
-                    break;
-                case "grantContractStatusManager":
-                    precompiledFace.grantContractStatusManager(params);
-                    break;
-                case "getContractStatus":
-                    precompiledFace.getContractStatus(params);
-                    break;
-                case "listContractStatusManager":
-                    precompiledFace.listContractStatusManager(params);
-                    break;
-                case "grantCommitteeMember":
-                    permissionFace.grantCommitteeMember(params);
-                    break;
-                case "revokeCommitteeMember":
-                    permissionFace.revokeCommitteeMember(params);
-                    break;
-                case "listCommitteeMembers":
-                    permissionFace.listCommitteeMembers(params);
-                    break;
-                case "grantOperator":
-                    permissionFace.grantOperator(params);
-                    break;
-                case "listOperators":
-                    permissionFace.listOperators(params);
-                    break;
-                case "revokeOperator":
-                    permissionFace.revokeOperator(params);
-                    break;
-                case "updateThreshold":
-                    permissionFace.updateThreshold(params);
-                    break;
-                case "updateCommitteeMemberWeight":
-                    permissionFace.updateCommitteeMemberWeight(params);
-                    break;
-                case "queryThreshold":
-                    permissionFace.queryThreshold(params);
-                    break;
-                case "queryCommitteeMemberWeight":
-                    permissionFace.queryCommitteeMemberWeight(params);
-                    break;
-                case "freezeAccount":
-                    permissionFace.freezeAccount(params);
-                    break;
-                case "unfreezeAccount":
-                    permissionFace.unfreezeAccount(params);
-                    break;
-                case "getAccountStatus":
-                    permissionFace.getAccountStatus(params);
-                    break;
                 case "newAccount":
                     accountInterface.newAccount(params);
-                    break;
-                case "loadAccount":
-                    accountInterface.loadAccount(params);
-                    break;
-                case "listAccount":
-                    accountInterface.listAccount(params);
-                    break;
-                case "switchAccount":
-                    accountInterface.switchAccount(params);
                     break;
                 default:
                     System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
