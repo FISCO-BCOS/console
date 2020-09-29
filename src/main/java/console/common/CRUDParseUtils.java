@@ -11,6 +11,7 @@ import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -232,11 +233,7 @@ public class CRUDParseUtils {
         }
     }
 
-    private static Condition handleExpression(Condition condition, Expression expr)
-            throws ConsoleMessageException {
-        if (expr instanceof BinaryExpression) {
-            condition = getWhereClause((BinaryExpression) (expr), condition);
-        }
+    private static void handleExpression(Expression expr) throws ConsoleMessageException {
         if (expr instanceof OrExpression) {
             throw new ConsoleMessageException("The OrExpression is not supported.");
         }
@@ -255,6 +252,49 @@ public class CRUDParseUtils {
         if (expr instanceof IsNullExpression) {
             throw new ConsoleMessageException("The IsNullExpression is not supported.");
         }
+
+        /*
+        Nested logic
+         */
+        if (expr instanceof AndExpression) {
+            AndExpression andExpression = (AndExpression) expr;
+            if (andExpression.getLeftExpression() != null) {
+                handleExpression(andExpression.getLeftExpression());
+            }
+
+            if (andExpression.getRightExpression() != null) {
+                handleExpression(andExpression.getRightExpression());
+            }
+        }
+    }
+
+    private static Condition handleExpression(Condition condition, Expression expr)
+            throws ConsoleMessageException {
+        handleExpression(expr);
+        if (expr instanceof BinaryExpression) {
+            condition = getWhereClause((BinaryExpression) (expr), condition);
+        }
+
+        /*
+        if (expr instanceof OrExpression) {
+            throw new ConsoleMessageException("The OrExpression is not supported.");
+        }
+        if (expr instanceof NotExpression) {
+            throw new ConsoleMessageException("The NotExpression is not supported.");
+        }
+        if (expr instanceof InExpression) {
+            throw new ConsoleMessageException("The InExpression is not supported.");
+        }
+        if (expr instanceof LikeExpression) {
+            throw new ConsoleMessageException("The LikeExpression is not supported.");
+        }
+        if (expr instanceof SubSelect) {
+            throw new ConsoleMessageException("The SubSelect is not supported.");
+        }
+        if (expr instanceof IsNullExpression) {
+            throw new ConsoleMessageException("The IsNullExpression is not supported.");
+        }
+        */
         Map<String, Map<EnumOP, String>> conditions = condition.getConditions();
         Set<String> keys = conditions.keySet();
         for (String key : keys) {

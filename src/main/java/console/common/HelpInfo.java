@@ -190,7 +190,7 @@ public class HelpInfo {
         System.out.println("Usage: getDeployLog [recordNumber]");
         System.out.println(
                 "recordNumber -- (optional) The number of deployed contract records, "
-                        + Common.DeployLogntegerRange
+                        + Common.DeployLongIntegerRange
                         + "(default 20).");
         System.out.println();
     }
@@ -330,7 +330,6 @@ public class HelpInfo {
                 "blockNumber -- Integer of a block number, "
                         + Common.NonNegativeIntegerRange
                         + ".");
-        System.out.println("blockHash -- 32 Bytes - The hash of a block.");
 
         System.out.println(
                 "boolean -- (optional) If true the signature list will also be returned.");
@@ -490,14 +489,14 @@ public class HelpInfo {
     public static void registerCNSHelp() {
         // // registerCNS contractAddress contractPath contractVersion
         System.out.println("Register contract info to CNS.");
-        System.out.println("Usage: registerCNS contractPath contractVersion contractAddress");
+        System.out.println("Usage: registerCNS contractPath contractAddress contractVersion ");
         System.out.println(
                 "contractPath -- The name or the path of a contract, if a name is specified, the contract should in the default directory: contracts/solidity ");
+        System.out.println("contractAddress -- Address of the contract.");
         System.out.println(
                 "contractVersion -- The version of a contract. The maximum length of the version hex string is "
                         + CnsService.MAX_VERSION_LENGTH
                         + ".");
-        System.out.println("contractAddress -- Address of the contract.");
         System.out.println();
     }
 

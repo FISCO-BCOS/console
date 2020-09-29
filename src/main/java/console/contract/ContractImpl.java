@@ -11,6 +11,7 @@ import console.common.ContractClassFactory;
 import console.common.DeployContractManager;
 import console.common.HelpInfo;
 import console.common.PathUtils;
+import console.common.PrecompiledUtility;
 import console.common.StatusCodeLink;
 import console.common.TxDecodeUtil;
 import console.exception.CompileSolidityException;
@@ -167,7 +168,7 @@ public class ContractImpl implements ContractFace {
                 if (recordNumber <= 0 || recordNumber > 100) {
                     System.out.println(
                             "Please provide record number by integer mode, "
-                                    + Common.DeployLogntegerRange
+                                    + Common.DeployLongIntegerRange
                                     + ".");
                     System.out.println();
                     return;
@@ -175,7 +176,7 @@ public class ContractImpl implements ContractFace {
             } catch (NumberFormatException e) {
                 System.out.println(
                         "Please provide record number by integer mode, "
-                                + Common.DeployLogntegerRange
+                                + Common.DeployLongIntegerRange
                                 + ".");
                 System.out.println();
                 return;
@@ -225,7 +226,7 @@ public class ContractImpl implements ContractFace {
 
     @Override
     public void listDeployContractAddress(String[] params) throws Exception {
-        // listDeployContractAddress [contractName] [from] [count]
+        // listDeployContractAddress [contractName] [offset] [count]
         if (params.length < 2) {
             HelpInfo.promptHelp("listDeployContractAddress");
             return;
@@ -241,9 +242,15 @@ public class ContractImpl implements ContractFace {
         int count = 20;
 
         if (params.length > 2) {
-            offset = Integer.valueOf(params[2]);
+            offset = ConsoleUtils.processNonNegativeNumber("offset", params[2]);
+            if (offset == Common.InvalidReturnNumber) {
+                return;
+            }
             if (params.length > 3) {
-                count = count = Integer.valueOf(params[3]);
+                count = ConsoleUtils.processPositiveIntegerNumber("count", params[3]);
+                if (count == Common.InvalidReturnNumber) {
+                    return;
+                }
             }
         }
 
@@ -781,8 +788,8 @@ public class ContractImpl implements ContractFace {
 
         // registerCNS contractPath contractAddress contractVersion
         String contractPath = params[1];
-        String contractVersion = params[2];
-        String contractAddress = params[3];
+        String contractAddress = params[2];
+        String contractVersion = params[3];
 
         Address convertAddr = ConsoleUtils.convertAddress(contractAddress);
         if (!convertAddr.isValid()) {
@@ -838,16 +845,20 @@ public class ContractImpl implements ContractFace {
             }
 
             // register cns
-            cnsService.registerCns(name, contractVersion, contractAddress, abi);
+            TransactionReceipt receipt =
+                    cnsService.registerCnsAndRetReceipt(
+                            name, contractVersion, contractAddress, abi);
+            if (receipt.isStatusOK()) { // deal with precompiled return
+                String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
+                ConsoleUtils.printJson(result);
+                if (result.contains("success")) {
+                    deployContractManager.addNewDeployContract(
+                            String.valueOf(groupID), name, contractAddress);
+                }
+            } else { // deal with transaction result
+                PrecompiledUtility.handleTransactionReceipt(receipt);
+            }
 
-            System.out.println(
-                    "registerCNS successfully, contract name: "
-                            + name
-                            + " ,contract address: "
-                            + contractAddress);
-
-            deployContractManager.addNewDeployContract(
-                    String.valueOf(groupID), name, contractAddress);
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
