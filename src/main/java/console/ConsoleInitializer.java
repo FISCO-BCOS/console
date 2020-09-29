@@ -19,6 +19,7 @@ import console.precompiled.permission.PermissionImpl;
 import console.web3j.Web3jFace;
 import console.web3j.Web3jImpl;
 import java.io.Console;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -72,6 +73,39 @@ public class ConsoleInitializer {
     private ContractFace contractFace;
     private AccountInterface accountInterface;
 
+    /** @return */
+    public Account randomLoadAccount() {
+        try {
+            File accountsDir = new File(PathUtils.ACCOUNT_DIRECTORY);
+            for (File file : accountsDir.listFiles()) {
+                if (file.getName().endsWith("public.pem")) {
+                    continue;
+                }
+
+                if (!file.getName().endsWith(".pem")) {
+                    continue;
+                }
+
+                try {
+                    // load pem file
+                    Account pemAccount = AccountTools.loadAccount(file.getAbsolutePath(), "");
+                    logger.info(
+                            "load {} successfully, address: {}, type: {}",
+                            file.getName(),
+                            pemAccount.getCredentials().getAddress(),
+                            pemAccount.getPrivateKeyType());
+                    return pemAccount;
+                } catch (Exception e) {
+                    logger.debug("e: ", e);
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("e: ", e);
+        }
+
+        return null;
+    }
+
     public void init(String[] args)
             throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
                     NoSuchProviderException, UnrecoverableKeyException, KeyStoreException,
@@ -84,8 +118,11 @@ public class ConsoleInitializer {
 
         switch (args.length) {
             case 0: // bash start.sh
-                account = AccountTools.newAccount();
-                AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
+                account = randomLoadAccount();
+                if (account == null) {
+                    account = AccountTools.newAccount();
+                    AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
+                }
                 break;
             case 1: // bash start.sh groupID
                 if ("-l".equals(args[0])) { // input by scanner for log
@@ -93,8 +130,11 @@ public class ConsoleInitializer {
                 } else {
                     groupID = setGroupID(args[0]);
                 }
-                account = AccountTools.newAccount();
-                AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
+                account = randomLoadAccount();
+                if (account == null) {
+                    account = AccountTools.newAccount();
+                    AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
+                }
                 break;
             case 2: // bash start.sh groupID -l
                 if ("-l".equals(args[1])) { // input by scanner for log
@@ -104,8 +144,11 @@ public class ConsoleInitializer {
                     HelpInfo.startHelp();
                     close();
                 }
-                account = AccountTools.newAccount();
-                AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
+                account = randomLoadAccount();
+                if (account == null) {
+                    account = AccountTools.newAccount();
+                    AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
+                }
                 break;
             case 3: // ./start.sh groupID -pem pemName
                 handleAccountParam(args);
