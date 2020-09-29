@@ -86,6 +86,16 @@ public class ConsoleInitializer {
                     continue;
                 }
 
+                if (EncryptType.encryptType == EncryptType.SM2_TYPE
+                        && !file.getName().contains("gm")) {
+                    continue;
+                }
+
+                if (EncryptType.encryptType == EncryptType.ECDSA_TYPE
+                        && file.getName().contains("gm")) {
+                    continue;
+                }
+
                 try {
                     // load pem file
                     Account pemAccount = AccountTools.loadAccount(file.getAbsolutePath(), "");
@@ -118,22 +128,13 @@ public class ConsoleInitializer {
 
         switch (args.length) {
             case 0: // bash start.sh
-                account = randomLoadAccount();
-                if (account == null) {
-                    account = AccountTools.newAccount();
-                    AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
-                }
+                // do nothing
                 break;
             case 1: // bash start.sh groupID
                 if ("-l".equals(args[0])) { // input by scanner for log
                     ConsoleClient.INPUT_FLAG = 1;
                 } else {
                     groupID = setGroupID(args[0]);
-                }
-                account = randomLoadAccount();
-                if (account == null) {
-                    account = AccountTools.newAccount();
-                    AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
                 }
                 break;
             case 2: // bash start.sh groupID -l
@@ -143,11 +144,6 @@ public class ConsoleInitializer {
                 } else {
                     HelpInfo.startHelp();
                     close();
-                }
-                account = randomLoadAccount();
-                if (account == null) {
-                    account = AccountTools.newAccount();
-                    AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
                 }
                 break;
             case 3: // ./start.sh groupID -pem pemName
@@ -161,19 +157,6 @@ public class ConsoleInitializer {
                     HelpInfo.startHelp();
                     close();
                 }
-        }
-
-        if (account == null) {
-            System.out.println("Please provide a valid account.");
-            close();
-        }
-
-        if (!account.isTypeMatchingAccount()) {
-            System.out.println(
-                    " the loading private key is not available, private key type:"
-                            + AccountTools.getPrivateKeyTypeAsString(account.getPrivateKeyType())
-                            + " ,console configuration encryptType: "
-                            + AccountTools.getPrivateKeyTypeAsString(EncryptType.encryptType));
         }
 
         service.setGroupId(groupID);
@@ -201,16 +184,46 @@ public class ConsoleInitializer {
             web3j.getBlockNumber().sendForReturnString();
 
             Version nodeVersion = web3j.getNodeVersion().send().getNodeVersion();
-            String version = nodeVersion.getSupportedVersion();
-            PrecompiledCommon.BCOS_VERSION = version;
-            if (version == null || PrecompiledCommon.BCOS_RC1.equals(version)) {
+            String supportedVersion = nodeVersion.getSupportedVersion();
+            String version = nodeVersion.getVersion();
+
+            PrecompiledCommon.BCOS_VERSION = supportedVersion;
+            if (supportedVersion == null || PrecompiledCommon.BCOS_RC1.equals(supportedVersion)) {
                 Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC1;
-            } else if (PrecompiledCommon.BCOS_RC2.equals(version)) {
+            } else if (PrecompiledCommon.BCOS_RC2.equals(supportedVersion)) {
                 Common.PermissionCode = PrecompiledCommon.PermissionDenied;
                 Common.TableExist = PrecompiledCommon.TableExist;
             } else {
                 Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC3;
                 Common.TableExist = PrecompiledCommon.TableExist_RC3;
+            }
+
+            if (version.contains("gm") && EncryptType.encryptType == EncryptType.ECDSA_TYPE) {
+                System.out.println(
+                        " The blockchain node is the SM(GuoMi) mode, the encryptType parameter which in applicationContext.xml should be set to \"1\"");
+                close();
+            } else if (!version.contains("gm") && EncryptType.encryptType == EncryptType.SM2_TYPE) {
+                System.out.println(
+                        " The blockchain node is the NonSM mode, the encryptType parameter which in applicationContext.xml should be set to \"0\"");
+                close();
+            }
+
+            if (account == null) {
+                account = randomLoadAccount();
+                if (account == null) {
+                    account = AccountTools.newAccount();
+                    AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
+                }
+            }
+
+            if (!account.isTypeMatchingAccount()) {
+                System.out.println(
+                        " the -pem/-p12 private key not available, private key type:"
+                                + AccountTools.getPrivateKeyTypeAsString(
+                                        account.getPrivateKeyType())
+                                + " ,console configuration encryptType: "
+                                + AccountTools.getPrivateKeyTypeAsString(EncryptType.encryptType));
+                close();
             }
 
             accountManager.addAccount(account);
@@ -256,81 +269,56 @@ public class ConsoleInitializer {
         }
     }
 
-    private void handleAccountParam(String[] args)
-            throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException,
-                    InvalidKeySpecException, NoSuchProviderException,
-                    InvalidAlgorithmParameterException {
+    private void handleAccountParam(String[] args) {
         if ("-pem".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String pemName = args[2];
-            PEMManager pem = new PEMManager();
 
-            InputStream in = readAccountFile(pemName);
-            try {
+            try (InputStream in = readAccountFile(pemName)) {
+                PEMManager pem = new PEMManager();
                 pem.load(in);
+                ECKeyPair keyPair = pem.getECKeyPair();
+                Credentials credentials = Credentials.create(keyPair);
+                account = new Account(credentials);
+                account.setPrivateKeyType(AccountTools.getPrivateKeyType(pem.getPrivateKey()));
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                System.out.println(
+                        "Failed to load "
+                                + pemName
+                                + ", maybe it's not a valid PEM format file, error: "
+                                + e.getMessage());
+                logger.error(" e: {}", e);
                 close();
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                        logger.error(" message: {}, e: {}", e.getMessage(), e);
-                    }
-                }
             }
 
-            ECKeyPair keyPair = pem.getECKeyPair();
-            Credentials credentials = Credentials.create(keyPair);
-            account = new Account(credentials);
-            account.setPrivateKeyType(AccountTools.getPrivateKeyType(pem.getPrivateKey()));
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
 
-            InputStream in = readAccountFile(p12Name);
-            if (null == in) {
-                return;
-            }
-
-            System.out.print("Enter Export Password:");
-            Console cons = System.console();
-            char[] passwd = cons.readPassword();
-            String password = new String(passwd);
-            P12Manager p12Manager = new P12Manager();
-            p12Manager.setPassword(password);
-
-            try {
+            try (InputStream in = readAccountFile(p12Name)) {
+                System.out.print("Enter Export Password:");
+                Console cons = System.console();
+                char[] passwd = cons.readPassword();
+                String password = new String(passwd);
+                P12Manager p12Manager = new P12Manager();
+                p12Manager.setPassword(password);
                 p12Manager.load(in, password);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
-                close();
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                        logger.error(" message: {}, e: {}", e.getMessage(), e);
-                    }
-                }
-            }
 
-            ECKeyPair keyPair;
-            try {
-                keyPair = p12Manager.getECKeyPair();
+                ECKeyPair keyPair = p12Manager.getECKeyPair();
                 Credentials credentials = Credentials.create(keyPair);
                 account = new Account(credentials);
                 account.setPrivateKeyType(
                         AccountTools.getPrivateKeyType(p12Manager.getPrivateKey()));
             } catch (Exception e) {
-                System.out.println("The name for p12 account is error.");
+                System.out.println(
+                        "Failed to load "
+                                + p12Name
+                                + ", maybe it's not a valid P12 format file, error: "
+                                + e.getMessage());
+                logger.error(" e: {}", e);
                 close();
             }
+
         } else if ("-l".equals(args[1])) {
             groupID = setGroupID(args[0]);
             ConsoleClient.INPUT_FLAG = 1;

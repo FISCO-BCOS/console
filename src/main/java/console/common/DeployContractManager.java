@@ -135,6 +135,10 @@ public class DeployContractManager {
 
         DeployContractManager deployContractManager = new DeployContractManager();
         File logFile = new File(Common.ContractLogFileName);
+        if (!logFile.exists()) {
+            logger.info("{} not exist ", Common.ContractLogFileName);
+            return deployContractManager;
+        }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
             String line = null;
@@ -156,11 +160,11 @@ public class DeployContractManager {
                             ss[0] + " " + ss[1], ss[2].substring(i + 1, j), ss[3], ss[4]);
 
                 } catch (Exception e) {
-                    logger.error(" e: ", e);
+                    logger.error("line: {}, e: {}", line, e);
                 }
             }
         } catch (Exception e) {
-            logger.error(" load deployed log, e: {}", e);
+            logger.error(" load deployed, e: {}", e);
         }
 
         if (logger.isDebugEnabled()) {
@@ -205,7 +209,7 @@ public class DeployContractManager {
             pw.println(log);
             logger.info(" deploy log: {}", log);
         } catch (Exception e) {
-            logger.error(" deploy log, log: {}, e: {}", log, e);
+            logger.warn(" deploy log, log: {}, e: {}", log, e);
         }
     }
 
