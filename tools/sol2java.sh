@@ -25,10 +25,10 @@ function LOG_INFO()
 
 function Usage() {
     LOG_INFO "# Compile Solidity Tool"
-    LOG_INFO "./sol2java.sh [packageName] [solidityFileOrDir] [javaCodeOutputDir]"
+    LOG_INFO "./sol2java.sh [packageName] [solidityFilePath] [javaCodeOutputDir]"
     LOG_INFO " \t packageName:"
     LOG_INFO " \t\t the package name of the generated Java class file"
-    LOG_INFO " \t solidityFileOrDir:"
+    LOG_INFO " \t solidityFilePath:"
     LOG_INFO " \t\t (optional) the solidity file path or the directory where solidity files located, default: contracts/solidity"
     LOG_INFO " \t javaCodeOutputDir:"
     LOG_INFO " \t\t (optional) the directory where the generated Java files located, default: contracts/sdk/java"
