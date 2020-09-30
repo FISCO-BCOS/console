@@ -1,10 +1,12 @@
 package console.precompiled;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import console.account.AccountManager;
 import console.common.CRUDParseUtils;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.HelpInfo;
+import console.common.PrecompiledUtility;
 import console.common.TableInfo;
 import console.exception.ConsoleMessageException;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import org.fisco.bcos.web3j.precompile.crud.Table;
 import org.fisco.bcos.web3j.precompile.csm.ContractStatusService;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
+import org.fisco.bcos.web3j.protocol.core.methods.response.TransactionReceipt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +42,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
 
     private Web3j web3j;
-    private Credentials credentials;
+    private AccountManager accountManager;
 
     @Override
     public void setWeb3j(Web3j web3j) {
@@ -47,8 +50,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public void setAccountManager(AccountManager accountManager) {
+        this.accountManager = accountManager;
     }
 
     @Override
@@ -70,10 +73,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(
                     PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
         } else {
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
-            String result;
-            result = consensusService.addSealer(nodeId);
-            ConsoleUtils.printJson(result);
+            TransactionReceipt receipt = consensusService.addSealerAndRetReceipt(nodeId);
+            PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         }
         System.out.println();
     }
@@ -98,9 +101,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(
                     PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
         } else {
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
-            String result = consensusService.addObserver(nodeId);
-            ConsoleUtils.printJson(result);
+            TransactionReceipt receipt = consensusService.addObserverAndRetReceipt(nodeId);
+            PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         }
         System.out.println();
     }
@@ -124,10 +128,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(
                     PrecompiledCommon.transferToJson(PrecompiledCommon.InvalidNodeId));
         } else {
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
-            String result = null;
-            result = consensusService.removeNode(nodeId);
-            ConsoleUtils.printJson(result);
+            TransactionReceipt receipt = consensusService.removeNodeAndRetReceipt(nodeId);
+            PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         }
         System.out.println();
     }
@@ -188,14 +192,18 @@ public class PrecompiledImpl implements PrecompiledFace {
                     System.out.println();
                     return;
                 }
+
+                Credentials credentials = accountManager.getCurrentAccountCredentials();
                 SystemConfigService systemConfigSerivce =
                         new SystemConfigService(web3j, credentials);
-                String result = systemConfigSerivce.setValueByKey(key, value + "");
+                TransactionReceipt receipt =
+                        systemConfigSerivce.setValueByKeyAndRetReceipt(key, value + "");
                 if (Common.RPBFTEpochSealerNum.equals(key)
                         || Common.RPBFTEpochBlockNum.equals(key)) {
                     System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
                 }
-                ConsoleUtils.printJson(result);
+
+                PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
             } catch (NumberFormatException e) {
                 if (Common.TxCountLimit.equals(key)
                         || Common.RPBFTEpochSealerNum.equals(key)
@@ -262,6 +270,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
         try {
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             CRUDService CRUDService = new CRUDService(web3j, credentials);
             Table descTable = CRUDService.desc(tableName);
             if (descTable.getKey() == null) {
@@ -298,9 +307,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.freeze(address);
-        ConsoleUtils.printJson(result);
+        TransactionReceipt receipt = contractStatusService.freezeAndRetReceipt(address);
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -322,9 +332,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.unfreeze(address);
-        ConsoleUtils.printJson(result);
+        TransactionReceipt receipt = contractStatusService.unfreezeAndRetReceipt(address);
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -357,9 +368,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(userAddr + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
-        String result = contractStatusService.grantManager(contractAddr, userAddr);
-        ConsoleUtils.printJson(result);
+        TransactionReceipt receipt =
+                contractStatusService.grantManagerAndRetReceipt(contractAddr, userAddr);
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -381,6 +394,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         String result = contractStatusService.getStatus(address);
         ConsoleUtils.printJson(result);
@@ -405,6 +419,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             throw new ConsoleMessageException(address + " is invalid address.");
         }
 
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         String result = contractStatusService.listManager(address);
         ConsoleUtils.printJson(result);
@@ -462,6 +477,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             CRUDParseUtils.checkTableParams(table);
+
+            Credentials credentials = accountManager.getCurrentAccountCredentials();
             CRUDService CRUDService = new CRUDService(web3j, credentials);
             int result = CRUDService.createTable(table);
             if (result == 0) {
@@ -482,6 +499,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void insert(String sql) throws Exception {
         checkVersionForCRUD();
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -576,6 +595,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void update(String sql) throws Exception {
         checkVersionForCRUD();
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Entry entry = table.getEntry();
@@ -634,6 +655,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void remove(String sql) throws Exception {
         checkVersionForCRUD();
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         Table table = new Table();
         Condition condition = table.getCondition();
@@ -687,6 +710,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println();
             return;
         }
+
+        Credentials credentials = accountManager.getCurrentAccountCredentials();
         CRUDService CRUDService = new CRUDService(web3j, credentials);
         try {
             Table descTable = CRUDService.desc(table.getTableName());

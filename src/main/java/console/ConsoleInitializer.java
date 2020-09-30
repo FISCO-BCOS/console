@@ -1,8 +1,15 @@
 package console;
 
+import console.account.Account;
+import console.account.AccountImpl;
+import console.account.AccountInterface;
+import console.account.AccountManager;
+import console.account.AccountTools;
 import console.common.Common;
 import console.common.ContractClassFactory;
+import console.common.DeployContractManager;
 import console.common.HelpInfo;
+import console.common.PathUtils;
 import console.contract.ContractFace;
 import console.contract.ContractImpl;
 import console.precompiled.PrecompiledFace;
@@ -12,6 +19,7 @@ import console.precompiled.permission.PermissionImpl;
 import console.web3j.Web3jFace;
 import console.web3j.Web3jImpl;
 import java.io.Console;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -23,18 +31,13 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.UnrecoverableKeyException;
-import java.security.interfaces.ECPrivateKey;
-import java.security.spec.ECParameterSpec;
 import java.security.spec.InvalidKeySpecException;
-import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.fisco.bcos.channel.client.P12Manager;
 import org.fisco.bcos.channel.client.PEMManager;
 import org.fisco.bcos.channel.client.Service;
 import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.crypto.ECKeyPair;
 import org.fisco.bcos.web3j.crypto.EncryptType;
-import org.fisco.bcos.web3j.crypto.Keys;
-import org.fisco.bcos.web3j.crypto.gm.GenCredential;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.Web3j;
 import org.fisco.bcos.web3j.protocol.channel.ChannelEthereumService;
@@ -53,12 +56,12 @@ public class ConsoleInitializer {
 
     private ChannelEthereumService channelEthereumService;
     private ApplicationContext context;
-    private ECKeyPair keyPair;
     private StaticGasProvider gasProvider =
             new StaticGasProvider(new BigInteger("300000000"), new BigInteger("300000000"));
     private Web3j web3j = null;
-    private Credentials credentials;
-    private String privateKey = "";
+    private Account account = null;;
+    private AccountManager accountManager = null;
+    private DeployContractManager deployContractManager = null;
     private int groupID;
     public static final int InvalidRequest = 40009;
     public static final String ACCOUNT_DIR1 = "accounts/";
@@ -68,6 +71,50 @@ public class ConsoleInitializer {
     private PrecompiledFace precompiledFace;
     private PermissionFace permissionFace;
     private ContractFace contractFace;
+    private AccountInterface accountInterface;
+
+    /** @return */
+    public Account randomLoadAccount() {
+        try {
+            File accountsDir = new File(PathUtils.ACCOUNT_DIRECTORY);
+            for (File file : accountsDir.listFiles()) {
+                if (file.getName().endsWith("public.pem")) {
+                    continue;
+                }
+
+                if (!file.getName().endsWith(".pem")) {
+                    continue;
+                }
+
+                if (EncryptType.encryptType == EncryptType.SM2_TYPE
+                        && !file.getName().contains("gm")) {
+                    continue;
+                }
+
+                if (EncryptType.encryptType == EncryptType.ECDSA_TYPE
+                        && file.getName().contains("gm")) {
+                    continue;
+                }
+
+                try {
+                    // load pem file
+                    Account pemAccount = AccountTools.loadAccount(file.getAbsolutePath(), "");
+                    logger.info(
+                            "load {} successfully, address: {}, type: {}",
+                            file.getName(),
+                            pemAccount.getCredentials().getAddress(),
+                            pemAccount.getPrivateKeyType());
+                    return pemAccount;
+                } catch (Exception e) {
+                    logger.debug("e: ", e);
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("e: ", e);
+        }
+
+        return null;
+    }
 
     public void init(String[] args)
             throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
@@ -76,10 +123,12 @@ public class ConsoleInitializer {
         context = new ClassPathXmlApplicationContext("classpath:applicationContext.xml");
         Service service = context.getBean(Service.class);
         groupID = service.getGroupId();
+        accountManager = new AccountManager();
+        deployContractManager = DeployContractManager.newGroupDeployedContractManager();
 
         switch (args.length) {
             case 0: // bash start.sh
-                useDefaultCredentials();
+                // do nothing
                 break;
             case 1: // bash start.sh groupID
                 if ("-l".equals(args[0])) { // input by scanner for log
@@ -87,13 +136,11 @@ public class ConsoleInitializer {
                 } else {
                     groupID = setGroupID(args[0]);
                 }
-                useDefaultCredentials();
                 break;
             case 2: // bash start.sh groupID -l
                 if ("-l".equals(args[1])) { // input by scanner for log
                     ConsoleClient.INPUT_FLAG = 1;
                     groupID = setGroupID(args[0]);
-                    useDefaultCredentials();
                 } else {
                     HelpInfo.startHelp();
                     close();
@@ -112,10 +159,6 @@ public class ConsoleInitializer {
                 }
         }
 
-        if (credentials == null) {
-            System.out.println("Please provide a valid account.");
-            close();
-        }
         service.setGroupId(groupID);
         try {
             service.run();
@@ -141,36 +184,75 @@ public class ConsoleInitializer {
             web3j.getBlockNumber().sendForReturnString();
 
             Version nodeVersion = web3j.getNodeVersion().send().getNodeVersion();
-            String version = nodeVersion.getSupportedVersion();
-            PrecompiledCommon.BCOS_VERSION = version;
-            if (version == null || PrecompiledCommon.BCOS_RC1.equals(version)) {
+            String supportedVersion = nodeVersion.getSupportedVersion();
+            String version = nodeVersion.getVersion();
+
+            PrecompiledCommon.BCOS_VERSION = supportedVersion;
+            if (supportedVersion == null || PrecompiledCommon.BCOS_RC1.equals(supportedVersion)) {
                 Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC1;
-            } else if (PrecompiledCommon.BCOS_RC2.equals(version)) {
+            } else if (PrecompiledCommon.BCOS_RC2.equals(supportedVersion)) {
                 Common.PermissionCode = PrecompiledCommon.PermissionDenied;
                 Common.TableExist = PrecompiledCommon.TableExist;
             } else {
                 Common.PermissionCode = PrecompiledCommon.PermissionDenied_RC3;
                 Common.TableExist = PrecompiledCommon.TableExist_RC3;
             }
+
+            if (version.contains("gm") && EncryptType.encryptType == EncryptType.ECDSA_TYPE) {
+                System.out.println(
+                        " The blockchain node is the SM(GuoMi) mode, the encryptType parameter which in applicationContext.xml should be set to \"1\"");
+                close();
+            } else if (!version.contains("gm") && EncryptType.encryptType == EncryptType.SM2_TYPE) {
+                System.out.println(
+                        " The blockchain node is the NonSM mode, the encryptType parameter which in applicationContext.xml should be set to \"0\"");
+                close();
+            }
+
+            if (account == null) {
+                account = randomLoadAccount();
+                if (account == null) {
+                    account = AccountTools.newAccount();
+                    AccountTools.saveAccount(account, PathUtils.ACCOUNT_DIRECTORY);
+                }
+            }
+
+            if (!account.isTypeMatchingAccount()) {
+                System.out.println(
+                        " the -pem/-p12 private key not available, private key type:"
+                                + AccountTools.getPrivateKeyTypeAsString(
+                                        account.getPrivateKeyType())
+                                + " ,console configuration encryptType: "
+                                + AccountTools.getPrivateKeyTypeAsString(EncryptType.encryptType));
+                close();
+            }
+
+            accountManager.addAccount(account);
+            accountManager.setCurrentAccount(account);
+
             web3jFace = new Web3jImpl();
             web3jFace.setWeb3j(web3j);
             web3jFace.setGasProvider(gasProvider);
-            web3jFace.setCredentials(credentials);
+            web3jFace.setAccountManager(accountManager);
 
             precompiledFace = new PrecompiledImpl();
             precompiledFace.setWeb3j(web3j);
-            precompiledFace.setCredentials(credentials);
+            precompiledFace.setAccountManager(accountManager);
 
             permissionFace = new PermissionImpl();
             permissionFace.setWeb3j(web3j);
-            permissionFace.setCredentials(credentials);
+            permissionFace.setAccountManager(accountManager);
 
             contractFace = new ContractImpl();
             contractFace.setGroupID(groupID);
             contractFace.setGasProvider(gasProvider);
-            contractFace.setCredentials(credentials);
             contractFace.setWeb3j(web3j);
+            contractFace.setAccountManager(accountManager);
+            contractFace.setDeployContractManager(deployContractManager);
 
+            accountInterface = new AccountImpl();
+            accountInterface.setAccountManager(accountManager);
+
+            deployContractManager.setGroupId(String.valueOf(groupID));
         } catch (ResponseExcepiton e) {
             if (e.getCode() == InvalidRequest) {
                 System.out.println("Don't connect a removed node.");
@@ -187,108 +269,59 @@ public class ConsoleInitializer {
         }
     }
 
-    private void checkAccountPrivateKey(ECParameterSpec ecParameterSpec, int encryptType) {
-
-        String name = ((ECNamedCurveSpec) ecParameterSpec).getName();
-        boolean accountPrivateKeyMatch =
-                ((EncryptType.ECDSA_TYPE != EncryptType.encryptType) && name.contains("sm2"))
-                        || ((EncryptType.ECDSA_TYPE == EncryptType.encryptType)
-                                && name.contains("secp256k1"));
-
-        logger.info(" name: {}, encrypt: {}", name, encryptType);
-
-        if (!accountPrivateKeyMatch) {
-            if (EncryptType.ECDSA_TYPE == EncryptType.encryptType) {
-                throw new IllegalArgumentException(
-                        " Load SM2 private key while configuration is ECSDA type");
-            } else {
-                throw new IllegalArgumentException(
-                        " Load ECSDA private key while configuration is SM2 type");
-            }
-        }
-    }
-
-    private void handleAccountParam(String[] args)
-            throws UnrecoverableKeyException, KeyStoreException, NoSuchAlgorithmException,
-                    InvalidKeySpecException, NoSuchProviderException,
-                    InvalidAlgorithmParameterException {
+    private void handleAccountParam(String[] args) {
         if ("-pem".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String pemName = args[2];
-            PEMManager pem = new PEMManager();
 
-            InputStream in = readAccountFile(pemName);
-            try {
+            try (InputStream in = readAccountFile(pemName)) {
+                PEMManager pem = new PEMManager();
                 pem.load(in);
+                ECKeyPair keyPair = pem.getECKeyPair();
+                Credentials credentials = Credentials.create(keyPair);
+                account = new Account(credentials);
+                account.setPrivateKeyType(AccountTools.getPrivateKeyType(pem.getPrivateKey()));
             } catch (Exception e) {
-                System.out.println(e.getMessage());
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                System.out.println(
+                        "Failed to load "
+                                + pemName
+                                + ", maybe it's not a valid PEM format file, error: "
+                                + e.getMessage());
+                logger.error(" e: {}", e);
                 close();
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                        logger.error(" message: {}, e: {}", e.getMessage(), e);
-                    }
-                }
             }
 
-            ECKeyPair keyPair = pem.getECKeyPair();
-            credentials = Credentials.create(keyPair);
-
-            checkAccountPrivateKey(
-                    ((ECPrivateKey) pem.getPrivateKey()).getParams(), EncryptType.encryptType);
         } else if ("-p12".equals(args[1])) {
             groupID = setGroupID(args[0]);
             String p12Name = args[2];
 
-            InputStream in = readAccountFile(p12Name);
-            if (null == in) {
-                return;
-            }
-
-            System.out.print("Enter Export Password:");
-            Console cons = System.console();
-            char[] passwd = cons.readPassword();
-            String password = new String(passwd);
-            P12Manager p12Manager = new P12Manager();
-            p12Manager.setPassword(password);
-
-            try {
+            try (InputStream in = readAccountFile(p12Name)) {
+                System.out.print("Enter Export Password:");
+                Console cons = System.console();
+                char[] passwd = cons.readPassword();
+                String password = new String(passwd);
+                P12Manager p12Manager = new P12Manager();
+                p12Manager.setPassword(password);
                 p12Manager.load(in, password);
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
-                close();
-            } finally {
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (IOException e) {
-                        System.out.println(e.getMessage());
-                        logger.error(" message: {}, e: {}", e.getMessage(), e);
-                    }
-                }
-            }
 
-            ECKeyPair keyPair;
-            try {
-                keyPair = p12Manager.getECKeyPair();
-                credentials = Credentials.create(keyPair);
+                ECKeyPair keyPair = p12Manager.getECKeyPair();
+                Credentials credentials = Credentials.create(keyPair);
+                account = new Account(credentials);
+                account.setPrivateKeyType(
+                        AccountTools.getPrivateKeyType(p12Manager.getPrivateKey()));
             } catch (Exception e) {
-                System.out.println("The name for p12 account is error.");
+                System.out.println(
+                        "Failed to load "
+                                + p12Name
+                                + ", maybe it's not a valid P12 format file, error: "
+                                + e.getMessage());
+                logger.error(" e: {}", e);
                 close();
             }
 
-            checkAccountPrivateKey(
-                    ((ECPrivateKey) p12Manager.getPrivateKey()).getParams(),
-                    EncryptType.encryptType);
         } else if ("-l".equals(args[1])) {
             groupID = setGroupID(args[0]);
             ConsoleClient.INPUT_FLAG = 1;
-            useDefaultCredentials();
         } else {
             HelpInfo.startHelp();
             close();
@@ -308,14 +341,6 @@ public class ConsoleInitializer {
             close();
         }
         return null;
-    }
-
-    private void useDefaultCredentials()
-            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
-                    NoSuchProviderException {
-        keyPair = Keys.createEcKeyPair();
-        privateKey = keyPair.getPrivateKey().toString(16);
-        credentials = GenCredential.create(privateKey);
     }
 
     public void switchGroupID(String[] params) throws IOException {
@@ -379,6 +404,7 @@ public class ConsoleInitializer {
         permissionFace.setWeb3j(web3j);
         contractFace.setWeb3j(web3j);
         contractFace.setGroupID(groupID);
+        deployContractManager.setGroupId(String.valueOf(groupID));
 
         System.out.println("Switched to group " + groupID + ".");
         System.out.println();
@@ -436,20 +462,16 @@ public class ConsoleInitializer {
         this.web3j = web3j;
     }
 
-    public Credentials getCredentials() {
-        return credentials;
+    public Account getAccount() {
+        return account;
     }
 
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
     public int getGroupID() {
         return this.groupID;
-    }
-
-    public void setGroupID(int groupID) {
-        this.groupID = groupID;
     }
 
     public Web3jFace getWeb3jFace() {
@@ -466,5 +488,21 @@ public class ConsoleInitializer {
 
     public ContractFace getContractFace() {
         return contractFace;
+    }
+
+    public AccountManager getAccountManager() {
+        return accountManager;
+    }
+
+    public void setAccountManager(AccountManager accountManager) {
+        this.accountManager = accountManager;
+    }
+
+    public AccountInterface getAccountInterface() {
+        return accountInterface;
+    }
+
+    public void setAccountInterface(AccountInterface accountInterface) {
+        this.accountInterface = accountInterface;
     }
 }

@@ -2,6 +2,7 @@ package console.web3j;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import console.account.AccountManager;
 import console.common.AbiAndBin;
 import console.common.Address;
 import console.common.Common;
@@ -13,7 +14,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
-import org.fisco.bcos.web3j.crypto.Credentials;
 import org.fisco.bcos.web3j.precompile.common.PrecompiledCommon;
 import org.fisco.bcos.web3j.protocol.ObjectMapperFactory;
 import org.fisco.bcos.web3j.protocol.Web3j;
@@ -31,7 +31,7 @@ import org.fisco.bcos.web3j.utils.Numeric;
 public class Web3jImpl implements Web3jFace {
 
     private Web3j web3j;
-    private Credentials credentials;
+    private AccountManager accountManager;
     private StaticGasProvider gasProvider;
 
     @Override
@@ -40,8 +40,8 @@ public class Web3jImpl implements Web3jFace {
     }
 
     @Override
-    public void setCredentials(Credentials credentials) {
-        this.credentials = credentials;
+    public void setAccountManager(AccountManager accountManager) {
+        this.accountManager = accountManager;
     }
 
     @Override
@@ -218,7 +218,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getBlockByNumberHelp();
             return;
         }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr1);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }
@@ -298,7 +298,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getBlockHeaderByNumberHelp();
             return;
         }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr1);
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr1);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }
@@ -342,7 +342,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.getBlockHashByNumberHelp();
             return;
         }
-        int blockNumberi = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        int blockNumberi = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumberi == Common.InvalidReturnNumber) {
             return;
         }
@@ -385,7 +385,7 @@ public class Web3jImpl implements Web3jFace {
         }
         ConsoleUtils.printJson(transactionJson);
         if (params.length == 3) {
-            TxDecodeUtil.decdeInputForTransaction(params[2], transactionJson);
+            TxDecodeUtil.decodeInputForTransaction(params[2], transactionJson);
         }
         System.out.println();
     }
@@ -414,7 +414,7 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         String indexStr = params[2];
-        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
+        int index = ConsoleUtils.processNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
             return;
         }
@@ -430,7 +430,7 @@ public class Web3jImpl implements Web3jFace {
                         .sendForReturnString();
         ConsoleUtils.printJson(transactionJson);
         if (params.length == 4) {
-            TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
+            TxDecodeUtil.decodeInputForTransaction(params[3], transactionJson);
         }
         System.out.println();
     }
@@ -455,7 +455,7 @@ public class Web3jImpl implements Web3jFace {
             HelpInfo.promptHelp("getTransactionByBlockNumberAndIndex");
             return;
         }
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }
@@ -467,7 +467,7 @@ public class Web3jImpl implements Web3jFace {
             return;
         }
         String indexStr = params[2];
-        int index = ConsoleUtils.proccessNonNegativeNumber("index", indexStr);
+        int index = ConsoleUtils.processNonNegativeNumber("index", indexStr);
         if (index == Common.InvalidReturnNumber) {
             return;
         }
@@ -489,7 +489,7 @@ public class Web3jImpl implements Web3jFace {
                         .sendForReturnString();
         ConsoleUtils.printJson(transactionJson);
         if (params.length == 4) {
-            TxDecodeUtil.decdeInputForTransaction(params[3], transactionJson);
+            TxDecodeUtil.decodeInputForTransaction(params[3], transactionJson);
         }
         System.out.println();
     }

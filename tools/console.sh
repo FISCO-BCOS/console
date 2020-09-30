@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+dirpath="$(cd "$(dirname "$0")" && pwd)"
+cd $dirpath
+
 LANG=zh_CN.UTF-8
 ##############################################################################
 ##
@@ -9,6 +12,7 @@ LANG=zh_CN.UTF-8
 
 # @function: output log with red color (error log)
 # @param: content: error message
+
 function LOG_ERROR()
 {
     local content=${1}
@@ -24,14 +28,10 @@ function LOG_INFO()
 }
 
 function Usage() {
-    LOG_INFO "# Compile Solidity Tool"
-    LOG_INFO "./sol2java.sh [packageName] [solidityFilePath] [javaCodeOutputDir]"
-    LOG_INFO " \t packageName:"
-    LOG_INFO " \t\t the package name of the generated Java class file"
-    LOG_INFO " \t solidityFilePath:"
-    LOG_INFO " \t\t (optional) the solidity file path or the directory where solidity files located, default: contracts/solidity"
-    LOG_INFO " \t javaCodeOutputDir:"
-    LOG_INFO " \t\t (optional) the directory where the generated Java files located, default: contracts/sdk/java"
+    LOG_INFO "Usage:start the console in non-interactive mode"
+    LOG_INFO "./console.sh"
+    LOG_INFO "./console.sh -h"
+    LOG_INFO "./console.sh --version or -v"
 }
 
 function check_java(){
@@ -57,12 +57,10 @@ function check_java(){
        exit 1
    fi
 }
-if [ $# == 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
-    Usage
-    exit 0
+
+if [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
+    java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
-     check_java
-     java -cp "apps/*:lib/*:conf/" console.common.ConsoleUtils $@
+   check_java
+   java -cp "apps/*:conf/:lib/*:classes/:accounts/" console.NonInteractiveConsoleClient "$@"
 fi
-
-

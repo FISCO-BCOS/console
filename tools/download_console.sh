@@ -1,6 +1,6 @@
 #!/bin/bash
 package_name="console.tar.gz"
-default_version="1.1.1"
+default_version="1.2.0"
 solc_suffix=""
 supported_solc_versions=(0.4 0.5 0.6)
 
