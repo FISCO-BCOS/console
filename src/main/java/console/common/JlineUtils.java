@@ -477,7 +477,6 @@ public class JlineUtils {
                         "getAccountStatus",
                         "newAccount",
                         "listAccount",
-                        "newAccount",
                         "quit",
                         "exit",
                         "desc",

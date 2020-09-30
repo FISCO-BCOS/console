@@ -827,7 +827,7 @@ public class HelpInfo {
 
     public static void newAccountHelp() {
         System.out.println(
-                "create a new account for the transaction signature, the account private file will be recorded in the \'accounts/\' directory automatically");
+                "create a new account for the transaction signature, the account private file will be recorded to the \'accounts/\' directory in PEM format automatically");
         System.out.println("Usage: newAccount");
         System.out.println();
     }
