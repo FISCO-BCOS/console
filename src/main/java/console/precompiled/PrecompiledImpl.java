@@ -76,12 +76,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             TransactionReceipt receipt = consensusService.addSealerAndRetReceipt(nodeId);
-            if (receipt.isStatusOK()) { // deal with precompiled return
-                String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-                ConsoleUtils.printJson(result);
-            } else { // deal with transaction result
-                PrecompiledUtility.handleTransactionReceipt(receipt);
-            }
+            PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         }
         System.out.println();
     }
@@ -109,12 +104,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             TransactionReceipt receipt = consensusService.addObserverAndRetReceipt(nodeId);
-            if (receipt.isStatusOK()) { // deal with precompiled return
-                String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-                ConsoleUtils.printJson(result);
-            } else { // deal with transaction result
-                PrecompiledUtility.handleTransactionReceipt(receipt);
-            }
+            PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         }
         System.out.println();
     }
@@ -141,12 +131,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             Credentials credentials = accountManager.getCurrentAccountCredentials();
             ConsensusService consensusService = new ConsensusService(web3j, credentials);
             TransactionReceipt receipt = consensusService.removeNodeAndRetReceipt(nodeId);
-            if (receipt.isStatusOK()) { // deal with precompiled return
-                String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-                ConsoleUtils.printJson(result);
-            } else { // deal with transaction result
-                PrecompiledUtility.handleTransactionReceipt(receipt);
-            }
+            PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         }
         System.out.println();
     }
@@ -218,12 +203,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                     System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
                 }
 
-                if (receipt.isStatusOK()) { // deal with precompiled return
-                    String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-                    ConsoleUtils.printJson(result);
-                } else { // deal with transaction result
-                    PrecompiledUtility.handleTransactionReceipt(receipt);
-                }
+                PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
             } catch (NumberFormatException e) {
                 if (Common.TxCountLimit.equals(key)
                         || Common.RPBFTEpochSealerNum.equals(key)
@@ -330,12 +310,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         TransactionReceipt receipt = contractStatusService.freezeAndRetReceipt(address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -360,12 +335,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         Credentials credentials = accountManager.getCurrentAccountCredentials();
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         TransactionReceipt receipt = contractStatusService.unfreezeAndRetReceipt(address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -402,12 +372,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         ContractStatusService contractStatusService = new ContractStatusService(web3j, credentials);
         TransactionReceipt receipt =
                 contractStatusService.grantManagerAndRetReceipt(contractAddr, userAddr);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 

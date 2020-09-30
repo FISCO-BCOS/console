@@ -66,12 +66,7 @@ public class PermissionImpl implements PermissionFace {
         Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt = permission.grantAndRetReceipt(tableName, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -104,12 +99,7 @@ public class PermissionImpl implements PermissionFace {
         Credentials credentials = accountManager.getCurrentAccountCredentials();
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt = permission.revokeAndRetReceipt(tableName, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -159,12 +149,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.grantAndRetReceipt(PrecompiledCommon.SYS_TABLE, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -192,12 +177,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.revokeAndRetReceipt(PrecompiledCommon.SYS_TABLE, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -236,12 +216,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.grantAndRetReceipt(PrecompiledCommon.SYS_CONSENSUS, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -269,12 +244,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.revokeAndRetReceipt(PrecompiledCommon.SYS_CONSENSUS, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -313,12 +283,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.grantAndRetReceipt(PrecompiledCommon.SYS_CNS, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -346,12 +311,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.revokeAndRetReceipt(PrecompiledCommon.SYS_CNS, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -391,12 +351,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.grantAndRetReceipt(PrecompiledCommon.SYS_CONFIG, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -425,12 +380,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.revokeAndRetReceipt(PrecompiledCommon.SYS_CONFIG, address);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -528,12 +478,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.grantWriteAndRetReceipt(contractAddress, userAddress);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -573,12 +518,7 @@ public class PermissionImpl implements PermissionFace {
         PermissionService permission = new PermissionService(web3j, credentials);
         TransactionReceipt receipt =
                 permission.revokeWriteAndRetReceipt(contractAddress, userAddress);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -610,12 +550,7 @@ public class PermissionImpl implements PermissionFace {
                 new ChainGovernanceService(web3j, credentials);
         TransactionReceipt receipt =
                 chainGovernanceService.grantCommitteeMemberAndRetReceipt(accountAddress);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -646,12 +581,7 @@ public class PermissionImpl implements PermissionFace {
                 new ChainGovernanceService(web3j, credentials);
         TransactionReceipt receipt =
                 chainGovernanceService.revokeCommitteeMemberAndRetReceipt(accountAddress);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -747,12 +677,7 @@ public class PermissionImpl implements PermissionFace {
         TransactionReceipt receipt =
                 chainGovernanceService.updateCommitteeMemberWeightAndRetReceipt(
                         accountAddress, weight);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -791,12 +716,7 @@ public class PermissionImpl implements PermissionFace {
         ChainGovernanceService chainGovernanceService =
                 new ChainGovernanceService(web3j, credentials);
         TransactionReceipt receipt = chainGovernanceService.updateThresholdAndRetReceipt(threshold);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -841,12 +761,7 @@ public class PermissionImpl implements PermissionFace {
                 new ChainGovernanceService(web3j, credentials);
         TransactionReceipt receipt =
                 chainGovernanceService.grantOperatorAndRetReceipt(accountAddress);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -877,12 +792,7 @@ public class PermissionImpl implements PermissionFace {
                 new ChainGovernanceService(web3j, credentials);
         TransactionReceipt receipt =
                 chainGovernanceService.revokeOperatorAndRetReceipt(accountAddress);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -926,12 +836,7 @@ public class PermissionImpl implements PermissionFace {
                 new ChainGovernanceService(web3j, credentials);
         TransactionReceipt receipt =
                 chainGovernanceService.freezeAccountAndRetReceipt(accountAddress);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
@@ -962,12 +867,7 @@ public class PermissionImpl implements PermissionFace {
                 new ChainGovernanceService(web3j, credentials);
         TransactionReceipt receipt =
                 chainGovernanceService.unfreezeAccountAndRetReceipt(accountAddress);
-        if (receipt.isStatusOK()) { // deal with precompiled return
-            String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-            ConsoleUtils.printJson(result);
-        } else { // deal with transaction result
-            PrecompiledUtility.handleTransactionReceipt(receipt);
-        }
+        PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
         System.out.println();
     }
 
