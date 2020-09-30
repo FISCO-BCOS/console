@@ -45,6 +45,14 @@ public class WelcomeInfo {
                 "queryCNS                                 Query CNS information by contract name and contract version.\n");
         sb.append(
                 "listAbi                                  List functions and events info of the contract.\n");
+        sb.append(
+                "newAccount                               Create new account for the transaction signature.\n");
+        sb.append(
+                "loadAccount                              Load account for the transaction signature.\n");
+        sb.append(
+                "switchAccount                            Switch account for the transaction signature.\n");
+        sb.append(
+                "listAccount                              List all accounts loaded for transaction signature.\n");
         sb.append("addObserver                              Add an observer node.\n");
         sb.append("addSealer                                Add a sealer node.\n");
         sb.append("removeNode                               Remove a node.\n");
@@ -156,7 +164,7 @@ public class WelcomeInfo {
         sb.append("[delete sql]                             Remove records by sql.\n");
         sb.append("[insert sql]                             Insert records by sql.\n");
         sb.append("[select sql]                             Select records by sql.\n");
-        sb.append("[update sql]                             Update records by sql.");
+        sb.append("[update sql]                             Update records by sql.\n");
         sb.append("desc                                     Description table information.\n");
         sb.append(
                 "switch(s)                                Switch to a specific group by group ID.\n");
