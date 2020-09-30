@@ -130,14 +130,22 @@ public class ContractImpl implements ContractFace {
                             contractClass,
                             params,
                             2);
-            Contract contract = (Contract) remoteCall.send();
-            // TransactionReceipt transactionReceipt = contract.getTransactionReceipt().get();
-            String contractAddress = contract.getContractAddress();
-            System.out.println("contract address: " + contractAddress);
-            System.out.println();
-            contractAddress = contract.getContractAddress();
-            deployContractManager.addNewDeployContract(
-                    String.valueOf(groupID), name, contractAddress);
+            try {
+                Contract contract = (Contract) remoteCall.send();
+                String contractAddress = contract.getContractAddress();
+                System.out.println("contract address: " + contractAddress);
+                System.out.println();
+                contractAddress = contract.getContractAddress();
+                deployContractManager.addNewDeployContract(
+                        String.valueOf(groupID), name, contractAddress);
+            } catch (TransactionException e) {
+                logger.error("e: ", e);
+                if (e.getReceipt() != null) {
+                    handleTransactionReceipt(null, e.getReceipt());
+                } else {
+                    throw e;
+                }
+            }
         } catch (Exception e) {
             logger.error("e: ", e);
             if ((e.getMessage() != null) && e.getMessage().contains("0x19")) {
@@ -520,31 +528,6 @@ public class ContractImpl implements ContractFace {
             return;
         }
 
-        /*
-        The node performs permission detection, remove it from console
-         */
-        /*
-        PermissionService permissionTableService =
-                new PermissionService(web3j, accountManager.getCurrentAccountCredentials());
-        List<PermissionInfo> permissions = permissionTableService.listCNSManager();
-        boolean flag = false;
-        if (permissions.size() == 0) {
-            flag = true;
-        } else {
-            for (PermissionInfo permission : permissions) {
-                if ((accountManager.getCurrentAccountCredentials().getAddress())
-                        .equals(permission.getAddress())) {
-                    flag = true;
-                    break;
-                }
-            }
-        }
-        if (!flag) {
-            ConsoleUtils.printJson(PrecompiledCommon.transferToJson(Common.PermissionCode));
-            System.out.println();
-            return;
-        }*/
-
         String contractPath = params[1];
         File solFile = PathUtils.getSolFile(contractPath);
         String name = solFile.getName().split("\\.")[0];
@@ -573,18 +556,43 @@ public class ContractImpl implements ContractFace {
             if (!ContractClassFactory.checkVersion(contractVersion)) {
                 return;
             }
-            Contract contract = (Contract) remoteCall.send();
-            String contractAddress = contract.getContractAddress();
-            // register cns
-            cnsService.registerCns(
-                    name,
-                    contractVersion,
-                    contractAddress,
-                    TxDecodeUtil.readAbiAndBin(name).getAbi());
-            System.out.println("contract address: " + contractAddress);
-            String contractName = name + ":" + contractVersion;
-            deployContractManager.addNewDeployContract(
-                    String.valueOf(groupID), name, contractAddress);
+
+            try {
+                Contract contract = (Contract) remoteCall.send();
+                String contractAddress = contract.getContractAddress();
+                System.out.println("contract address: " + contractAddress);
+                // String contractName = name + ":" + contractVersion;
+                deployContractManager.addNewDeployContract(
+                        String.valueOf(groupID), name, contractAddress);
+
+                ConsoleUtils.singleLine();
+                System.out.println("register contract to cns: ");
+                // register cns
+                TransactionReceipt receipt =
+                        cnsService.registerCnsAndRetReceipt(
+                                name,
+                                contractVersion,
+                                contractAddress,
+                                TxDecodeUtil.readAbiAndBin(name).getAbi());
+
+                if (receipt.isStatusOK()) { // deal with precompiled return
+                    String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
+                    ConsoleUtils.printJson(result);
+                } else { // deal with transaction result
+                    PrecompiledUtility.handleTransactionReceipt(receipt);
+                }
+
+                System.out.println("");
+
+            } catch (TransactionException e) {
+                logger.error("e: ", e);
+                if (e.getReceipt() != null) {
+                    handleTransactionReceipt(null, e.getReceipt());
+                } else {
+                    throw e;
+                }
+            }
+
             System.out.println();
         } catch (Exception e) {
             if (e.getMessage().contains("0x19")) {
@@ -702,7 +710,6 @@ public class ContractImpl implements ContractFace {
         }
         RemoteCall<?> remoteCall = (RemoteCall<?>) func.invoke(contractObject, argobj);
         Object result = remoteCall.send();
-        // logger.info(" ====>>> " + result.getClass().getName());
         if (result instanceof TransactionReceipt) {
             handleTransactionReceipt(abi, (TransactionReceipt) result);
         } else {
