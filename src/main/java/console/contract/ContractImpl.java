@@ -561,7 +561,6 @@ public class ContractImpl implements ContractFace {
                 Contract contract = (Contract) remoteCall.send();
                 String contractAddress = contract.getContractAddress();
                 System.out.println("contract address: " + contractAddress);
-                // String contractName = name + ":" + contractVersion;
                 deployContractManager.addNewDeployContract(
                         String.valueOf(groupID), name, contractAddress);
 
@@ -575,12 +574,7 @@ public class ContractImpl implements ContractFace {
                                 contractAddress,
                                 TxDecodeUtil.readAbiAndBin(name).getAbi());
 
-                if (receipt.isStatusOK()) { // deal with precompiled return
-                    String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-                    ConsoleUtils.printJson(result);
-                } else { // deal with transaction result
-                    PrecompiledUtility.handleTransactionReceipt(receipt);
-                }
+                PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
 
                 System.out.println("");
 
@@ -855,16 +849,8 @@ public class ContractImpl implements ContractFace {
             TransactionReceipt receipt =
                     cnsService.registerCnsAndRetReceipt(
                             name, contractVersion, contractAddress, abi);
-            if (receipt.isStatusOK()) { // deal with precompiled return
-                String result = PrecompiledCommon.handleTransactionReceipt(receipt, web3j);
-                ConsoleUtils.printJson(result);
-                if (result.contains("success")) {
-                    deployContractManager.addNewDeployContract(
-                            String.valueOf(groupID), name, contractAddress);
-                }
-            } else { // deal with transaction result
-                PrecompiledUtility.handleTransactionReceipt(receipt);
-            }
+
+            PrecompiledUtility.handleTransactionReceipt(receipt, web3j);
 
             System.out.println();
         } catch (Exception e) {
