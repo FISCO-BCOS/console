@@ -12,6 +12,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -38,6 +44,7 @@ public class ConsoleUtils {
     public static final String ABI_PATH = "contracts/sdk/abi/";
     public static final String BIN_PATH = "contracts/sdk/bin/";
     public static final String SOL_POSTFIX = ".sol";
+    public static final String GM_ACCOUNT_POSTFIX = "_gm";
     public static final int ADDRESS_SIZE = 160;
     public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
 
@@ -526,5 +533,24 @@ public class ConsoleUtils {
     public static boolean isValidAddress(String address) {
         String addressNoPrefix = Numeric.cleanHexPrefix(address);
         return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX;
+    }
+
+    public static String getFileCreationTime(File file) {
+        if (file == null) {
+            return null;
+        }
+        BasicFileAttributes attr = null;
+        try {
+            Path path = file.toPath();
+            attr = Files.readAttributes(path, BasicFileAttributes.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Instant instant = attr.creationTime().toInstant();
+        String format =
+                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                        .withZone(ZoneId.systemDefault())
+                        .format(instant);
+        return format;
     }
 }

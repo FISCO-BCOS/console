@@ -3,7 +3,7 @@
 set -e
 pkcs12_file=""
 sm3_base64=""
-output_path="accounts"
+output_path="accounts_gm"
 sm3_bin="/tmp/sm3"
 sm3_tar="/tmp/sm3.tgz"
 TASSL_CMD="${HOME}/.fisco/tassl"
@@ -147,7 +147,7 @@ main()
     fi
     ${TASSL_CMD} genpkey -paramfile /tmp/gmsm2.param -out ${output_path}/ecprivkey.pem 2>/dev/null
     calculate_address_pem ${output_path}/ecprivkey.pem "true"
-    output_file_prefix=${output_path}/0x${accountAddress}_gm
+    output_file_prefix=${output_path}/0x${accountAddress}
     if [ -z "$pkcs12_file" ];then
         mv ${output_path}/ecprivkey.pem ${output_file_prefix}.pem
         LOG_INFO "Account Address   : 0x${accountAddress}"

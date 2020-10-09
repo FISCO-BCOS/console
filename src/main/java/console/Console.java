@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.crypto.exceptions.SignatureException;
+import org.fisco.bcos.sdk.model.CryptoType;
 import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
@@ -133,6 +135,16 @@ public class Console {
                                 + "\"}");
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
+            } catch (SignatureException e) {
+                System.out.println("\nSignatureException for " + e.getMessage());
+                if (consoleInitializer.getClient().getCryptoType() == CryptoType.SM_TYPE) {
+                    System.out.println(
+                            "Current ledger crypto type is SM, please make sure the account is a sm account!\n");
+                } else if (consoleInitializer.getClient().getCryptoType()
+                        == CryptoType.ECDSA_TYPE) {
+                    System.out.println(
+                            "Current ledger crypto type is ECDSA, please make sure the account is a ecdsa account!");
+                }
             } catch (ClassNotFoundException e) {
                 System.out.println(e.getMessage() + " does not exist.");
                 System.out.println();
@@ -159,12 +171,6 @@ public class Console {
             } catch (EndOfFileException e) {
                 consoleInitializer.stop();
                 break;
-            } catch (RuntimeException e) {
-
-                System.out.println(e.getMessage());
-                System.out.println();
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
-
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println();
