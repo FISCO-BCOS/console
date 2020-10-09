@@ -12,4 +12,6 @@ public interface ConsoleContractFace {
     void callByCNS(String[] params) throws Exception;
 
     void getDeployLog(String[] params) throws Exception;
+
+    void listAbi(String[] params) throws Exception;
 }

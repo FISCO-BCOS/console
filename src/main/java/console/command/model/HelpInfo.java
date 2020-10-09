@@ -634,4 +634,11 @@ public class HelpInfo {
         System.out.println("./start.sh groupID -pem pemName");
         System.out.println("./start.sh groupID -p12 p12Name");
     }
+
+    public static void listAbiHelp() {
+        System.out.println("List functions and events info of the contract.");
+        System.out.println("Usage: listAbi [contractPath/contractName]");
+        System.out.println(
+                "contractPath/contractName[Required] -- The name or the path of a contract, if a name is specified, the contract should in the default directory \"contracts/solidity\"");
+    }
 }

@@ -1931,6 +1931,26 @@ public class SupportedCommand {
                     0,
                     0);
 
+    public static final CommandInfo LIST_ABI =
+            new CommandInfo(
+                    "listAbi",
+                    "List the current saved account list",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.listAbiHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleContractFace().listAbi(params);
+                        }
+                    },
+                    1,
+                    1);
+
     public static List<String> CRUD_COMMANDS =
             new ArrayList<String>(
                     Arrays.asList(

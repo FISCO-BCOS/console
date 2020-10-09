@@ -52,7 +52,8 @@ public class JlineUtils {
                         SupportedCommand.DEPLOY_BY_CNS.getCommand(),
                         SupportedCommand.CALL_BY_CNS.getCommand(),
                         SupportedCommand.QUERY_CNS.getCommand(),
-                        SupportedCommand.LIST_DEPLOY_CONTRACT_ADDRESS.getCommand());
+                        SupportedCommand.LIST_DEPLOY_CONTRACT_ADDRESS.getCommand(),
+                        SupportedCommand.LIST_ABI.getCommand());
 
         for (String command : commands) {
             completers.add(
