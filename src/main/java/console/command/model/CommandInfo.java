@@ -37,6 +37,7 @@ public class CommandInfo {
     private int minParamLength = -1;
     private int maxParamLength = -1;
     String minSupportVersion = null;
+    boolean supportNonInteractive = true;
 
     public CommandInfo(String command, String desc, CommandImplement commandImplement) {
         this.command = command;
@@ -78,10 +79,10 @@ public class CommandInfo {
             UsageDisplay usageDisplay,
             CommandImplement commandImplement,
             int minParamLength,
-            int maxParamlLength) {
+            int maxParamLength) {
         this(command, desc, usageDisplay, commandImplement);
         this.minParamLength = minParamLength;
-        this.maxParamLength = maxParamlLength;
+        this.maxParamLength = maxParamLength;
     }
 
     public CommandInfo(
@@ -90,9 +91,21 @@ public class CommandInfo {
             UsageDisplay usageDisplay,
             CommandImplement commandImplement,
             int minParamLength,
-            int maxParamlLength,
+            int maxParamLength,
+            boolean supportNonInteractive) {
+        this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
+        this.supportNonInteractive = supportNonInteractive;
+    }
+
+    public CommandInfo(
+            String command,
+            String desc,
+            UsageDisplay usageDisplay,
+            CommandImplement commandImplement,
+            int minParamLength,
+            int maxParamLength,
             String minSupportVersion) {
-        this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamlLength);
+        this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
         this.minSupportVersion = minSupportVersion;
     }
 
@@ -116,6 +129,34 @@ public class CommandInfo {
         this(command, desc, usageDisplay, optionCommand, commandImplement);
         this.minParamLength = minParamLength;
         this.maxParamLength = maxParamLength;
+    }
+
+    public CommandInfo(
+            String command,
+            String desc,
+            List<String> optionCommand,
+            UsageDisplay usageDisplay,
+            CommandImplement commandImplement,
+            int minParamLength,
+            int maxParamLength,
+            boolean supportNonInteractive) {
+        this(
+                command,
+                desc,
+                optionCommand,
+                usageDisplay,
+                commandImplement,
+                minParamLength,
+                maxParamLength);
+        this.supportNonInteractive = supportNonInteractive;
+    }
+
+    public boolean isSupportNonInteractive() {
+        return supportNonInteractive;
+    }
+
+    public void setSupportNonInteractive(boolean supportNonInteractive) {
+        this.supportNonInteractive = supportNonInteractive;
     }
 
     public List<String> getOptionCommand() {

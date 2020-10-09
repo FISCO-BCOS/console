@@ -3,7 +3,7 @@
 set -e
 
 scan_code_script="python ~/cobra/cobra.py -t "
-ignore_files=(.ci ConsoleClientImpl.java ConsoleInitializer.java)
+ignore_files=(.ci ConsoleClientImpl.java ConsoleInitializer.java ConsoleUtils.java)
 
 LOG_ERROR() {
     content=${1}
