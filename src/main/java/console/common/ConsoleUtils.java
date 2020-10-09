@@ -37,6 +37,7 @@ public class ConsoleUtils {
     public static final String JAVA_PATH = "contracts/sdk/java/";
     public static final String ABI_PATH = "contracts/sdk/abi/";
     public static final String BIN_PATH = "contracts/sdk/bin/";
+    public static final String SOL_POSTFIX = ".sol";
     public static final int ADDRESS_SIZE = 160;
     public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
 
