@@ -1838,7 +1838,10 @@ public class SupportedCommand {
                                 if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
                                     continue;
                                 }
-                                System.out.println(contractAddressFile.getName());
+                                System.out.printf(
+                                        "%s  %s\n",
+                                        contractAddressFile.getName(),
+                                        ConsoleUtils.getFileCreationTime(contractAddressFile));
                                 i++;
                                 if (i == recordNum) {
                                     break;

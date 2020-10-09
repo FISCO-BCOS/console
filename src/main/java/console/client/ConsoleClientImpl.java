@@ -604,8 +604,12 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             System.out.println("Empty set");
             return;
         }
+        String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
+        System.out.println(currentAccount + "(current account) <=");
         for (int i = 0; i < accountList.size(); i++) {
-            System.out.println(accountList.get(i));
+            if (!accountList.get(i).equals(currentAccount)) {
+                System.out.println(accountList.get(i));
+            }
         }
     }
 
@@ -631,11 +635,22 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         ConsoleUtils.sortFiles(accountFileList);
         for (File accountFileItem : accountFileList) {
             logger.debug("account is: {}", accountFileItem.getName());
+            // check the file format
+            if (!accountFileItem.getName().endsWith(".pem")
+                    && !accountFileItem.getName().endsWith(".p12")) {
+                continue;
+            }
             String[] accountAddressList = accountFileItem.getName().split("\\.");
             if (accountAddressList.length == 0) {
                 continue;
             }
-            String accountAddress = accountAddressList[0];
+            // trim _gm
+            String[] accountAddressListArray =
+                    accountAddressList[0].split(ConsoleUtils.GM_ACCOUNT_POSTFIX);
+            if (accountAddressListArray.length == 0) {
+                continue;
+            }
+            String accountAddress = accountAddressListArray[0];
             if (!accountList.contains(accountAddress)) {
                 accountList.add(accountAddress);
             }

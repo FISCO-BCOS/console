@@ -3,6 +3,7 @@ package console;
 import console.client.ConsoleClientFace;
 import console.client.ConsoleClientImpl;
 import console.common.Common;
+import console.common.ConsoleUtils;
 import console.contract.ConsoleContractFace;
 import console.contract.ConsoleContractImpl;
 import console.precompiled.PrecompiledFace;
@@ -17,6 +18,7 @@ import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.config.exceptions.ConfigException;
 import org.fisco.bcos.sdk.crypto.CryptoSuite;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.model.CryptoType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -235,8 +237,20 @@ public class ConsoleInitializer {
                 logger.debug("p12AccountPath: {}", accountPath);
             }
             if (!new File(accountPath).exists()) {
-                System.out.println("The account file " + accountPath + " doesn't exist!");
-                return;
+                if (client.getCryptoType() == CryptoType.SM_TYPE) {
+                    String[] accountPathArray = accountPath.split("\\.");
+                    if (accountPathArray.length > 1) {
+                        accountPath =
+                                accountPathArray[0]
+                                        + ConsoleUtils.GM_ACCOUNT_POSTFIX
+                                        + "."
+                                        + accountPathArray[1];
+                    }
+                }
+                if (!new File(accountPath).exists()) {
+                    System.out.println("The account file " + accountPath + " doesn't exist!");
+                    return;
+                }
             }
         }
         String accountPassword = null;
