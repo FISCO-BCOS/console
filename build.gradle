@@ -95,6 +95,7 @@ jar {
 			from file('tools/get_account.sh')
 			from file('tools/get_gm_account.sh')
 			from file('tools/sol2java.sh')
+			from file('tools/console.sh')
 			into 'dist/'
 		}
 		copy {

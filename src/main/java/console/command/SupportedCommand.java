@@ -402,7 +402,8 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1);
+                    1,
+                    false);
     public static final CommandInfo SET_SYSTEMCONFIGBYKEY =
             new CommandInfo(
                     "setSystemConfigByKey",
@@ -557,7 +558,7 @@ public class SupportedCommand {
                     },
                     2,
                     2);
-    public static final CommandInfo QUERY_COMMMITTEE_MEMBER_WEIGHT =
+    public static final CommandInfo QUERY_COMMITTEE_MEMBER_WEIGHT =
             new CommandInfo(
                     "queryCommitteeMemberWeight",
                     "Query the committee member weight",
@@ -578,7 +579,7 @@ public class SupportedCommand {
                     },
                     1,
                     1);
-    public static final CommandInfo REVOKE_COMMMITTEE_MEMBER =
+    public static final CommandInfo REVOKE_COMMITTEE_MEMBER =
             new CommandInfo(
                     "revokeCommitteeMember",
                     "Revoke the account from committee member",
@@ -597,7 +598,7 @@ public class SupportedCommand {
                     },
                     1,
                     1);
-    public static final CommandInfo GRANT_COMMMITTEE_MEMBER =
+    public static final CommandInfo GRANT_COMMITTEE_MEMBER =
             new CommandInfo(
                     "grantCommitteeMember",
                     "Grant the account committee member",
@@ -1309,7 +1310,7 @@ public class SupportedCommand {
                     1,
                     2);
 
-    public static final CommandInfo GET_BLOCK_BY_Number =
+    public static final CommandInfo GET_BLOCK_BY_NUMBER =
             new CommandInfo(
                     "getBlockByNumber",
                     "Query information about a block by number",
@@ -1565,7 +1566,7 @@ public class SupportedCommand {
                                     .getTotalTransactionCount(params);
                         }
                     });
-    public static final CommandInfo GET_TRANSACTIONRECEIPT =
+    public static final CommandInfo GET_TRANSACTION_RECEIPT =
             new CommandInfo(
                     "getTransactionReceipt",
                     "Query the receipt of a transaction by transaction hash",
@@ -1906,7 +1907,8 @@ public class SupportedCommand {
                         }
                     },
                     2,
-                    3);
+                    3,
+                    false);
 
     public static final CommandInfo LIST_ACCOUNT =
             new CommandInfo(
@@ -1987,6 +1989,31 @@ public class SupportedCommand {
             }
             commandInfo.printDescInfo();
             outputtedCommand.add(commandInfo.getCommand());
+        }
+    }
+
+    public static void printNonInteractiveDescInfo() {
+        System.out.println("# bash console.sh [groupId] [Subcommand]");
+        System.out.println(
+                "# groupId(Optional): The groupId that  that received the request, default is 1");
+        System.out.println(
+                "# Subcommand[Required]: The command sent to the node, Please refer to the following for the list of subCommand");
+        System.out.println(
+                "use command \"bash console.sh [subCommand] -h\" to get the help of the subcommand.\n");
+        System.out.println("# Subcommand list:");
+        Set<String> keys = commandToCommandInfo.keySet();
+        List<String> commandList = new ArrayList<String>(keys);
+        Collections.sort(commandList);
+        List<String> outputtedCommand = new ArrayList<>();
+        for (int i = 0; i < commandList.size(); i++) {
+            CommandInfo commandInfo = commandToCommandInfo.get(commandList.get(i));
+            if (outputtedCommand.contains(commandInfo.getCommand())) {
+                continue;
+            }
+            if (commandInfo.isSupportNonInteractive()) {
+                commandInfo.printDescInfo();
+                outputtedCommand.add(commandInfo.getCommand());
+            }
         }
     }
 }

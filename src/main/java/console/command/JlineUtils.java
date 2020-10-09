@@ -75,7 +75,7 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase()));
         }
 
-        commands = Arrays.asList(SupportedCommand.GET_TRANSACTIONRECEIPT.getCommand());
+        commands = Arrays.asList(SupportedCommand.GET_TRANSACTION_RECEIPT.getCommand());
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
@@ -135,13 +135,13 @@ public class JlineUtils {
         commands =
                 Arrays.asList(
                         SupportedCommand.GRANT_OPERATOR.getCommand(),
-                        SupportedCommand.GRANT_COMMMITTEE_MEMBER.getCommand(),
+                        SupportedCommand.GRANT_COMMITTEE_MEMBER.getCommand(),
                         SupportedCommand.GRANT_CNS_MANAGER.getCommand(),
                         SupportedCommand.GRANT_SYSCONFIG_MANAGER.getCommand(),
                         SupportedCommand.GRANT_DEPLOY_AND_CREATE_MANAGER.getCommand(),
                         SupportedCommand.GRANT_NODE_MANAGER.getCommand(),
                         SupportedCommand.REVOKE_OPERATOR.getCommand(),
-                        SupportedCommand.REVOKE_COMMMITTEE_MEMBER.getCommand(),
+                        SupportedCommand.REVOKE_COMMITTEE_MEMBER.getCommand(),
                         SupportedCommand.REVOKE_CNS_MANAGER.getCommand(),
                         SupportedCommand.REVOKE_SYSCONFIG_MANAGER.getCommand(),
                         SupportedCommand.REVOKE_DEPLOY_AND_CREATE_MANAGER.getCommand(),
