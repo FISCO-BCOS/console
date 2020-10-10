@@ -102,8 +102,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // save the bin and abi
             ContractCompiler.saveAbiAndBin(
                     client.getGroupId(), abiAndBin, contractName, contractAddress);
-            // save the keyPair
-            client.getCryptoSuite().getCryptoKeyPair().storeKeyPairWithPemFormat();
             return response;
         } catch (ClientException | CompileContractException | IOException | ABICodecException e) {
             throw new ConsoleMessageException("deploy contract failed for " + e.getMessage(), e);

@@ -20,6 +20,8 @@ repositories {
 
 googleJavaFormat {
   options style: 'AOSP'
+  source = sourceSets*.allJava
+  include '**/*.java'
 }
 
 

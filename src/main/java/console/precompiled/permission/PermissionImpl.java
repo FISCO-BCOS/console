@@ -26,7 +26,6 @@ public class PermissionImpl implements PermissionFace {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
         this.permissionService = new PermissionService(client, cryptoKeyPair);
         this.chainGovernanceService = new ChainGovernanceService(client, cryptoKeyPair);
-        cryptoKeyPair.storeKeyPairWithPemFormat();
     }
 
     @Override
