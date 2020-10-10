@@ -259,14 +259,16 @@ public class HelpInfo {
 
     public static void deployHelp() {
         System.out.println("Deploy a contract on blockchain.");
-        System.out.println("Usage: \ndeploy contractName");
-        System.out.println("* contractName -- The name of a contract.");
+        System.out.println("Usage: \ndeploy contractNameOrPath");
+        System.out.println(
+                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
     }
 
     public static void callHelp() {
         System.out.println("Call a contract by a function and paramters.");
-        System.out.println("Usage: \ncall contractName contractAddress function parameters");
-        System.out.println("* contractName -- The name of a contract.");
+        System.out.println("Usage: \ncall contractNameOrPath contractAddress function parameters");
+        System.out.println(
+                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("* function -- The function of a contract.");
         System.out.println("* parameters -- The parameters(splited by a space) of a function.");
@@ -274,8 +276,9 @@ public class HelpInfo {
 
     public static void deployByCNSHelp() {
         System.out.println("Deploy a contract on blockchain by CNS.");
-        System.out.println("Usage: \ndeployByCNS contractName contractVersion");
-        System.out.println("* contractName -- The name of a contract.");
+        System.out.println("Usage: \ndeployByCNS contractNameOrPath contractVersion");
+        System.out.println(
+                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
         System.out.println(
                 "* contractVersion -- The version of a contract. The maximum length of the version hex string is "
                         + PrecompiledConstant.CNS_MAX_VERSION_LENGTH
@@ -284,9 +287,10 @@ public class HelpInfo {
 
     public static void callByCNSHelp() {
         System.out.println("Call a contract by a function and paramters by CNS.");
-        System.out.println("Usage: \ncallByCNS contractName:contractVersion function parameters");
         System.out.println(
-                "* contractName:contractVersion -- The name and version of a contract. If contract version is not provided, then the latest version of contract will be called.");
+                "Usage: \ncallByCNS contractNameOrPath:contractVersion function parameters");
+        System.out.println(
+                "* contractNameOrPath:contractVersion -- The name(or path) and version of a contract. If contract version is not provided, then the latest version of contract will be called.");
         System.out.println("* function -- The function of a contract.");
         System.out.println("* parameters -- The parameters(splited by a space) of a function.");
     }
@@ -300,8 +304,10 @@ public class HelpInfo {
 
     public static void registerCNSHelp() {
         System.out.println("Register CNS information by contract name and contract version.");
-        System.out.println("Usage: \nregisterCNS contractName contractAddress contractVersion");
-        System.out.println("* contractName[Required] -- The name of a contract.");
+        System.out.println(
+                "Usage: \nregisterCNS contractNameOrPath contractAddress contractVersion");
+        System.out.println(
+                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
         System.out.println("* contractAddress[Required] -- The address of a contract.");
         System.out.println("* contractVersion[Required] -- The version of a contract.");
     }

@@ -6,6 +6,7 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
 import console.exception.CompileSolidityException;
+import console.exception.ConsoleMessageException;
 import io.netty.util.NetUtil;
 import java.io.File;
 import java.io.IOException;
@@ -552,5 +553,38 @@ public class ConsoleUtils {
                         .withZone(ZoneId.systemDefault())
                         .format(instant);
         return format;
+    }
+
+    public static String removeSolPostfix(String name) {
+        return (name.endsWith(SOL_POSTFIX)
+                ? name.substring(0, name.length() - SOL_POSTFIX.length())
+                : name);
+    }
+
+    /**
+     * @param solFileNameOrPath
+     * @return
+     */
+    public static File getSolFile(String solFileNameOrPath) throws ConsoleMessageException {
+
+        String filePath = solFileNameOrPath;
+        File solFile = new File(filePath);
+        if (solFile.exists()) {
+            return solFile;
+        }
+        filePath = ConsoleUtils.removeSolPostfix(filePath);
+        filePath += SOL_POSTFIX;
+        /** Check that the file exists in the default directory first */
+        solFile = new File(SOLIDITY_PATH + File.separator + filePath);
+        /** file not exist */
+        if (!solFile.exists()) {
+            throw new ConsoleMessageException(solFileNameOrPath + " does not exist ");
+        }
+        return solFile;
+    }
+
+    public static String getContractName(String contractNameOrPath) throws ConsoleMessageException {
+        File contractFile = ConsoleUtils.getSolFile(contractNameOrPath);
+        return ConsoleUtils.removeSolPostfix(contractFile.getName());
     }
 }

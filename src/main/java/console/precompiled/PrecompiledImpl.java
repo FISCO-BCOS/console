@@ -671,14 +671,19 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void registerCNS(String[] params) throws Exception {
-        String contractName = params[1];
+        String contractNameOrPath = params[1];
+        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         String contractAddress = params[2];
         String contractVersion = params[3];
         String abi = "";
         try {
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbiAndBin(
-                            client.getGroupId(), contractName, contractAddress, false);
+                            client.getGroupId(),
+                            contractName,
+                            contractNameOrPath,
+                            contractAddress,
+                            false);
             abi = abiAndBin.getAbi();
         } catch (CompileContractException e) {
             logger.warn(

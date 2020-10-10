@@ -19,6 +19,7 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
+import console.common.ConsoleUtils;
 import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import java.io.File;
@@ -41,35 +42,34 @@ public class ContractCompiler {
     private static final String BIN_POSTFIX = ".bin";
     private static final String ABI_POSTFIX = ".abi";
 
-    public static String removeSolPostfix(String name) {
-        return (name.endsWith(SOL_POSTFIX)
-                ? name.substring(0, name.length() - SOL_POSTFIX.length())
-                : name);
+    public static AbiAndBin compileContract(String contractNameOrPath)
+            throws CompileContractException {
+        File contractFile = new File(contractNameOrPath);
+        // the contractPath
+        if (contractFile.exists()) {
+            return dynamicCompileSolFilesToJava(contractFile);
+        }
+        // the contractName
+        String contractFileName =
+                (ConsoleUtils.removeSolPostfix(contractNameOrPath).endsWith(SOL_POSTFIX)
+                        ? contractNameOrPath
+                        : (contractNameOrPath + SOL_POSTFIX));
+        contractFile = new File(SOLIDITY_PATH + "/" + contractFileName);
+        if (!contractFile.exists()) {
+            throw new CompileContractException(
+                    "There is no " + contractFileName + " in the directory of " + SOLIDITY_PATH);
+        }
+        return dynamicCompileSolFilesToJava(contractFile);
     }
 
-    public static AbiAndBin compileContract(String name) throws CompileContractException {
-        return dynamicCompileSolFilesToJava(removeSolPostfix(name));
-    }
-
-    public static AbiAndBin dynamicCompileSolFilesToJava(String contractFileName)
+    public static AbiAndBin dynamicCompileSolFilesToJava(File contractFile)
             throws CompileContractException {
         try {
-            contractFileName =
-                    (contractFileName.endsWith(SOL_POSTFIX)
-                            ? contractFileName
-                            : (contractFileName + SOL_POSTFIX));
-            File contractFile = new File(SOLIDITY_PATH + "/" + contractFileName);
-            if (!contractFile.exists()) {
-                throw new CompileContractException(
-                        "There is no "
-                                + contractFileName
-                                + " in the directory of "
-                                + SOLIDITY_PATH);
-            }
             return compileSolToBinAndAbi(contractFile, COMPILED_PATH, COMPILED_PATH);
         } catch (IOException e) {
             throw new CompileContractException(
-                    "compile " + contractFileName + " failed, error info: " + e.getMessage(), e);
+                    "compile " + contractFile.getName() + " failed, error info: " + e.getMessage(),
+                    e);
         }
     }
 
@@ -158,13 +158,17 @@ public class ContractCompiler {
     }
 
     public static AbiAndBin loadAbiAndBin(
-            Integer groupId, String contractName, String contractAddress)
+            Integer groupId, String contractName, String contractNameOrPath, String contractAddress)
             throws CompileContractException, IOException, CodeGenException {
-        return loadAbiAndBin(groupId, contractName, contractAddress, true);
+        return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, true);
     }
 
     public static AbiAndBin loadAbiAndBin(
-            Integer groupId, String contractName, String contractAddress, boolean needCompile)
+            Integer groupId,
+            String contractName,
+            String contractNameOrPath,
+            String contractAddress,
+            boolean needCompile)
             throws IOException, CodeGenException, CompileContractException {
         File abiPath =
                 new File(
@@ -205,7 +209,7 @@ public class ContractCompiler {
                                 + BIN_POSTFIX);
         if (!abiPath.exists() || !binPath.exists() || !smBinPath.exists()) {
             if (needCompile) {
-                AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
+                AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath);
                 ContractCompiler.saveAbiAndBin(groupId, abiAndBin, contractName, contractAddress);
             } else {
                 return new AbiAndBin();
