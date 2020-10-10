@@ -72,15 +72,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void deploy(String[] params) throws ConsoleMessageException {
-        String contractName = params[1];
+        String contractNameOrVersion = params[1];
+        String contractName = ConsoleUtils.getContractName(contractNameOrVersion);
         List<String> inputParams = Arrays.asList(params).subList(1, params.length - 1);
-        deployContract(contractName, inputParams);
+        deployContract(contractName, contractNameOrVersion, inputParams);
     }
 
-    public TransactionResponse deployContract(String contractName, List<String> inputParams)
+    public TransactionResponse deployContract(
+            String contractName, String contractNameOrPath, List<String> inputParams)
             throws ConsoleMessageException {
         try {
-            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractName);
+            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath);
             String bin = abiAndBin.getBin();
             if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE) {
                 bin = abiAndBin.getSmBin();
@@ -109,7 +111,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     private synchronized void writeLog(String contractName, String contractAddress) {
-        contractName = ContractCompiler.removeSolPostfix(contractName);
+        contractName = ConsoleUtils.removeSolPostfix(contractName);
         BufferedReader reader = null;
         try {
             File logFile = new File(Common.ContractLogFileName);
@@ -251,8 +253,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void call(String[] params) throws Exception {
-        String contractName = params[1];
+        String contractNameOrPath = params[1];
         String contractAddressStr = params[2];
+        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         // check contract address
         Address contractAddress = ConsoleUtils.convertAddress(contractAddressStr);
         if (!contractAddress.isValid()) {
@@ -262,11 +265,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String functionName = params[3];
         // get callParams
         List<String> callParams = Arrays.asList(params).subList(4, params.length);
-        callContract(contractName, contractAddress.getAddress(), functionName, callParams);
+        callContract(
+                contractName,
+                contractNameOrPath,
+                contractAddress.getAddress(),
+                functionName,
+                callParams);
     }
 
     protected void callContract(
             String contractName,
+            String contractNameOrVersion,
             String contractAddress,
             String functionName,
             List<String> callParams)
@@ -275,7 +284,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // load bin and abi
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbiAndBin(
-                            client.getGroupId(), contractName, contractAddress);
+                            client.getGroupId(),
+                            contractName,
+                            contractNameOrVersion,
+                            contractAddress);
             // call
             ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
             if (abiDefinition == null) {
@@ -380,9 +392,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void deployByCNS(String[] params) throws ConsoleMessageException {
         try {
-            String contractName = params[1];
+            String contractNameOrPath = params[1];
             String contractVersion = params[2];
-            contractName = ContractCompiler.removeSolPostfix(contractName);
+            String contractName = ConsoleUtils.getContractName(contractNameOrPath);
             // query the the contractName and version has been registered or not
             List<CnsInfo> cnsInfos =
                     cnsService.selectByNameAndVersion(contractName, contractVersion);
@@ -396,14 +408,15 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return;
             }
             List<String> inputParams = Arrays.asList(params).subList(3, params.length);
-            TransactionResponse response = deployContract(contractName, inputParams);
+            TransactionResponse response =
+                    deployContract(contractName, contractNameOrPath, inputParams);
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 return;
             }
             String contractAddress = response.getContractAddress();
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbiAndBin(
-                            client.getGroupId(), contractName, contractAddress);
+                            client.getGroupId(), contractNameOrPath, contractName, contractAddress);
             // register cns
             ConsoleUtils.printJson(
                     cnsService
@@ -427,12 +440,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void callByCNS(String[] params) throws Exception {
         String contractNameAndVersion = params[1];
-        String contractName = contractNameAndVersion;
+        String contractNameOrPath = contractNameAndVersion;
         String contractVersion = null;
         if (contractNameAndVersion.contains(":")) {
             String[] nameAndVersion = contractNameAndVersion.split(":");
             if (nameAndVersion.length == 2) {
-                contractName = nameAndVersion[0].trim();
+                contractNameOrPath = nameAndVersion[0].trim();
                 contractVersion = nameAndVersion[1].trim();
             } else {
                 System.out.println(
@@ -440,9 +453,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return;
             }
         }
+        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         logger.debug(
                 "callByCNS, contractName: {}, contractVersion: {}, contractNameAndVersion: {}, cnsService: {}",
-                contractName,
+                contractNameOrPath,
                 contractVersion,
                 contractNameAndVersion,
                 cnsService);
@@ -492,7 +506,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         String functionName = params[2];
         List<String> inputParams = Arrays.asList(params).subList(3, params.length);
-        callContract(contractName, contractAddress, functionName, inputParams);
+        callContract(contractName, contractNameOrPath, contractAddress, functionName, inputParams);
     }
 
     public void listAbi(String[] params) throws Exception {
