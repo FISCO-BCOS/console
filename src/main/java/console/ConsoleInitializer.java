@@ -104,6 +104,10 @@ public class ConsoleInitializer {
                             e.getMessage(),
                             e);
                 }
+                if (accountInfo == null) {
+                    // save the keyPair
+                    client.getCryptoSuite().getCryptoKeyPair().storeKeyPairWithPemFormat();
+                }
             }
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);

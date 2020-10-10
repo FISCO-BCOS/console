@@ -55,7 +55,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.contractLifeCycleService = new ContractLifeCycleService(client, cryptoKeyPair);
         this.cnsService = new CnsService(client, cryptoKeyPair);
-        cryptoKeyPair.storeKeyPairWithPemFormat();
     }
 
     @Override
