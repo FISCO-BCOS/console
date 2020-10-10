@@ -15,8 +15,10 @@ import java.io.File;
 import java.net.URL;
 import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.config.ConfigOption;
 import org.fisco.bcos.sdk.config.exceptions.ConfigException;
 import org.fisco.bcos.sdk.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.crypto.exceptions.LoadKeyStoreException;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.model.CryptoType;
 import org.slf4j.Logger;
@@ -85,6 +87,23 @@ public class ConsoleInitializer {
                                 accountInfo.accountFileFormat,
                                 accountInfo.accountFile,
                                 accountInfo.password);
+            } else {
+                try {
+                    accountInfo = loadAccountRandomly(bcosSDK, client);
+                    if (accountInfo != null) {
+                        this.client
+                                .getCryptoSuite()
+                                .loadAccount(
+                                        accountInfo.accountFileFormat,
+                                        accountInfo.accountFile,
+                                        accountInfo.password);
+                    }
+                } catch (LoadKeyStoreException e) {
+                    logger.warn(
+                            "loadAccountRandomly failed, try to generate and load the random account, error info: {}",
+                            e.getMessage(),
+                            e);
+                }
             }
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
@@ -133,6 +152,35 @@ public class ConsoleInitializer {
         public void setPassword(String password) {
             this.password = password;
         }
+    }
+
+    private AccountInfo loadAccountRandomly(BcosSDK bcosSDK, Client client) {
+        ConfigOption config = bcosSDK.getConfig();
+        if (config.getAccountConfig() == null) {
+            return null;
+        }
+        String keyStoreDir = config.getAccountConfig().getKeyStoreDir();
+        File keyStoreDirPath = new File(keyStoreDir);
+        if (!keyStoreDirPath.exists() || !keyStoreDirPath.isDirectory()) {
+            return null;
+        }
+        String subDir = client.getCryptoSuite().getKeyPairFactory().getKeyStoreSubDir();
+        String keyStoreFileDir = keyStoreDirPath + File.separator + subDir;
+        File keyStoreFileDirPath = new File(keyStoreFileDir);
+        logger.debug("loadAccountRandomly, keyStoreFileDirPath:{}", keyStoreFileDir);
+        if (!keyStoreFileDirPath.exists() || !keyStoreFileDirPath.isDirectory()) {
+            return null;
+        }
+        // load account from the keyStoreDir
+        File[] accountFileList = keyStoreFileDirPath.listFiles();
+        ConsoleUtils.sortFiles(accountFileList);
+        for (File accountFile : accountFileList) {
+            if (accountFile.getName().endsWith(".pem")) {
+                logger.debug("load pem account from {}", accountFile.getAbsoluteFile());
+                return new AccountInfo("pem", accountFile.getAbsolutePath(), null);
+            }
+        }
+        return null;
     }
 
     private AccountInfo loadAccount(BcosSDK bcosSDK, String[] params) {
