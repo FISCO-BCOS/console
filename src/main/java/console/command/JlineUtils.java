@@ -147,11 +147,12 @@ public class JlineUtils {
                         SupportedCommand.REVOKE_NODE_MANAGER.getCommand(),
                         SupportedCommand.FREEZE_ACCOUNT.getCommand(),
                         SupportedCommand.UNFREEZE_ACCOUNT.getCommand(),
+                        SupportedCommand.GET_ACCOUNT_STATUS.getCommand(),
                         SupportedCommand.UPDATE_COMMITTEE_MEMBER_WEIGHT.getCommand());
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
-                            new StringsCompleter(command), new AccountCompleter(client)));
+                            new StringsCompleter(command), new AccountCompleter(client, false)));
         }
 
         commands =

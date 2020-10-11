@@ -16,9 +16,15 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
     private static final Logger logger = LoggerFactory.getLogger(AccountCompleter.class);
     private Client client;
     public static int defaultRecordNum = 20;
+    private boolean showAccountPath = true;
 
     public AccountCompleter(Client client) {
         this.client = client;
+    }
+
+    public AccountCompleter(Client client, boolean showAccountPath) {
+        this(client);
+        this.showAccountPath = showAccountPath;
     }
 
     @Override
@@ -46,6 +52,9 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
                 accountPath = accountFileDir + File.separator + account + ".p12";
             }
             if (!new File(accountPath).exists()) {
+                continue;
+            }
+            if (!showAccountPath) {
                 continue;
             }
             candidates.add(

@@ -607,7 +607,7 @@ public class HelpInfo {
         System.out.println(
                 "* accountPath[Required] -- The path of the account key file, support .pem and .p12 format file; or the account address");
         System.out.println(
-                "* accountFormat[Required] -- The account file format, support \\\"pem\\\" and \\\"p12\\\" now!\"");
+                "* accountFormat[Optional] -- The account file format, support \\\"pem\\\" and \\\"p12\\\", default is \"pem\"!");
     }
 
     public static void newAccountHelp() {
