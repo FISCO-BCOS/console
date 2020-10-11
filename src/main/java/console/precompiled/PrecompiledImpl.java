@@ -8,6 +8,8 @@ import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
+import io.bretty.console.table.Alignment;
+import io.bretty.console.table.ColumnFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,6 +20,7 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.contract.precompiled.contractmgr.ContractLifeCycleService;
@@ -661,14 +664,32 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void queryCNS(String[] params) throws Exception {
         String contractNameOrPath = params[1];
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
+        List<CnsInfo> cnsInfos = null;
         if (params.length == 2) {
             // get contract name
-            ConsoleUtils.printJson(cnsService.selectByName(contractName).toString());
+            cnsInfos = cnsService.selectByName(contractName);
         }
         if (params.length == 3) {
-            ConsoleUtils.printJson(
-                    cnsService.selectByNameAndVersion(contractName, params[2]).toString());
+            cnsInfos = cnsService.selectByNameAndVersion(contractName, params[2]);
         }
+        if (cnsInfos == null || cnsInfos.isEmpty()) {
+            System.out.println("Empty set.");
+            System.out.println();
+            return;
+        }
+        ConsoleUtils.singleLine();
+        String[] headers = {"version", "address"};
+        int size = cnsInfos.size();
+        String[][] data = new String[size][2];
+        for (int i = 0; i < size; i++) {
+            data[i][0] = cnsInfos.get(i).getVersion();
+            data[i][1] = cnsInfos.get(i).getAddress();
+        }
+        ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 45);
+        io.bretty.console.table.Table table = io.bretty.console.table.Table.of(headers, data, cf);
+        System.out.println(table);
+        ConsoleUtils.singleLine();
+        System.out.println();
     }
 
     @Override

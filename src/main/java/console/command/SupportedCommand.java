@@ -1910,8 +1910,8 @@ public class SupportedCommand {
                             consoleInitializer.loadAccount(params);
                         }
                     },
+                    1,
                     2,
-                    3,
                     false);
 
     public static final CommandInfo LIST_ACCOUNT =
@@ -2014,6 +2014,7 @@ public class SupportedCommand {
             commandInfo.printDescInfo();
             outputtedCommand.add(commandInfo.getCommand());
         }
+        ConsoleUtils.singleLine();
     }
 
     public static void printNonInteractiveDescInfo() {
@@ -2039,5 +2040,6 @@ public class SupportedCommand {
                 outputtedCommand.add(commandInfo.getCommand());
             }
         }
+        ConsoleUtils.singleLine();
     }
 }

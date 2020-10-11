@@ -266,7 +266,10 @@ public class ConsoleInitializer {
 
     public void loadAccount(String[] params) throws Exception {
         String accountPath = params[1];
-        String accountFormat = params[2];
+        String accountFormat = "pem";
+        if (params.length >= 3) {
+            accountFormat = params[2];
+        }
         if (!accountFormat.equals("pem") && !accountFormat.equals("p12")) {
             System.out.println(
                     "Load account failed! Only support \"pem\" and \"p12\" account now!");
