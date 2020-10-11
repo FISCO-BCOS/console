@@ -1,7 +1,6 @@
 package console.command.completer;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,13 +21,22 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
 
     public final String SOL_STR = ".sol";
     public final String TABLE_SOL = "Table.sol";
+    private Path solidityPath;
+    private boolean solidityCompleter = true;
 
-    public ConsoleFilesCompleter(File currentDir) {
-        super(currentDir);
+    public ConsoleFilesCompleter(boolean solidityCompleter) {
+        super(new File("." + File.separator));
+        this.solidityCompleter = solidityCompleter;
     }
 
-    public ConsoleFilesCompleter(Path path) {
-        super(path);
+    public ConsoleFilesCompleter(File solidityFile) {
+        super(new File("." + File.separator));
+        solidityPath = solidityFile.toPath();
+    }
+
+    public ConsoleFilesCompleter(Path solidityPath) {
+        super(new File("." + File.separator));
+        this.solidityPath = solidityPath;
     }
 
     @Override
@@ -57,9 +65,19 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
             LineReader reader, ParsedLine commandLine, final List<Candidate> candidates) {
         assert commandLine != null;
         assert candidates != null;
-
         String buffer = commandLine.word().substring(0, commandLine.wordCursor());
+        if (solidityCompleter) {
+            complete(buffer, reader, commandLine, candidates, true);
+        }
+        complete(buffer, reader, commandLine, candidates, false);
+    }
 
+    public void complete(
+            String buffer,
+            LineReader reader,
+            ParsedLine commandLine,
+            final List<Candidate> candidates,
+            boolean completeSol) {
         Path current;
         String curBuf;
         String sep = getUserDir().getFileSystem().getSeparator();
@@ -73,24 +91,40 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                     current = getUserHome().getParent().resolve(curBuf.substring(1));
                 }
             } else {
-                current = getUserDir().resolve(curBuf);
+                if (completeSol) {
+                    current = solidityPath.resolve(curBuf);
+                } else {
+                    current = getUserDir().resolve(curBuf);
+                }
             }
         } else {
             curBuf = "";
-            current = getUserDir();
+            if (completeSol) {
+                current = solidityPath;
+            } else {
+                current = getUserDir();
+            }
         }
-
-        try (DirectoryStream<Path> directoryStream =
-                Files.newDirectoryStream(current, this::accept)) {
-
+        try {
+            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(current, this::accept);
             directoryStream.forEach(
                     p -> {
-                        String value = curBuf + p.getFileName().toString();
-                        // filter not sol file and Table.sol
-                        if (!value.endsWith(SOL_STR) || TABLE_SOL.equals(value)) {
+                        if (!Files.exists(p)) {
                             return;
                         }
-                        value = value.substring(0, value.length() - SOL_STR.length());
+                        String value = curBuf + p.getFileName().toString();
+                        // filter not sol file and Table.sol
+                        if (TABLE_SOL.equals(value)) {
+                            return;
+                        }
+                        if (solidityCompleter
+                                && !Files.isDirectory(p)
+                                && !value.endsWith(SOL_STR)) {
+                            return;
+                        }
+                        if (solidityCompleter && completeSol) {
+                            value = value.substring(0, value.length() - SOL_STR.length());
+                        }
                         if (Files.isDirectory(p)) {
                             candidates.add(
                                     new Candidate(
@@ -120,7 +154,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                                             true));
                         }
                     });
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
     }

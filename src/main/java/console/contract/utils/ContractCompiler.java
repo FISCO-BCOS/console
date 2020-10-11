@@ -158,6 +158,13 @@ public class ContractCompiler {
     }
 
     public static AbiAndBin loadAbiAndBin(
+            Integer groupId, String contractNameOrPath, String contractAddress)
+            throws CompileContractException, IOException, CodeGenException {
+        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
+        return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, true);
+    }
+
+    public static AbiAndBin loadAbiAndBin(
             Integer groupId, String contractName, String contractNameOrPath, String contractAddress)
             throws CompileContractException, IOException, CodeGenException {
         return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, true);

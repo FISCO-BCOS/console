@@ -512,16 +512,25 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void generateGroupFromFile(String[] params) {
+        String groupIdStr = params[2];
+        String groupConfigFileStr = params[1];
         int groupId =
-                ConsoleUtils.proccessNonNegativeNumber("groupId", params[1], 1, Common.MaxGroupID);
+                ConsoleUtils.proccessNonNegativeNumber("groupId", groupIdStr, 1, Common.MaxGroupID);
         if (groupId == Common.InvalidReturnNumber) {
             return;
         }
 
-        File groupConfigFile = new File(params[2]);
+        File groupConfigFile = new File(groupConfigFileStr);
         if (!groupConfigFile.exists()) {
             System.out.println(
-                    "Please make sure the group configuration file " + params[2] + " exists!");
+                    "Please make sure the group configuration file "
+                            + groupConfigFileStr
+                            + " exists!");
+            return;
+        }
+        if (groupConfigFile.isDirectory()) {
+            System.out.println(
+                    "Invalid group config file for \"" + groupConfigFileStr + "\" is a directory!");
             return;
         }
         GenerateGroupParam generateGroupParam =

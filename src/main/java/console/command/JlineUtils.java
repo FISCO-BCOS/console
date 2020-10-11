@@ -68,9 +68,7 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new AggregateCompleter(
-                                    new ConsoleFilesCompleter(
-                                            new File(ContractCompiler.SOLIDITY_PATH))),
+                            new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
                             new ContractAddressCompleter(client),
                             new ContractMethodCompleter(client),
                             new StringsCompleterIgnoreCase()));
@@ -168,6 +166,13 @@ public class JlineUtils {
                             new ContractAddressCompleter(client),
                             new AccountCompleter(client)));
         }
+        // generateGroupFromFile
+        completers.add(
+                new ArgumentCompleter(
+                        new StringsCompleter(
+                                SupportedCommand.GENERATE_GROUP_WITH_FILE.getCommand()),
+                        new ConsoleFilesCompleter(false),
+                        new StringsCompleterIgnoreCase()));
         return createLineReader(completers);
     }
 

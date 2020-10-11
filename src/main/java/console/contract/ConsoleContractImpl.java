@@ -72,10 +72,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void deploy(String[] params) throws ConsoleMessageException {
-        String contractNameOrVersion = params[1];
-        String contractName = ConsoleUtils.getContractName(contractNameOrVersion);
+        String contractNameOrPath = params[1];
+        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         List<String> inputParams = Arrays.asList(params).subList(1, params.length - 1);
-        deployContract(contractName, contractNameOrVersion, inputParams);
+        deployContract(contractName, contractNameOrPath, inputParams);
     }
 
     public TransactionResponse deployContract(
@@ -275,7 +275,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     protected void callContract(
             String contractName,
-            String contractNameOrVersion,
+            String contractNameOrPath,
             String contractAddress,
             String functionName,
             List<String> callParams)
@@ -284,10 +284,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // load bin and abi
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbiAndBin(
-                            client.getGroupId(),
-                            contractName,
-                            contractNameOrVersion,
-                            contractAddress);
+                            client.getGroupId(), contractName, contractNameOrPath, contractAddress);
             // call
             ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
             if (abiDefinition == null) {
