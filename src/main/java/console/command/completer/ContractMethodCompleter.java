@@ -1,6 +1,5 @@
 package console.command.completer;
 
-import console.common.ConsoleUtils;
 import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import java.util.List;
@@ -33,13 +32,9 @@ public class ContractMethodCompleter extends StringsCompleterIgnoreCase {
             String contractNameOrPath = ss[1];
             String contractAddress = ss[2];
             try {
-                String contractName = ConsoleUtils.getContractName(contractNameOrPath);
                 AbiAndBin abiAndBin =
                         ContractCompiler.loadAbiAndBin(
-                                client.getGroupId(),
-                                contractName,
-                                contractNameOrPath,
-                                contractAddress);
+                                client.getGroupId(), contractNameOrPath, contractAddress);
                 List<ABIDefinition> abiDefinitions =
                         CodeGenUtils.loadContractAbiDefinition(abiAndBin.getAbi());
                 for (ABIDefinition definition : abiDefinitions) {

@@ -659,13 +659,15 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void queryCNS(String[] params) throws Exception {
+        String contractNameOrPath = params[1];
+        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         if (params.length == 2) {
             // get contract name
-            ConsoleUtils.printJson(cnsService.selectByName(params[1]).toString());
+            ConsoleUtils.printJson(cnsService.selectByName(contractName).toString());
         }
         if (params.length == 3) {
             ConsoleUtils.printJson(
-                    cnsService.selectByNameAndVersion(params[1], params[2]).toString());
+                    cnsService.selectByNameAndVersion(contractName, params[2]).toString());
         }
     }
 

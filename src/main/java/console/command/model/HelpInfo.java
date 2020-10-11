@@ -297,8 +297,9 @@ public class HelpInfo {
 
     public static void queryCNSHelp() {
         System.out.println("Query CNS information by contract name and contract version.");
-        System.out.println("Usage: \nqueryCNS contractName [contractVersion]");
-        System.out.println("* contractName -- The name of a contract.");
+        System.out.println("Usage: \nqueryCNS contractNameOrPath [contractVersion]");
+        System.out.println(
+                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
         System.out.println("* contractVersion -- (optional) The version of a contract. ");
     }
 
@@ -567,11 +568,11 @@ public class HelpInfo {
     }
 
     public static void generateGroupFromFileHelp() {
-        System.out.println("Usage: \ngenerateGroupFromFile groupId groupConfigFilePath");
-        System.out.println("* groupId(required) -- The groupId of the generated group");
+        System.out.println("Usage: \ngenerateGroupFromFile groupConfigFilePath groupId");
         System.out.println(
                 "* groupConfigFilePath(required) -- The configuration file path of the generated group. "
                         + "For specific configuration options, please refer to group-generate-config.toml in the conf directory");
+        System.out.println("* groupId(required) -- The groupId of the generated group");
     }
 
     public static void showDescHelp() {
@@ -620,8 +621,9 @@ public class HelpInfo {
 
     public static void listDeployContractAddressHelp() {
         System.out.println("List the contractAddress for the specified contract");
-        System.out.println("Usage: \nlistDeployContractAddress contractName [recordNumber]");
-        System.out.println("contractName -- The name of the contract");
+        System.out.println("Usage: \nlistDeployContractAddress contractNameOrPath [recordNumber]");
+        System.out.println(
+                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
         System.out.println(
                 "recordNumber -- (optional) The number of deployed contract records, (default 20).");
     }
