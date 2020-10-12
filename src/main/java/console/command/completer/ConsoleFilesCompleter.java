@@ -106,6 +106,9 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
             }
         }
         try {
+            if (!Files.exists(current)) {
+                return;
+            }
             DirectoryStream<Path> directoryStream = Files.newDirectoryStream(current, this::accept);
             directoryStream.forEach(
                     p -> {
