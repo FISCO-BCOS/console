@@ -1,3 +1,27 @@
+### v1.2.0
+
+(2020-09-30)
+
+* 新增
+1. 添加简单私钥管理工具命令：`newAccount` `switchAccount` `listAccount` `loadAccount`
+2. 添加`listAbi`命令查看合约接口以及Event列表
+3. 添加`registerCNS`命令，将合约信息注册CNS
+4. 支持非交互式命令行
+
+* 更新
+1. `call`命令支持合约地址，接口补全
+1. 升级web3sdk版本为2.6.2, 支持JDK14
+2. `sol2java.sh`支持绝对路径与相对路径，支持合约文件路径以及合约目录路径，支持设置生成`Java`文件目录
+3. 修改`get_gm_account.sh`，生成的国密私钥放入`accounts`目录，并且添加`_gm`标记
+4. `call` `deploy` `deployByCNS`支持相对路径与绝对路径的方式
+
+### v1.1.1
+
+(2020-09-07)
+
+* 修复
+1. `solcJ`编译器在`aarch64`平台动态链接失败导致无法使用的问题
+
 ### v1.1.0
 
 (2020-08-12)
