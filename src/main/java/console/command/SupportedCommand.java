@@ -1938,7 +1938,7 @@ public class SupportedCommand {
     public static final CommandInfo LIST_ABI =
             new CommandInfo(
                     "listAbi",
-                    "List the current saved account list",
+                    "List functions and events info of the contract.",
                     new CommandInfo.UsageDisplay() {
                         @Override
                         public void printUsageInfo() {
