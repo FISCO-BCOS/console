@@ -41,6 +41,13 @@ public class HelpInfo {
         System.out.println("* userAddress: 20 Bytes - The address of a tx.origin.");
     }
 
+    public static void revokeContractStatusManagerHelp() {
+        System.out.println("revoke contract authorization to the user.");
+        System.out.println("Usage: \nrevokeContractStatusManager contractAddress userAddress");
+        System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
+        System.out.println("* userAddress: 20 Bytes - The address of a tx.origin.");
+    }
+
     public static void getContractStatusHelp() {
         System.out.println("Get the status of the contract.");
         System.out.println("Usage: \ngetContractStatus contractAddress");
@@ -481,6 +488,17 @@ public class HelpInfo {
         System.out.println("Update committee threshold.");
         System.out.println("Usage: \nupdateThreshold threshold");
         System.out.println("* threshold -- int - The threshold of the committee.");
+    }
+
+    public static void queryVotesOfMemberHelp() {
+        System.out.println("Query votes of a committee member.");
+        System.out.println("Usage: \nqueryVotesOfMember account");
+        System.out.println("* account -- The account address of the committee member.");
+    }
+
+    public static void queryVotesOfThresholdHelp() {
+        System.out.println("Query votes of the updateThreshold operation.");
+        System.out.println("Usage: \nqueryVotesOfThreshold");
     }
 
     public static void listOperatorsHelp() {

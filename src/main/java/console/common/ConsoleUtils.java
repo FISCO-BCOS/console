@@ -479,7 +479,7 @@ public class ConsoleUtils {
     }
 
     public static boolean checkVersion(
-            String command, Client client, String enumMinSupportVersion) {
+            String command, Client client, String enumMinSupportVersion, boolean printMessage) {
         try {
             EnumNodeVersion.Version minSupportVersion =
                     EnumNodeVersion.getClassVersion(enumMinSupportVersion);
@@ -494,14 +494,18 @@ public class ConsoleUtils {
                             + " , current fisco-bcos supported_version: "
                             + supportedVersion.toVersionString();
             if (supportedVersion.getMajor() < minSupportVersion.getMajor()) {
-                System.out.println(errorMessage);
-                System.out.println();
+                if (printMessage) {
+                    System.out.println(errorMessage);
+                    System.out.println();
+                }
                 return false;
             }
             if (supportedVersion.getMajor() == minSupportVersion.getMajor()
                     && supportedVersion.getMinor() < minSupportVersion.getMinor()) {
-                System.out.println(errorMessage);
-                System.out.println();
+                if (printMessage) {
+                    System.out.println(errorMessage);
+                    System.out.println();
+                }
                 return false;
             }
             return true;
