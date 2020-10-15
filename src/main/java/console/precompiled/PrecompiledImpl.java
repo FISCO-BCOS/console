@@ -211,6 +211,14 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
+    public void revokeContractStatusManager(String[] params) throws Exception {
+        String contractAddr = params[1];
+        String userAddr = params[2];
+        ConsoleUtils.printJson(
+                contractLifeCycleService.revokeManager(contractAddr, userAddr).toString());
+    }
+
+    @Override
     public void getContractStatus(String[] params) throws Exception {
         String address = params[1];
         ConsoleUtils.printJson(contractLifeCycleService.getContractStatus(address));
@@ -299,7 +307,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         System.out.println("call " + command + " failed!");
         System.out.println("* code: " + code);
         System.out.println("* message: " + message);
+
         if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
+            return;
+        }
+        // when supported_version >= v2.7.0, no need try to get the precompiled message
+        if (ConsoleUtils.checkVersion("tryToGuessPrecompiledMessage", client, "2.7.0", false)) {
             return;
         }
         if (!checkTableField(descTable, entry)) {

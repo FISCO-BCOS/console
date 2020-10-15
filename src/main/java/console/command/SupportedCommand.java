@@ -227,8 +227,7 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1,
-                    NODE_VERSION_2_3_0);
+                    1);
     public static final CommandInfo UNFREEZE_CONTRACT =
             new CommandInfo(
                     "unfreezeContract",
@@ -247,8 +246,7 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1,
-                    NODE_VERSION_2_3_0);
+                    1);
     public static final CommandInfo GRANT_CONTRACT_STATUS =
             new CommandInfo(
                     "grantContractStatusManager",
@@ -269,8 +267,30 @@ public class SupportedCommand {
                         }
                     },
                     2,
+                    2);
+
+    public static final CommandInfo REVOKE_CONTRACT_STATUS =
+            new CommandInfo(
+                    "revokeContractStatusManager",
+                    "Revoke contract authorization to the user",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.revokeContractStatusManagerHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer
+                                    .getPrecompiledFace()
+                                    .revokeContractStatusManager(params);
+                        }
+                    },
                     2,
-                    NODE_VERSION_2_3_0);
+                    2);
+
     public static final CommandInfo LIST_CONTRACT_STATUS =
             new CommandInfo(
                     "listContractStatusManager",
@@ -349,6 +369,44 @@ public class SupportedCommand {
                             consoleInitializer.getPermissionFace().queryThreshold(params);
                         }
                     });
+    public static final CommandInfo QUERY_VOTES_OF_MEMBER =
+            new CommandInfo(
+                    "queryVotesOfMember",
+                    "Query votes of a committee member.",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.queryVotesOfMemberHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPermissionFace().queryVotesOfMember(params);
+                        }
+                    },
+                    1,
+                    1);
+
+    public static final CommandInfo QUERY_VOTES_OF_THRESHOLD =
+            new CommandInfo(
+                    "queryVotesOfThreshold",
+                    "Query votes of updateThreshold operation",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.queryVotesOfThresholdHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPermissionFace().queryVotesOfThreshold(params);
+                        }
+                    });
+
     public static final CommandInfo LIST_OPERATORS =
             new CommandInfo(
                     "listOperators",
