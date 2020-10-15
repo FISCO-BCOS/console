@@ -87,7 +87,10 @@ public class ConsoleInitializer {
                                 accountInfo.accountFileFormat,
                                 accountInfo.accountFile,
                                 accountInfo.password);
-            } else {
+            } else if (!client.getCryptoSuite()
+                    .getConfig()
+                    .getAccountConfig()
+                    .isAccountConfigured()) {
                 try {
                     accountInfo = loadAccountRandomly(bcosSDK, client);
                     if (accountInfo != null) {
@@ -316,8 +319,8 @@ public class ConsoleInitializer {
             accountPassword = new String(passwd);
         }
         CryptoSuite cryptoSuite = client.getCryptoSuite();
-        cryptoSuite.loadAccount(accountFormat, accountPath, accountPassword);
         // update the objects with new CryptoKeyPair
+        cryptoSuite.loadAccount(accountFormat, accountPath, accountPassword);
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
         this.permissionFace = new PermissionImpl(client);

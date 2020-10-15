@@ -1,13 +1,28 @@
 #!/bin/bash
 package_name="console.tar.gz"
 default_version="1.2.0"
+download_version="${default_version}"
+specify_console=0
 solc_suffix=""
 supported_solc_versions=(0.4 0.5 0.6)
+
+LOG_WARN()
+{
+    local content=${1}
+    echo -e "\033[31m[WARN] ${content}\033[0m"
+}
+
+LOG_INFO()
+{
+    local content=${1}
+    echo -e "\033[32m[INFO] ${content}\033[0m"
+}
 
 help() {
     echo "
 Usage:
-    -v <solc version>      Download latest console with specific solc version, default is 0.4, 0.5 and 0.6 are supported
+    -c <console version>   Specify the downloaded console version, download the latest version of the console by default 
+    -v <solc version>      Download the console with specific solc version, default is 0.4, 0.5 and 0.6 are supported
     -h Help
 e.g
     $0 -v 0.6
@@ -17,7 +32,7 @@ exit 0
 }
 
 parse_params(){
-while getopts "v:h" option;do
+while getopts "v:c:h" option;do
     case $option in
     v) solc_suffix="${OPTARG//[vV]/}"
         if ! echo "${supported_solc_versions[*]}" | grep -i "${solc_suffix}" &>/dev/null; then
@@ -27,25 +42,59 @@ while getopts "v:h" option;do
         package_name="console-${solc_suffix}.tar.gz"
         if [ "${solc_suffix}" == "0.4" ]; then package_name="console.tar.gz";fi
     ;;
+    c) specify_console=1
+        download_version="${OPTARG//[vV]/}"
+        ;;
     h) help;;
     *) help;;
     esac
 done
 }
 
+# check params
+check_params()
+{
+    local major_version=$(echo ${version} | awk -F'.' '{print $1}')
+    local middle_version=$(echo ${version} | awk -F'.' '{print $2}')
+    local minor_version=$(echo ${version} | awk -F'.' '{print $3}')
+    if [ -z "${major_version}" ] || [ -z "${middle_version}" ] || [ -z "${minor_version}" ];then
+        LOG_WARN "Illegal version \"${version}\", please specify a legal version number, latest version is ${default_version}"
+        exit 1;
+    fi
+    if [ -z "${solc_suffix}" ];then
+        return
+    fi
+    # specify solc version only support after console 1.1.0
+    if [ "${major_version}" -lt 1 ];then
+         LOG_WARN "The specified solc version is only supported after console 1.1.0 (with -v option), current specified version is \"${version}\""
+         LOG_WARN "Please specified console with version no smaller than 1.1.0 when specify -v option"
+         exit 1
+    fi
+    if [ "${middle_version}" -lt 1 ];then
+        LOG_WARN "The specified solc version is only supported after console 1.1.0 (with -v option), urrent specified version is \"${version}\""
+        LOG_WARN "Please specified console with version no smaller than 1.1.0 when specify -v option"
+        exit 1
+    fi
+}
+
 download_console(){
-    version=$(curl -s https://api.github.com/repos/FISCO-BCOS/console/releases | grep "tag_name" | sort -V | tail -n 1 | cut -d \" -f 4 | sed "s/^[vV]//")
+	if [ $specify_console -eq 0 ];then
+        version=$(curl -s https://api.github.com/repos/FISCO-BCOS/console/releases | grep "tag_name" | sort -V | tail -n 1 | cut -d \" -f 4 | sed "s/^[vV]//")
+	else
+        version="${download_version}"
+    fi
     if [ -z "${version}" ];then
         echo "Failed to get latest version number via github api, download default version: ${default_version}"
         version="${default_version}"
     fi
+    check_params
     download_link=https://github.com/FISCO-BCOS/console/releases/download/v${version}/${package_name}
     cos_download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${version}/${package_name}
-    echo "Downloading console ${version} from ${download_link}"
+    LOG_INFO "Downloading console ${version} from ${download_link}"
 
     if [ $(curl -IL -o /dev/null -s -w %{http_code} "${cos_download_link}") == 200 ];then
         curl -LO ${download_link} --speed-time 30 --speed-limit 102400 -m 150 || {
-            echo -e "\033[32m Download speed is too low, try ${cos_download_link} \033[0m"
+            LOG_WARN "Download speed is too low, try ${cos_download_link}"
             curl -#LO "${cos_download_link}"
         }
     else
