@@ -1,3 +1,16 @@
+### v2.6.0
+(2020-10-16)
+
+* 新增
+1. 添加`getCurrentAccount`命令，查看当前账户信息
+2. 添加`getCryptoType`命令，查看当前区块链账本类型(目前支持国密和非国密)、控制台与节点之间的SSL连接类型(目前支持OpenSSL和国密SSL)
+3. 添加`generateGroup`、`generateGroupFromFile`、`startGroup`、`stopGroup`、`removeGroup`、`recoverGroup`命令支持动态群组管理
+
+* 更新
+1. 将控制台对`Web3SDK`的依赖替换为依赖`Java SDK`
+2. `deploy`、`deployByCNS`、`call`、`callByCNS`、`listAbi`、`listDeployContractAddress`、`queryCNS`、`registerCNS`命令中的`contractNameOrPath`参数同时支持合约名与合约路径，且支持合约名、合约路径的补全
+3. 修改`get_gm_account.sh`脚本，将生成的国密账户私钥信息放到`accounts_gm`目录下
+
 ### v1.2.0
 
 (2020-09-30)
