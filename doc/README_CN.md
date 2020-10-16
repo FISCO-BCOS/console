@@ -20,7 +20,7 @@
  - 提供一个合约编译工具，用户可以方便快捷的将Solidity合约文件编译为Java合约文件。
 
 ## 使用
-- 可以直接下载控制台压缩包，然后解压控制台压缩包使用控制台。具体参考 [控制台手册](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html)。
+- 可以直接下载控制台压缩包，然后解压控制台压缩包使用控制台。具体参考 [控制台手册](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console_of_java_sdk.html)。
 
 ## 源码安装
 ```
@@ -31,7 +31,7 @@ $ ./gradlew build
 如果安装成功，将在当前目录生成一个`dist`目录。
 
 ## 配置
-控制台具体配置参考[这里](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console.html#id11)。
+控制台具体配置参考[这里](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/manual/console_of_java_sdk.html#id8)。
 
 ## 贡献代码
 欢迎参与FISCO BCOS的社区建设：
