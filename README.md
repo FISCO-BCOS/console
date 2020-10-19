@@ -20,7 +20,7 @@ The console is an important interactive client tool of [FISCO BCOS 2.0+](https:/
 
 ## Usage
 
-- You can download a tar file and decompress it to enjoy console. See [console manual](https://fisco-bcos-documentation.readthedocs.io/en/latest/docs/manual/console.html) for more details.
+- You can download a tar file and decompress it to enjoy console. See [console manual](https://fisco-bcos-documentation.readthedocs.io/en/latest/docs/manual/console_of_java_sdk.html) for more details.
 
 ## Source Installation
 ```
@@ -31,7 +31,7 @@ $ ./gradlew build
 If you install successfully, it produces the `dist` directory.
 
 ## Configuration
-Please see the [documentation](https://fisco-bcos-documentation.readthedocs.io/en/latest/docs/manual/console.html#id11) about configurating for the console. Have fun.
+Please see the [documentation](https://fisco-bcos-documentation.readthedocs.io/en/latest/docs/manual/console_of_java_sdk.html#id8) about configurating for the console. Have fun.
 
 ## Code Contribution
 - Star our Github.
