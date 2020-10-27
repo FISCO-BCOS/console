@@ -46,7 +46,7 @@ public class ContractCompiler {
             throws CompileContractException {
         File contractFile = new File(contractNameOrPath);
         // the contractPath
-        if (contractFile.exists()) {
+        if (contractFile.exists() && !contractFile.isDirectory()) {
             return dynamicCompileSolFilesToJava(contractFile);
         }
         // the contractName
