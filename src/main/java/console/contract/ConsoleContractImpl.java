@@ -74,7 +74,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     public void deploy(String[] params) throws ConsoleMessageException {
         String contractNameOrPath = params[1];
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        List<String> inputParams = Arrays.asList(params).subList(1, params.length - 1);
+        List<String> inputParams = Arrays.asList(params).subList(2, params.length - 1);
         deployContract(contractName, contractNameOrPath, inputParams);
     }
 
