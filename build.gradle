@@ -28,11 +28,11 @@ check.dependsOn.remove(verifyGoogleJavaFormat)
 // In this section you declare the dependencies for your production and test code
 dependencies {
 
-    // compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.6.10-SNAPSHOT'
-    // compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.5.2-rc1'
-    compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.4.25-rc1'
+    // compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.6.10.0-SNAPSHOT'
+    // compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.5.2.0-SNAPSHOT'
+    compile group: 'org.fisco-bcos', name: 'solcJ', version: '0.4.25.0-SNAPSHOT'
 
-    compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.6.0-SNAPSHOT'
+    compile group: 'org.fisco-bcos', name: 'web3sdk', version: '2.6.0.0805-SNAPSHOT'
 
     compile group: 'commons-codec', name:'commons-codec', version:'1.10'
     compile group: 'org.slf4j', name:'slf4j-log4j12', version:'1.7.30'
