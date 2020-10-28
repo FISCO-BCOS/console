@@ -257,7 +257,45 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String contractAddressStr = params[2];
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         // check contract address
-        Address contractAddress = ConsoleUtils.convertAddress(contractAddressStr);
+        Address contractAddress = null;
+        if (contractAddressStr.equals("latest")) {
+            File contractDir =
+                    new File(
+                            ContractCompiler.COMPILED_PATH
+                                    + File.separator
+                                    + client.getGroupId()
+                                    + File.separator
+                                    + contractName);
+            if (!contractDir.exists()) {
+                System.out.println(
+                        "Group "
+                                + client.getGroupId()
+                                + " has not deployed contract \""
+                                + contractName
+                                + "\" yet!");
+                return;
+            }
+            File[] contractAddressFiles = contractDir.listFiles();
+            if (contractAddressFiles == null || contractAddressFiles.length == 0) {
+                System.out.println(
+                        "Group "
+                                + client.getGroupId()
+                                + " has not deployed contract \""
+                                + contractName
+                                + "\" yet!");
+                return;
+            }
+            ConsoleUtils.sortFiles(contractAddressFiles);
+            contractAddressStr = contractAddressFiles[0].getName();
+            contractAddress = ConsoleUtils.convertAddress(contractAddressStr);
+            System.out.println(
+                    "latest contract address for \""
+                            + contractName
+                            + "\" is "
+                            + contractAddressStr);
+        } else {
+            contractAddress = ConsoleUtils.convertAddress(contractAddressStr);
+        }
         if (!contractAddress.isValid()) {
             System.out.println("Invalid contract address: " + contractAddressStr);
             return;
