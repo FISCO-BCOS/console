@@ -359,6 +359,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("Output ");
                 System.out.println("Receipt message: " + response.getReceiptMessages());
                 System.out.println("Return message: " + response.getReturnMessage());
+                System.out.println("Return value: " + response.getReturnCode());
                 ConsoleUtils.singleLine();
                 if (response.getEvents() != null && !response.getEvents().equals("")) {
                     System.out.println("Event logs");
