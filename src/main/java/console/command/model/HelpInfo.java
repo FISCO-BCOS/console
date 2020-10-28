@@ -275,7 +275,7 @@ public class HelpInfo {
         System.out.println("Call a contract by a function and paramters.");
         System.out.println("Usage: \ncall contractNameOrPath contractAddress function parameters");
         System.out.println(
-                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
+                "* contractNameOrPath -- The name of a contract or the path of a contract, when set to \"latest\", the contract address is the latest contract address (Default load contract from the \"contracts/solidity\" path when using contractName).");
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
         System.out.println("* function -- The function of a contract.");
         System.out.println("* parameters -- The parameters(splited by a space) of a function.");
