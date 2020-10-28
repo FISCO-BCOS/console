@@ -44,6 +44,15 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                 if (contractAddressFiles == null || contractAddressFiles.length == 0) {
                     return;
                 }
+                candidates.add(
+                        new Candidate(
+                                AttributedString.stripAnsi("latest"),
+                                "latest",
+                                null,
+                                null,
+                                null,
+                                null,
+                                true));
                 ConsoleUtils.sortFiles(contractAddressFiles);
                 int recordNum = 0;
                 for (File contractAddressFile : contractAddressFiles) {
