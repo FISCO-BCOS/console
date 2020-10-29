@@ -286,7 +286,16 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return;
             }
             ConsoleUtils.sortFiles(contractAddressFiles);
-            contractAddressStr = contractAddressFiles[0].getName();
+            for (File contractAddressFile : contractAddressFiles) {
+                if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                    continue;
+                }
+                if (!contractAddressFile.isDirectory()) {
+                    continue;
+                }
+                contractAddressStr = contractAddressFile.getName();
+                break;
+            }
             contractAddress = ConsoleUtils.convertAddress(contractAddressStr);
             System.out.println(
                     "latest contract address for \""
