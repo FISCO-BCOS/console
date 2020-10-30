@@ -38,7 +38,7 @@ prepare_keccak256()
         fi
         tar -zxf ${keccak_256_tar} -C /tmp && rm ${keccak_256_tar}
         if [[ -f ${keccak_256_bin} ]];then
-            chmod +x ${keccak_256_bin}
+            chmod a+rx ${keccak_256_bin}
         fi
     fi
     mkdir -p ${output_path}
@@ -76,7 +76,7 @@ calculate_address_pem()
     privKey=$(openssl ec -in ${pem_file} -text -noout 2>/dev/null| sed -n '3,5p' | tr -d ": \n" | awk '{print $0}')
     pubKey=$(openssl ec -in ${pem_file} -text -noout 2>/dev/null| sed -n '7,11p' | tr -d ": \n" | awk '{print substr($0,3);}')
     if [[ "$(uname -p)" == "aarch64" ]];then
-        chmod +x "/tmp/calculate_address"
+        chmod a+rx "/tmp/calculate_address"
         accountAddress=$(/tmp/calculate_address ${pubKey} | tail -c 41)
     else
         accountAddress=$(echo ${pubKey}| ${keccak_256_bin} -x -l | tr -d ' -' | tail -c 41)
