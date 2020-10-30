@@ -38,11 +38,11 @@ prepare_sm3()
         fi
         tar -zxf ${sm3_tar} -C /tmp && rm ${sm3_tar}
         if [[ -f ${sm3_bin} ]];then
-            chmod +x ${sm3_bin}
+            chmod a+rx ${sm3_bin}
         fi
         if [[ "$(uname -p)" == "aarch64" ]];then
             sm3_bin="/tmp/calculate_address -g"
-            chmod +x "/tmp/calculate_address"
+            chmod a+rx "/tmp/calculate_address"
         fi
     fi
     mkdir -p ${output_path}
@@ -69,7 +69,7 @@ check_and_install_tassl()
             fi
         fi
         tar zxvf tassl.tar.gz
-        chmod +x tassl
+        chmod a+x tassl
         mkdir -p "${HOME}/.fisco"
         mv tassl "${TASSL_CMD}"
     fi
