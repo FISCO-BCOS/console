@@ -50,10 +50,7 @@ public class ContractCompiler {
             return dynamicCompileSolFilesToJava(contractFile);
         }
         // the contractName
-        String contractFileName =
-                (ConsoleUtils.removeSolPostfix(contractNameOrPath).endsWith(SOL_POSTFIX)
-                        ? contractNameOrPath
-                        : (contractNameOrPath + SOL_POSTFIX));
+        String contractFileName = ConsoleUtils.removeSolPostfix(contractNameOrPath) + SOL_POSTFIX;
         contractFile = new File(SOLIDITY_PATH + "/" + contractFileName);
         if (!contractFile.exists()) {
             throw new CompileContractException(
