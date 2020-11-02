@@ -319,7 +319,7 @@ public class PermissionImpl implements PermissionFace {
     public void queryVotesOfMember(String[] params) throws Exception {
         String committeeAddress = params[1];
         String result = this.chainGovernanceService.queryVotesOfMember(committeeAddress);
-        System.out.println("Committee account: " + committeeAddress);
+        System.out.println("queried account: " + committeeAddress);
         System.out.println("votes:" + result);
     }
 
