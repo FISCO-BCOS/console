@@ -569,7 +569,8 @@ public class ConsoleUtils {
      * @param solFileNameOrPath
      * @return
      */
-    public static File getSolFile(String solFileNameOrPath) throws ConsoleMessageException {
+    public static File getSolFile(String solFileNameOrPath, boolean checkExist)
+            throws ConsoleMessageException {
 
         String filePath = solFileNameOrPath;
         File solFile = new File(filePath);
@@ -581,14 +582,20 @@ public class ConsoleUtils {
         /** Check that the file exists in the default directory first */
         solFile = new File(SOLIDITY_PATH + File.separator + filePath);
         /** file not exist */
-        if (!solFile.exists()) {
+        if (!solFile.exists() && checkExist) {
             throw new ConsoleMessageException(solFileNameOrPath + " does not exist ");
         }
         return solFile;
     }
 
     public static String getContractName(String contractNameOrPath) throws ConsoleMessageException {
-        File contractFile = ConsoleUtils.getSolFile(contractNameOrPath);
+        File contractFile = ConsoleUtils.getSolFile(contractNameOrPath, true);
+        return ConsoleUtils.removeSolPostfix(contractFile.getName());
+    }
+
+    public static String getContractNameWithoutCheckExists(String contractNameOrPath)
+            throws ConsoleMessageException {
+        File contractFile = ConsoleUtils.getSolFile(contractNameOrPath, false);
         return ConsoleUtils.removeSolPostfix(contractFile.getName());
     }
 }

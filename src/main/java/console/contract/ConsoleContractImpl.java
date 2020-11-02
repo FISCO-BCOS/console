@@ -313,6 +313,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         // get callParams
         List<String> callParams = Arrays.asList(params).subList(4, params.length);
         callContract(
+                null,
                 contractName,
                 contractNameOrPath,
                 contractAddress.getAddress(),
@@ -321,6 +322,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     protected void callContract(
+            AbiAndBin abiAndBin,
             String contractName,
             String contractNameOrPath,
             String contractAddress,
@@ -329,9 +331,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throws IOException, CodeGenException, ABICodecException, CompileContractException {
         try {
             // load bin and abi
-            AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbiAndBin(
-                            client.getGroupId(), contractName, contractNameOrPath, contractAddress);
+            if (abiAndBin == null) {
+                abiAndBin =
+                        ContractCompiler.loadAbiAndBin(
+                                client.getGroupId(),
+                                contractName,
+                                contractNameOrPath,
+                                contractAddress);
+            }
             // call
             ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
             if (abiDefinition == null) {
@@ -487,6 +494,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String contractNameAndVersion = params[1];
         String contractNameOrPath = contractNameAndVersion;
         String contractVersion = null;
+        String contractAbi = "";
         if (contractNameAndVersion.contains(":")) {
             String[] nameAndVersion = contractNameAndVersion.split(":");
             if (nameAndVersion.length == 2) {
@@ -498,7 +506,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return;
             }
         }
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
+        String contractName = ConsoleUtils.getContractNameWithoutCheckExists(contractNameOrPath);
         logger.debug(
                 "callByCNS, contractName: {}, contractVersion: {}, contractNameAndVersion: {}, cnsService: {}",
                 contractNameOrPath,
@@ -525,6 +533,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     return;
                 }
                 contractAddress = cnsInfos.get(0).getAddress();
+                // get abi
+                contractAbi = cnsInfos.get(0).getAbi();
             } else {
                 List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
                 if (cnsInfos.size() == 0) {
@@ -536,6 +546,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 }
                 CnsInfo latestCNSInfo = cnsInfos.get(cnsInfos.size() - 1);
                 contractAddress = latestCNSInfo.getAddress();
+                contractAbi = latestCNSInfo.getAbi();
             }
         } catch (ContractException | ClientException e) {
             System.out.println("Error when getting cns information: ");
@@ -551,7 +562,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         String functionName = params[2];
         List<String> inputParams = Arrays.asList(params).subList(3, params.length);
-        callContract(contractName, contractNameOrPath, contractAddress, functionName, inputParams);
+        AbiAndBin abiAndBin = null;
+        if (!contractAbi.equals("") && contractAbi != null) {
+            abiAndBin = new AbiAndBin(contractAbi, null, null);
+        }
+        callContract(
+                abiAndBin,
+                contractName,
+                contractNameOrPath,
+                contractAddress,
+                functionName,
+                inputParams);
     }
 
     public void listAbi(String[] params) throws Exception {
