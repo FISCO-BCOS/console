@@ -47,6 +47,13 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
+    public void getNodeInfo(String[] params) throws IOException {
+        if (ConsoleUtils.checkEndPoint(params[1])) {
+            ConsoleUtils.printJson(client.getNodeInfo(params[1]).getNodeInfo().toString());
+        }
+    }
+
+    @Override
     public void getBlockNumber(String[] params) throws IOException {
         System.out.println(client.getBlockNumber().getBlockNumber());
     }
