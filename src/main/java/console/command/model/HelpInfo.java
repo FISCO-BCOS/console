@@ -110,6 +110,13 @@ public class HelpInfo {
         System.out.println("Usage: \ngetNodeVersion");
     }
 
+    public static void getNodeInfoHelp() {
+        System.out.println("Query the specified node information.");
+        System.out.println("Usage: \ngetNodeInfo [NodeEndPoint]");
+        System.out.println(
+                "* NodeEndPoint -- The requested node information, the format is IP:Port");
+    }
+
     public static void getPeersHelp() {
         System.out.println("Query peers currently connected to the client.");
         System.out.println("Usage: \ngetPeers [NodeEndPoint]");

@@ -72,6 +72,23 @@ public class SupportedCommand {
                             consoleInitializer.getConsoleClientFace().getNodeVersion(params);
                         }
                     });
+    public static final CommandInfo GET_NODE_INFO =
+            new CommandInfo(
+                    "getNodeInfo",
+                    "Query the specified node information.",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.getNodeInfoHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().getNodeInfo(params);
+                        }
+                    });
 
     public static final CommandInfo LIST_DEPLOY_AND_CREATE_MANAGER =
             new CommandInfo(

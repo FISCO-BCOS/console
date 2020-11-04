@@ -20,6 +20,8 @@ public interface ConsoleClientFace {
 
     void getNodeVersion(String[] params) throws IOException;
 
+    void getNodeInfo(String[] params) throws IOException;
+
     void getPeers(String[] params) throws IOException;
 
     void getNodeIDList(String[] params) throws IOException;
