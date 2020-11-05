@@ -2030,6 +2030,50 @@ public class SupportedCommand {
                     1,
                     1);
 
+    public static final CommandInfo GET_BATCH_RECEIPTS_BY_BLOCK_HASH_AND_RANGE =
+            new CommandInfo(
+                    "getBatchReceiptsByBlockHashAndRange",
+                    "Get batched transaction receipts according to block hash and the transaction range",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.getBatchReceiptsByBlockHashAndRangeHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getBatchReceiptsByBlockHashAndRange(params);
+                        }
+                    },
+                    1,
+                    3);
+
+    public static final CommandInfo GET_BATCH_RECEIPTS_BY_BLOCK_NUMBER_AND_RANGE =
+            new CommandInfo(
+                    "getBatchReceiptsByBlockNumberAndRange",
+                    "Get batched transaction receipts according to block number and the transaction range",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.getBatchReceiptsByBlockNumberAndRangeHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getBatchReceiptsByBlockNumberAndRange(params);
+                        }
+                    },
+                    1,
+                    3);
+
     public static List<String> CRUD_COMMANDS =
             new ArrayList<String>(
                     Arrays.asList(

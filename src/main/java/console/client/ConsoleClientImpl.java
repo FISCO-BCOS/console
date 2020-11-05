@@ -673,4 +673,44 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         }
         return accountList;
     }
+
+    @Override
+    public void getBatchReceiptsByBlockHashAndRange(String[] params) {
+        String from = "0";
+        String count = "-1";
+        // get groupId
+        String blockHash = params[1];
+        if (params.length > 2) {
+            from = params[2];
+        }
+        if (params.length > 3) {
+            count = params[3];
+        }
+        ConsoleUtils.printJson(
+                client.getBatchReceiptsByBlockHashAndRange(blockHash, from, count)
+                        .decodeTransactionReceiptsInfo()
+                        .toString());
+    }
+
+    @Override
+    public void getBatchReceiptsByBlockNumberAndRange(String[] params) {
+        String from = "0";
+        String count = "-1";
+        // get groupId
+        Integer blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", params[1]);
+        if (blockNumber == Common.InvalidReturnNumber) {
+            return;
+        }
+        if (params.length > 2) {
+            from = params[2];
+        }
+        if (params.length > 3) {
+            count = params[3];
+        }
+        ConsoleUtils.printJson(
+                client.getBatchReceiptsByBlockNumberAndRange(
+                                BigInteger.valueOf(blockNumber), from, count)
+                        .decodeTransactionReceiptsInfo()
+                        .toString());
+    }
 }
