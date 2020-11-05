@@ -79,4 +79,8 @@ public interface ConsoleClientFace {
     void newAccount(String[] params);
 
     void listAccount(String[] params);
+
+    void getBatchReceiptsByBlockHashAndRange(String[] params);
+
+    void getBatchReceiptsByBlockNumberAndRange(String[] params);
 }
