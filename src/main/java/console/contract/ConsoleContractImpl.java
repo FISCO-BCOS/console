@@ -268,21 +268,21 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                     + contractName);
             if (!contractDir.exists()) {
                 System.out.println(
-                        "Group "
+                        "Can not find the latest address. Please make sure group "
                                 + client.getGroupId()
-                                + " has not deployed contract \""
+                                + " has deployed contract \""
                                 + contractName
-                                + "\" yet!");
+                                + "\"!");
                 return;
             }
             File[] contractAddressFiles = contractDir.listFiles();
             if (contractAddressFiles == null || contractAddressFiles.length == 0) {
                 System.out.println(
-                        "Group "
+                        "Can not find the latest address. Please make sure group "
                                 + client.getGroupId()
-                                + " has not deployed contract \""
+                                + " has deployed contract \""
                                 + contractName
-                                + "\" yet!");
+                                + "\"!");
                 return;
             }
             ConsoleUtils.sortFiles(contractAddressFiles);
