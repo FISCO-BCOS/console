@@ -664,24 +664,24 @@ public class HelpInfo {
                 "Get the batched transaction receipts according to the specified block hash and transaction range");
         System.out.println("Usage: \ngetBatchReceiptsByBlockHashAndRange blockHash [from] [count]");
         System.out.println(
-                "* blockHash -- The hash of the block that contains the required transaction receipts.");
+                "* blockHash -- (required) The hash of the block that contains the required transaction receipts.");
         System.out.println(
-                "from -- (optional) The start index of the required transaction receipts (default is 0).");
+                "* from -- (optional) The start index of the required transaction receipts (default is 0).");
         System.out.println(
-                "count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
+                "* count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
     }
 
     public static void getBatchReceiptsByBlockNumberAndRangeHelp() {
         System.out.println(
                 "Get the batched transaction receipts according to the specified block number and transaction range");
         System.out.println(
-                "Usage: \ngetBatchReceiptsByBlockHashAndRange blockNumber [from] [count]");
+                "Usage: \ngetBatchReceiptsByBlockNumberAndRange blockNumber [from] [count]");
         System.out.println(
-                "* blockHash -- The number of the block that contains the required transaction receipts.");
+                "* blockNumber --(required) The number of the block that contains the required transaction receipts.");
         System.out.println(
-                "from -- (optional) The start index of the required transaction receipts (default is 0).");
+                "* from -- (optional) The start index of the required transaction receipts (default is 0).");
         System.out.println(
-                "count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
+                "* count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
     }
 
     public static void startHelp() {
