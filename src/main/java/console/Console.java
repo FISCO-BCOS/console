@@ -30,7 +30,7 @@ public class Console {
     public static LineReader createLineReader(ConsoleInitializer consoleInitializer)
             throws IOException {
         if (consoleInitializer.DisableAutoCompleter) {
-            return JlineUtils.getLineReader();
+            return null;
         }
         return JlineUtils.getLineReader(consoleInitializer.getClient());
     }
@@ -46,9 +46,11 @@ public class Console {
             consoleInitializer.init(args);
             lineReader = createLineReader(consoleInitializer);
             sc = new Scanner(System.in);
-            KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
-            keymap.bind(new Reference("beginning-of-line"), "\033[1~");
-            keymap.bind(new Reference("end-of-line"), "\033[4~");
+            if (!consoleInitializer.DisableAutoCompleter) {
+                KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
+                keymap.bind(new Reference("beginning-of-line"), "\033[1~");
+                keymap.bind(new Reference("end-of-line"), "\033[4~");
+            }
         } catch (Exception e) {
             System.out.println(e.getMessage());
             logger.error(" message: {}, e: {}", e.getMessage(), e);
@@ -59,12 +61,12 @@ public class Console {
 
         while (true) {
             try {
-                if (lineReader == null) {
+                if (lineReader == null && !consoleInitializer.DisableAutoCompleter) {
                     System.out.println("Console can not read commands.");
                     break;
                 }
                 String request = "";
-                if (INPUT_FLAG == 0) {
+                if (INPUT_FLAG == 0 && !consoleInitializer.DisableAutoCompleter) {
                     request =
                             lineReader.readLine(
                                     "[group:" + consoleInitializer.getGroupID() + "]> ");
@@ -76,11 +78,9 @@ public class Console {
                 String[] params = null;
                 params = ConsoleUtils.tokenizeCommand(request);
                 if (params.length < 1) {
-                    System.out.print("");
                     continue;
                 }
                 if ("".equals(params[0].trim())) {
-                    System.out.print("");
                     continue;
                 }
                 // execute the command
