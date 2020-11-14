@@ -100,7 +100,17 @@ download_console(){
     else
         curl -#LO ${download_link}
     fi
+    if [ $? -eq 0 ];then
+        LOG_INFO "Download console successfully"
+    else
+        LOG_WARN "Download console failed, please switch to better network and try again!"
+    fi
     tar -zxf ${package_name} && chmod +x console*/*.sh
+    if [ $? -eq 0 ];then
+        LOG_INFO "unzip console successfully"
+    else
+        LOG_WARN "unzip console failed, please try again!"
+    fi 
 }
 
 parse_params "$@"
