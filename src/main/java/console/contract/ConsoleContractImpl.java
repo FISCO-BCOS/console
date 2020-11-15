@@ -94,6 +94,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
+                System.out.println("return value:" + response.getValues());
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
@@ -413,7 +414,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("Output ");
                 System.out.println("Receipt message: " + response.getReceiptMessages());
                 System.out.println("Return message: " + response.getReturnMessage());
-                System.out.println("Return value: " + response.getReturnCode());
+                System.out.println("Return value: " + response.getValues());
                 ConsoleUtils.singleLine();
                 if (response.getEvents() != null && !response.getEvents().equals("")) {
                     System.out.println("Event logs");
