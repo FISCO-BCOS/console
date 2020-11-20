@@ -1,3 +1,16 @@
+### v2.7.0
+(2020-11-20)
+
+* 新增
+1. 添加`getBatchReceiptsByBlockHashAndRange`和`getBatchReceiptsByBlockNumberAndRange`命令，支持批量拉取交易回执
+2. 添加`getNodeInfo`命令，支持拉取节点订阅的topics信息
+3. 添加`revokeContractStatusManager`命令，支持撤销合约生命周期管理权限
+4. 添加`queryVotesOfMember`和`queryVotesOfThreshold`命令，支持委员权限管理投票情况查询
+
+* 更新
+1. `callByCNS`从节点拉取`ABI`描述信息
+2. 升级Java SDK版本为`2.7.0`
+
 ### v2.6.1
 (2020-10-30)
 
