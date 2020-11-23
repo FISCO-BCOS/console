@@ -12,10 +12,10 @@ targetCompatibility = 1.8
 [compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
 
 repositories {
+    mavenCentral()
     maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
     maven { url "https://oss.sonatype.org/service/local/staging/deploy/maven2"}
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
-    mavenCentral()
 }
 
 googleJavaFormat {
