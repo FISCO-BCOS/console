@@ -31,6 +31,8 @@ public interface PrecompiledFace {
 
     void grantContractStatusManager(String[] params) throws Exception;
 
+    void revokeContractStatusManager(String[] params) throws Exception;
+
     void getContractStatus(String[] params) throws Exception;
 
     void listContractStatusManager(String[] params) throws Exception;

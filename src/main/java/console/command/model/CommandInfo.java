@@ -251,7 +251,10 @@ public class CommandInfo {
         // check version
         if (minSupportVersion != null
                 && !ConsoleUtils.checkVersion(
-                        this.getCommand(), consoleInitializer.getClient(), minSupportVersion)) {
+                        this.getCommand(),
+                        consoleInitializer.getClient(),
+                        minSupportVersion,
+                        true)) {
             return;
         }
         commandImplement.call(consoleInitializer, params);

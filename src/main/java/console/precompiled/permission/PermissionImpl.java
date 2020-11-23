@@ -278,9 +278,6 @@ public class PermissionImpl implements PermissionFace {
         Integer weight = null;
         try {
             weight = Integer.parseInt(params[2]);
-            if (weight <= 0) {
-                throw new InvalidParameterException(" invalid weight .");
-            }
         } catch (NumberFormatException e) {
             System.out.println(
                     "Please provide weight by non-negative integer mode(from 1 to 2147483647) .");
@@ -316,6 +313,20 @@ public class PermissionImpl implements PermissionFace {
                 this.chainGovernanceService
                         .updateThreshold(BigInteger.valueOf(threshold))
                         .toString());
+    }
+
+    @Override
+    public void queryVotesOfMember(String[] params) throws Exception {
+        String committeeAddress = params[1];
+        String result = this.chainGovernanceService.queryVotesOfMember(committeeAddress);
+        System.out.println("queried account: " + committeeAddress);
+        System.out.println("votes:" + result);
+    }
+
+    @Override
+    public void queryVotesOfThreshold(String[] params) throws Exception {
+        String result = this.chainGovernanceService.queryVotesOfThreshold();
+        System.out.println("The votes of the updateThreshold operation : " + result);
     }
 
     @Override

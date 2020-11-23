@@ -20,6 +20,8 @@ public interface ConsoleClientFace {
 
     void getNodeVersion(String[] params) throws IOException;
 
+    void getNodeInfo(String[] params) throws IOException;
+
     void getPeers(String[] params) throws IOException;
 
     void getNodeIDList(String[] params) throws IOException;
@@ -77,4 +79,8 @@ public interface ConsoleClientFace {
     void newAccount(String[] params);
 
     void listAccount(String[] params);
+
+    void getBatchReceiptsByBlockHashAndRange(String[] params);
+
+    void getBatchReceiptsByBlockNumberAndRange(String[] params);
 }

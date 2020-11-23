@@ -62,4 +62,8 @@ public interface PermissionFace {
     void unfreezeAccount(String[] params) throws Exception;
 
     void getAccountStatus(String[] params) throws Exception;
+
+    public void queryVotesOfMember(String[] params) throws Exception;
+
+    public void queryVotesOfThreshold(String[] params) throws Exception;
 }

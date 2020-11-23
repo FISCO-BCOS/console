@@ -41,6 +41,13 @@ public class HelpInfo {
         System.out.println("* userAddress: 20 Bytes - The address of a tx.origin.");
     }
 
+    public static void revokeContractStatusManagerHelp() {
+        System.out.println("revoke contract authorization to the user.");
+        System.out.println("Usage: \nrevokeContractStatusManager contractAddress userAddress");
+        System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
+        System.out.println("* userAddress: 20 Bytes - The address of a tx.origin.");
+    }
+
     public static void getContractStatusHelp() {
         System.out.println("Get the status of the contract.");
         System.out.println("Usage: \ngetContractStatus contractAddress");
@@ -101,6 +108,13 @@ public class HelpInfo {
     public static void getNodeVersionHelp() {
         System.out.println("Query the current node version.");
         System.out.println("Usage: \ngetNodeVersion");
+    }
+
+    public static void getNodeInfoHelp() {
+        System.out.println("Query the specified node information.");
+        System.out.println("Usage: \ngetNodeInfo [NodeEndPoint]");
+        System.out.println(
+                "* NodeEndPoint -- The requested node information, the format is IP:Port");
     }
 
     public static void getPeersHelp() {
@@ -483,6 +497,17 @@ public class HelpInfo {
         System.out.println("* threshold -- int - The threshold of the committee.");
     }
 
+    public static void queryVotesOfMemberHelp() {
+        System.out.println("Query votes of a committee member.");
+        System.out.println("Usage: \nqueryVotesOfMember account");
+        System.out.println("* account -- The account address of the committee member.");
+    }
+
+    public static void queryVotesOfThresholdHelp() {
+        System.out.println("Query votes of the updateThreshold operation.");
+        System.out.println("Usage: \nqueryVotesOfThreshold");
+    }
+
     public static void listOperatorsHelp() {
         System.out.println("List operator members.");
         System.out.println("Usage: \nlistOperators");
@@ -632,6 +657,31 @@ public class HelpInfo {
         System.out.println("Usage:\ngetGroupConnections groupId");
         System.out.println(
                 "* groupId[Required]: The group ID that needs to query node information, default is the current group.");
+    }
+
+    public static void getBatchReceiptsByBlockHashAndRangeHelp() {
+        System.out.println(
+                "Get the batched transaction receipts according to the specified block hash and transaction range");
+        System.out.println("Usage: \ngetBatchReceiptsByBlockHashAndRange blockHash [from] [count]");
+        System.out.println(
+                "* blockHash -- (required) The hash of the block that contains the required transaction receipts.");
+        System.out.println(
+                "* from -- (optional) The start index of the required transaction receipts (default is 0).");
+        System.out.println(
+                "* count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
+    }
+
+    public static void getBatchReceiptsByBlockNumberAndRangeHelp() {
+        System.out.println(
+                "Get the batched transaction receipts according to the specified block number and transaction range");
+        System.out.println(
+                "Usage: \ngetBatchReceiptsByBlockNumberAndRange blockNumber [from] [count]");
+        System.out.println(
+                "* blockNumber --(required) The number of the block that contains the required transaction receipts.");
+        System.out.println(
+                "* from -- (optional) The start index of the required transaction receipts (default is 0).");
+        System.out.println(
+                "* count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
     }
 
     public static void startHelp() {

@@ -72,6 +72,23 @@ public class SupportedCommand {
                             consoleInitializer.getConsoleClientFace().getNodeVersion(params);
                         }
                     });
+    public static final CommandInfo GET_NODE_INFO =
+            new CommandInfo(
+                    "getNodeInfo",
+                    "Query the specified node information.",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.getNodeInfoHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().getNodeInfo(params);
+                        }
+                    });
 
     public static final CommandInfo LIST_DEPLOY_AND_CREATE_MANAGER =
             new CommandInfo(
@@ -227,8 +244,7 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1,
-                    NODE_VERSION_2_3_0);
+                    1);
     public static final CommandInfo UNFREEZE_CONTRACT =
             new CommandInfo(
                     "unfreezeContract",
@@ -247,8 +263,7 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1,
-                    NODE_VERSION_2_3_0);
+                    1);
     public static final CommandInfo GRANT_CONTRACT_STATUS =
             new CommandInfo(
                     "grantContractStatusManager",
@@ -269,8 +284,30 @@ public class SupportedCommand {
                         }
                     },
                     2,
+                    2);
+
+    public static final CommandInfo REVOKE_CONTRACT_STATUS =
+            new CommandInfo(
+                    "revokeContractStatusManager",
+                    "Revoke contract authorization to the user",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.revokeContractStatusManagerHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer
+                                    .getPrecompiledFace()
+                                    .revokeContractStatusManager(params);
+                        }
+                    },
                     2,
-                    NODE_VERSION_2_3_0);
+                    2);
+
     public static final CommandInfo LIST_CONTRACT_STATUS =
             new CommandInfo(
                     "listContractStatusManager",
@@ -349,6 +386,44 @@ public class SupportedCommand {
                             consoleInitializer.getPermissionFace().queryThreshold(params);
                         }
                     });
+    public static final CommandInfo QUERY_VOTES_OF_MEMBER =
+            new CommandInfo(
+                    "queryVotesOfMember",
+                    "Query votes of a committee member.",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.queryVotesOfMemberHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPermissionFace().queryVotesOfMember(params);
+                        }
+                    },
+                    1,
+                    1);
+
+    public static final CommandInfo QUERY_VOTES_OF_THRESHOLD =
+            new CommandInfo(
+                    "queryVotesOfThreshold",
+                    "Query votes of updateThreshold operation",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.queryVotesOfThresholdHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPermissionFace().queryVotesOfThreshold(params);
+                        }
+                    });
+
     public static final CommandInfo LIST_OPERATORS =
             new CommandInfo(
                     "listOperators",
@@ -1954,6 +2029,50 @@ public class SupportedCommand {
                     },
                     1,
                     1);
+
+    public static final CommandInfo GET_BATCH_RECEIPTS_BY_BLOCK_HASH_AND_RANGE =
+            new CommandInfo(
+                    "getBatchReceiptsByBlockHashAndRange",
+                    "Get batched transaction receipts according to block hash and the transaction range",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.getBatchReceiptsByBlockHashAndRangeHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getBatchReceiptsByBlockHashAndRange(params);
+                        }
+                    },
+                    1,
+                    3);
+
+    public static final CommandInfo GET_BATCH_RECEIPTS_BY_BLOCK_NUMBER_AND_RANGE =
+            new CommandInfo(
+                    "getBatchReceiptsByBlockNumberAndRange",
+                    "Get batched transaction receipts according to block number and the transaction range",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.getBatchReceiptsByBlockNumberAndRangeHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getBatchReceiptsByBlockNumberAndRange(params);
+                        }
+                    },
+                    1,
+                    3);
 
     public static List<String> CRUD_COMMANDS =
             new ArrayList<String>(

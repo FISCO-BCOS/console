@@ -6,20 +6,20 @@ contract TableFactory {
 
 //select condition
 contract Condition {
-    function EQ(string memory, int256) public {}
-    function EQ(string memory, string memory) public {}
+    function EQ(string memory, int256) public view{}
+    function EQ(string memory, string memory) public view{}
 
-    function NE(string memory, int256) public {}
-    function NE(string memory, string memory) public {}
+    function NE(string memory, int256) public view{}
+    function NE(string memory, string memory) public view{}
 
-    function GT(string memory, int256) public {}
-    function GE(string memory, int256) public {}
+    function GT(string memory, int256) public view{}
+    function GE(string memory, int256) public view{}
 
-    function LT(string memory, int256) public {}
-    function LE(string memory, int256) public {}
+    function LT(string memory, int256) public view{}
+    function LE(string memory, int256) public view{}
 
-    function limit(int256) public {}
-    function limit(int256, int256) public {}
+    function limit(int256) public view{}
+    function limit(int256, int256) public view{}
 }
 
 //one record
