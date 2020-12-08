@@ -29,6 +29,7 @@ import org.fisco.bcos.sdk.abi.ABICodecException;
 import org.fisco.bcos.sdk.abi.EventEncoder;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinitionFactory;
+import org.fisco.bcos.sdk.abi.wrapper.ABIObject;
 import org.fisco.bcos.sdk.abi.wrapper.ContractABIDefinition;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
@@ -78,6 +79,47 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         deployContract(contractName, contractNameOrPath, inputParams);
     }
 
+    private static String bytesToHex(byte[] bytes) {
+        String strHex = "";
+        StringBuilder sb = new StringBuilder("");
+        for (int n = 0; n < bytes.length; n++) {
+            strHex = Integer.toHexString(bytes[n] & 0xFF);
+            sb.append((strHex.length() == 1) ? "0" + strHex : strHex);
+        }
+        return sb.toString().trim();
+    }
+
+    public void printReturnObject(List<Object> returnObject, List<ABIObject> returnABIObject) {
+        if (returnABIObject == null || returnABIObject == null) {
+            return;
+        }
+        StringBuilder resultType = new StringBuilder();
+        StringBuilder resultData = new StringBuilder();
+        resultType.append("(");
+        resultData.append("(");
+        int i = 0;
+        for (ABIObject abiObject : returnABIObject) {
+            resultType.append(abiObject.getValueType()).append(", ");
+            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
+                byte[] resultDataBytes = (byte[]) (abiObject.getBytesValue().getValue());
+                String data = "0x" + bytesToHex(resultDataBytes);
+                resultData.append(data).append(", ");
+            } else {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+            }
+            i += 1;
+        }
+        if (returnObject.size() > 0) {
+            resultType.delete(resultType.length() - 2, resultType.length());
+            resultData.delete(resultData.length() - 2, resultData.length());
+        }
+        resultType.append(")");
+        resultData.append(")");
+        System.out.println("Return value size:" + returnObject.size());
+        System.out.println("Return types: " + resultType);
+        System.out.println("Return values:" + resultData);
+    }
+
     public TransactionResponse deployContract(
             String contractName, String contractNameOrPath, List<String> inputParams)
             throws ConsoleMessageException {
@@ -94,7 +136,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
-                System.out.println("return value:" + response.getValues());
+                printReturnObject(response.getReturnObject(), response.getReturnABIObject());
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
@@ -374,8 +416,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     System.out.println("description: " + "transaction executed successfully");
                     System.out.println("Return message: " + response.getReturnMessage());
                     ConsoleUtils.singleLine();
-                    System.out.println("Return values: ");
-                    ConsoleUtils.printJson(response.getValues());
+                    printReturnObject(response.getReturnObject(), response.getReturnABIObject());
                 } else {
                     String errorMessage = response.getReturnMessage();
                     System.out.println(
@@ -411,10 +452,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     System.out.println("description: " + "transaction executed successfully");
                 }
                 ConsoleUtils.singleLine();
-                System.out.println("Output ");
                 System.out.println("Receipt message: " + response.getReceiptMessages());
                 System.out.println("Return message: " + response.getReturnMessage());
-                System.out.println("Return value: " + response.getValues());
+                printReturnObject(response.getReturnObject(), response.getReturnABIObject());
                 ConsoleUtils.singleLine();
                 if (response.getEvents() != null && !response.getEvents().equals("")) {
                     System.out.println("Event logs");
