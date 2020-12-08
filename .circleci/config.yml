@@ -1,0 +1,23 @@
+version: 2.1
+jobs:
+  build:
+    working_directory: /console
+    docker:
+      - image: centos:7
+        environment:
+          PATH=$PATH:/usr/bin
+    steps:
+      - run:
+          name: Setup dependencies
+          command: |
+            yum install -y epel-release centos-release-scl which python python-devel
+            yum install -y git openssl-devel openssl java java-devel
+      - checkout
+      - run:
+          name: Compile
+          command: |
+            bash gradlew build
+      - run:
+          name: Integration Test
+          command: |
+            bash .ci/ci_check.sh
