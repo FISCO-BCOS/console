@@ -74,4 +74,12 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
 
         super.complete(reader, commandLine, candidates);
     }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
 }

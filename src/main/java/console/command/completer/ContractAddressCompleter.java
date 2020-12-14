@@ -79,4 +79,12 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
             logger.debug("ContractAddressCompleter exception, error: {}", e.getMessage(), e);
         }
     }
+
+    public Client getClient() {
+        return client;
+    }
+
+    public void setClient(Client client) {
+        this.client = client;
+    }
 }
