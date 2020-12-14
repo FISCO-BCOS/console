@@ -30,18 +30,24 @@ import org.slf4j.LoggerFactory;
 public class JlineUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
-    private static ContractAddressCompleter contractAddressCompleter;
-    private static ContractMethodCompleter contractMethodCompleter;
-    private static AccountCompleter accountCompleter;
+    private static ContractAddressCompleter contractAddressCompleter = null;
+    private static ContractMethodCompleter contractMethodCompleter = null;
+    private static AccountCompleter accountCompleter = null;
 
     public static LineReader getLineReader() throws IOException {
         return createLineReader(new ArrayList<Completer>());
     }
 
     public static void switchGroup(Client client) {
-        contractAddressCompleter.setClient(client);
-        contractMethodCompleter.setClient(client);
-        accountCompleter.setClient(client);
+        if (contractAddressCompleter != null) {
+            contractAddressCompleter.setClient(client);
+        }
+        if (contractMethodCompleter != null) {
+            contractMethodCompleter.setClient(client);
+        }
+        if (accountCompleter != null) {
+            accountCompleter.setClient(client);
+        }
     }
 
     public static LineReader getLineReader(Client client) throws IOException {
