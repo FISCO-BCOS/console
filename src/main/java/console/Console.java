@@ -105,7 +105,7 @@ public class Console {
                         commandInfo.callCommand(consoleInitializer, paramWithoutQuotation);
                         if (commandInfo.getCommand().equals(SupportedCommand.SWITCH.getCommand())) {
                             // update the client when switch group
-                            lineReader = createLineReader(consoleInitializer);
+                            JlineUtils.switchGroup(consoleInitializer.getClient());
                         }
                     }
                 } else {

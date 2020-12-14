@@ -30,9 +30,18 @@ import org.slf4j.LoggerFactory;
 public class JlineUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JlineUtils.class);
+    private static ContractAddressCompleter contractAddressCompleter;
+    private static ContractMethodCompleter contractMethodCompleter;
+    private static AccountCompleter accountCompleter;
 
     public static LineReader getLineReader() throws IOException {
         return createLineReader(new ArrayList<Completer>());
+    }
+
+    public static void switchGroup(Client client) {
+        contractAddressCompleter.setClient(client);
+        contractMethodCompleter.setClient(client);
+        accountCompleter.setClient(client);
     }
 
     public static LineReader getLineReader(Client client) throws IOException {
@@ -40,6 +49,10 @@ public class JlineUtils {
         List<Completer> completers = new ArrayList<Completer>();
 
         List<String> commands = SupportedCommand.getAllCommand();
+        contractAddressCompleter = new ContractAddressCompleter(client);
+        contractMethodCompleter = new ContractMethodCompleter(client);
+        accountCompleter = new AccountCompleter(client);
+
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
@@ -69,8 +82,8 @@ public class JlineUtils {
                     new ArgumentCompleter(
                             new StringsCompleter(command),
                             new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                            new ContractAddressCompleter(client),
-                            new ContractMethodCompleter(client),
+                            contractAddressCompleter,
+                            contractMethodCompleter,
                             new StringsCompleterIgnoreCase()));
         }
 
@@ -118,7 +131,7 @@ public class JlineUtils {
                 new ArgumentCompleter(
                         new StringsCompleter(SupportedCommand.REGISTER_CNS.getCommand()),
                         new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                        new ContractAddressCompleter(client)));
+                        contractAddressCompleter));
 
         completers.add(
                 new ArgumentCompleter(
@@ -164,8 +177,8 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new ContractAddressCompleter(client),
-                            new AccountCompleter(client)));
+                            contractAddressCompleter,
+                            accountCompleter));
         }
         // generateGroupFromFile
         completers.add(
