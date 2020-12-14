@@ -589,7 +589,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 contractAddress = latestCNSInfo.getAddress();
                 contractAbi = latestCNSInfo.getAbi();
             }
-        } catch (ContractException | ClientException e) {
+        } catch (ContractException e) {
             System.out.println("Error when getting cns information: ");
             System.out.println("Error message: " + e.getMessage());
             System.out.println(
@@ -600,6 +600,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             + contractVersion
                             + "\"");
             return;
+        } catch (ClientException e) {
+            System.out.println("Error when getting cns information: ");
+            System.out.println("Error message: " + e.getMessage());
         }
         String functionName = params[2];
         List<String> inputParams = Arrays.asList(params).subList(3, params.length);
