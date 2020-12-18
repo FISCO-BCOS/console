@@ -131,7 +131,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             resultType.append(abiObject.getValueType()).append(", ");
             if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
-                String resultDataString = (String) returnObject.get(i);
                 String data = "hex://0x" + bytesToHex(ABICodecObject.formatBytesN(abiObject));
                 resultData.append(data).append(", ");
             } else if ((abiObject.getValueType().equals(ABIObject.ObjectType.LIST)
