@@ -100,9 +100,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         int i = 0;
         for (ABIObject abiObject : returnABIObject) {
             resultType.append(abiObject.getValueType()).append(", ");
-            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
-                byte[] resultDataBytes = (byte[]) (abiObject.getBytesValue().getValue());
-                String data = "0x" + bytesToHex(resultDataBytes);
+            if (abiObject.getValueType() != null
+                    && abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
+                byte[] resultDataBytes = returnObject.get(i).toString().getBytes();
+                String data = "hex://0x" + bytesToHex(resultDataBytes);
                 resultData.append(data).append(", ");
             } else {
                 resultData.append(returnObject.get(i).toString()).append(", ");
