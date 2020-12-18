@@ -27,6 +27,7 @@ import java.util.Objects;
 import org.fisco.bcos.sdk.abi.ABICodec;
 import org.fisco.bcos.sdk.abi.ABICodecException;
 import org.fisco.bcos.sdk.abi.EventEncoder;
+import org.fisco.bcos.sdk.abi.wrapper.ABICodecObject;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinitionFactory;
 import org.fisco.bcos.sdk.abi.wrapper.ABIObject;
@@ -93,7 +94,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             List<Object> returnObject, List<ABIObject> returnABIObject, String returnValue) {
         if (returnABIObject == null
                 || returnABIObject == null
-                || returnABIObject.size() == 0
+                || returnObject.size() == 0
                 || returnABIObject.size() == 0) {
             System.out.println("Return values:" + returnValue);
             return;
@@ -102,21 +103,11 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         StringBuilder resultData = new StringBuilder();
         resultType.append("(");
         resultData.append("(");
-        int i = 0;
-        for (ABIObject abiObject : returnABIObject) {
-            resultType.append(abiObject.getValueType()).append(", ");
-            if (abiObject.getValueType() != null
-                    && abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
-                byte[] resultDataBytes = returnObject.get(i).toString().getBytes();
-                String data = "hex://0x" + bytesToHex(resultDataBytes);
-                resultData.append(data).append(", ");
-            } else {
-                resultData.append(returnObject.get(i).toString()).append(", ");
-            }
-            i += 1;
-        }
-        if (returnObject.size() > 0) {
+        getReturnObjectOutputData(resultType, resultData, returnObject, returnABIObject);
+        if (resultType.toString().endsWith(", ")) {
             resultType.delete(resultType.length() - 2, resultType.length());
+        }
+        if (resultData.toString().endsWith(", ")) {
             resultData.delete(resultData.length() - 2, resultData.length());
         }
         resultType.append(")");
@@ -124,6 +115,38 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         System.out.println("Return value size:" + returnObject.size());
         System.out.println("Return types: " + resultType);
         System.out.println("Return values:" + resultData);
+    }
+
+    public void getReturnObjectOutputData(
+            StringBuilder resultType,
+            StringBuilder resultData,
+            List<Object> returnObject,
+            List<ABIObject> returnABIObject) {
+        int i = 0;
+        for (ABIObject abiObject : returnABIObject) {
+            if (abiObject.getValueType() == null && returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+                i += 1;
+                continue;
+            }
+            resultType.append(abiObject.getValueType()).append(", ");
+            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
+                String resultDataString = (String) returnObject.get(i);
+                String data = "hex://0x" + bytesToHex(ABICodecObject.formatBytesN(abiObject));
+                resultData.append(data).append(", ");
+            } else if ((abiObject.getValueType().equals(ABIObject.ObjectType.LIST)
+                            || abiObject.getValueType().equals(ABIObject.ObjectType.STRUCT))
+                    && abiObject.getListValues() != null) {
+                getReturnObjectOutputData(
+                        resultType,
+                        resultData,
+                        (List<Object>) returnObject,
+                        abiObject.getListValues());
+            } else if (returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+            }
+            i += 1;
+        }
     }
 
     public TransactionResponse deployContract(
