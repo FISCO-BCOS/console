@@ -89,8 +89,13 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         return sb.toString().trim();
     }
 
-    public void printReturnObject(List<Object> returnObject, List<ABIObject> returnABIObject) {
-        if (returnABIObject == null || returnABIObject == null) {
+    public void printReturnObject(
+            List<Object> returnObject, List<ABIObject> returnABIObject, String returnValue) {
+        if (returnABIObject == null
+                || returnABIObject == null
+                || returnABIObject.size() == 0
+                || returnABIObject.size() == 0) {
+            System.out.println("Return values:" + returnValue);
             return;
         }
         StringBuilder resultType = new StringBuilder();
@@ -137,7 +142,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
-                printReturnObject(response.getReturnObject(), response.getReturnABIObject());
+                printReturnObject(
+                        response.getReturnObject(),
+                        response.getReturnABIObject(),
+                        response.getValues());
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
@@ -417,7 +425,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     System.out.println("description: " + "transaction executed successfully");
                     System.out.println("Return message: " + response.getReturnMessage());
                     ConsoleUtils.singleLine();
-                    printReturnObject(response.getReturnObject(), response.getReturnABIObject());
+                    printReturnObject(
+                            response.getReturnObject(),
+                            response.getReturnABIObject(),
+                            response.getValues());
                 } else {
                     String errorMessage = response.getReturnMessage();
                     System.out.println(
@@ -455,7 +466,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 ConsoleUtils.singleLine();
                 System.out.println("Receipt message: " + response.getReceiptMessages());
                 System.out.println("Return message: " + response.getReturnMessage());
-                printReturnObject(response.getReturnObject(), response.getReturnABIObject());
+                printReturnObject(
+                        response.getReturnObject(),
+                        response.getReturnABIObject(),
+                        response.getValues());
                 ConsoleUtils.singleLine();
                 if (response.getEvents() != null && !response.getEvents().equals("")) {
                     System.out.println("Event logs");
