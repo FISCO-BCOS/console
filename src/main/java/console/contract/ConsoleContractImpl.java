@@ -124,6 +124,25 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             List<ABIObject> returnABIObject) {
         int i = 0;
         for (ABIObject abiObject : returnABIObject) {
+            if (abiObject.getListValues() != null) {
+                resultType.append("[");
+                resultData.append("[");
+                getReturnObjectOutputData(
+                        resultType,
+                        resultData,
+                        (List<Object>) returnObject.get(i),
+                        abiObject.getListValues());
+                if (resultType.toString().endsWith(", ")) {
+                    resultType.delete(resultType.length() - 2, resultType.length());
+                }
+                if (resultData.toString().endsWith(", ")) {
+                    resultData.delete(resultData.length() - 2, resultData.length());
+                }
+                resultData.append("] ");
+                resultType.append("] ");
+                i += 1;
+                continue;
+            }
             if (abiObject.getValueType() == null && returnObject.size() > i) {
                 resultData.append(returnObject.get(i).toString()).append(", ");
                 i += 1;
@@ -133,14 +152,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
                 String data = "hex://0x" + bytesToHex(ABICodecObject.formatBytesN(abiObject));
                 resultData.append(data).append(", ");
-            } else if ((abiObject.getValueType().equals(ABIObject.ObjectType.LIST)
-                            || abiObject.getValueType().equals(ABIObject.ObjectType.STRUCT))
-                    && abiObject.getListValues() != null) {
-                getReturnObjectOutputData(
-                        resultType,
-                        resultData,
-                        (List<Object>) returnObject,
-                        abiObject.getListValues());
             } else if (returnObject.size() > i) {
                 resultData.append(returnObject.get(i).toString()).append(", ");
             }
