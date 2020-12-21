@@ -1069,7 +1069,8 @@ public class SupportedCommand {
                                 throws Exception {
                             System.exit(0);
                         }
-                    });
+                    },
+                    false);
 
     public static final CommandInfo DESC =
             new CommandInfo(
