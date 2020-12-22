@@ -675,7 +675,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void queryCNS(String[] params) throws Exception {
-        String contractNameOrPath = params[1];
+        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         List<CnsInfo> cnsInfos = null;
         if (params.length == 2) {
@@ -690,16 +690,23 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println();
             return;
         }
-        ConsoleUtils.singleLine();
         String[] headers = {"version", "address"};
         int size = cnsInfos.size();
+        int tableWidth = 45;
         String[][] data = new String[size][2];
         for (int i = 0; i < size; i++) {
             data[i][0] = cnsInfos.get(i).getVersion();
             data[i][1] = cnsInfos.get(i).getAddress();
+            if (data[i][0].length() > tableWidth) {
+                tableWidth = data[i][0].length();
+            }
+            if (data[i][1].length() > tableWidth) {
+                tableWidth = data[i][1].length();
+            }
         }
-        ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.CENTER, 45);
+        ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.LEFT, tableWidth);
         io.bretty.console.table.Table table = io.bretty.console.table.Table.of(headers, data, cf);
+        ConsoleUtils.singleLine();
         System.out.println(table);
         ConsoleUtils.singleLine();
         System.out.println();
@@ -707,7 +714,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void registerCNS(String[] params) throws Exception {
-        String contractNameOrPath = params[1];
+        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         String contractAddress = params[2];
         String contractVersion = params[3];
