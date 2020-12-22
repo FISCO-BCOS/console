@@ -1882,7 +1882,7 @@ public class SupportedCommand {
                         @Override
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
-                            String contractNameOrPath = params[1];
+                            String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
                             String contractName = ConsoleUtils.getContractName(contractNameOrPath);
                             File contractFile =
                                     new File(

@@ -8,8 +8,6 @@ import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
-import io.bretty.console.table.Alignment;
-import io.bretty.console.table.ColumnFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -685,31 +683,17 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (params.length == 3) {
             cnsInfos = cnsService.selectByNameAndVersion(contractName, params[2]);
         }
+        ConsoleUtils.singleLine();
         if (cnsInfos == null || cnsInfos.isEmpty()) {
             System.out.println("Empty set.");
-            System.out.println();
+            ConsoleUtils.singleLine();
             return;
         }
-        String[] headers = {"version", "address"};
-        int size = cnsInfos.size();
-        int tableWidth = 45;
-        String[][] data = new String[size][2];
-        for (int i = 0; i < size; i++) {
-            data[i][0] = cnsInfos.get(i).getVersion();
-            data[i][1] = cnsInfos.get(i).getAddress();
-            if (data[i][0].length() > tableWidth) {
-                tableWidth = data[i][0].length();
-            }
-            if (data[i][1].length() > tableWidth) {
-                tableWidth = data[i][1].length();
-            }
+        for (int i = 0; i < cnsInfos.size(); i++) {
+            System.out.println("* contract address: " + cnsInfos.get(i).getAddress());
+            System.out.println("* contract version: " + cnsInfos.get(i).getVersion());
+            ConsoleUtils.singleLine();
         }
-        ColumnFormatter<String> cf = ColumnFormatter.text(Alignment.LEFT, tableWidth);
-        io.bretty.console.table.Table table = io.bretty.console.table.Table.of(headers, data, cf);
-        ConsoleUtils.singleLine();
-        System.out.println(table);
-        ConsoleUtils.singleLine();
-        System.out.println();
     }
 
     @Override
