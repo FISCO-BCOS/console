@@ -74,7 +74,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void deploy(String[] params) throws ConsoleMessageException {
-        String contractNameOrPath = params[1];
+        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         List<String> inputParams = Arrays.asList(params).subList(2, params.length);
         deployContract(contractName, contractNameOrPath, inputParams);
@@ -338,7 +338,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void call(String[] params) throws Exception {
-        String contractNameOrPath = params[1];
+        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
         String contractAddressStr = params[2];
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         // check contract address
@@ -533,7 +533,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void deployByCNS(String[] params) throws ConsoleMessageException {
         try {
-            String contractNameOrPath = params[1];
+            String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
             String contractVersion = params[2];
             String contractName = ConsoleUtils.getContractName(contractNameOrPath);
             // query the the contractName and version has been registered or not
@@ -581,7 +581,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void callByCNS(String[] params) throws Exception {
         String contractNameAndVersion = params[1];
-        String contractNameOrPath = contractNameAndVersion;
+        String contractNameOrPath = ConsoleUtils.resolveContractPath(contractNameAndVersion);
         String contractVersion = null;
         String contractAbi = "";
         if (contractNameAndVersion.contains(":")) {

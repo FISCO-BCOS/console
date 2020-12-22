@@ -15,6 +15,7 @@ import java.io.StreamTokenizer;
 import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -586,6 +587,15 @@ public class ConsoleUtils {
             throw new ConsoleMessageException(solFileNameOrPath + " does not exist ");
         }
         return solFile;
+    }
+
+    public static String resolveContractPath(String contractNameOrPath) {
+        if (contractNameOrPath.startsWith("~/")) {
+            return Paths.get(System.getProperty("user.home"))
+                    .resolve(contractNameOrPath.substring(2))
+                    .toString();
+        }
+        return contractNameOrPath;
     }
 
     public static String getContractName(String contractNameOrPath) throws ConsoleMessageException {
