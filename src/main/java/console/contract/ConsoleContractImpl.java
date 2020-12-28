@@ -27,6 +27,7 @@ import java.util.Objects;
 import org.fisco.bcos.sdk.abi.ABICodec;
 import org.fisco.bcos.sdk.abi.ABICodecException;
 import org.fisco.bcos.sdk.abi.EventEncoder;
+import org.fisco.bcos.sdk.abi.wrapper.ABICodecObject;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinitionFactory;
 import org.fisco.bcos.sdk.abi.wrapper.ABIObject;
@@ -73,7 +74,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void deploy(String[] params) throws ConsoleMessageException {
-        String contractNameOrPath = params[1];
+        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         List<String> inputParams = Arrays.asList(params).subList(2, params.length);
         deployContract(contractName, contractNameOrPath, inputParams);
@@ -89,28 +90,24 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         return sb.toString().trim();
     }
 
-    public void printReturnObject(List<Object> returnObject, List<ABIObject> returnABIObject) {
-        if (returnABIObject == null || returnABIObject == null) {
+    public void printReturnObject(
+            List<Object> returnObject, List<ABIObject> returnABIObject, String returnValue) {
+        if (returnABIObject == null
+                || returnABIObject == null
+                || returnObject.size() == 0
+                || returnABIObject.size() == 0) {
+            System.out.println("Return values:" + returnValue);
             return;
         }
         StringBuilder resultType = new StringBuilder();
         StringBuilder resultData = new StringBuilder();
         resultType.append("(");
         resultData.append("(");
-        int i = 0;
-        for (ABIObject abiObject : returnABIObject) {
-            resultType.append(abiObject.getValueType()).append(", ");
-            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
-                byte[] resultDataBytes = (byte[]) (abiObject.getBytesValue().getValue());
-                String data = "0x" + bytesToHex(resultDataBytes);
-                resultData.append(data).append(", ");
-            } else {
-                resultData.append(returnObject.get(i).toString()).append(", ");
-            }
-            i += 1;
-        }
-        if (returnObject.size() > 0) {
+        getReturnObjectOutputData(resultType, resultData, returnObject, returnABIObject);
+        if (resultType.toString().endsWith(", ")) {
             resultType.delete(resultType.length() - 2, resultType.length());
+        }
+        if (resultData.toString().endsWith(", ")) {
             resultData.delete(resultData.length() - 2, resultData.length());
         }
         resultType.append(")");
@@ -118,6 +115,48 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         System.out.println("Return value size:" + returnObject.size());
         System.out.println("Return types: " + resultType);
         System.out.println("Return values:" + resultData);
+    }
+
+    public void getReturnObjectOutputData(
+            StringBuilder resultType,
+            StringBuilder resultData,
+            List<Object> returnObject,
+            List<ABIObject> returnABIObject) {
+        int i = 0;
+        for (ABIObject abiObject : returnABIObject) {
+            if (abiObject.getListValues() != null) {
+                resultType.append("[");
+                resultData.append("[");
+                getReturnObjectOutputData(
+                        resultType,
+                        resultData,
+                        (List<Object>) returnObject.get(i),
+                        abiObject.getListValues());
+                if (resultType.toString().endsWith(", ")) {
+                    resultType.delete(resultType.length() - 2, resultType.length());
+                }
+                if (resultData.toString().endsWith(", ")) {
+                    resultData.delete(resultData.length() - 2, resultData.length());
+                }
+                resultData.append("] ");
+                resultType.append("] ");
+                i += 1;
+                continue;
+            }
+            if (abiObject.getValueType() == null && returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+                i += 1;
+                continue;
+            }
+            resultType.append(abiObject.getValueType()).append(", ");
+            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
+                String data = "hex://0x" + bytesToHex(ABICodecObject.formatBytesN(abiObject));
+                resultData.append(data).append(", ");
+            } else if (returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+            }
+            i += 1;
+        }
     }
 
     public TransactionResponse deployContract(
@@ -136,7 +175,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
-                printReturnObject(response.getReturnObject(), response.getReturnABIObject());
+                printReturnObject(
+                        response.getReturnObject(),
+                        response.getReturnABIObject(),
+                        response.getValues());
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
@@ -296,7 +338,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void call(String[] params) throws Exception {
-        String contractNameOrPath = params[1];
+        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
         String contractAddressStr = params[2];
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         // check contract address
@@ -416,7 +458,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     System.out.println("description: " + "transaction executed successfully");
                     System.out.println("Return message: " + response.getReturnMessage());
                     ConsoleUtils.singleLine();
-                    printReturnObject(response.getReturnObject(), response.getReturnABIObject());
+                    printReturnObject(
+                            response.getReturnObject(),
+                            response.getReturnABIObject(),
+                            response.getValues());
                 } else {
                     String errorMessage = response.getReturnMessage();
                     System.out.println(
@@ -454,7 +499,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 ConsoleUtils.singleLine();
                 System.out.println("Receipt message: " + response.getReceiptMessages());
                 System.out.println("Return message: " + response.getReturnMessage());
-                printReturnObject(response.getReturnObject(), response.getReturnABIObject());
+                printReturnObject(
+                        response.getReturnObject(),
+                        response.getReturnABIObject(),
+                        response.getValues());
                 ConsoleUtils.singleLine();
                 if (response.getEvents() != null && !response.getEvents().equals("")) {
                     System.out.println("Event logs");
@@ -485,7 +533,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void deployByCNS(String[] params) throws ConsoleMessageException {
         try {
-            String contractNameOrPath = params[1];
+            String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
             String contractVersion = params[2];
             String contractName = ConsoleUtils.getContractName(contractNameOrPath);
             // query the the contractName and version has been registered or not
@@ -533,7 +581,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void callByCNS(String[] params) throws Exception {
         String contractNameAndVersion = params[1];
-        String contractNameOrPath = contractNameAndVersion;
+        String contractNameOrPath = ConsoleUtils.resolveContractPath(contractNameAndVersion);
         String contractVersion = null;
         String contractAbi = "";
         if (contractNameAndVersion.contains(":")) {
