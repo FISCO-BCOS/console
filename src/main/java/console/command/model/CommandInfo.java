@@ -122,6 +122,16 @@ public class CommandInfo {
             String command,
             String desc,
             List<String> optionCommand,
+            CommandImplement commandImplement,
+            boolean supportNonInteractive) {
+        this(command, desc, optionCommand, commandImplement);
+        this.supportNonInteractive = supportNonInteractive;
+    }
+
+    public CommandInfo(
+            String command,
+            String desc,
+            List<String> optionCommand,
             UsageDisplay usageDisplay,
             CommandImplement commandImplement,
             int minParamLength,
