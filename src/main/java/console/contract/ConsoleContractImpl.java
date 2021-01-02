@@ -745,14 +745,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // ");
             System.out.printf(" %-20s|   %-66s     %10s\n", "name", "topic", "signature");
             System.out.println("  -------------------------------------------------------------- ");
-            for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
+            for (Map.Entry<String, List<ABIDefinition>> entry : events.entrySet()) {
                 EventEncoder eventEncoder = new EventEncoder(client.getCryptoSuite());
                 System.out.printf(
                         " %-20s|   %-66s  |   %10s\n",
-                        entry.getValue().getName(),
+                        entry.getValue().get(0).getName(),
                         eventEncoder.buildEventSignature(
-                                entry.getValue().getMethodSignatureAsString()),
-                        entry.getValue().getMethodSignatureAsString());
+                                entry.getValue().get(0).getMethodSignatureAsString()),
+                        entry.getValue().get(0).getMethodSignatureAsString());
             }
         }
     }
