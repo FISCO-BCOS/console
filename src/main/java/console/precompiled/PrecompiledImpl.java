@@ -8,6 +8,7 @@ import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,13 +27,16 @@ import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.contract.precompiled.gaschargemgr.GasChargeManageService;
 import org.fisco.bcos.sdk.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.model.PrecompiledConstant;
 import org.fisco.bcos.sdk.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
+import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.utils.Numeric;
 import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +51,9 @@ public class PrecompiledImpl implements PrecompiledFace {
     private TableCRUDService tableCRUDService;
     private ContractLifeCycleService contractLifeCycleService;
     private CnsService cnsService;
+    private GasChargeManageService gasChargeManageService;
 
-    public PrecompiledImpl(Client client) {
+    public PrecompiledImpl(Client client) throws ContractException {
         this.client = client;
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
         this.consensusService = new ConsensusService(client, cryptoKeyPair);
@@ -56,6 +61,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.contractLifeCycleService = new ContractLifeCycleService(client, cryptoKeyPair);
         this.cnsService = new CnsService(client, cryptoKeyPair);
+        this.gasChargeManageService = new GasChargeManageService(client, cryptoKeyPair);
     }
 
     @Override
@@ -732,5 +738,88 @@ public class PrecompiledImpl implements PrecompiledFace {
                         .registerCNS(contractName, contractVersion, contractAddress, abi)
                         .toString());
         System.out.println();
+    }
+
+    @Override
+    public void chargeGas(String[] params) throws Exception {
+        String accountAddress = params[1];
+        String chargeGas = params[2];
+        BigInteger chargeGasValue = BigInteger.ZERO;
+        try {
+            chargeGasValue = Numeric.decodeQuantity(chargeGas);
+        } catch (Exception e) {
+            System.out.println("Invalid charge gas, expected to integer, provided " + chargeGas);
+        }
+        TransactionResponse response =
+                this.gasChargeManageService.charge(accountAddress, chargeGasValue);
+        ConsoleUtils.printPrecompiledResponse(response);
+    }
+
+    @Override
+    public void deductGas(String[] params) throws Exception {
+        String accountAddress = params[1];
+        String chargeGas = params[2];
+        BigInteger chargeGasValue = BigInteger.ZERO;
+        try {
+            chargeGasValue = Numeric.decodeQuantity(chargeGas);
+        } catch (Exception e) {
+            System.out.println("Invalid deduct gas, expected to integer, provided " + chargeGas);
+        }
+        TransactionResponse response =
+                this.gasChargeManageService.deduct(accountAddress, chargeGasValue);
+        ConsoleUtils.printPrecompiledResponse(response);
+    }
+
+    @Override
+    public void queryRemainGas(String[] params) throws Exception {
+        String accountAddress = params[1];
+        ConsoleUtils.singleLine();
+        System.out.println("* queryRemainGas");
+        ConsoleUtils.singleLine();
+        System.out.println("* accountAddress: " + accountAddress);
+        System.out.println(
+                "* remainGas: " + this.gasChargeManageService.queryRemainGas(accountAddress));
+        ConsoleUtils.singleLine();
+    }
+
+    @Override
+    public void grantCharger(String[] params) throws Exception {
+        String accountAddress = params[1];
+        ConsoleUtils.singleLine();
+        System.out.println("* grantCharger");
+        ConsoleUtils.singleLine();
+        System.out.println("grantedAddress: " + accountAddress);
+        ConsoleUtils.singleLine();
+        System.out.println("* result:");
+        ConsoleUtils.printJson(this.gasChargeManageService.grantCharger(accountAddress).toString());
+    }
+
+    @Override
+    public void revokeCharger(String[] params) throws Exception {
+        String accountAddress = params[1];
+        ConsoleUtils.singleLine();
+        System.out.println("* revokeCharger");
+        ConsoleUtils.singleLine();
+        System.out.println("revokedAddress: " + accountAddress);
+        ConsoleUtils.singleLine();
+        System.out.println("* result:");
+        ConsoleUtils.printJson(
+                this.gasChargeManageService.revokeCharger(accountAddress).toString());
+    }
+
+    @Override
+    public void listChargers(String[] params) throws Exception {
+        ConsoleUtils.singleLine();
+        System.out.println("* listChargers");
+        ConsoleUtils.singleLine();
+        List<String> chargerList = this.gasChargeManageService.listChargers();
+        if (chargerList.isEmpty()) {
+            System.out.println("Empty set.");
+            return;
+        }
+        for (String charger : chargerList) {
+            System.out.println("* " + charger);
+        }
+        ConsoleUtils.singleLine();
     }
 }

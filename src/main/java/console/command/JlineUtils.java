@@ -167,7 +167,10 @@ public class JlineUtils {
                         SupportedCommand.FREEZE_ACCOUNT.getCommand(),
                         SupportedCommand.UNFREEZE_ACCOUNT.getCommand(),
                         SupportedCommand.GET_ACCOUNT_STATUS.getCommand(),
-                        SupportedCommand.UPDATE_COMMITTEE_MEMBER_WEIGHT.getCommand());
+                        SupportedCommand.UPDATE_COMMITTEE_MEMBER_WEIGHT.getCommand(),
+                        SupportedCommand.QUERY_GAS.getCommand(),
+                        SupportedCommand.GRANT_CHARGER.getCommand(),
+                        SupportedCommand.REVOKE_CHARGER.getCommand());
         for (String command : commands) {
             completers.add(
                     new ArgumentCompleter(
@@ -193,6 +196,17 @@ public class JlineUtils {
                                 SupportedCommand.GENERATE_GROUP_WITH_FILE.getCommand()),
                         new ConsoleFilesCompleter(false),
                         new StringsCompleterIgnoreCase()));
+        commands =
+                Arrays.asList(
+                        SupportedCommand.CHARGE_GAS.getCommand(),
+                        SupportedCommand.DEDUCT_GAS.getCommand());
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            accountCompleter,
+                            new StringsCompleter()));
+        }
         return createLineReader(completers);
     }
 
