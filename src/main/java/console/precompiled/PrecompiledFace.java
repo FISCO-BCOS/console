@@ -40,4 +40,17 @@ public interface PrecompiledFace {
     void queryCNS(String[] params) throws Exception;
 
     void registerCNS(String[] params) throws Exception;
+
+    // gasChargeManagePrecompiled related interfaces
+    void chargeGas(String[] params) throws Exception;
+
+    void deductGas(String[] params) throws Exception;
+
+    void queryRemainGas(String[] params) throws Exception;
+
+    void grantCharger(String[] params) throws Exception;
+
+    void revokeCharger(String[] params) throws Exception;
+
+    void listChargers(String[] params) throws Exception;
 }

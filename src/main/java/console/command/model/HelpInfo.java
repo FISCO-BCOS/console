@@ -684,6 +684,43 @@ public class HelpInfo {
                 "* count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
     }
 
+    public static void chargeGasHelp() {
+        System.out.println("Charge specified gas for the given account");
+        System.out.println("Usage:\nchargeGas accountAddress gasValue");
+        System.out.println("* accountAddress -- (required) The account that the gas is charged to");
+        System.out.println("* gasValue -- (required) The charged gas value, must be integers");
+    }
+
+    public static void deductGasHelp() {
+        System.out.println("Deduct specified gas for the given account");
+        System.out.println("Usage:\ndeductGas accountAddress gasValue");
+        System.out.println("* accountAddress -- (required) The account that the gas is deducted");
+        System.out.println("* gasValue -- (required) The deducted gas value, must be integers");
+    }
+
+    public static void queryGasHelp() {
+        System.out.println("Query gas for the given account");
+        System.out.println("Usage:\nqueryGas accountAddress");
+        System.out.println("* accountAddress -- (required) The queried account address");
+    }
+
+    public static void grantChargerHelp() {
+        System.out.println("Grant gas charge/deduct permission to the given account");
+        System.out.println("Usage:\ngrantCharger accountAddress");
+        System.out.println("* accountAddress -- (required) The granted account address");
+    }
+
+    public static void revokeChargerHelp() {
+        System.out.println("Revoke charge/deduct permission from the given account");
+        System.out.println("Usage:\nrevokeCharger accountAddress");
+        System.out.println("* accountAddress -- (required) The revoked account address");
+    }
+
+    public static void listChargersHelp() {
+        System.out.println("List the accounts that have the permission to charge/deduct gas");
+        System.out.println("Usage:\nlistChargers");
+    }
+
     public static void startHelp() {
         System.out.println("Please provide one of the following ways to start the console.");
         System.out.println("Usage: ");
