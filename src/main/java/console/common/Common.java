@@ -15,6 +15,10 @@ public class Common {
     public static int ConsensusTimeoutMin = 3;
     public static int ConsensusTimeoutMax = Integer.MAX_VALUE / 1000;
 
+    public static final String EnableGasChargeMgr = "enable_charge_mgr";
+    public static final String GAS_CHARGE_MGR_ON = "on";
+    public static final String GAS_CHARGE_MGR_OFF = "off";
+
     public static final int InvalidReturnNumber = -100;
     public static final long InvalidLongValue = Long.MAX_VALUE;
 

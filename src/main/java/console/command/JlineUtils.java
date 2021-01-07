@@ -130,6 +130,11 @@ public class JlineUtils {
                             new StringsCompleter(command),
                             new StringsCompleter(Common.ConsensusTimeout),
                             new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.EnableGasChargeMgr),
+                            new StringsCompleterIgnoreCase()));
         }
 
         // completer for REGISTER_CNS

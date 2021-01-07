@@ -399,10 +399,15 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 || Common.TxGasLimit.equals(key)
                 || Common.RPBFTEpochSealerNum.equals(key)
                 || Common.RPBFTEpochBlockNum.equals(key)
-                || Common.ConsensusTimeout.equals(key)) {
+                || Common.ConsensusTimeout.equals(key)
+                || Common.EnableGasChargeMgr.equals(key)) {
             String value = client.getSystemConfigByKey(key).getSystemConfig();
             if (Common.RPBFTEpochSealerNum.equals(key) || Common.RPBFTEpochBlockNum.equals(key)) {
                 System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
+            }
+            if (Common.EnableGasChargeMgr.equals("")) {
+                System.out.println("off");
+                return;
             }
             System.out.println(value);
         } else {

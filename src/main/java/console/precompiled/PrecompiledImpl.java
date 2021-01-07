@@ -101,10 +101,26 @@ public class PrecompiledImpl implements PrecompiledFace {
                 || Common.TxGasLimit.equals(key)
                 || Common.RPBFTEpochSealerNum.equals(key)
                 || Common.RPBFTEpochBlockNum.equals(key)
-                || Common.ConsensusTimeout.equals(key)) {
+                || Common.ConsensusTimeout.equals(key)
+                || Common.EnableGasChargeMgr.equals(key)) {
             String valueStr = params[2];
+
             int value = 1;
             try {
+                if (Common.EnableGasChargeMgr.equals(key)) {
+                    if (!valueStr.equals(Common.GAS_CHARGE_MGR_ON)
+                            && !valueStr.equals(Common.GAS_CHARGE_MGR_OFF)) {
+                        System.out.println(
+                                "The supported options are: \""
+                                        + Common.GAS_CHARGE_MGR_ON
+                                        + " or \""
+                                        + Common.GAS_CHARGE_MGR_OFF);
+                        return;
+                    }
+                    ConsoleUtils.printJson(
+                            this.systemConfigService.setValueByKey(key, valueStr).toString());
+                    return;
+                }
                 value = Integer.parseInt(valueStr);
                 if (Common.TxCountLimit.equals(key)
                         || Common.RPBFTEpochSealerNum.equals(key)
@@ -131,7 +147,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                                     + ".");
                     return;
                 }
-
                 if (Common.RPBFTEpochSealerNum.equals(key)
                         || Common.RPBFTEpochBlockNum.equals(key)) {
                     System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
