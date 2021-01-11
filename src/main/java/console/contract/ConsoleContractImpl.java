@@ -171,6 +171,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             TransactionResponse response =
                     this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
                             abiAndBin.getAbi(), bin, inputParams);
+            System.out.println(
+                    "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
@@ -182,8 +184,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
-            System.out.println(
-                    "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("contract address: " + contractAddress);
             writeLog(contractName, contractAddress);
             // save the bin and abi
