@@ -53,6 +53,14 @@ public class ConsoleUtils {
     public static final int ADDRESS_SIZE = 160;
     public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
 
+    public static void printRetCode(RetCode retCode) {
+        if (retCode.getTransactionReceipt() != null) {
+            System.out.println(
+                    "TransactionHash: " + retCode.getTransactionReceipt().getTransactionHash());
+        }
+        System.out.println(formatJson(retCode.toString()));
+    }
+
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
     }
@@ -166,6 +174,11 @@ public class ConsoleUtils {
     }
 
     public static void printPrecompiledResponse(TransactionResponse transactionResponse) {
+        if (transactionResponse.getTransactionReceipt() != null) {
+            System.out.println(
+                    "TransactionHash:"
+                            + transactionResponse.getTransactionReceipt().getTransactionHash());
+        }
         if (transactionResponse.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
             RetCode retCode =
                     new RetCode(

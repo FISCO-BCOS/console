@@ -308,7 +308,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                                     receipt.getStatus(), receipt.getMessage())
                             .getMessage());
         }
-        ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(receipt));
+        ConsoleUtils.printJson(receipt.toString());
     }
 
     @Override

@@ -117,8 +117,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                                         + Common.GAS_CHARGE_MGR_OFF);
                         return;
                     }
-                    ConsoleUtils.printJson(
-                            this.systemConfigService.setValueByKey(key, valueStr).toString());
+                    ConsoleUtils.printRetCode(
+                            this.systemConfigService.setValueByKey(key, valueStr));
                     return;
                 }
                 value = Integer.parseInt(valueStr);
@@ -151,8 +151,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                         || Common.RPBFTEpochBlockNum.equals(key)) {
                     System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
                 }
-                ConsoleUtils.printJson(
-                        this.systemConfigService.setValueByKey(key, value + "").toString());
+                ConsoleUtils.printRetCode(this.systemConfigService.setValueByKey(key, value + ""));
             } catch (NumberFormatException e) {
                 if (Common.TxCountLimit.equals(key)
                         || Common.RPBFTEpochSealerNum.equals(key)
@@ -212,29 +211,27 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void freezeContract(String[] params) throws Exception {
         String address = params[1];
-        ConsoleUtils.printJson(contractLifeCycleService.freeze(address).toString());
+        ConsoleUtils.printRetCode(contractLifeCycleService.freeze(address));
     }
 
     @Override
     public void unfreezeContract(String[] params) throws Exception {
         String address = params[1];
-        ConsoleUtils.printJson(contractLifeCycleService.unfreeze(address).toString());
+        ConsoleUtils.printRetCode(contractLifeCycleService.unfreeze(address));
     }
 
     @Override
     public void grantContractStatusManager(String[] params) throws Exception {
         String contractAddr = params[1];
         String userAddr = params[2];
-        ConsoleUtils.printJson(
-                contractLifeCycleService.grantManager(contractAddr, userAddr).toString());
+        ConsoleUtils.printRetCode(contractLifeCycleService.grantManager(contractAddr, userAddr));
     }
 
     @Override
     public void revokeContractStatusManager(String[] params) throws Exception {
         String contractAddr = params[1];
         String userAddr = params[2];
-        ConsoleUtils.printJson(
-                contractLifeCycleService.revokeManager(contractAddr, userAddr).toString());
+        ConsoleUtils.printRetCode(contractLifeCycleService.revokeManager(contractAddr, userAddr));
     }
 
     @Override
@@ -269,6 +266,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             RetCode result =
                     tableCRUDService.createTable(
                             table.getTableName(), table.getKey(), table.getValueFields());
+            if (result.getTransactionReceipt() != null) {
+                System.out.println(
+                        "TransactionHash: " + result.getTransactionReceipt().getTransactionHash());
+            }
             // parse the result
             if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
@@ -437,7 +438,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             table.setKey(keyValue);
             RetCode insertResult =
                     tableCRUDService.insert(table.getTableName(), table.getKey(), entry);
-
+            if (insertResult.getTransactionReceipt() != null) {
+                System.out.println(
+                        "TransactionHash: "
+                                + insertResult.getTransactionReceipt().getTransactionHash());
+            }
             if (insertResult.getCode() >= 0) {
                 System.out.println("Insert OK: ");
                 System.out.println(insertResult.getCode() + " row affected.");
@@ -497,6 +502,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             handleKey(table, condition);
             RetCode updateResult =
                     tableCRUDService.update(table.getTableName(), table.getKey(), entry, condition);
+            if (updateResult.getTransactionReceipt() != null) {
+                System.out.println(
+                        "TransactionHash: "
+                                + updateResult.getTransactionReceipt().getTransactionHash());
+            }
             if (updateResult.getCode() >= 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
             } else {
@@ -540,7 +550,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             handleKey(table, condition);
             RetCode removeResult =
                     tableCRUDService.remove(table.getTableName(), table.getKey(), condition);
-
+            if (removeResult.getTransactionReceipt() != null) {
+                System.out.println(
+                        "TransactionHash: "
+                                + removeResult.getTransactionReceipt().getTransactionHash());
+            }
             if (removeResult.getCode() >= 0) {
                 System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
             } else {
@@ -748,10 +762,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + contractAddress
                             + "!");
         }
-        ConsoleUtils.printJson(
-                cnsService
-                        .registerCNS(contractName, contractVersion, contractAddress, abi)
-                        .toString());
+        ConsoleUtils.printRetCode(
+                cnsService.registerCNS(contractName, contractVersion, contractAddress, abi));
         System.out.println();
     }
 
@@ -806,7 +818,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         System.out.println("grantedAddress: " + accountAddress);
         ConsoleUtils.singleLine();
         System.out.println("* result:");
-        ConsoleUtils.printJson(this.gasChargeManageService.grantCharger(accountAddress).toString());
+        ConsoleUtils.printRetCode(this.gasChargeManageService.grantCharger(accountAddress));
     }
 
     @Override
@@ -818,8 +830,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         System.out.println("revokedAddress: " + accountAddress);
         ConsoleUtils.singleLine();
         System.out.println("* result:");
-        ConsoleUtils.printJson(
-                this.gasChargeManageService.revokeCharger(accountAddress).toString());
+        ConsoleUtils.printRetCode(this.gasChargeManageService.revokeCharger(accountAddress));
     }
 
     @Override

@@ -126,6 +126,9 @@ public class Console {
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
             } catch (ContractException e) {
+                if (e.getReceipt() != null) {
+                    System.out.println("TransactionHash: " + e.getReceipt().getTransactionHash());
+                }
                 ConsoleUtils.printJson(
                         "{\"code\":"
                                 + e.getErrorCode()
