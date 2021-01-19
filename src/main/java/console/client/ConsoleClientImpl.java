@@ -595,7 +595,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             password = params[2];
         }
         CryptoSuite cryptoSuite = client.getCryptoSuite();
-        CryptoKeyPair cryptoKeyPair = cryptoSuite.createKeyPair();
+        CryptoKeyPair cryptoKeyPair = cryptoSuite.getKeyPairFactory().generateKeyPair();
         cryptoSuite.setConfig(cryptoSuite.getConfig());
         if (accountFormat.equals("pem")) {
             // save the account
