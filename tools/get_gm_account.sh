@@ -4,8 +4,9 @@ set -e
 pkcs12_file=""
 sm3_base64=""
 output_path="accounts_gm"
-sm3_bin="/tmp/sm3"
-sm3_tar="/tmp/sm3.tgz"
+fisco_path="$HOME/.fisco/"
+sm3_bin="${fisco_path}/sm3"
+sm3_tar="${fisco_path}/sm3.tgz"
 TASSL_CMD="${HOME}/.fisco/tassl"
 force_aarch64=""
 
@@ -38,13 +39,13 @@ prepare_sm3()
             fi
                 echo ${sm3_base64} | base64 -d - > ${sm3_tar}
         fi
-        tar -zxf ${sm3_tar} -C /tmp && rm ${sm3_tar}
+        tar -zxf ${sm3_tar} -C "${fisco_path}" && rm ${sm3_tar}
         if [[ -f ${sm3_bin} ]];then
             chmod a+rx ${sm3_bin}
         fi
         if [[ "$(uname -p)" == "aarch64" || ! -z "${force_aarch64}" ]];then
-            sm3_bin="/tmp/calculate_address -g"
-            chmod a+rx "/tmp/calculate_address"
+            sm3_bin="${fisco_path}/calculate_address -g"
+            chmod a+rx "${fisco_path}/calculate_address"
         fi
     fi
     mkdir -p ${output_path}
