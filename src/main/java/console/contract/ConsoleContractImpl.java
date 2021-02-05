@@ -185,6 +185,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             System.out.println(
                     "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("contract address: " + contractAddress);
+            System.out.println(
+                    "currentAccount: " + client.getCryptoSuite().getCryptoKeyPair().getAddress());
             writeLog(contractName, contractAddress);
             // save the bin and abi
             ContractCompiler.saveAbiAndBin(

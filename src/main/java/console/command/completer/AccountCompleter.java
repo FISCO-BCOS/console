@@ -33,6 +33,7 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
         String accountFileDir = ConsoleClientImpl.getAccountDir(client);
         int recordNum = 0;
         // list the account
+        String prefix = "[ Account.";
         for (String account : accountList) {
             if (!ConsoleUtils.isValidAddress(account)) {
                 continue;
@@ -41,11 +42,12 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
                     new Candidate(
                             AttributedString.stripAnsi(account),
                             account,
-                            null,
+                            prefix + String.valueOf(recordNum) + " ]",
                             null,
                             null,
                             null,
                             true));
+            recordNum++;
             // list with the account path
             String accountPath = accountFileDir + File.separator + account + ".pem";
             if (!new File(accountPath).exists()) {
@@ -61,12 +63,11 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
                     new Candidate(
                             AttributedString.stripAnsi(accountPath),
                             accountPath,
-                            null,
+                            prefix + String.valueOf(recordNum) + " ]",
                             null,
                             null,
                             null,
                             true));
-            recordNum++;
             if (recordNum == defaultRecordNum) {
                 break;
             }
