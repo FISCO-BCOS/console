@@ -22,6 +22,16 @@ contract ShaTest{
         return keccak256(_memory);
     }
 
+    function calculateSM3(bytes memory _memory) public returns(bytes32 result)
+    {
+        return crypto.sm3(_memory);
+    }
+
+    function calculateKeccak256(bytes memory _memory) public returns(bytes32 result)
+    {
+        return crypto.keccak256Hash(_memory);
+    }
+
     function getData() public view returns(bytes memory)
     {
         return _data;
