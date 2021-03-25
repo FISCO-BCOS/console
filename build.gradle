@@ -27,9 +27,9 @@ googleJavaFormat {
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    compile 'org.fisco-bcos:solcJ:0.4.25.3-SNAPSHOT'
-    //compile 'org.fisco-bcos:solcJ:0.6.10.3-SNAPSHOT'
-    //compile 'org.fisco-bcos:solcJ:0.5.2.3-SNAPSHTOT'
+    compile 'org.fisco-bcos:solcJ:0.4.25.1'
+    //compile 'org.fisco-bcos:solcJ:0.6.10.0'
+    //compile 'org.fisco-bcos:solcJ:0.5.2.0'
     compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:2.7.2')
     compile 'org.jline:jline:3.12.0'
     compile 'io.bretty:console-table-builder:1.2'
