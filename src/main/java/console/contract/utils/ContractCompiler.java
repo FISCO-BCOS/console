@@ -70,16 +70,39 @@ public class ContractCompiler {
         }
     }
 
+    // compile without libraries option
     public static AbiAndBin compileSolToBinAndAbi(File contractFile, String abiDir, String binDir)
             throws CompileContractException, IOException {
-        if (!contractFile.getName().endsWith(".sol")) {
-            throw new CompileContractException("invalid contractFile: " + contractFile.getName());
+        return compileSolToBinAndAbi(contractFile, abiDir, binDir, null);
+    }
+    // compile with libraries option
+    public static AbiAndBin compileSolToBinAndAbi(
+            File contractFile, String abiDir, String binDir, String librariesOption)
+            throws CompileContractException, IOException {
+        SolidityCompiler.CustomOption libraryOption = null;
+        if (librariesOption != null && !librariesOption.equals("")) {
+            libraryOption = new SolidityCompiler.CustomOption("libraries", librariesOption);
         }
-        String contractName = contractFile.getName().split("\\.")[0];
 
+        String contractName = contractFile.getName().split("\\.")[0];
         /** ecdsa compile */
-        SolidityCompiler.Result res =
-                SolidityCompiler.compile(contractFile, false, true, ABI, BIN, INTERFACE, METADATA);
+        SolidityCompiler.Result res = null;
+        if (libraryOption == null) {
+            res =
+                    SolidityCompiler.compile(
+                            contractFile, false, true, ABI, BIN, INTERFACE, METADATA);
+        } else {
+            res =
+                    SolidityCompiler.compile(
+                            contractFile,
+                            false,
+                            true,
+                            ABI,
+                            BIN,
+                            INTERFACE,
+                            METADATA,
+                            libraryOption);
+        }
         logger.debug(
                 " solidity compiler result, success: {}, output: {}, error: {}",
                 !res.isFailed(),
@@ -90,8 +113,16 @@ public class ContractCompiler {
         }
 
         /** sm compile */
-        SolidityCompiler.Result smRes =
-                SolidityCompiler.compile(contractFile, true, true, ABI, BIN, INTERFACE, METADATA);
+        SolidityCompiler.Result smRes = null;
+        if (libraryOption == null) {
+            smRes =
+                    SolidityCompiler.compile(
+                            contractFile, true, true, ABI, BIN, INTERFACE, METADATA);
+        } else {
+            smRes =
+                    SolidityCompiler.compile(
+                            contractFile, true, true, ABI, BIN, INTERFACE, METADATA, libraryOption);
+        }
         logger.debug(
                 " sm solidity compiler result, success: {}, output: {}, error: {}",
                 !smRes.isFailed(),
@@ -103,10 +134,27 @@ public class ContractCompiler {
 
         CompilationResult result = CompilationResult.parse(res.getOutput());
         CompilationResult smResult = CompilationResult.parse(smRes.getOutput());
-
         CompilationResult.ContractMetadata meta = result.getContract(contractName);
         CompilationResult.ContractMetadata smMeta = smResult.getContract(contractName);
-        return new AbiAndBin(meta.abi, meta.bin, smMeta.bin);
+
+        AbiAndBin abiAndBin = new AbiAndBin(meta.abi, meta.bin, smMeta.bin);
+        checkBinaryCode(contractName, abiAndBin.getBin());
+        checkBinaryCode(contractName, abiAndBin.getSmBin());
+        return abiAndBin;
+    }
+
+    public static void checkBinaryCode(String contractName, String binary)
+            throws CompileContractException {
+        String externalLibSplitter = "_";
+        if (binary.contains(externalLibSplitter)) {
+            String errorMessage =
+                    "Compile binary for "
+                            + contractName
+                            + " failed, The address of the library must be manually set.\n";
+            errorMessage +=
+                    "If you use the sol2java.sh script, please deploy the library to the blockchain first, and use the -l option to set the contract address of the dependent library\n";
+            throw new CompileContractException(errorMessage);
+        }
     }
 
     public static void saveAbiAndBin(
