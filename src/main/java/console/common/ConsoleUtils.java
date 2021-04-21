@@ -1,11 +1,8 @@
 package console.common;
 
-import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
-import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
-import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
-import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
-
-import console.exception.CompileSolidityException;
+import console.contract.exceptions.CompileContractException;
+import console.contract.model.AbiAndBin;
+import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import io.netty.util.NetUtil;
 import java.io.File;
@@ -25,6 +22,13 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.sdk.channel.model.ChannelPrococolExceiption;
 import org.fisco.bcos.sdk.channel.model.EnumNodeVersion;
@@ -32,8 +36,6 @@ import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.utils.Host;
 import org.fisco.bcos.sdk.utils.Numeric;
-import org.fisco.solc.compiler.CompilationResult;
-import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,57 +239,6 @@ public class ConsoleUtils {
         address.setAddress(newAddessStr);
     }
 
-    public static void Usage() {
-        System.out.println(" Usage:");
-        System.out.println(
-                " \t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils [packageName] [solidityFilePath or solidityDirPath] [JavaCodeDirPath].");
-        System.out.println(" \t Example: ");
-        System.out.println(
-                " \t\t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils org.fisco.hello");
-        System.out.println(
-                " \t\t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils org.fisco.hello ./fisco/HelloWorld.sol");
-        System.out.println(
-                " \t\t java -cp conf/:lib/*:apps/* console.common.ConsoleUtils org.fisco.hello /data/app/HelloWorld.sol /java");
-        System.exit(0);
-    }
-
-    public static void main(String[] args) {
-        if (args.length < 1) {
-            System.out.println("Please provide a package name.");
-            return;
-        } else if (args[0].equals("-h") || args[0].equals("--help")) {
-            Usage();
-        }
-        String pkgName = args[0];
-        String solPathOrDir = SOLIDITY_PATH;
-        String javaDir = JAVA_PATH;
-        if (args.length > 1) {
-            solPathOrDir = args[1];
-            if (args.length > 2) {
-                javaDir = args[2];
-            }
-        }
-        String fullJavaDir = new File(javaDir).getAbsolutePath();
-
-        File sol = new File(solPathOrDir);
-        if (!sol.exists()) {
-            System.out.println(sol.getAbsoluteFile() + " not exist ");
-            System.exit(0);
-        }
-        File solFileList = new File(SOLIDITY_PATH);
-        String tempDirPath = new File(JAVA_PATH).getAbsolutePath();
-        try {
-            if (sol.isFile()) { // input file
-                compileSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
-            } else { // input dir
-                compileAllSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
-            }
-        } catch (IOException e) {
-            System.out.print(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-        }
-    }
-
     /**
      * @param javaDir
      * @param packageName
@@ -297,51 +248,29 @@ public class ConsoleUtils {
      * @throws IOException
      */
     public static void compileSolToJava(
-            String javaDir, String packageName, File solFile, String abiDir, String binDir)
-            throws IOException {
+            String javaDir,
+            String packageName,
+            File solFile,
+            String abiDir,
+            String binDir,
+            String librariesOption)
+            throws IOException, CompileContractException {
 
         String contractName = solFile.getName().split("\\.")[0];
 
         /** ecdsa compile */
         System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
-        SolidityCompiler.Result res =
-                SolidityCompiler.compile(solFile, false, true, ABI, BIN, INTERFACE, METADATA);
-        logger.debug(
-                " solidity compiler result, success: {}, output: {}, error: {}",
-                !res.isFailed(),
-                res.getOutput(),
-                res.getErrors());
-        if (res.isFailed() || "".equals(res.getOutput())) {
-            logger.error(" compile {} failed, e: {}", solFile.getAbsolutePath(), res.getErrors());
-            throw new CompileSolidityException(" Compile error: " + res.getErrors());
-        }
-
-        /** sm compile */
-        SolidityCompiler.Result smRes =
-                SolidityCompiler.compile(solFile, true, true, ABI, BIN, INTERFACE, METADATA);
-        logger.debug(
-                " sm solidity compiler result, success: {}, output: {}, error: {}",
-                !smRes.isFailed(),
-                smRes.getOutput(),
-                smRes.getErrors());
-        if (smRes.isFailed() || "".equals(smRes.getOutput())) {
-            logger.error(
-                    " compile sm {} failed, e: {}", solFile.getAbsolutePath(), res.getErrors());
-            throw new CompileSolidityException(" Compile sm error: " + res.getErrors());
-        }
+        AbiAndBin abiAndBin =
+                ContractCompiler.compileSolToBinAndAbi(solFile, abiDir, binDir, librariesOption);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
 
-        CompilationResult result = CompilationResult.parse(res.getOutput());
-        CompilationResult smResult = CompilationResult.parse(smRes.getOutput());
+        FileUtils.writeStringToFile(new File(abiDir + contractName + ".abi"), abiAndBin.getAbi());
+        FileUtils.writeStringToFile(new File(binDir + contractName + ".bin"), abiAndBin.getBin());
 
-        CompilationResult.ContractMetadata meta = result.getContract(contractName);
-        CompilationResult.ContractMetadata smMeta = smResult.getContract(contractName);
-
-        FileUtils.writeStringToFile(new File(abiDir + contractName + ".abi"), meta.abi);
-        FileUtils.writeStringToFile(new File(binDir + contractName + ".bin"), meta.bin);
-
-        FileUtils.writeStringToFile(new File(abiDir + "/sm/" + contractName + ".abi"), smMeta.abi);
-        FileUtils.writeStringToFile(new File(binDir + "/sm/" + contractName + ".bin"), smMeta.bin);
+        FileUtils.writeStringToFile(
+                new File(abiDir + "/sm/" + contractName + ".abi"), abiAndBin.getAbi());
+        FileUtils.writeStringToFile(
+                new File(binDir + "/sm/" + contractName + ".bin"), abiAndBin.getSmBin());
 
         String abiFile = abiDir + contractName + ".abi";
         String binFile = binDir + contractName + ".bin";
@@ -375,7 +304,7 @@ public class ConsoleUtils {
                 continue;
             }
             try {
-                compileSolToJava(javaDir, packageName, solFile, abiDir, binDir);
+                compileSolToJava(javaDir, packageName, solFile, abiDir, binDir, null);
             } catch (Exception e) {
                 System.out.println(
                         "ERROR:convert solidity to java for "
@@ -607,5 +536,104 @@ public class ConsoleUtils {
             throws ConsoleMessageException {
         File contractFile = ConsoleUtils.getSolFile(contractNameOrPath, false);
         return ConsoleUtils.removeSolPostfix(contractFile.getName());
+    }
+
+    public static void main(String[] args) {
+        Options options = new Options();
+        // package name
+        String DEFAULT_PACKAGE = "com";
+        String PACKAGE_OPTION = "package";
+        Option packageOption =
+                new Option(
+                        "p",
+                        PACKAGE_OPTION,
+                        true,
+                        "[Optional] The package name of the generated java code, default is "
+                                + DEFAULT_PACKAGE);
+        packageOption.setRequired(false);
+        options.addOption(packageOption);
+
+        // solidityFilePath or solidityDirPath
+        String SOL_OPTION = "sol";
+        String DEFAULT_SOL = SOLIDITY_PATH;
+        Option solidityFilePathOption =
+                new Option(
+                        "s",
+                        SOL_OPTION,
+                        true,
+                        "[Optional] The solidity file path or the solidity directory path, default is "
+                                + DEFAULT_SOL);
+        solidityFilePathOption.setRequired(false);
+        options.addOption(solidityFilePathOption);
+
+        // the generated java code path
+        String OUTPUT_OPTION = "output";
+        String DEFAULT_OUTPUT = JAVA_PATH;
+        Option outputPathOption =
+                new Option(
+                        "o",
+                        OUTPUT_OPTION,
+                        true,
+                        "[Optional] The file path of the generated java code, default is "
+                                + DEFAULT_OUTPUT);
+        outputPathOption.setRequired(false);
+        options.addOption(outputPathOption);
+
+        // libraries
+        String LIBS_OPTION = "libraries";
+        Option libraryOption =
+                new Option(
+                        "l",
+                        LIBS_OPTION,
+                        true,
+                        "[Optional] Set library address information built into the solidity contract\n eg:\n --libraries lib1:lib1_address lib2:lib2_address\n");
+        libraryOption.setRequired(false);
+        options.addOption(libraryOption);
+
+        String HELP_OPTION = "help";
+        Option helpOption = new Option("h", HELP_OPTION, false, "");
+        helpOption.setRequired(false);
+        options.addOption(helpOption);
+
+        CommandLineParser parser = new DefaultParser();
+        HelpFormatter formatter = new HelpFormatter();
+        CommandLine cmd = null;
+
+        try {
+            cmd = parser.parse(options, args);
+        } catch (ParseException e) {
+            System.out.println(e.getMessage());
+            formatter.printHelp("Compile Solidity Tool:", options);
+            System.exit(1);
+        }
+        if (cmd == null) {
+            formatter.printHelp("Compile Solidity Tool:", options);
+            System.exit(1);
+        }
+        if (cmd.hasOption(HELP_OPTION)) {
+            formatter.printHelp("Compile Solidity Tool:", options);
+            System.exit(0);
+        }
+        String pkgName = cmd.getOptionValue(PACKAGE_OPTION, DEFAULT_PACKAGE);
+        String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
+        String javaDir = cmd.getOptionValue(OUTPUT_OPTION, DEFAULT_OUTPUT);
+        String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
+
+        String fullJavaDir = new File(javaDir).getAbsolutePath();
+        File sol = new File(solPathOrDir);
+        if (!sol.exists()) {
+            System.out.println(sol.getAbsoluteFile() + " not exist ");
+            System.exit(0);
+        }
+        try {
+            if (sol.isFile()) { // input file
+                compileSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, librariesOption);
+            } else { // input dir
+                compileAllSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
+            }
+        } catch (IOException | CompileContractException e) {
+            System.out.print(e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
+        }
     }
 }

@@ -23,16 +23,6 @@ function LOG_INFO()
     echo -e "\033[32m"${content}"\033[0m"
 }
 
-function Usage() {
-    LOG_INFO "# Compile Solidity Tool"
-    LOG_INFO "./sol2java.sh [packageName] [solidityFilePath] [javaCodeOutputDir]"
-    LOG_INFO " \t packageName:"
-    LOG_INFO " \t\t the package name of the generated Java class file"
-    LOG_INFO " \t solidityFilePath:"
-    LOG_INFO " \t\t (optional) the solidity file path or the directory where solidity files located, default: contracts/solidity"
-    LOG_INFO " \t javaCodeOutputDir:"
-    LOG_INFO " \t\t (optional) the directory where the generated Java files located, default: contracts/sdk/java"
-}
 
 function check_java(){
    version=$(java -version 2>&1 |grep version |awk '{print $3}')
@@ -57,12 +47,8 @@ function check_java(){
        exit 1
    fi
 }
-if [ $# == 0 ] || [ "${1}" == "-h" ] || [ "${1}" == "--help" ] || [ "${1}" == "help" ];then
-    Usage
-    exit 0
-else
-     check_java
-     java -cp "apps/*:lib/*:conf/" console.common.ConsoleUtils $@
-fi
+
+check_java
+java -cp "apps/*:lib/*:conf/" console.common.ConsoleUtils $@
 
 
