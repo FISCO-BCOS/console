@@ -183,10 +183,12 @@ public class ConsoleUtils {
         } catch (NumberFormatException e) {
             System.out.println("Invalid " + name + ": \"" + intStr + "\"!");
             System.out.println(
-                    "Please provide "
+                    "Please provide \""
                             + name
-                            + " by non-negative integer mode, "
-                            + Common.NonNegativeIntegerRange
+                            + "\" by non-negative integer mode between "
+                            + minValue
+                            + " and "
+                            + maxValue
                             + ".");
             return Common.InvalidReturnNumber;
         }
