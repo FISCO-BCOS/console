@@ -149,50 +149,6 @@ public class JlineUtils {
                 new ArgumentCompleter(
                         new StringsCompleterIgnoreCase(SupportedCommand.NEW_ACCOUNT.getCommand()),
                         new AccountFileFormatCompleter()));
-        // completer for permission releated command
-        commands =
-                Arrays.asList(
-                        SupportedCommand.GRANT_OPERATOR.getCommand(),
-                        SupportedCommand.GRANT_COMMITTEE_MEMBER.getCommand(),
-                        SupportedCommand.GRANT_CNS_MANAGER.getCommand(),
-                        SupportedCommand.GRANT_SYSCONFIG_MANAGER.getCommand(),
-                        SupportedCommand.GRANT_DEPLOY_AND_CREATE_MANAGER.getCommand(),
-                        SupportedCommand.GRANT_NODE_MANAGER.getCommand(),
-                        SupportedCommand.REVOKE_OPERATOR.getCommand(),
-                        SupportedCommand.REVOKE_COMMITTEE_MEMBER.getCommand(),
-                        SupportedCommand.REVOKE_CNS_MANAGER.getCommand(),
-                        SupportedCommand.REVOKE_SYSCONFIG_MANAGER.getCommand(),
-                        SupportedCommand.REVOKE_DEPLOY_AND_CREATE_MANAGER.getCommand(),
-                        SupportedCommand.REVOKE_NODE_MANAGER.getCommand(),
-                        SupportedCommand.FREEZE_ACCOUNT.getCommand(),
-                        SupportedCommand.UNFREEZE_ACCOUNT.getCommand(),
-                        SupportedCommand.GET_ACCOUNT_STATUS.getCommand(),
-                        SupportedCommand.UPDATE_COMMITTEE_MEMBER_WEIGHT.getCommand());
-        for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command), new AccountCompleter(client, false)));
-        }
-
-        commands =
-                Arrays.asList(
-                        SupportedCommand.GRANT_CONTRACT_STATUS.getCommand(),
-                        SupportedCommand.GRANT_CONTRACT_WRITE.getCommand(),
-                        SupportedCommand.REVOKE_CONTRACT_WRITE.getCommand());
-        for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            contractAddressCompleter,
-                            accountCompleter));
-        }
-        // generateGroupFromFile
-        completers.add(
-                new ArgumentCompleter(
-                        new StringsCompleter(
-                                SupportedCommand.GENERATE_GROUP_WITH_FILE.getCommand()),
-                        new ConsoleFilesCompleter(false),
-                        new StringsCompleterIgnoreCase()));
         return createLineReader(completers);
     }
 

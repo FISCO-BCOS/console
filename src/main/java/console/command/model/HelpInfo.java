@@ -657,37 +657,6 @@ public class HelpInfo {
                 "recordNumber -- (optional) The number of deployed contract records, (default 20).");
     }
 
-    public static void getGroupConnectionsHelp() {
-        System.out.println("Usage:\ngetGroupConnections groupId");
-        System.out.println(
-                "* groupId[Required]: The group ID that needs to query node information, default is the current group.");
-    }
-
-    public static void getBatchReceiptsByBlockHashAndRangeHelp() {
-        System.out.println(
-                "Get the batched transaction receipts according to the specified block hash and transaction range");
-        System.out.println("Usage: \ngetBatchReceiptsByBlockHashAndRange blockHash [from] [count]");
-        System.out.println(
-                "* blockHash -- (required) The hash of the block that contains the required transaction receipts.");
-        System.out.println(
-                "* from -- (optional) The start index of the required transaction receipts (default is 0).");
-        System.out.println(
-                "* count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
-    }
-
-    public static void getBatchReceiptsByBlockNumberAndRangeHelp() {
-        System.out.println(
-                "Get the batched transaction receipts according to the specified block number and transaction range");
-        System.out.println(
-                "Usage: \ngetBatchReceiptsByBlockNumberAndRange blockNumber [from] [count]");
-        System.out.println(
-                "* blockNumber --(required) The number of the block that contains the required transaction receipts.");
-        System.out.println(
-                "* from -- (optional) The start index of the required transaction receipts (default is 0).");
-        System.out.println(
-                "* count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
-    }
-
     public static void startHelp() {
         System.out.println("Please provide one of the following ways to start the console.");
         System.out.println("Usage: ");

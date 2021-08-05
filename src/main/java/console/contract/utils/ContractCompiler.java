@@ -158,7 +158,7 @@ public class ContractCompiler {
     }
 
     public static void saveAbiAndBin(
-            Integer groupId, AbiAndBin abiAndBin, String contractName, String contractAddress)
+            String groupId, AbiAndBin abiAndBin, String contractName, String contractAddress)
             throws IOException {
         File abiPath =
                 new File(
@@ -203,20 +203,20 @@ public class ContractCompiler {
     }
 
     public static AbiAndBin loadAbiAndBin(
-            Integer groupId, String contractNameOrPath, String contractAddress)
+            String groupId, String contractNameOrPath, String contractAddress)
             throws CompileContractException, IOException, CodeGenException {
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, true);
     }
 
     public static AbiAndBin loadAbiAndBin(
-            Integer groupId, String contractName, String contractNameOrPath, String contractAddress)
+            String groupId, String contractName, String contractNameOrPath, String contractAddress)
             throws CompileContractException, IOException, CodeGenException {
         return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, true);
     }
 
     public static AbiAndBin loadAbiAndBin(
-            Integer groupId,
+            String groupId,
             String contractName,
             String contractNameOrPath,
             String contractAddress,

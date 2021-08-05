@@ -1,6 +1,7 @@
 package console.precompiled.permission;
 
 public interface PermissionFace {
+    // TODO: REMOVE THIS
     void grantUserTableManager(String[] params) throws Exception;
 
     void revokeUserTableManager(String[] params) throws Exception;
