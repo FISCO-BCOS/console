@@ -15,7 +15,6 @@ package console.command.model;
 
 import console.ConsoleInitializer;
 import console.command.SupportedCommand;
-import console.common.ConsoleUtils;
 import java.util.List;
 
 public class CommandInfo {
@@ -259,12 +258,7 @@ public class CommandInfo {
             return;
         }
         // check version
-        if (minSupportVersion != null
-                && !ConsoleUtils.checkVersion(
-                        this.getCommand(),
-                        consoleInitializer.getClient(),
-                        minSupportVersion,
-                        true)) {
+        if (minSupportVersion != null) {
             return;
         }
         commandImplement.call(consoleInitializer, params);

@@ -2,7 +2,6 @@ package console;
 
 import console.client.ConsoleClientFace;
 import console.client.ConsoleClientImpl;
-import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.ConsoleContractFace;
 import console.contract.ConsoleContractImpl;
@@ -13,6 +12,7 @@ import console.precompiled.permission.PermissionImpl;
 import java.io.Console;
 import java.io.File;
 import java.net.URL;
+import java.util.List;
 import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.config.ConfigOption;
@@ -40,8 +40,8 @@ public class ConsoleInitializer {
     public static boolean DisableAutoCompleter = false;
 
     public void init(String[] args) throws ConfigException {
-        Integer groupId = Integer.valueOf(1);
         AccountInfo accountInfo = null;
+        String endPoint = null;
         try {
             String configFileName = "config.toml";
             URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
@@ -55,17 +55,28 @@ public class ConsoleInitializer {
             }
             String configFile = configUrl.getPath();
             bcosSDK = BcosSDK.build(configFile);
+            ConfigOption config = bcosSDK.getConfig();
+            List<String> peers = config.getNetworkConfig().getPeers();
+            if (peers.size() == 0) {
+                System.out.println(
+                        "Init BcosSDK failed for the empty peer size of the configuration file: "
+                                + configFile);
+                System.out.println();
+                System.exit(0);
+            }
+            // load default endPoint from the configuration file
+            endPoint = peers.get(0);
             // bash start.sh -l
             if (args.length == 1) {
                 if ("-l".equals(args[0])) { // input by scanner for log
                     DisableAutoCompleter = true;
                 } else {
-                    groupId = Integer.valueOf(args[0]);
+                    endPoint = args[0];
                 }
             }
             // bash start.sh groupID -l
             if (args.length >= 2) {
-                groupId = Integer.valueOf(args[0]);
+                endPoint = args[0];
                 if ("-l".equals(args[1])) { // input by scanner for log
                     DisableAutoCompleter = true;
                 }
@@ -79,7 +90,7 @@ public class ConsoleInitializer {
             System.exit(0);
         }
         try {
-            this.client = bcosSDK.getClient(groupId);
+            this.client = bcosSDK.getClientByEndpoint(endPoint);
             if (accountInfo != null) {
                 this.client
                         .getCryptoSuite()
@@ -223,47 +234,26 @@ public class ConsoleInitializer {
     }
 
     public void switchGroupID(String[] params) {
-        String groupIDStr = params[1];
-        int toGroupID = 1;
-        try {
-            toGroupID = Integer.parseInt(groupIDStr);
-            if (toGroupID <= 0 || toGroupID > Common.MaxGroupID) {
-                System.out.println(
-                        "Please provide group ID by positive integer mode, "
-                                + Common.GroupIDRange
-                                + ".");
-                System.out.println();
-                return;
-            }
-        } catch (NumberFormatException e) {
-            System.out.println(
-                    "Please provide group ID by positive integer mode, "
-                            + Common.GroupIDRange
-                            + ".");
-            System.out.println();
-            return;
-        }
+        String endPoint = params[1];
         try {
             // load the original account
             CryptoKeyPair cryptoKeyPair = this.client.getCryptoSuite().getCryptoKeyPair();
-            this.client = bcosSDK.getClient(toGroupID);
+            this.client = bcosSDK.getClientByEndpoint(endPoint);
             this.client.getCryptoSuite().setCryptoKeyPair(cryptoKeyPair);
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.permissionFace = new PermissionImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
-            System.out.println("Switched to group " + toGroupID + ".");
+            System.out.println("Switched to node " + endPoint + ".");
             System.out.println();
         } catch (Exception e) {
             System.out.println(
-                    "Switch to group "
-                            + toGroupID
+                    "Switch to node "
+                            + endPoint
                             + " failed! "
                             + e.getMessage()
-                            + " Current groupList is: "
-                            + client.getGroupList().getGroupList().toString()
-                            + ", please check the existence of group "
-                            + toGroupID);
+                            + ", please check the existence of the node "
+                            + endPoint);
         }
     }
 
@@ -340,7 +330,7 @@ public class ConsoleInitializer {
         return bcosSDK;
     }
 
-    public int getGroupID() {
+    public String getGroupID() {
         return this.client.getGroupId();
     }
 

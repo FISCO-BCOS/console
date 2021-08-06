@@ -182,6 +182,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
+            if (!contractAddress.startsWith("0x")) {
+                contractAddress = "0x" + contractAddress;
+            }
             System.out.println(
                     "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("contract address: " + contractAddress);
@@ -718,7 +721,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             return;
         }
 
-        Map<String, ABIDefinition> methodIDToFunctions =
+        Map<byte[], ABIDefinition> methodIDToFunctions =
                 contractABIDefinition.getMethodIDToFunctions();
 
         if (!methodIDToFunctions.isEmpty()) {
@@ -727,7 +730,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     " %-20s|    %-10s|    %-10s  |    %-10s\n",
                     "name", "constant", "methodId", "signature");
             System.out.println("  -------------------------------------------------------------- ");
-            for (Map.Entry<String, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
+            for (Map.Entry<byte[], ABIDefinition> entry : methodIDToFunctions.entrySet()) {
                 System.out.printf(
                         " %-20s|    %-10s|    %-10s  |    %-10s\n",
                         entry.getValue().getName(),

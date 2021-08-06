@@ -30,9 +30,6 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
-import org.fisco.bcos.sdk.channel.model.ChannelPrococolExceiption;
-import org.fisco.bcos.sdk.channel.model.EnumNodeVersion;
-import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.utils.Host;
 import org.fisco.bcos.sdk.utils.Numeric;
@@ -408,42 +405,6 @@ public class ConsoleUtils {
             return false;
         }
         return true;
-    }
-
-    public static boolean checkVersion(
-            String command, Client client, String enumMinSupportVersion, boolean printMessage) {
-        try {
-            EnumNodeVersion.Version minSupportVersion =
-                    EnumNodeVersion.getClassVersion(enumMinSupportVersion);
-            EnumNodeVersion.Version supportedVersion =
-                    EnumNodeVersion.getClassVersion(
-                            client.getClientNodeVersion().getNodeVersion().getSupportedVersion());
-            String errorMessage =
-                    "The fisco bcos node with supported_version lower than "
-                            + minSupportVersion.toVersionString()
-                            + " does not support the command "
-                            + command
-                            + " , current fisco-bcos supported_version: "
-                            + supportedVersion.toVersionString();
-            if (supportedVersion.getMajor() < minSupportVersion.getMajor()) {
-                if (printMessage) {
-                    System.out.println(errorMessage);
-                    System.out.println();
-                }
-                return false;
-            }
-            if (supportedVersion.getMajor() == minSupportVersion.getMajor()
-                    && supportedVersion.getMinor() < minSupportVersion.getMinor()) {
-                if (printMessage) {
-                    System.out.println(errorMessage);
-                    System.out.println();
-                }
-                return false;
-            }
-            return true;
-        } catch (ChannelPrococolExceiption e) {
-            return true;
-        }
     }
 
     public static void sortFiles(File[] files) {

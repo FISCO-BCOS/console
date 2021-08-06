@@ -37,6 +37,7 @@ import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+// TODO: REMOVE THIS
 public class PrecompiledImpl implements PrecompiledFace {
 
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
@@ -307,10 +308,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         System.out.println("* message: " + message);
 
         if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
-            return;
-        }
-        // when supported_version >= v2.7.0, no need try to get the precompiled message
-        if (ConsoleUtils.checkVersion("tryToGuessPrecompiledMessage", client, "2.7.0", false)) {
             return;
         }
         if (!checkTableField(descTable, entry)) {

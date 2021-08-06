@@ -55,10 +55,10 @@ bash gradlew test
 bash gradlew integrationTest --info
 }
 
-cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
-LOG_INFO "------ download_build_chain---------"
-download_build_chain
-LOG_INFO "------ check_standard_node---------"
-check_standard_node
-LOG_INFO "------ check_basic---------"
-check_basic
+#cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
+#LOG_INFO "------ download_build_chain---------"
+#download_build_chain
+#LOG_INFO "------ check_standard_node---------"
+#check_standard_node
+#LOG_INFO "------ check_basic---------"
+#check_basic

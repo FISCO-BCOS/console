@@ -28,13 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.model.CryptoType;
 
 public class SupportedCommand {
-    public static final String NODE_VERSION_2_0_0_RC3 = "2.0.0-rc3";
-    public static final String NODE_VERSION_2_3_0 = "2.3.0";
-
     public static final CommandInfo HELP =
             new CommandInfo(
                     "help",
@@ -55,23 +50,6 @@ public class SupportedCommand {
                         }
                     });
 
-    public static final CommandInfo GET_NODE_VERSION =
-            new CommandInfo(
-                    "getNodeVersion",
-                    "Query the current node version",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getNodeVersionHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().getNodeVersion(params);
-                        }
-                    });
     public static final CommandInfo GET_NODE_INFO =
             new CommandInfo(
                     "getNodeInfo",
@@ -87,358 +65,6 @@ public class SupportedCommand {
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
                             consoleInitializer.getConsoleClientFace().getNodeInfo(params);
-                        }
-                    });
-
-    public static final CommandInfo LIST_DEPLOY_AND_CREATE_MANAGER =
-            new CommandInfo(
-                    "listDeployAndCreateManager",
-                    "Query permission information for deploy contract and create user table",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listDeployAndCreateManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPermissionFace()
-                                    .listDeployAndCreateManager(params);
-                        }
-                    });
-
-    public static final CommandInfo LIST_NODE_MANAGER =
-            new CommandInfo(
-                    "listNodeManager",
-                    "Query permission information for node configuration",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listNodeManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().listNodeManager(params);
-                        }
-                    });
-    public static final CommandInfo LIST_CNS_MANAGER =
-            new CommandInfo(
-                    "listCNSManager",
-                    "Query permission information for CNS",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listCNSManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().listCNSManager(params);
-                        }
-                    });
-
-    public static final CommandInfo LIST_SYSCONFIG_MANAGER =
-            new CommandInfo(
-                    "listSysConfigManager",
-                    "Query permission information for system configuration",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listSysConfigManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().listSysConfigManager(params);
-                        }
-                    });
-    public static final CommandInfo LIST_CONTRACT_WRITE =
-            new CommandInfo(
-                    "listContractWritePermission",
-                    "Query the account list which have write permission of the contract.",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listContractWritePermissionHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPermissionFace()
-                                    .listContractWritePermission(params);
-                        }
-                    },
-                    1,
-                    1);
-
-    public static final CommandInfo GRANT_CONTRACT_WRITE =
-            new CommandInfo(
-                    "grantContractWritePermission",
-                    "Grant the account the contract write permission.",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantContractWritePermissionHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPermissionFace()
-                                    .grantContractWritePermission(params);
-                        }
-                    },
-                    2,
-                    2);
-    public static final CommandInfo REVOKE_CONTRACT_WRITE =
-            new CommandInfo(
-                    "revokeContractWritePermission",
-                    "Revoke the account the contract write permission",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeContractWritePermissionHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPermissionFace()
-                                    .revokeContractWritePermission(params);
-                        }
-                    },
-                    2,
-                    2);
-    public static final CommandInfo FREEZE_CONTRACT =
-            new CommandInfo(
-                    "freezeContract",
-                    "Freeze the contract",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.freezeContractHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPrecompiledFace().freezeContract(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo UNFREEZE_CONTRACT =
-            new CommandInfo(
-                    "unfreezeContract",
-                    "Unfreeze the contract",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.unfreezeContractHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPrecompiledFace().unfreezeContract(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo GRANT_CONTRACT_STATUS =
-            new CommandInfo(
-                    "grantContractStatusManager",
-                    "Grant contract authorization to the user",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantContractStatusManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPrecompiledFace()
-                                    .grantContractStatusManager(params);
-                        }
-                    },
-                    2,
-                    2);
-
-    public static final CommandInfo REVOKE_CONTRACT_STATUS =
-            new CommandInfo(
-                    "revokeContractStatusManager",
-                    "Revoke contract authorization to the user",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeContractStatusManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPrecompiledFace()
-                                    .revokeContractStatusManager(params);
-                        }
-                    },
-                    2,
-                    2);
-
-    public static final CommandInfo LIST_CONTRACT_STATUS =
-            new CommandInfo(
-                    "listContractStatusManager",
-                    "List the authorization of the contract",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listContractStatusManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPrecompiledFace()
-                                    .listContractStatusManager(params);
-                        }
-                    },
-                    1,
-                    1,
-                    NODE_VERSION_2_3_0);
-
-    public static final CommandInfo GET_CONTRACT_STATUS =
-            new CommandInfo(
-                    "getContractStatus",
-                    "Get the status of the contract",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getContractStatusHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPrecompiledFace().getContractStatus(params);
-                        }
-                    },
-                    1,
-                    1,
-                    NODE_VERSION_2_3_0);
-    public static final CommandInfo LIST_COMMITTEE_MEMBERS =
-            new CommandInfo(
-                    "listCommitteeMembers",
-                    "List all committee members",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listCommitteeMembersHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().listCommitteeMembers(params);
-                        }
-                    });
-
-    public static final CommandInfo QUERY_THRESHOLD =
-            new CommandInfo(
-                    "queryThreshold",
-                    "Query the threshold",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.queryThresholdHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().queryThreshold(params);
-                        }
-                    });
-    public static final CommandInfo QUERY_VOTES_OF_MEMBER =
-            new CommandInfo(
-                    "queryVotesOfMember",
-                    "Query votes of a committee member.",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.queryVotesOfMemberHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().queryVotesOfMember(params);
-                        }
-                    },
-                    1,
-                    1);
-
-    public static final CommandInfo QUERY_VOTES_OF_THRESHOLD =
-            new CommandInfo(
-                    "queryVotesOfThreshold",
-                    "Query votes of updateThreshold operation",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.queryVotesOfThresholdHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().queryVotesOfThreshold(params);
-                        }
-                    });
-
-    public static final CommandInfo LIST_OPERATORS =
-            new CommandInfo(
-                    "listOperators",
-                    "List all operators",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listOperatorsHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().listOperators(params);
                         }
                     });
     public static final CommandInfo GET_DEPLOY_LOG =
@@ -498,200 +124,7 @@ public class SupportedCommand {
                     },
                     2,
                     2);
-    public static final CommandInfo GET_ACCOUNT_STATUS =
-            new CommandInfo(
-                    "getAccountStatus",
-                    "GetAccountStatus of the account",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getAccountStatusHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().getAccountStatus(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo UNFREEZE_ACCOUNT =
-            new CommandInfo(
-                    "unfreezeAccount",
-                    "Unfreeze the account",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.unfreezeAccountHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().unfreezeAccount(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo FREEZE_ACCOUNT =
-            new CommandInfo(
-                    "freezeAccount",
-                    "Freeze the account",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.freezeAccountHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().freezeAccount(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo REVOKE_OPERATOR =
-            new CommandInfo(
-                    "revokeOperator",
-                    "Revoke the operator",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeOperatorHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().revokeOperator(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo GRANT_OPERATOR =
-            new CommandInfo(
-                    "grantOperator",
-                    "Grant the account operator",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantOperatorHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().grantOperator(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo UPDATE_THRESHOLD =
-            new CommandInfo(
-                    "updateThreshold",
-                    "Update the threshold",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.updateThresholdHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().updateThreshold(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo UPDATE_COMMITTEE_MEMBER_WEIGHT =
-            new CommandInfo(
-                    "updateCommitteeMemberWeight",
-                    "Update the committee member weight",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.updateCommitteeMemberWeightHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPermissionFace()
-                                    .updateCommitteeMemberWeight(params);
-                        }
-                    },
-                    2,
-                    2);
-    public static final CommandInfo QUERY_COMMITTEE_MEMBER_WEIGHT =
-            new CommandInfo(
-                    "queryCommitteeMemberWeight",
-                    "Query the committee member weight",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.queryCommitteeMemberWeightHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPermissionFace()
-                                    .queryCommitteeMemberWeight(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo REVOKE_COMMITTEE_MEMBER =
-            new CommandInfo(
-                    "revokeCommitteeMember",
-                    "Revoke the account from committee member",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeCommitteeMemberHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().revokeCommitteeMember(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo GRANT_COMMITTEE_MEMBER =
-            new CommandInfo(
-                    "grantCommitteeMember",
-                    "Grant the account committee member",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantCommitteeMemberHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().grantCommitteeMember(params);
-                        }
-                    },
-                    1,
-                    1);
+
     public static final CommandInfo DEPLOY =
             new CommandInfo(
                     "deploy",
@@ -844,220 +277,6 @@ public class SupportedCommand {
                     },
                     1,
                     1);
-    public static final CommandInfo GRANT_USER_TABLE_MANAGER =
-            new CommandInfo(
-                    "grantUserTableManager",
-                    "Grant permission for user table by table name and address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantUserTableManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().grantUserTableManager(params);
-                        }
-                    },
-                    2,
-                    2);
-    public static final CommandInfo REVOKE_USER_TABLE_MANAGER =
-            new CommandInfo(
-                    "revokeUserTableManager",
-                    "Revoke permission for user table by table name and address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeUserTableManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().revokeUserTableManager(params);
-                        }
-                    },
-                    2,
-                    2);
-    public static final CommandInfo LIST_USER_TABLE_MANAGER =
-            new CommandInfo(
-                    "listUserTableManager",
-                    "Query permission for user table information",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.listUserTableManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().listUserTableManager(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo GRANT_DEPLOY_AND_CREATE_MANAGER =
-            new CommandInfo(
-                    "grantDeployAndCreateManager",
-                    "Grant permission for deploy contract and create user table by address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantDeployAndCreateManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPermissionFace()
-                                    .grantDeployAndCreateManager(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo REVOKE_DEPLOY_AND_CREATE_MANAGER =
-            new CommandInfo(
-                    "revokeDeployAndCreateManager",
-                    "Revoke permission for deploy contract and create user table by address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeDeployAndCreateManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getPermissionFace()
-                                    .revokeDeployAndCreateManager(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo GRANT_NODE_MANAGER =
-            new CommandInfo(
-                    "grantNodeManager",
-                    "Grant permission for node configuration by address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantNodeManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().grantNodeManager(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo REVOKE_NODE_MANAGER =
-            new CommandInfo(
-                    "revokeNodeManager",
-                    "Revoke permission for node configuration by address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeNodeManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().revokeNodeManager(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo GRANT_CNS_MANAGER =
-            new CommandInfo(
-                    "grantCNSManager",
-                    "Grant permission for CNS by address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantCNSManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().grantCNSManager(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo REVOKE_CNS_MANAGER =
-            new CommandInfo(
-                    "revokeCNSManager",
-                    "Revoke permission for CNS by address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeCNSManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().revokeCNSManager(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo GRANT_SYSCONFIG_MANAGER =
-            new CommandInfo(
-                    "grantSysConfigManager",
-                    "Grant permission for system configuration by address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.grantSysConfigManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().grantSysConfigManager(params);
-                        }
-                    },
-                    1,
-                    1);
-    public static final CommandInfo REVOKE_SYSCONFIG_MANAGER =
-            new CommandInfo(
-                    "revokeSysConfigManager",
-                    "Revoke permission for system configuration by address",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.revokeSysConfigManagerHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getPermissionFace().revokeSysConfigManager(params);
-                        }
-                    },
-                    1,
-                    1);
-
     public static final CommandInfo QUITE =
             new CommandInfo(
                     "quit",
@@ -1090,8 +309,7 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    1,
-                    NODE_VERSION_2_0_0_RC3);
+                    1);
     public static final CommandInfo CREATE =
             new CommandInfo(
                     "create",
@@ -1102,8 +320,7 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().createTable(inputDatas[0]);
                         }
-                    },
-                    NODE_VERSION_2_0_0_RC3);
+                    });
     public static final CommandInfo SELECT =
             new CommandInfo(
                     "select",
@@ -1114,8 +331,7 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().select(inputDatas[0]);
                         }
-                    },
-                    NODE_VERSION_2_0_0_RC3);
+                    });
     public static final CommandInfo INSERT =
             new CommandInfo(
                     "insert",
@@ -1126,8 +342,7 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().insert(inputDatas[0]);
                         }
-                    },
-                    NODE_VERSION_2_0_0_RC3);
+                    });
     public static final CommandInfo UPDATE =
             new CommandInfo(
                     "update",
@@ -1138,8 +353,7 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().update(inputDatas[0]);
                         }
-                    },
-                    NODE_VERSION_2_0_0_RC3);
+                    });
     public static final CommandInfo DELETE =
             new CommandInfo(
                     "delete",
@@ -1150,8 +364,7 @@ public class SupportedCommand {
                                 throws Exception {
                             consoleInitializer.getPrecompiledFace().remove(inputDatas[0]);
                         }
-                    },
-                    NODE_VERSION_2_0_0_RC3);
+                    });
     public static final CommandInfo GET_CURRENT_ACCOUNT =
             new CommandInfo(
                     "getCurrentAccount",
@@ -1166,32 +379,6 @@ public class SupportedCommand {
                                             .getCryptoSuite()
                                             .getCryptoKeyPair()
                                             .getAddress());
-                        }
-                    });
-    public static final CommandInfo GET_CRYPTO_TYPE =
-            new CommandInfo(
-                    "getCryptoType",
-                    "Get the current crypto type",
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            Client client = consoleInitializer.getClient();
-                            // get ledger cryptoType
-                            int ledgerCryptoType = client.getCryptoSuite().getCryptoTypeConfig();
-                            System.out.println(
-                                    "ledger crypto type: "
-                                            + (ledgerCryptoType == CryptoType.ECDSA_TYPE
-                                                    ? "ECDSA"
-                                                    : "SM"));
-
-                            // get ssl cryptoType
-                            int sslCryptoType = consoleInitializer.getBcosSDK().getSSLCryptoType();
-                            System.out.println(
-                                    "ssl crypto type: "
-                                            + (sslCryptoType == CryptoType.ECDSA_TYPE
-                                                    ? "ECDSA"
-                                                    : "SM"));
                         }
                     });
 
@@ -1263,23 +450,6 @@ public class SupportedCommand {
                             consoleInitializer.getConsoleClientFace().getObserverList(params);
                         }
                     });
-    public static final CommandInfo GET_CONSENSUS_STATUS =
-            new CommandInfo(
-                    "getConsensusStatus",
-                    "Query consensus status",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getConsensusStatusHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().getConsensusStatus(params);
-                        }
-                    });
     public static final CommandInfo GET_SYNC_STATUS =
             new CommandInfo(
                     "getSyncStatus",
@@ -1312,57 +482,6 @@ public class SupportedCommand {
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
                             consoleInitializer.getConsoleClientFace().getPeers(params);
-                        }
-                    });
-    public static final CommandInfo GET_NODEIDLIST =
-            new CommandInfo(
-                    "getNodeIDList",
-                    "Query nodeId list for all connected nodes",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getNodeIDListHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().getNodeIDList(params);
-                        }
-                    });
-    public static final CommandInfo GET_GROUP_PEERS =
-            new CommandInfo(
-                    "getGroupPeers",
-                    "Query nodeId list for sealer and observer nodes",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getGroupPeersHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().getGroupPeers(params);
-                        }
-                    });
-    public static final CommandInfo GET_GROUP_LIST =
-            new CommandInfo(
-                    "getGroupList",
-                    "Query group list",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getGroupListHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().getGroupList(params);
                         }
                     });
 
@@ -1446,25 +565,7 @@ public class SupportedCommand {
                     },
                     1,
                     2);
-    public static final CommandInfo GET_BLOCKHASH_BY_NUMBER =
-            new CommandInfo(
-                    "getBlockHashByNumber",
-                    "Query block hash by block number",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getBlockHashByNumberHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().getBlockHashByNumber(params);
-                        }
-                    },
-                    1,
-                    1);
+
     public static final CommandInfo GET_TRANSACTION_BY_HASH =
             new CommandInfo(
                     "getTransactionByHash",
@@ -1484,48 +585,7 @@ public class SupportedCommand {
                     },
                     1,
                     2);
-    public static final CommandInfo GET_TRANSACTION_BY_BLOCKHASH_AND_INDEX =
-            new CommandInfo(
-                    "getTransactionByBlockHashAndIndex",
-                    "Query information about a transaction by block hash and transaction index position",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getTransactionByBlockHashAndIndexHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getConsoleClientFace()
-                                    .getTransactionByBlockHashAndIndex(params);
-                        }
-                    },
-                    2,
-                    3);
-    public static final CommandInfo GET_TRANSACTION_BY_BLOCKNUMBER_AND_INDEX =
-            new CommandInfo(
-                    "getTransactionByBlockNumberAndIndex",
-                    "Query information about a transaction by block number and transaction index position",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getTransactionByBlockNumberAndIndexHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getConsoleClientFace()
-                                    .getTransactionByBlockNumberAndIndex(params);
-                        }
-                    },
-                    2,
-                    3);
+
     public static final CommandInfo GET_TRANSACTION_BY_HASH_WITH_PROOF =
             new CommandInfo(
                     "getTransactionByHashWithProof",
@@ -1568,25 +628,7 @@ public class SupportedCommand {
                     },
                     1,
                     2);
-    public static final CommandInfo GET_PENDING_TRANSACTIONS =
-            new CommandInfo(
-                    "getPendingTransactions",
-                    "Query pending transactions",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getPendingTransactionsHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getConsoleClientFace()
-                                    .getPendingTransactions(params);
-                        }
-                    });
+
     public static final CommandInfo GET_PENDING_TX_SIZE =
             new CommandInfo(
                     "getPendingTxSize",
@@ -1680,193 +722,6 @@ public class SupportedCommand {
                     },
                     1,
                     1);
-
-    public static final CommandInfo START_GROUP =
-            new CommandInfo(
-                    "startGroup",
-                    "Start the specified group of the specified node",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.operateGroupHelp("startGroup", "started");
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().startGroup(params);
-                        }
-                    },
-                    1,
-                    2);
-
-    public static final CommandInfo STOP_GROUP =
-            new CommandInfo(
-                    "stopGroup",
-                    "Stop the specified group of the specified node",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.operateGroupHelp("stopGroup", "stopped");
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().stopGroup(params);
-                        }
-                    },
-                    1,
-                    2);
-
-    public static final CommandInfo REMOVE_GROUP =
-            new CommandInfo(
-                    "removeGroup",
-                    "Remove the specified group of the specified node",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.operateGroupHelp("removeGroup", "removed");
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().removeGroup(params);
-                        }
-                    },
-                    1,
-                    2);
-
-    public static final CommandInfo RECOVER_GROUP =
-            new CommandInfo(
-                    "recoverGroup",
-                    "Recover the specified group of the specified node",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.operateGroupHelp("recoverGroup", "recovered");
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().recoverGroup(params);
-                        }
-                    },
-                    1,
-                    2);
-
-    public static final CommandInfo QUERY_GROUP_STATUS =
-            new CommandInfo(
-                    "queryGroupStatus",
-                    "Query the status of the specified group of the specified node",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.operateGroupHelp("queryGroupStatus", "queried");
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().queryGroupStatus(params);
-                        }
-                    },
-                    1,
-                    2);
-
-    public static final CommandInfo GET_AVAILABLE_CONNECTIONS =
-            new CommandInfo(
-                    "getAvailableConnections",
-                    "Get the connection information of the nodes connected with the sdk",
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            List<String> availablePeers =
-                                    consoleInitializer.getBcosSDK().getChannel().getAvailablePeer();
-                            Collections.sort(availablePeers);
-                            ConsoleUtils.printJson(availablePeers.toString());
-                        }
-                    });
-
-    public static final CommandInfo GET_GROUP_CONNECTIONS =
-            new CommandInfo(
-                    "getGroupConnections",
-                    "Get the node information of the group connected to the SDK",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getGroupConnectionsHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            Integer groupId = consoleInitializer.getClient().getGroupId();
-                            if (params.length == 2) {
-                                groupId =
-                                        ConsoleUtils.proccessNonNegativeNumber(
-                                                "groupId", params[1]);
-                            }
-                            List<String> groupConnections =
-                                    consoleInitializer
-                                            .getBcosSDK()
-                                            .getGroupManagerService()
-                                            .getGroupAvailablePeers(groupId);
-                            Collections.sort(groupConnections);
-                            ConsoleUtils.printJson(groupConnections.toString());
-                        }
-                    },
-                    0,
-                    1);
-
-    public static final CommandInfo GENERATE_GROUP =
-            new CommandInfo(
-                    "generateGroup",
-                    "Generate a group for the specified node",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.generateGroupHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().generateGroup(params);
-                        }
-                    },
-                    4,
-                    -1);
-
-    public static final CommandInfo GENERATE_GROUP_WITH_FILE =
-            new CommandInfo(
-                    "generateGroupFromFile",
-                    "Generate group according to the specified file",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.generateGroupFromFileHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer.getConsoleClientFace().generateGroupFromFile(params);
-                        }
-                    },
-                    2,
-                    2);
 
     public static final CommandInfo LIST_DEPLOY_CONTRACT_ADDRESS =
             new CommandInfo(
@@ -2030,50 +885,6 @@ public class SupportedCommand {
                     },
                     1,
                     1);
-
-    public static final CommandInfo GET_BATCH_RECEIPTS_BY_BLOCK_HASH_AND_RANGE =
-            new CommandInfo(
-                    "getBatchReceiptsByBlockHashAndRange",
-                    "Get batched transaction receipts according to block hash and the transaction range",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getBatchReceiptsByBlockHashAndRangeHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getConsoleClientFace()
-                                    .getBatchReceiptsByBlockHashAndRange(params);
-                        }
-                    },
-                    1,
-                    3);
-
-    public static final CommandInfo GET_BATCH_RECEIPTS_BY_BLOCK_NUMBER_AND_RANGE =
-            new CommandInfo(
-                    "getBatchReceiptsByBlockNumberAndRange",
-                    "Get batched transaction receipts according to block number and the transaction range",
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.getBatchReceiptsByBlockNumberAndRangeHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(ConsoleInitializer consoleInitializer, String[] params)
-                                throws Exception {
-                            consoleInitializer
-                                    .getConsoleClientFace()
-                                    .getBatchReceiptsByBlockNumberAndRange(params);
-                        }
-                    },
-                    1,
-                    3);
 
     public static List<String> CRUD_COMMANDS =
             new ArrayList<String>(
