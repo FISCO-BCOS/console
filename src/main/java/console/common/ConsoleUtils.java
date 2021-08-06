@@ -194,7 +194,10 @@ public class ConsoleUtils {
 
     public static Address convertAddress(String addressStr) {
         Address address = new Address();
-        if (addressStr.length() > Address.ValidLen) {
+        if (!addressStr.startsWith("0x") && addressStr.length() != (Address.ValidLen - 2)) {
+            address.setValid(false);
+            address.setAddress(addressStr);
+        } else if (addressStr.length() != Address.ValidLen) {
             address.setValid(false);
             address.setAddress(addressStr);
         } else {

@@ -74,10 +74,10 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockNumber");
     }
 
-    public static void switchGroupIDHelp() {
-        System.out.println("Switch to a specific group by group ID.");
+    public static void switchEndPointHelp() {
+        System.out.println("Switch to a specific peer by endpoint.");
         System.out.println("Usage: \nswitch groupId");
-        System.out.println("* groupId -- The ID of a group, " + Common.PositiveIntegerRange + ".");
+        System.out.println("* endPoint -- The endPoint of the new peer.");
     }
 
     public static void getPbftViewHelp() {

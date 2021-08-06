@@ -24,6 +24,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,19 +88,19 @@ public class SupportedCommand {
     public static final CommandInfo SWITCH =
             new CommandInfo(
                     "switch",
-                    "Switch to a specific group by group ID",
+                    "Switch to a specific new peer by the ip",
                     new ArrayList<String>(Arrays.asList("s")),
                     new CommandInfo.UsageDisplay() {
                         @Override
                         public void printUsageInfo() {
-                            HelpInfo.switchGroupIDHelp();
+                            HelpInfo.switchEndPointHelp();
                         }
                     },
                     new CommandInfo.CommandImplement() {
                         @Override
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
-                            consoleInitializer.switchGroupID(params);
+                            consoleInitializer.switchEndePoint(params);
                         }
                     },
                     1,
@@ -482,6 +483,21 @@ public class SupportedCommand {
                         public void call(ConsoleInitializer consoleInitializer, String[] params)
                                 throws Exception {
                             consoleInitializer.getConsoleClientFace().getPeers(params);
+                        }
+                    });
+    public static final CommandInfo GET_AVAILABLE_CONNECTIONS =
+            new CommandInfo(
+                    "getAvailableConnections",
+                    "Query all connections between the SDK and the node",
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            Enumeration<String> connections =
+                                    consoleInitializer.getBcosSDK().getAllConnections();
+                            while (connections.hasMoreElements()) {
+                                System.out.println(connections.nextElement());
+                            }
                         }
                     });
 

@@ -233,12 +233,16 @@ public class ConsoleInitializer {
         return new AccountInfo(accountFileFormat, accountFile, password);
     }
 
-    public void switchGroupID(String[] params) {
+    public void switchEndePoint(String[] params) {
         String endPoint = params[1];
         try {
             // load the original account
             CryptoKeyPair cryptoKeyPair = this.client.getCryptoSuite().getCryptoKeyPair();
             this.client = bcosSDK.getClientByEndpoint(endPoint);
+            if (this.client == null) {
+                System.out.println("Switch to the node " + endPoint + " failed");
+                System.exit(0);
+            }
             this.client.getCryptoSuite().setCryptoKeyPair(cryptoKeyPair);
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
