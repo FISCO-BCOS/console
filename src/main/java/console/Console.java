@@ -67,9 +67,10 @@ public class Console {
                 }
                 String request = "";
                 if (INPUT_FLAG == 0 && !consoleInitializer.DisableAutoCompleter) {
+                    String endPoint = consoleInitializer.getClient().getConnection().getUri();
                     request =
                             lineReader.readLine(
-                                    "[group:" + consoleInitializer.getGroupID() + "]> ");
+                                    "[" + consoleInitializer.getGroupID() + "@" + endPoint + "]> ");
                 } else {
                     System.out.print("[group:" + consoleInitializer.getGroupID() + "]> ");
                     sc = new Scanner(System.in);

@@ -7,8 +7,6 @@ import console.contract.ConsoleContractFace;
 import console.contract.ConsoleContractImpl;
 import console.precompiled.PrecompiledFace;
 import console.precompiled.PrecompiledImpl;
-import console.precompiled.permission.PermissionFace;
-import console.precompiled.permission.PermissionImpl;
 import java.io.Console;
 import java.io.File;
 import java.net.URL;
@@ -35,7 +33,6 @@ public class ConsoleInitializer {
     private Client client;
     private ConsoleClientFace consoleClientFace;
     private PrecompiledFace precompiledFace;
-    private PermissionFace permissionFace;
     private ConsoleContractFace consoleContractFace;
     public static boolean DisableAutoCompleter = false;
 
@@ -125,7 +122,6 @@ public class ConsoleInitializer {
             }
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
-            this.permissionFace = new PermissionImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
         } catch (Exception e) {
             System.out.println(
@@ -233,16 +229,19 @@ public class ConsoleInitializer {
         return new AccountInfo(accountFileFormat, accountFile, password);
     }
 
-    public void switchGroupID(String[] params) {
+    public void switchEndePoint(String[] params) {
         String endPoint = params[1];
         try {
             // load the original account
             CryptoKeyPair cryptoKeyPair = this.client.getCryptoSuite().getCryptoKeyPair();
             this.client = bcosSDK.getClientByEndpoint(endPoint);
+            if (this.client == null) {
+                System.out.println("Switch to the node " + endPoint + " failed");
+                System.exit(0);
+            }
             this.client.getCryptoSuite().setCryptoKeyPair(cryptoKeyPair);
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
-            this.permissionFace = new PermissionImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
             System.out.println("Switched to node " + endPoint + ".");
             System.out.println();
@@ -313,7 +312,6 @@ public class ConsoleInitializer {
         cryptoSuite.loadAccount(accountFormat, accountPath, accountPassword);
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
-        this.permissionFace = new PermissionImpl(client);
         this.consoleContractFace = new ConsoleContractImpl(client);
         System.out.println("Load account " + params[1] + " success!");
     }
@@ -340,10 +338,6 @@ public class ConsoleInitializer {
 
     public PrecompiledFace getPrecompiledFace() {
         return precompiledFace;
-    }
-
-    public PermissionFace getPermissionFace() {
-        return permissionFace;
     }
 
     public ConsoleContractFace getConsoleContractFace() {

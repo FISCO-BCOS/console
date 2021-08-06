@@ -74,10 +74,10 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockNumber");
     }
 
-    public static void switchGroupIDHelp() {
-        System.out.println("Switch to a specific group by group ID.");
+    public static void switchEndPointHelp() {
+        System.out.println("Switch to a specific peer by endpoint.");
         System.out.println("Usage: \nswitch groupId");
-        System.out.println("* groupId -- The ID of a group, " + Common.PositiveIntegerRange + ".");
+        System.out.println("* endPoint -- The endPoint of the new peer.");
     }
 
     public static void getPbftViewHelp() {
@@ -343,117 +343,6 @@ public class HelpInfo {
         System.out.println("Remove a node.");
         System.out.println("Usage: \nremoveNode nodeId");
         System.out.println("* nodeId -- The nodeId of a node.");
-    }
-
-    public static void grantUserTableManagerHelp() {
-        System.out.println("Grant permission for user table by table name and address.");
-        System.out.println("Usage: \ngrantUserTableManager tableName address");
-        System.out.println("* tableName -- The name of a table.");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void revokeUserTableManagerHelp() {
-        System.out.println("Revoke permission for user table by table name and address.");
-        System.out.println("Usage: \nrevokeUserTableManager tableName address");
-        System.out.println("* tableName -- The name of a table.");
-        System.out.println("* address -- 20 Bytes - The The address of a tx.origin.");
-    }
-
-    public static void listUserTableManagerHelp() {
-        System.out.println("Query permission for user table information.");
-        System.out.println("Usage: \nlistUserTableManager tableName");
-        System.out.println("* tableName -- The name of a table.");
-    }
-
-    public static void grantDeployAndCreateManagerHelp() {
-        System.out.println(
-                "Grant permission for deploy contract and create user table by address.");
-        System.out.println("Usage: \ngrantDeployAndCreateManager address");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void revokeDeployAndCreateManagerHelp() {
-        System.out.println(
-                "Revoke permission for deploy contract and create user table by address.");
-        System.out.println("Usage: \nrevokeDeployAndCreateManager address");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void listDeployAndCreateManagerHelp() {
-        System.out.println(
-                "Query permission information for deploy contract and create user table.");
-        System.out.println("Usage: \nlistDeployAndCreateManager");
-    }
-
-    public static void grantNodeManagerHelp() {
-        System.out.println("Grant permission for node configuration by address.");
-        System.out.println("Usage: \ngrantNodeManager address");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void revokeNodeManagerHelp() {
-        System.out.println("Revoke permission for node configuration by address.");
-        System.out.println("Usage: \nrevokeNodeManager address");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void listNodeManagerHelp() {
-        System.out.println("Query permission information for node configuration.");
-        System.out.println("Usage: \nlistNodeManager");
-    }
-
-    public static void grantCNSManagerHelp() {
-        System.out.println("Grant permission for CNS by address.");
-        System.out.println("Usage: \ngrantCNSManager address");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void revokeCNSManagerHelp() {
-        System.out.println("Revoke permission for CNS by address.");
-        System.out.println("Usage: \nrevokeCNSManager address");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void listCNSManagerHelp() {
-        System.out.println("Query permission information for CNS.");
-        System.out.println("Usage: \nlistCNSManager");
-    }
-
-    public static void grantSysConfigManagerHelp() {
-        System.out.println("Grant permission for system configuration by address.");
-        System.out.println("Usage: \ngrantSysConfigManager address");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void revokeSysConfigManagerHelp() {
-        System.out.println("Revoke permission for system configuration by address.");
-        System.out.println("Usage: \nrevokeSysConfigManager address");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void listSysConfigManagerHelp() {
-        System.out.println("Query permission information for system configuration.");
-        System.out.println("Usage: \nlistSysConfigManager");
-    }
-
-    public static void listContractWritePermissionHelp() {
-        System.out.println("Query write permission information by address.");
-        System.out.println("Usage: \nlistContractWritePermission");
-        System.out.println("* address -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void grantContractWritePermissionHelp() {
-        System.out.println("Grant write permission information by address.");
-        System.out.println("Usage: \ngrantContractWritePermission");
-        System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
-        System.out.println("* userAddress -- 20 Bytes - The address of a tx.origin.");
-    }
-
-    public static void revokeContractWritePermissionHelp() {
-        System.out.println("Revoke write permission information by address.");
-        System.out.println("Usage: \nrevokeWritePermission");
-        System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
-        System.out.println("* userAddress -- 20 Bytes - The address of a tx.origin.");
     }
 
     public static void listCommitteeMembersHelp() {
