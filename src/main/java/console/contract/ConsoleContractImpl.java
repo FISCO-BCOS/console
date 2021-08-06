@@ -182,6 +182,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
+            if (!contractAddress.startsWith("0x")) {
+                contractAddress = "0x" + contractAddress;
+            }
             System.out.println(
                     "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("contract address: " + contractAddress);
