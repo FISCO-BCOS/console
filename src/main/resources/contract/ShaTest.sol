@@ -9,7 +9,7 @@ contract ShaTest{
     Crypto crypto;
 
     constructor() public {
-        crypto = Crypto(100a);
+        crypto = Crypto(0x100a);
     }
 
     function getSha256(bytes memory _memory) public returns(bytes32 result)

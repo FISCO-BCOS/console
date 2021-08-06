@@ -11,7 +11,6 @@ public class TestBase {
 
     protected static ConsoleClientFace consoleClientFace;
     protected static PrecompiledFace precompiledFace;
-    protected static PermissionFace permissionFace;
     protected static ConsoleContractFace consoleContractFace;
     protected static ConsoleInitializer consoleInitializer;
 
@@ -21,7 +20,6 @@ public class TestBase {
         consoleInitializer.init(new String[0]);
         consoleClientFace = consoleInitializer.getConsoleClientFace();
         precompiledFace = consoleInitializer.getPrecompiledFace();
-        permissionFace = consoleInitializer.getPermissionFace();
         consoleContractFace = consoleInitializer.getConsoleContractFace();
     }
 
