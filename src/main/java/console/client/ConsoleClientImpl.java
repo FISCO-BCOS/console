@@ -248,19 +248,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getSystemConfigByKey(String[] params) throws Exception {
         String key = params[1];
-        if (Common.TxCountLimit.equals(key)
-                || Common.TxGasLimit.equals(key)
-                || Common.ConsensusTimeout.equals(key)) {
-            String value = client.getSystemConfigByKey(key).getSystemConfig().getValue();
-            System.out.println(value);
-        } else {
-            System.out.println(
-                    "Please provide a valid key, for example: "
-                            + Common.TxCountLimit
-                            + " or "
-                            + Common.TxGasLimit
-                            + ".");
-        }
+        String value = client.getSystemConfigByKey(key).getSystemConfig().getValue();
+        System.out.println(value);
     }
 
     @Override

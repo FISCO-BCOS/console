@@ -13,6 +13,8 @@ public class Common {
     public static int ConsensusTimeoutMin = 3;
     public static int ConsensusTimeoutMax = Integer.MAX_VALUE / 1000;
 
+    public static final String ConsensusLeaderPeriod = "consensus_leader_period";
+
     public static final int InvalidReturnNumber = -100;
     public static final long InvalidLongValue = Long.MAX_VALUE;
 
