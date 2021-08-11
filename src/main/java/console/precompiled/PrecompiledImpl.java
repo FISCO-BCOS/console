@@ -8,6 +8,7 @@ import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,10 +63,12 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void addSealer(String[] params) throws Exception {
         String nodeId = params[1];
+        int weight = ConsoleUtils.proccessNonNegativeNumber("consensusWeight", params[2]);
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printJson(this.consensusService.addSealer(nodeId).toString());
+            ConsoleUtils.printJson(
+                    this.consensusService.addSealer(nodeId, BigInteger.valueOf(weight)).toString());
         }
     }
 
@@ -90,20 +93,28 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
+    public void setConsensusNodeWeight(String[] params) throws Exception {
+        String nodeId = params[1];
+        int weight = ConsoleUtils.proccessNonNegativeNumber("consensusWeight", params[2]);
+        if (nodeId.length() != 128) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
+        } else {
+            ConsoleUtils.printJson(
+                    this.consensusService.setWeight(nodeId, BigInteger.valueOf(weight)).toString());
+        }
+    }
+
+    @Override
     public void setSystemConfigByKey(String[] params) throws Exception {
         String key = params[1];
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
-                || Common.RPBFTEpochSealerNum.equals(key)
-                || Common.RPBFTEpochBlockNum.equals(key)
                 || Common.ConsensusTimeout.equals(key)) {
             String valueStr = params[2];
             int value = 1;
             try {
                 value = Integer.parseInt(valueStr);
-                if (Common.TxCountLimit.equals(key)
-                        || Common.RPBFTEpochSealerNum.equals(key)
-                        || Common.RPBFTEpochBlockNum.equals(key)) {
+                if (Common.TxCountLimit.equals(key)) {
                     if (value <= 0) {
                         System.out.println(
                                 "Please provide value by positive integer mode, "
@@ -126,17 +137,10 @@ public class PrecompiledImpl implements PrecompiledFace {
                                     + ".");
                     return;
                 }
-
-                if (Common.RPBFTEpochSealerNum.equals(key)
-                        || Common.RPBFTEpochBlockNum.equals(key)) {
-                    System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
-                }
                 ConsoleUtils.printJson(
                         this.systemConfigService.setValueByKey(key, value + "").toString());
             } catch (NumberFormatException e) {
-                if (Common.TxCountLimit.equals(key)
-                        || Common.RPBFTEpochSealerNum.equals(key)
-                        || Common.RPBFTEpochBlockNum.equals(key)) {
+                if (Common.TxCountLimit.equals(key)) {
                     System.out.println(
                             "Please provide value by positive integer mode, "
                                     + Common.PositiveIntegerRange
@@ -160,10 +164,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + Common.TxCountLimit
                             + " or "
                             + Common.TxGasLimit
-                            + " or "
-                            + Common.RPBFTEpochSealerNum
-                            + " or "
-                            + Common.RPBFTEpochBlockNum
                             + " or "
                             + Common.ConsensusTimeout
                             + " .");

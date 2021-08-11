@@ -7,8 +7,6 @@ public class Common {
     // SystemConfig key
     public static final String TxCountLimit = "tx_count_limit";
     public static final String TxGasLimit = "tx_gas_limit";
-    public static final String RPBFTEpochSealerNum = "rpbft_epoch_sealer_num";
-    public static final String RPBFTEpochBlockNum = "rpbft_epoch_block_num";
 
     // in seconds
     public static final String ConsensusTimeout = "consensus_timeout";

@@ -118,16 +118,6 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.RPBFTEpochSealerNum),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(Common.RPBFTEpochBlockNum),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
                             new StringsCompleter(Common.ConsensusTimeout),
                             new StringsCompleterIgnoreCase()));
         }

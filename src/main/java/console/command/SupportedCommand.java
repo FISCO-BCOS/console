@@ -257,8 +257,8 @@ public class SupportedCommand {
                             consoleInitializer.getPrecompiledFace().addSealer(params);
                         }
                     },
-                    1,
-                    1);
+                    2,
+                    2);
     public static final CommandInfo REMOVENODE =
             new CommandInfo(
                     "removeNode",
@@ -278,6 +278,26 @@ public class SupportedCommand {
                     },
                     1,
                     1);
+
+    public static final CommandInfo SETCONSENSUSWEIGHT =
+            new CommandInfo(
+                    "setConsensusWeight",
+                    "Set consensus weight for the specified node",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.setConsensusWeightHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPrecompiledFace().setConsensusNodeWeight(params);
+                        }
+                    },
+                    2,
+                    2);
     public static final CommandInfo QUITE =
             new CommandInfo(
                     "quit",

@@ -335,8 +335,9 @@ public class HelpInfo {
 
     public static void addSealerHelp() {
         System.out.println("Add a sealer node.");
-        System.out.println("Usage: \naddSealer nodeId");
+        System.out.println("Usage: \naddSealer nodeId weight");
         System.out.println("* nodeId -- The nodeId of a node.");
+        System.out.println("* weight -- The weight of the consensus node.");
     }
 
     public static void removeNodeHelp() {
@@ -345,73 +346,11 @@ public class HelpInfo {
         System.out.println("* nodeId -- The nodeId of a node.");
     }
 
-    public static void listCommitteeMembersHelp() {
-        System.out.println("List committee members.");
-        System.out.println("Usage: \nlistCommitteeMembers");
-    }
-
-    public static void grantCommitteeMemberHelp() {
-        System.out.println("Grant committee member.");
-        System.out.println("Usage: \ngrantCommitteeMember account");
-        System.out.println("* account -- 20 Bytes - The address of a account.");
-    }
-
-    public static void revokeCommitteeMemberHelp() {
-        System.out.println("Revoke committee member.");
-        System.out.println("Usage: \nrevokeCommitteeMember account");
-        System.out.println("* account -- 20 Bytes - The address of a account.");
-    }
-
-    public static void queryCommitteeMemberWeightHelp() {
-        System.out.println("Query committee member weight.");
-        System.out.println("Usage: \nqueryCommitteeMemberWeight account");
-        System.out.println("* account -- 20 Bytes - The address of a account.");
-    }
-
-    public static void updateCommitteeMemberWeightHelp() {
-        System.out.println("Update committee member weight.");
-        System.out.println("Usage: \nupdateCommitteeMemberWeight account weight");
-        System.out.println("* account -- 20 Bytes - The address of a account.");
-        System.out.println("* weight -- int - The weight of the account.");
-    }
-
-    public static void queryThresholdHelp() {
-        System.out.println("Query committee threshold.");
-        System.out.println("Usage: \nqueryThreshold");
-    }
-
-    public static void updateThresholdHelp() {
-        System.out.println("Update committee threshold.");
-        System.out.println("Usage: \nupdateThreshold threshold");
-        System.out.println("* threshold -- int - The threshold of the committee.");
-    }
-
-    public static void queryVotesOfMemberHelp() {
-        System.out.println("Query votes of a committee member.");
-        System.out.println("Usage: \nqueryVotesOfMember account");
-        System.out.println("* account -- The account address of the committee member.");
-    }
-
-    public static void queryVotesOfThresholdHelp() {
-        System.out.println("Query votes of the updateThreshold operation.");
-        System.out.println("Usage: \nqueryVotesOfThreshold");
-    }
-
-    public static void listOperatorsHelp() {
-        System.out.println("List operator members.");
-        System.out.println("Usage: \nlistOperators");
-    }
-
-    public static void grantOperatorHelp() {
-        System.out.println("Grant operator.");
-        System.out.println("Usage: \ngrantOperator account");
-        System.out.println("* account -- 20 Bytes - The address of a account.");
-    }
-
-    public static void revokeOperatorHelp() {
-        System.out.println("Revoke operator.");
-        System.out.println("Usage: \nrevokeOperator account");
-        System.out.println("* account -- 20 Bytes - The address of a account.");
+    public static void setConsensusWeightHelp() {
+        System.out.println("Set consensus weight for the specified node");
+        System.out.println("Usage: \nsetConsensusWeight nodeId weight");
+        System.out.println("* nodeId -- The nodeId of a node.");
+        System.out.println("* weight -- The weight for the consensus node.");
     }
 
     public static void freezeAccountHelp() {
@@ -436,7 +375,7 @@ public class HelpInfo {
         System.out.println("Set a system config.");
         System.out.println("Usage: \nsetSystemConfigByKey key value");
         System.out.println(
-                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/rpbft_epoch_block_num/rpbft_epoch_sealer_num/consensus_timeout supported currently).");
+                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_timeout supported currently).");
         System.out.println("* value -- The value of system config to be set.");
         System.out.println(
                 "      -- The value of tx_count_limit "
@@ -447,11 +386,6 @@ public class HelpInfo {
                         + Common.TxGasLimitRange
                         + "(default 300000000).");
         System.out.println(
-                "      -- the value of  rpbft_epoch_block_num from 1 to 2147483647"
-                        + "(default 1000).");
-        System.out.println(
-                "      -- the value of  rpbft_epoch_sealer_num " + Common.PositiveIntegerRange);
-        System.out.println(
                 "      -- the value of  consensus_timeout (seconds)"
                         + Common.ConsensusTimeoutRange
                         + "(default 3s).");
@@ -461,7 +395,7 @@ public class HelpInfo {
         System.out.println("Query a system config value by key.");
         System.out.println("Usage: \ngetSystemConfigByKey key");
         System.out.println(
-                "* key -- The name of system config(tx_count_limit/tx_gas_limit/rpbft_epoch_block_num/rpbft_epoch_sealer_num/consensus_timeout supported currently).");
+                "* key -- The name of system config(tx_count_limit/tx_gas_limit/consensus_timeout supported currently).");
     }
 
     public static void operateGroupHelp(String command, String operator) {
