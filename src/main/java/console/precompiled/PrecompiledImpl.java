@@ -94,16 +94,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         String key = params[1];
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
-                || Common.RPBFTEpochSealerNum.equals(key)
-                || Common.RPBFTEpochBlockNum.equals(key)
                 || Common.ConsensusTimeout.equals(key)) {
             String valueStr = params[2];
             int value = 1;
             try {
                 value = Integer.parseInt(valueStr);
-                if (Common.TxCountLimit.equals(key)
-                        || Common.RPBFTEpochSealerNum.equals(key)
-                        || Common.RPBFTEpochBlockNum.equals(key)) {
+                if (Common.TxCountLimit.equals(key)) {
                     if (value <= 0) {
                         System.out.println(
                                 "Please provide value by positive integer mode, "
@@ -126,17 +122,10 @@ public class PrecompiledImpl implements PrecompiledFace {
                                     + ".");
                     return;
                 }
-
-                if (Common.RPBFTEpochSealerNum.equals(key)
-                        || Common.RPBFTEpochBlockNum.equals(key)) {
-                    System.out.println("Note: " + key + " only takes effect when rPBFT is used!");
-                }
                 ConsoleUtils.printJson(
                         this.systemConfigService.setValueByKey(key, value + "").toString());
             } catch (NumberFormatException e) {
-                if (Common.TxCountLimit.equals(key)
-                        || Common.RPBFTEpochSealerNum.equals(key)
-                        || Common.RPBFTEpochBlockNum.equals(key)) {
+                if (Common.TxCountLimit.equals(key)) {
                     System.out.println(
                             "Please provide value by positive integer mode, "
                                     + Common.PositiveIntegerRange
@@ -160,10 +149,6 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + Common.TxCountLimit
                             + " or "
                             + Common.TxGasLimit
-                            + " or "
-                            + Common.RPBFTEpochSealerNum
-                            + " or "
-                            + Common.RPBFTEpochBlockNum
                             + " or "
                             + Common.ConsensusTimeout
                             + " .");

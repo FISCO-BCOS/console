@@ -250,13 +250,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         String key = params[1];
         if (Common.TxCountLimit.equals(key)
                 || Common.TxGasLimit.equals(key)
-                || Common.RPBFTEpochSealerNum.equals(key)
-                || Common.RPBFTEpochBlockNum.equals(key)
                 || Common.ConsensusTimeout.equals(key)) {
             String value = client.getSystemConfigByKey(key).getSystemConfig().getValue();
-            if (Common.RPBFTEpochSealerNum.equals(key) || Common.RPBFTEpochBlockNum.equals(key)) {
-                System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
-            }
             System.out.println(value);
         } else {
             System.out.println(

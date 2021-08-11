@@ -436,7 +436,7 @@ public class HelpInfo {
         System.out.println("Set a system config.");
         System.out.println("Usage: \nsetSystemConfigByKey key value");
         System.out.println(
-                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/rpbft_epoch_block_num/rpbft_epoch_sealer_num/consensus_timeout supported currently).");
+                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_timeout supported currently).");
         System.out.println("* value -- The value of system config to be set.");
         System.out.println(
                 "      -- The value of tx_count_limit "
@@ -447,11 +447,6 @@ public class HelpInfo {
                         + Common.TxGasLimitRange
                         + "(default 300000000).");
         System.out.println(
-                "      -- the value of  rpbft_epoch_block_num from 1 to 2147483647"
-                        + "(default 1000).");
-        System.out.println(
-                "      -- the value of  rpbft_epoch_sealer_num " + Common.PositiveIntegerRange);
-        System.out.println(
                 "      -- the value of  consensus_timeout (seconds)"
                         + Common.ConsensusTimeoutRange
                         + "(default 3s).");
@@ -461,7 +456,7 @@ public class HelpInfo {
         System.out.println("Query a system config value by key.");
         System.out.println("Usage: \ngetSystemConfigByKey key");
         System.out.println(
-                "* key -- The name of system config(tx_count_limit/tx_gas_limit/rpbft_epoch_block_num/rpbft_epoch_sealer_num/consensus_timeout supported currently).");
+                "* key -- The name of system config(tx_count_limit/tx_gas_limit/consensus_timeout supported currently).");
     }
 
     public static void operateGroupHelp(String command, String operator) {
