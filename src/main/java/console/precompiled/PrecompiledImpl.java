@@ -1,6 +1,5 @@
 package console.precompiled;
 
-import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
@@ -107,67 +106,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void setSystemConfigByKey(String[] params) throws Exception {
         String key = params[1];
-        if (Common.TxCountLimit.equals(key)
-                || Common.TxGasLimit.equals(key)
-                || Common.ConsensusTimeout.equals(key)) {
-            String valueStr = params[2];
-            int value = 1;
-            try {
-                value = Integer.parseInt(valueStr);
-                if (Common.TxCountLimit.equals(key)) {
-                    if (value <= 0) {
-                        System.out.println(
-                                "Please provide value by positive integer mode, "
-                                        + Common.PositiveIntegerRange
-                                        + ".");
-                        return;
-                    }
-                } else if (Common.TxGasLimit.equals(key) && value < Common.TxGasLimitMin) {
-                    System.out.println(
-                            "Please provide value by positive integer mode, "
-                                    + Common.TxGasLimitRange
-                                    + ".");
-                    return;
-                } else if (Common.ConsensusTimeout.equals(key)
-                        && (value < Common.ConsensusTimeoutMin
-                                || value >= Common.ConsensusTimeoutMax)) {
-                    System.out.println(
-                            "Please provide value by positive integer mode, "
-                                    + Common.ConsensusTimeoutRange
-                                    + ".");
-                    return;
-                }
-                ConsoleUtils.printJson(
-                        this.systemConfigService.setValueByKey(key, value + "").toString());
-            } catch (NumberFormatException e) {
-                if (Common.TxCountLimit.equals(key)) {
-                    System.out.println(
-                            "Please provide value by positive integer mode, "
-                                    + Common.PositiveIntegerRange
-                                    + ".");
-                } else if (Common.TxGasLimit.equals(key)) {
-                    System.out.println(
-                            "Please provide value by positive integer mode, "
-                                    + Common.TxGasLimitRange
-                                    + ".");
-                } else if (Common.ConsensusTimeout.equals(key)) {
-                    System.out.println(
-                            "Please provide a value no smaller than "
-                                    + Common.ConsensusTimeoutRange
-                                    + ".");
-                }
-                return;
-            }
-        } else {
-            System.out.println(
-                    "Please provide a valid key, for example: "
-                            + Common.TxCountLimit
-                            + " or "
-                            + Common.TxGasLimit
-                            + " or "
-                            + Common.ConsensusTimeout
-                            + " .");
-        }
+        String value = params[2];
+        ConsoleUtils.printJson(this.systemConfigService.setValueByKey(key, value).toString());
     }
 
     @Override
