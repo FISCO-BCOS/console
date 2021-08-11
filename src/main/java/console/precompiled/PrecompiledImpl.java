@@ -8,6 +8,7 @@ import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -62,10 +63,12 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void addSealer(String[] params) throws Exception {
         String nodeId = params[1];
+        int weight = ConsoleUtils.proccessNonNegativeNumber("consensusWeight", params[2]);
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printJson(this.consensusService.addSealer(nodeId).toString());
+            ConsoleUtils.printJson(
+                    this.consensusService.addSealer(nodeId, BigInteger.valueOf(weight)).toString());
         }
     }
 
@@ -86,6 +89,18 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
             ConsoleUtils.printJson(this.consensusService.removeNode(nodeId).toString());
+        }
+    }
+
+    @Override
+    public void setConsensusNodeWeight(String[] params) throws Exception {
+        String nodeId = params[1];
+        int weight = ConsoleUtils.proccessNonNegativeNumber("consensusWeight", params[2]);
+        if (nodeId.length() != 128) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
+        } else {
+            ConsoleUtils.printJson(
+                    this.consensusService.setWeight(nodeId, BigInteger.valueOf(weight)).toString());
         }
     }
 

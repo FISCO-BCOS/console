@@ -40,4 +40,6 @@ public interface PrecompiledFace {
     void queryCNS(String[] params) throws Exception;
 
     void registerCNS(String[] params) throws Exception;
+
+    void setConsensusNodeWeight(String[] params) throws Exception;
 }
