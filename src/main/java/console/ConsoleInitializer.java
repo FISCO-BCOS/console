@@ -189,7 +189,7 @@ public class ConsoleInitializer {
         File[] accountFileList = keyStoreFileDirPath.listFiles();
         ConsoleUtils.sortFiles(accountFileList);
         for (File accountFile : accountFileList) {
-            if (accountFile.getName().endsWith(".pem")) {
+            if (accountFile.getName().endsWith(".pem") && !accountFile.getName().contains("pub")) {
                 logger.debug("load pem account from {}", accountFile.getAbsoluteFile());
                 return new AccountInfo("pem", accountFile.getAbsolutePath(), null);
             }
