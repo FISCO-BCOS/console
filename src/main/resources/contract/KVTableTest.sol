@@ -9,8 +9,8 @@ contract KVTableTest {
     string constant TABLE_NAME = "t_kvtest";
 
     constructor() public {
-        //The fixed address is 0x1010 for KVTableFactory
-        tableFactory = KVTableFactory(0x1010);
+        //The fixed address is 0x1009 for KVTableFactory
+        tableFactory = KVTableFactory(0x1009);
         // the parameters of createTable are tableName,keyField,"vlaueFiled1,vlaueFiled2,vlaueFiled3,..."
         tableFactory.createTable(TABLE_NAME, "id", "item_price,item_name");
     }

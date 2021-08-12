@@ -129,16 +129,16 @@ main()
         LOG_INFO "Account Address   : 0x${accountAddress}"
         LOG_INFO "Private Key (pem) : ${output_path}/0x${accountAddress}.pem"
         # echo "0x${privKey}" > ${output_path}/${accountAddress}.private.hex
-        openssl ec -in ${output_path}/0x${accountAddress}.pem -pubout -out ${output_path}/0x${accountAddress}.public.pem 2>/dev/null
-        LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.public.pem"
+        openssl ec -in ${output_path}/0x${accountAddress}.pem -pubout -out ${output_path}/0x${accountAddress}.pem.pub 2>/dev/null
+        LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.pem.pub"
     else
         LOG_INFO "Note: the entered password cannot contain Chinese characters!"
         openssl pkcs12 -export -name key -nocerts -inkey "${output_path}/ecprivkey.pem" -out "${output_path}/0x${accountAddress}.p12" || $(rm ${output_path}/0x${accountAddress}.p12 && rm ${output_path}/ecprivkey.pem && exit 1)
-        openssl ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/0x${accountAddress}.public.pem 2>/dev/null
+        openssl ec -in ${output_path}/ecprivkey.pem -pubout -out ${output_path}/0x${accountAddress}.pem.pub 2>/dev/null
 		rm ${output_path}/ecprivkey.pem
         LOG_INFO "Account Address   : 0x${accountAddress}"
         LOG_INFO "Private Key (p12) : ${output_path}/0x${accountAddress}.p12"
-		LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.public.pem"
+		LOG_INFO "Public  Key (pem) : ${output_path}/0x${accountAddress}.pem.pub"
     fi
     # LOG_INFO "Private Key (hex) : 0x${privKey}"
     # echo "0x${pubKey}" > ${output_path}/${accountAddress}.public.hex
