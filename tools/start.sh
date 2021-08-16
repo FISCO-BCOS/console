@@ -30,9 +30,9 @@ function LOG_INFO()
 function Usage() {
     LOG_INFO "Usage:start the console"
     LOG_INFO "./start.sh"
-    LOG_INFO "./start.sh groupID"
-    LOG_INFO "./start.sh groupID -pem pemName"
-    LOG_INFO "./start.sh groupID -p12 p12Name"
+    LOG_INFO "./start.sh endPoint"
+    LOG_INFO "./start.sh endPoint -pem pemName"
+    LOG_INFO "./start.sh endPoint -p12 p12Name"
     LOG_INFO "print console version:"
     LOG_INFO "./start.sh --version or -v"
 }
