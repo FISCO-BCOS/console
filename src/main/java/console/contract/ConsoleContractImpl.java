@@ -17,6 +17,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -721,7 +722,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             return;
         }
 
-        Map<byte[], ABIDefinition> methodIDToFunctions =
+        Map<ByteBuffer, ABIDefinition> methodIDToFunctions =
                 contractABIDefinition.getMethodIDToFunctions();
 
         if (!methodIDToFunctions.isEmpty()) {
@@ -730,7 +731,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     " %-20s|    %-10s|    %-10s  |    %-10s\n",
                     "name", "constant", "methodId", "signature");
             System.out.println("  -------------------------------------------------------------- ");
-            for (Map.Entry<byte[], ABIDefinition> entry : methodIDToFunctions.entrySet()) {
+            for (Map.Entry<ByteBuffer, ABIDefinition> entry : methodIDToFunctions.entrySet()) {
                 System.out.printf(
                         " %-20s|    %-10s|    %-10s  |    %-10s\n",
                         entry.getValue().getName(),
