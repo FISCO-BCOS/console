@@ -54,7 +54,7 @@ public class Console {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
+            System.exit(-1);
         }
 
         WelcomeInfo.welcome();
