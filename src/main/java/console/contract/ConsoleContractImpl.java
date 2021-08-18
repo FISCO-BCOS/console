@@ -28,6 +28,7 @@ import java.util.Objects;
 import org.fisco.bcos.sdk.abi.ABICodec;
 import org.fisco.bcos.sdk.abi.ABICodecException;
 import org.fisco.bcos.sdk.abi.EventEncoder;
+import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.abi.wrapper.ABICodecObject;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.abi.wrapper.ABIDefinitionFactory;
@@ -498,8 +499,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println(
                         "transaction status: " + response.getTransactionReceipt().getStatus());
 
-                if (response.getTransactionReceipt().getStatus().equals("0x")
-                        || response.getTransactionReceipt().getStatus().equals("0x0")) {
+                if (response.getTransactionReceipt().getStatus().equals("0")
+                        || response.getTransactionReceipt().getStatus().equals("")) {
                     System.out.println("description: " + "transaction executed successfully");
                 }
                 ConsoleUtils.singleLine();
@@ -543,9 +544,11 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractVersion = params[2];
             String contractName = ConsoleUtils.getContractName(contractNameOrPath);
             // query the the contractName and version has been registered or not
-            List<CnsInfo> cnsInfos =
+            Tuple2<String, String> cnsTuple =
                     cnsService.selectByNameAndVersion(contractName, contractVersion);
-            if (cnsInfos.size() > 0) {
+            if (cnsTuple.getValue1() != null
+                    && cnsTuple.getValue2() != null
+                    && !cnsTuple.getValue2().equals("")) {
                 System.out.println(
                         "The version \""
                                 + contractVersion
@@ -616,9 +619,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String contractAddress = "";
         try {
             if (contractVersion != null) {
-                List<CnsInfo> cnsInfos =
+                Tuple2<String, String> cnsTuple =
                         cnsService.selectByNameAndVersion(contractName, contractVersion);
-                if (cnsInfos == null || cnsInfos.isEmpty()) {
+                if ("".equals(cnsTuple.getValue1())) {
                     System.out.println(
                             "Can't find \""
                                     + contractName
@@ -627,9 +630,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                     + "\" information from the cns list! Please deploy it by cns firstly!\n");
                     return;
                 }
-                contractAddress = cnsInfos.get(0).getAddress();
+                // get address
+                contractAddress = cnsTuple.getValue1();
                 // get abi
-                contractAbi = cnsInfos.get(0).getAbi();
+                contractAbi = cnsTuple.getValue2();
             } else {
                 List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
                 if (cnsInfos.size() == 0) {
