@@ -12,10 +12,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
+import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
@@ -515,7 +517,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println("Empty set.");
                 return;
             }
-            result = filterSystemColum(result);
+            result = filterSystemColumn(result);
             if ("*".equals(selectColumns.get(0))) {
                 selectColumns.clear();
                 selectColumns.add(keyField);
@@ -564,7 +566,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         return selectedResult;
     }
 
-    private List<Map<String, String>> filterSystemColum(List<Map<String, String>> result) {
+    private List<Map<String, String>> filterSystemColumn(List<Map<String, String>> result) {
 
         List<String> filteredColumns = Arrays.asList("_id_", "_hash_", "_status_", "_num_");
         List<Map<String, String>> filteredResult = new ArrayList<>(result.size());
@@ -618,7 +620,17 @@ public class PrecompiledImpl implements PrecompiledFace {
             cnsInfos = cnsService.selectByName(contractName);
         }
         if (params.length == 3) {
-            cnsInfos = cnsService.selectByNameAndVersion(contractName, params[2]);
+            Tuple2<String, String> cnsTuple =
+                    cnsService.selectByNameAndVersion(contractName, params[2]);
+            if (cnsTuple.getValue1() != null
+                    && cnsTuple.getValue2() != null
+                    && !cnsTuple.getValue2().equals("")) {
+                cnsInfos = new LinkedList<>();
+                CnsInfo cnsInfo = new CnsInfo();
+                cnsInfo.setAddress(cnsTuple.getValue1());
+                cnsInfo.setVersion(params[2]);
+                cnsInfos.add(cnsInfo);
+            }
         }
         ConsoleUtils.singleLine();
         if (cnsInfos == null || cnsInfos.isEmpty()) {
@@ -626,9 +638,9 @@ public class PrecompiledImpl implements PrecompiledFace {
             ConsoleUtils.singleLine();
             return;
         }
-        for (int i = 0; i < cnsInfos.size(); i++) {
-            System.out.println("* contract address: " + cnsInfos.get(i).getAddress());
-            System.out.println("* contract version: " + cnsInfos.get(i).getVersion());
+        for (CnsInfo cnsInfo : cnsInfos) {
+            System.out.println("* contract address: " + cnsInfo.getAddress());
+            System.out.println("* contract version: " + cnsInfo.getVersion());
             ConsoleUtils.singleLine();
         }
     }
