@@ -353,8 +353,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 throw new ConsoleMessageException("Please insert the key field '" + keyName + "'.");
             }
             table.setKey(keyValue);
-            RetCode insertResult =
-                    tableCRUDService.insert(table.getTableName(), table.getKey(), entry);
+            RetCode insertResult = tableCRUDService.insert(table.getTableName(), entry);
 
             if (insertResult.getCode() >= 0) {
                 System.out.println("Insert OK: ");
@@ -413,8 +412,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             table.setKey(keyName);
             handleKey(table, condition);
-            RetCode updateResult =
-                    tableCRUDService.update(table.getTableName(), table.getKey(), entry, condition);
+            RetCode updateResult = tableCRUDService.update(table.getTableName(), entry, condition);
             if (updateResult.getCode() >= 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
             } else {
@@ -456,8 +454,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             table.setKey(descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME));
             handleKey(table, condition);
-            RetCode removeResult =
-                    tableCRUDService.remove(table.getTableName(), table.getKey(), condition);
+            RetCode removeResult = tableCRUDService.remove(table.getTableName(), condition);
 
             if (removeResult.getCode() >= 0) {
                 System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
@@ -511,7 +508,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             table.setKey(keyField);
             handleKey(table, condition);
             List<Map<String, String>> result =
-                    tableCRUDService.select(table.getTableName(), table.getKey(), condition);
+                    tableCRUDService.select(table.getTableName(), condition);
             int rows = 0;
             if (result.size() == 0) {
                 System.out.println("Empty set.");
