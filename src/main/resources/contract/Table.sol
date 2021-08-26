@@ -1,3 +1,4 @@
+pragma solidity>=0.4.24 <0.6.11;
 
 contract TableFactory {
     function openTable(string memory) public view returns (Table) {} //open table
@@ -45,10 +46,10 @@ contract Entries {
 
 //Table main contract
 contract Table {
-    function select(string memory, Condition) public view returns (Entries) {}
-    function insert(string memory, Entry) public returns (int256) {}
-    function update(string memory, Entry, Condition) public returns (int256) {}
-    function remove(string memory, Condition) public returns (int256) {}
+    function select(Condition) public view returns (Entries) {}
+    function insert(Entry) public returns (int256) {}
+    function update(Entry, Condition) public returns (int256) {}
+    function remove(Condition) public returns (int256) {}
 
     function newEntry() public view returns (Entry) {}
     function newCondition() public view returns (Condition) {}

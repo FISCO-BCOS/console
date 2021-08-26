@@ -42,4 +42,14 @@ public interface PrecompiledFace {
     void registerCNS(String[] params) throws Exception;
 
     void setConsensusNodeWeight(String[] params) throws Exception;
+
+    void changeDir(String[] params) throws Exception;
+
+    void makeDir(String[] params) throws Exception;
+
+    void listDir(String[] params) throws Exception;
+
+    void deployWasm(String[] params) throws Exception;
+
+    void pwd(String[] params) throws Exception;
 }

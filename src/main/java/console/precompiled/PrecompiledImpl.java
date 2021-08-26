@@ -20,6 +20,8 @@ import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSService;
+import org.fisco.bcos.sdk.contract.precompiled.bfs.FileInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
@@ -50,6 +52,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     private TableCRUDService tableCRUDService;
     private ContractLifeCycleService contractLifeCycleService;
     private CnsService cnsService;
+    private BFSService bfsService;
 
     public PrecompiledImpl(Client client) {
         this.client = client;
@@ -59,6 +62,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.contractLifeCycleService = new ContractLifeCycleService(client, cryptoKeyPair);
         this.cnsService = new CnsService(client, cryptoKeyPair);
+        this.bfsService = new BFSService(client, cryptoKeyPair);
     }
 
     @Override
@@ -678,5 +682,51 @@ public class PrecompiledImpl implements PrecompiledFace {
                         .registerCNS(contractName, contractVersion, contractAddress, abi)
                         .toString());
         System.out.println();
+    }
+
+    @Override
+    public void changeDir(String[] params) throws Exception {
+        FileInfo listResult;
+        if (params[1].equals("..")) {
+            String parentPath = params[0].substring(0, params[0].lastIndexOf('/') + 1);
+            listResult = bfsService.list(parentPath);
+        } else {
+            listResult = bfsService.list(params[1]);
+        }
+        if (!listResult.getType().equals("directory")) {
+            System.out.println("cd: not a directory: " + listResult.getName());
+        }
+    }
+
+    @Override
+    public void makeDir(String[] params) throws Exception {
+        RetCode mkdir = bfsService.mkdir(params[1]);
+        System.out.println(mkdir.getMessage());
+    }
+
+    @Override
+    public void listDir(String[] params) throws Exception {
+        FileInfo listResult;
+        if (params.length == 1) {
+            listResult = bfsService.list(params[0]);
+        } else {
+            listResult = bfsService.list(params[1]);
+        }
+        if (listResult.getType().equals("directory") && listResult.getSubdirectories() != null) {
+            for (FileInfo subdirectory : listResult.getSubdirectories()) {
+                System.out.print(subdirectory.getName() + '\t');
+            }
+            System.out.println();
+        } else {
+            System.out.println("name: " + listResult.getName() + " type: " + listResult.getType());
+        }
+    }
+
+    @Override
+    public void deployWasm(String[] params) throws Exception {}
+
+    @Override
+    public void pwd(String[] params) throws Exception {
+        System.out.println(params[0]);
     }
 }

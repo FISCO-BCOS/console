@@ -922,6 +922,62 @@ public class SupportedCommand {
                     1,
                     1);
 
+    public static final CommandInfo CHANGE_DIR =
+            new CommandInfo(
+                    "cd",
+                    "Change dir to given path.",
+                    HelpInfo::changeDirHelp,
+                    (consoleInitializer, params) ->
+                            consoleInitializer.getPrecompiledFace().changeDir(params),
+                    1,
+                    1);
+    public static final CommandInfo MAKE_DIR =
+            new CommandInfo(
+                    "mkdir",
+                    "Create dir in given path.",
+                    HelpInfo::makeDirHelp,
+                    (consoleInitializer, params) ->
+                            consoleInitializer.getPrecompiledFace().makeDir(params),
+                    1,
+                    1);
+    public static final CommandInfo LIST_DIR =
+            new CommandInfo(
+                    "ls",
+                    "List resources in given path.",
+                    HelpInfo::listDirHelp,
+                    (consoleInitializer, params) ->
+                            consoleInitializer.getPrecompiledFace().listDir(params),
+                    0,
+                    1);
+
+    public static final CommandInfo PWD =
+            new CommandInfo(
+                    "pwd",
+                    "Show absolute path of working directory name",
+                    HelpInfo::pwdHelp,
+                    (consoleInitializer, params) ->
+                            consoleInitializer.getPrecompiledFace().pwd(params),
+                    0,
+                    0);
+
+    public static final CommandInfo DEPLOY_WASM =
+            new CommandInfo(
+                    "deployWasm",
+                    "Deploy WASM contract.",
+                    HelpInfo::deployWasm,
+                    (ConsoleInitializer, params) ->
+                            ConsoleInitializer.getPrecompiledFace().deployWasm(params),
+                    1,
+                    1);
+
+    public static List<String> BFS_COMMANDS =
+            new ArrayList<>(
+                    Arrays.asList(
+                            LIST_DIR.getCommand(),
+                            CHANGE_DIR.getCommand(),
+                            MAKE_DIR.getCommand(),
+                            PWD.getCommand()));
+
     public static List<String> CRUD_COMMANDS =
             new ArrayList<String>(
                     Arrays.asList(
