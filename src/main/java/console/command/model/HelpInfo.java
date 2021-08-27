@@ -495,4 +495,37 @@ public class HelpInfo {
         System.out.println(
                 "contractPath/contractName[Required] -- The name or the path of a contract, if a name is specified, the contract should in the default directory \"contracts/solidity\"");
     }
+
+    public static void changeDirHelp() {
+        System.out.println("Change dir to given path.");
+        System.out.println("Usage: cd [relativePath/absolutePath]");
+        System.out.println(
+                "relativePath/absolutePath[Required] -- The name or the path of a directory.");
+    }
+
+    public static void makeDirHelp() {
+        System.out.println("Creat dir in given path.");
+        System.out.println("Usage: cd [relativePath/absolutePath]");
+        System.out.println(
+                "relativePath/absolutePath[Required] -- The name or the path of a directory.");
+    }
+
+    public static void listDirHelp() {
+        System.out.println("List resource in given path.");
+        System.out.println("Usage: cd [relativePath/absolutePath]");
+        System.out.println(
+                "relativePath/absolutePath[Required] -- The name or the path of a directory.");
+    }
+
+    public static void pwdHelp() {
+        System.out.println("Show absolute path of working directory name.");
+        System.out.println("Usage: pwd");
+    }
+
+    public static void deployWasm() {
+        System.out.println("Deploy WASM contract.");
+        System.out.println("Usage: deployWasm [contractNameOrPath]");
+        System.out.println(
+                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
+    }
 }

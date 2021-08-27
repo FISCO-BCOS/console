@@ -58,6 +58,7 @@ public class Console {
         }
 
         WelcomeInfo.welcome();
+        String pwd = "/";
 
         while (true) {
             try {
@@ -70,9 +71,16 @@ public class Console {
                     String endPoint = consoleInitializer.getClient().getConnection().getUri();
                     request =
                             lineReader.readLine(
-                                    "[" + consoleInitializer.getGroupID() + "@" + endPoint + "]> ");
+                                    "["
+                                            + consoleInitializer.getGroupID()
+                                            + "@"
+                                            + endPoint
+                                            + "]: "
+                                            + pwd
+                                            + "> ");
                 } else {
-                    System.out.print("[group:" + consoleInitializer.getGroupID() + "]> ");
+                    System.out.print(
+                            "[group:" + consoleInitializer.getGroupID() + "]: " + pwd + "> ");
                     sc = new Scanner(System.in);
                     request = sc.nextLine();
                 }
@@ -91,6 +99,27 @@ public class Console {
                         String[] inputParamString = new String[1];
                         inputParamString[0] = request;
                         commandInfo.callCommand(consoleInitializer, inputParamString);
+                    } else if (SupportedCommand.BFS_COMMANDS.contains(params[0])) {
+                        String[] bfsParams = new String[params.length];
+                        for (int i = 1; i < params.length; i++) {
+                            String param = params[i];
+                            if (param.equals(".")) {
+                                bfsParams[i] = pwd;
+                            } else if (param.startsWith(".") && !param.startsWith("..")) {
+                                bfsParams[i] = pwd + param.substring(1);
+                            } else {
+                                bfsParams[i] = param;
+                            }
+                        }
+                        params[0] = pwd;
+                        commandInfo.callCommand(consoleInitializer, params);
+                        if (commandInfo
+                                        .getCommand()
+                                        .equals(SupportedCommand.CHANGE_DIR.getCommand())
+                                && !params[1].equals(".")
+                                && !params[1].equals("..")) {
+                            pwd = params[1];
+                        }
                     } else {
                         String[] paramWithoutQuotation = new String[params.length];
                         for (Integer i = 0; i < params.length; i++) {
