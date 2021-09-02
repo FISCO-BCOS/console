@@ -71,11 +71,11 @@ contract TableTest {
         Table table = tableFactory.openTable(TABLE_NAME);
 
         Entry entry = table.newEntry();
+        entry.set("item_id", item_id);
         entry.set("item_name", item_name);
 
         Condition condition = table.newCondition();
         condition.EQ("name", name);
-        condition.EQ("item_id", item_id);
 
         int256 count = table.update(entry, condition);
         emit UpdateResult(count);
@@ -83,12 +83,11 @@ contract TableTest {
         return count;
     }
     //remove records
-    function remove(string memory name, int256 item_id) public returns (int256) {
+    function remove(string memory name) public returns (int256) {
         Table table = tableFactory.openTable(TABLE_NAME);
 
         Condition condition = table.newCondition();
         condition.EQ("name", name);
-        condition.EQ("item_id", item_id);
 
         int256 count = table.remove(condition);
         emit RemoveResult(count);
