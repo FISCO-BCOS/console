@@ -31,6 +31,8 @@ public class Common {
                     + " seconds to "
                     + Integer.toString(ConsensusTimeoutMax - 1)
                     + " seconds";
+    public static final String ConsensusLeaderPeriodRange =
+            " from 1 to " + Integer.toString(Integer.MAX_VALUE);
     public static final String EMPTY_CONTRACT_ADDRESS =
             "0x0000000000000000000000000000000000000000";
     public static final String EMPTY_OUTPUT = "0x";

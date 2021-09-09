@@ -261,8 +261,7 @@ public class ContractCompiler {
                                 + BIN_POSTFIX);
         if (!abiPath.exists() || !binPath.exists() || !smBinPath.exists()) {
             if (needCompile) {
-                AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath);
-                ContractCompiler.saveAbiAndBin(groupId, abiAndBin, contractName, contractAddress);
+                return ContractCompiler.compileContract(contractNameOrPath);
             } else {
                 return new AbiAndBin();
             }
