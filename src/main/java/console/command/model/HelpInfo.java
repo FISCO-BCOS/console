@@ -389,6 +389,12 @@ public class HelpInfo {
                 "      -- the value of  consensus_timeout (seconds)"
                         + Common.ConsensusTimeoutRange
                         + "(default 3s).");
+        System.out.println(
+                "      -- the value of  "
+                        + Common.ConsensusLeaderPeriod
+                        + " "
+                        + Common.ConsensusLeaderPeriodRange
+                        + "(default 1).");
     }
 
     public static void getSystemConfigByKeyHelp() {
