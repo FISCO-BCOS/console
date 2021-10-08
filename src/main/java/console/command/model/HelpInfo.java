@@ -579,7 +579,10 @@ public class HelpInfo {
         System.out.println("Usage: \n" + command + " endPoint groupId");
         System.out.println(
                 "* endPoint[Required] -- the IP and Port information of the target node , the format is IP:Port");
-        System.out.println("* groupId[Required] -- the group that should be " + operator);
+        System.out.println(
+                "* groupId[Optional] -- the group that should be "
+                        + operator
+                        + ", default is the current group.");
     }
 
     public static void generateGroupHelp() {
@@ -597,7 +600,8 @@ public class HelpInfo {
         System.out.println(
                 "* groupConfigFilePath(required) -- The configuration file path of the generated group. "
                         + "For specific configuration options, please refer to group-generate-config.toml in the conf directory");
-        System.out.println("* groupId(required) -- The groupId of the generated group");
+        System.out.println(
+                "* groupId(Optional) -- The groupId of the generated group, default is the current group.");
     }
 
     public static void showDescHelp() {

@@ -28,6 +28,13 @@ $ git clone https://github.com/FISCO-BCOS/console.git
 $ cd console
 $ ./gradlew build
 ```
+
+If you want to use sm crypto, and use hardware secure module, you can install with following commands.
+```
+$ git clone https://github.com/FISCO-BCOS/console.git
+$ cd console
+$ ./gradlew build -b build-hsm.gradle
+```
 If you install successfully, it produces the `dist` directory.
 
 ## Configuration
