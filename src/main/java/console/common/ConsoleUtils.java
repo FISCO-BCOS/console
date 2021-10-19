@@ -17,11 +17,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -484,13 +480,11 @@ public class ConsoleUtils {
         return solFile;
     }
 
-    public static String resolveContractPath(String contractNameOrPath) {
-        if (contractNameOrPath.startsWith("~/")) {
-            return Paths.get(System.getProperty("user.home"))
-                    .resolve(contractNameOrPath.substring(2))
-                    .toString();
+    public static String resolvePath(String path) {
+        if (path.startsWith("~/")) {
+            return Paths.get(System.getProperty("user.home")).resolve(path.substring(2)).toString();
         }
-        return contractNameOrPath;
+        return path;
     }
 
     public static String getContractName(String contractNameOrPath) throws ConsoleMessageException {
@@ -505,6 +499,25 @@ public class ConsoleUtils {
     }
 
     public static void main(String[] args) {
+
+        if (args.length < 1) {
+            System.out.println("Mode should be specified firstly(as `solidity` or `liquid`).");
+            System.out.println(" eg:");
+            System.out.println(" contract2java.sh solidity ...");
+            System.out.println(" contract2java.sh liquid ...");
+            System.exit(-1);
+        }
+
+        String cmdSyntax = "contract2java.sh <solidity|liquid> [OPTIONS...]";
+        String mode = args[0];
+
+        if (mode.equals("-h") || mode.equals("--help")) {
+            System.out.println("usage: " + cmdSyntax);
+            System.out.println(
+                    "use \"contract2java.sh solidity -h\" or \"contract2java.sh liquid -h\" to get more information.");
+            System.exit(0);
+        }
+
         Options options = new Options();
         // package name
         String DEFAULT_PACKAGE = "com";
@@ -519,19 +532,6 @@ public class ConsoleUtils {
         packageOption.setRequired(false);
         options.addOption(packageOption);
 
-        // solidityFilePath or solidityDirPath
-        String SOL_OPTION = "sol";
-        String DEFAULT_SOL = SOLIDITY_PATH;
-        Option solidityFilePathOption =
-                new Option(
-                        "s",
-                        SOL_OPTION,
-                        true,
-                        "[Optional] The solidity file path or the solidity directory path, default is "
-                                + DEFAULT_SOL);
-        solidityFilePathOption.setRequired(false);
-        options.addOption(solidityFilePathOption);
-
         // the generated java code path
         String OUTPUT_OPTION = "output";
         String DEFAULT_OUTPUT = JAVA_PATH;
@@ -545,61 +545,129 @@ public class ConsoleUtils {
         outputPathOption.setRequired(false);
         options.addOption(outputPathOption);
 
-        // libraries
-        String LIBS_OPTION = "libraries";
-        Option libraryOption =
-                new Option(
-                        "l",
-                        LIBS_OPTION,
-                        true,
-                        "[Optional] Set library address information built into the solidity contract\n eg:\n --libraries lib1:lib1_address lib2:lib2_address\n");
-        libraryOption.setRequired(false);
-        options.addOption(libraryOption);
-
         String HELP_OPTION = "help";
         Option helpOption = new Option("h", HELP_OPTION, false, "");
         helpOption.setRequired(false);
         options.addOption(helpOption);
 
+        // solidityFilePath or solidityDirPath
+        String SOL_OPTION = "sol";
+        String DEFAULT_SOL = SOLIDITY_PATH;
+        String LIBS_OPTION = "libraries";
+
+        String BIN_OPTION = "bin";
+        String SM_BIN_OPTION = "sm-bin";
+        String ABI_OPTION = "abi";
+
+        if (mode.equals("solidity")) {
+            Option solidityFilePathOption =
+                    new Option(
+                            "s",
+                            SOL_OPTION,
+                            true,
+                            "[Optional] The solidity file path or the solidity directory path, default is "
+                                    + DEFAULT_SOL);
+            solidityFilePathOption.setRequired(false);
+            options.addOption(solidityFilePathOption);
+
+            // libraries
+            Option libraryOption =
+                    new Option(
+                            "l",
+                            LIBS_OPTION,
+                            true,
+                            "[Optional] Set library address information built into the solidity contract\n eg:\n --libraries lib1:lib1_address lib2:lib2_address\n");
+            libraryOption.setRequired(false);
+            options.addOption(libraryOption);
+        } else if (mode.equals("liquid")) {
+            Option liquidBinPathOption =
+                    new Option(
+                            "b",
+                            BIN_OPTION,
+                            true,
+                            "[Required] The binary file path of Liquid contract.");
+            liquidBinPathOption.setRequired(true);
+            options.addOption(liquidBinPathOption);
+
+            Option liquidAbiPathOption =
+                    new Option(
+                            "a",
+                            ABI_OPTION,
+                            true,
+                            "[Required] The ABI file path of Liquid contract.");
+            liquidAbiPathOption.setRequired(true);
+            options.addOption(liquidAbiPathOption);
+
+            Option liquidSmBinPathOption =
+                    new Option(
+                            "sb",
+                            SM_BIN_OPTION,
+                            true,
+                            "[Required] The SM binary file path of Liquid contract.");
+            liquidSmBinPathOption.setRequired(true);
+            options.addOption(liquidSmBinPathOption);
+        } else {
+            System.out.println(
+                    " Unknown mode: " + mode + ", only `solidity` or `liquid` are available.");
+            System.exit(-1);
+        }
+
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd = null;
-
         try {
-            cmd = parser.parse(options, args);
+            cmd = parser.parse(options, Arrays.copyOfRange(args, 1, args.length));
         } catch (ParseException e) {
             System.out.println(e.getMessage());
-            formatter.printHelp("Compile Solidity Tool:", options);
+            formatter.printHelp(cmdSyntax, options);
             System.exit(1);
         }
         if (cmd == null) {
-            formatter.printHelp("Compile Solidity Tool:", options);
+            formatter.printHelp(cmdSyntax, options);
             System.exit(1);
         }
         if (cmd.hasOption(HELP_OPTION)) {
-            formatter.printHelp("Compile Solidity Tool:", options);
+            formatter.printHelp(cmdSyntax, options);
             System.exit(0);
         }
-        String pkgName = cmd.getOptionValue(PACKAGE_OPTION, DEFAULT_PACKAGE);
-        String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
-        String javaDir = cmd.getOptionValue(OUTPUT_OPTION, DEFAULT_OUTPUT);
-        String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
 
-        String fullJavaDir = new File(javaDir).getAbsolutePath();
-        File sol = new File(solPathOrDir);
-        if (!sol.exists()) {
-            System.out.println(sol.getAbsoluteFile() + " not exist ");
-            System.exit(0);
-        }
-        try {
-            if (sol.isFile()) { // input file
-                compileSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, librariesOption);
-            } else { // input dir
-                compileAllSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
+        String pkgName = cmd.getOptionValue(PACKAGE_OPTION, DEFAULT_PACKAGE);
+        String javaDir = cmd.getOptionValue(OUTPUT_OPTION, DEFAULT_OUTPUT);
+        if (mode.equals("solidity")) {
+            String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
+            String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
+            String fullJavaDir = new File(javaDir).getAbsolutePath();
+            File sol = new File(solPathOrDir);
+            if (!sol.exists()) {
+                System.out.println(sol.getAbsoluteFile() + " not exist ");
+                System.exit(0);
             }
-        } catch (IOException | CompileContractException e) {
-            System.out.print(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            try {
+                if (sol.isFile()) { // input file
+                    compileSolToJava(
+                            fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, librariesOption);
+                } else { // input dir
+                    compileAllSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
+                }
+            } catch (IOException | CompileContractException e) {
+                System.out.print(e.getMessage());
+                logger.error(" message: {}, e: {}", e.getMessage(), e);
+            }
+            return;
+        }
+
+        if (mode.equals("liquid")) {
+            String abiFile = cmd.getOptionValue(ABI_OPTION);
+            String binFile = cmd.getOptionValue(BIN_OPTION);
+            String smBinFile = cmd.getOptionValue(SM_BIN_OPTION);
+            CodeGenMain.main(
+                    Arrays.asList(
+                                    "-a", abiFile,
+                                    "-b", binFile,
+                                    "-s", smBinFile,
+                                    "-p", pkgName,
+                                    "-o", javaDir)
+                            .toArray(new String[0]));
         }
     }
 }

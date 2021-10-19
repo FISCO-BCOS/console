@@ -59,6 +59,11 @@ public class Console {
 
         WelcomeInfo.welcome();
         String pwd = "/";
+        SupportedCommand.isWasm = consoleInitializer.getClient().isWASM();
+        if (SupportedCommand.isWasm) {
+            SupportedCommand.getCommandInfo("deploy").setMinParamLength(3);
+            SupportedCommand.getCommandInfo("call").setMinParamLength(2);
+        }
 
         while (true) {
             try {
@@ -98,7 +103,7 @@ public class Console {
                     if (SupportedCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
                         inputParamString[0] = request;
-                        commandInfo.callCommand(consoleInitializer, inputParamString);
+                        commandInfo.callCommand(consoleInitializer, inputParamString, null);
                     } else if (SupportedCommand.BFS_COMMANDS.contains(params[0])) {
                         String[] bfsParams = new String[params.length];
                         for (int i = 1; i < params.length; i++) {
@@ -112,7 +117,7 @@ public class Console {
                             }
                         }
                         params[0] = pwd;
-                        commandInfo.callCommand(consoleInitializer, params);
+                        commandInfo.callCommand(consoleInitializer, params, null);
                         if (commandInfo
                                         .getCommand()
                                         .equals(SupportedCommand.CHANGE_DIR.getCommand())
@@ -132,8 +137,16 @@ public class Console {
                                 paramWithoutQuotation[i] = param.substring(1, param.length() - 1);
                             }
                         }
-                        commandInfo.callCommand(consoleInitializer, paramWithoutQuotation);
-                        if (commandInfo.getCommand().equals(SupportedCommand.SWITCH.getCommand())) {
+
+                        String cmd = commandInfo.getCommand();
+                        if (cmd.startsWith("deploy") || cmd.startsWith("call")) {
+                            commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, pwd);
+                        } else {
+                            commandInfo.callCommand(
+                                    consoleInitializer, paramWithoutQuotation, null);
+                        }
+
+                        if (cmd.equals(SupportedCommand.SWITCH.getCommand())) {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
                         }

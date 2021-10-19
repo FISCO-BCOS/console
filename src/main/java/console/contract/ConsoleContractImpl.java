@@ -11,31 +11,29 @@ import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.CompileSolidityException;
 import console.exception.ConsoleMessageException;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import org.fisco.bcos.sdk.abi.ABICodec;
-import org.fisco.bcos.sdk.abi.ABICodecException;
-import org.fisco.bcos.sdk.abi.EventEncoder;
-import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.abi.wrapper.ABICodecObject;
-import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.abi.wrapper.ABIDefinitionFactory;
-import org.fisco.bcos.sdk.abi.wrapper.ABIObject;
-import org.fisco.bcos.sdk.abi.wrapper.ContractABIDefinition;
+import java.util.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.codec.ABICodec;
+import org.fisco.bcos.sdk.codec.ABICodecException;
+import org.fisco.bcos.sdk.codec.EventEncoder;
+import org.fisco.bcos.sdk.codec.datatypes.Array;
+import org.fisco.bcos.sdk.codec.datatypes.Bytes;
+import org.fisco.bcos.sdk.codec.datatypes.StructType;
+import org.fisco.bcos.sdk.codec.datatypes.Type;
+import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.codec.wrapper.ABICodecObject;
+import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.codec.wrapper.ABIDefinitionFactory;
+import org.fisco.bcos.sdk.codec.wrapper.ABIObject;
+import org.fisco.bcos.sdk.codec.wrapper.ContractABIDefinition;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
@@ -49,6 +47,7 @@ import org.fisco.bcos.sdk.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.transaction.model.exception.TransactionBaseException;
+import org.fisco.bcos.sdk.utils.Hex;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -71,15 +70,26 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 TransactionProcessorFactory.createAssembleTransactionProcessor(
                         client, cryptoKeyPair);
         this.cnsService = new CnsService(client, cryptoKeyPair);
-        this.abiCodec = new ABICodec(client.getCryptoSuite());
+        this.abiCodec = new ABICodec(client.getCryptoSuite(), client.isWASM());
     }
 
     @Override
-    public void deploy(String[] params) throws ConsoleMessageException {
-        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        List<String> inputParams = Arrays.asList(params).subList(2, params.length);
-        deployContract(contractName, contractNameOrPath, inputParams);
+    public void deploy(String[] params, String pwd) throws ConsoleMessageException {
+        if (!client.isWASM()) {
+            String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
+            String contractName = ConsoleUtils.getContractName(contractNameOrPath);
+            List<String> inputParams = Arrays.asList(params).subList(2, params.length);
+            deploySolidity(contractName, contractNameOrPath, inputParams);
+        } else {
+            String binPath = ConsoleUtils.resolvePath(params[1]);
+            String abiPath = ConsoleUtils.resolvePath(params[2]);
+            String path = params[3];
+            if (!path.startsWith("/")) {
+                path = pwd + "/" + path;
+            }
+            List<String> inputParams = Arrays.asList(params).subList(4, params.length);
+            deployWasm(binPath, abiPath, path, inputParams);
+        }
     }
 
     private static String bytesToHex(byte[] bytes) {
@@ -90,6 +100,51 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             sb.append((strHex.length() == 1) ? "0" + strHex : strHex);
         }
         return sb.toString().trim();
+    }
+
+    public void printReturnResults(List<Type> results) {
+        StringBuilder resultType = new StringBuilder();
+        StringBuilder resultData = new StringBuilder();
+        resultType.append("(");
+        resultData.append("(");
+        for (int i = 0; i < results.size(); ++i) {
+            getReturnResults(resultType, resultData, results.get(i));
+            if (i != results.size() - 1) {
+                resultType.append(", ");
+                resultData.append(", ");
+            }
+        }
+        resultType.append(")");
+        resultData.append(")");
+        System.out.println("Return value size:" + results.size());
+        System.out.println("Return types: " + resultType);
+        System.out.println("Return values:" + resultData);
+    }
+
+    public void getReturnResults(StringBuilder resultType, StringBuilder resultData, Type result) {
+        if (result instanceof Array) {
+            resultType.append("[");
+            resultData.append("[");
+            List<Type> values = ((Array) result).getValue();
+            for (int i = 0; i < values.size(); ++i) {
+                getReturnResults(resultType, resultData, values.get(i));
+                if (i != values.size() - 1) {
+                    resultType.append(", ");
+                    resultData.append(", ");
+                }
+            }
+            resultData.append("]");
+            resultType.append("]");
+        } else if (result instanceof StructType) {
+            throw new UnsupportedOperationException();
+        } else if (result instanceof Bytes) {
+            String data = "hex://0x" + bytesToHex(((Bytes) result).getValue());
+            resultType.append(result.getTypeAsString());
+            resultData.append(data);
+        } else {
+            resultType.append(result.getTypeAsString());
+            resultData.append(result.getValue());
+        }
     }
 
     public void printReturnObject(
@@ -161,7 +216,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
     }
 
-    public TransactionResponse deployContract(
+    public TransactionResponse deploySolidity(
             String contractName, String contractNameOrPath, List<String> inputParams)
             throws ConsoleMessageException {
         try {
@@ -172,7 +227,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             TransactionResponse response =
                     this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
-                            abiAndBin.getAbi(), bin, inputParams);
+                            abiAndBin.getAbi(), bin, inputParams, null);
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
@@ -199,6 +254,64 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             return response;
         } catch (ClientException | CompileContractException | IOException | ABICodecException e) {
             throw new ConsoleMessageException("deploy contract failed for " + e.getMessage(), e);
+        }
+    }
+
+    private byte[] readBytes(File file) throws IOException {
+        byte[] bytes = new byte[(int) file.length()];
+        FileInputStream fileInputStream = new FileInputStream(file);
+        if (fileInputStream.read(bytes) != bytes.length) {
+            throw new IOException("incomplete reading of file: " + file.toString());
+        }
+        fileInputStream.close();
+        return bytes;
+    }
+
+    public TransactionResponse deployWasm(
+            String binPath, String abiPath, String path, List<String> inputParams)
+            throws ConsoleMessageException {
+        try {
+            File binFile = new File(binPath);
+            byte[] bin = readBytes(binFile);
+            String binStr = Hex.toHexString(bin);
+            File abiFile = new File(abiPath);
+            String abi = FileUtils.readFileToString(abiFile);
+            TransactionResponse response =
+                    this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
+                            abi, binStr, inputParams, path);
+            if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+                System.out.println("deploy contract for " + path + " failed!");
+                System.out.println("return message: " + response.getReturnMessage());
+                System.out.println("return code:" + response.getReturnCode());
+                printReturnObject(
+                        response.getReturnObject(),
+                        response.getReturnABIObject(),
+                        response.getValues());
+                return response;
+            }
+
+            System.out.println(
+                    "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
+            System.out.println("contract address: " + path);
+            System.out.println(
+                    "currentAccount: " + client.getCryptoSuite().getCryptoKeyPair().getAddress());
+            String contractName = FilenameUtils.getBaseName(path);
+            writeLog(contractName, path);
+            // save the bin and abi
+            AbiAndBin abiAndBin =
+                    client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE
+                            ? new AbiAndBin(abi, null, binStr)
+                            : new AbiAndBin(abi, binStr, null);
+
+            String contractAddress =
+                    Base64.getUrlEncoder()
+                            .withoutPadding()
+                            .encodeToString(path.getBytes(StandardCharsets.UTF_8));
+            ContractCompiler.saveAbiAndBin(
+                    client.getGroupId(), abiAndBin, contractName, contractAddress);
+            return response;
+        } catch (ClientException | IOException | ABICodecException e) {
+            throw new ConsoleMessageException("deploy contract failed due to:" + e.getMessage(), e);
         }
     }
 
@@ -343,13 +456,26 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         return null;
     }
 
-    @Override
-    public void call(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
+    private void callWasm(String[] params, String pwd) throws Exception {
+        String path = params[1];
+        String functionName = params[2];
+        if (!path.startsWith("/")) {
+            path = pwd + "/" + path;
+        }
+        String contractName = FilenameUtils.getBaseName(path);
+        String contractAddress =
+                Base64.getUrlEncoder()
+                        .withoutPadding()
+                        .encodeToString(path.getBytes(StandardCharsets.UTF_8));
+        List<String> callParams = Arrays.asList(params).subList(3, params.length);
+        callContract(null, contractName, path, contractAddress, functionName, callParams);
+    }
+
+    private void callSolidity(String[] params) throws Exception {
+        String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
         String contractAddressStr = params[2];
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        // check contract address
-        Address contractAddress = null;
+
         if (contractAddressStr.equals("latest")) {
             File contractDir =
                     new File(
@@ -379,28 +505,32 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             ConsoleUtils.sortFiles(contractAddressFiles);
             for (File contractAddressFile : contractAddressFiles) {
-                if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                if (!contractAddressFile.isDirectory()) {
                     continue;
                 }
-                if (!contractAddressFile.isDirectory()) {
+
+                if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
                     continue;
                 }
                 contractAddressStr = contractAddressFile.getName();
                 break;
             }
-            contractAddress = ConsoleUtils.convertAddress(contractAddressStr);
+
             System.out.println(
                     "latest contract address for \""
                             + contractName
                             + "\" is "
                             + contractAddressStr);
-        } else {
-            contractAddress = ConsoleUtils.convertAddress(contractAddressStr);
         }
+
+        // check contract address
+        Address contractAddress = ConsoleUtils.convertAddress(contractAddressStr);
         if (!contractAddress.isValid()) {
             System.out.println("Invalid contract address: " + contractAddressStr);
             return;
         }
+        contractAddressStr = contractAddress.getAddress();
+
         String functionName = params[3];
         // get callParams
         List<String> callParams = Arrays.asList(params).subList(4, params.length);
@@ -408,9 +538,18 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 null,
                 contractName,
                 contractNameOrPath,
-                contractAddress.getAddress(),
+                contractAddressStr,
                 functionName,
                 callParams);
+    }
+
+    @Override
+    public void call(String[] params, String pwd) throws Exception {
+        if (this.client.isWASM()) {
+            callWasm(params, pwd);
+        } else {
+            callSolidity(params);
+        }
     }
 
     protected void callContract(
@@ -423,13 +562,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throws IOException, CodeGenException, ABICodecException, CompileContractException {
         try {
             // load bin and abi
+            for (String p : callParams) {
+                System.out.println("P: " + p);
+            }
             if (abiAndBin == null) {
                 abiAndBin =
                         ContractCompiler.loadAbiAndBin(
                                 client.getGroupId(),
                                 contractName,
                                 contractNameOrPath,
-                                contractAddress);
+                                contractAddress,
+                                !this.client.isWASM());
             }
             // call
             ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
@@ -442,11 +585,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                 + "\"");
                 return;
             }
-            if (abiDefinition != null && abiDefinition.isConstant()) {
+
+            if (abiDefinition.isConstant()) {
                 logger.debug(
                         "sendCall request, params: {}, contractAddress: {}, contractName: {}, functionName:{}, paramSize: {}",
                         callParams.toString(),
-                        contractAddress,
+                        this.client.isWASM() ? contractNameOrPath : contractAddress,
                         contractName,
                         functionName,
                         callParams.size());
@@ -454,7 +598,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 CallResponse response =
                         assembleTransactionProcessor.sendCallWithStringParams(
                                 cryptoKeyPair.getAddress(),
-                                contractAddress,
+                                this.client.isWASM() ? contractNameOrPath : contractAddress,
                                 abiAndBin.getAbi(),
                                 functionName,
                                 callParams);
@@ -465,10 +609,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     System.out.println("description: " + "transaction executed successfully");
                     System.out.println("Return message: " + response.getReturnMessage());
                     ConsoleUtils.singleLine();
-                    printReturnObject(
-                            response.getReturnObject(),
-                            response.getReturnABIObject(),
-                            response.getValues());
+                    printReturnResults(response.getResults());
                 } else {
                     String errorMessage = response.getReturnMessage();
                     System.out.println(
@@ -484,14 +625,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 logger.trace(
                         "sendTransactionAndGetResponse request, params: {}, contractAddress: {}, contractName: {}, functionName: {}, paramSize:{},  abiDefinition: {}",
                         callParams.toString(),
-                        contractAddress,
+                        this.client.isWASM() ? contractNameOrPath : contractAddress,
                         contractName,
                         functionName,
                         callParams.size(),
-                        abiDefinition.toString());
+                        abiDefinition);
                 TransactionResponse response =
                         assembleTransactionProcessor.sendTransactionWithStringParamsAndGetResponse(
-                                contractAddress, abiAndBin.getAbi(), functionName, callParams);
+                                this.client.isWASM() ? contractNameOrPath : contractAddress,
+                                abiAndBin.getAbi(),
+                                functionName,
+                                callParams);
                 System.out.println(
                         "transaction hash: "
                                 + response.getTransactionReceipt().getTransactionHash());
@@ -499,17 +643,13 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println(
                         "transaction status: " + response.getTransactionReceipt().getStatus());
 
-                if (response.getTransactionReceipt().getStatus().equals("0")
-                        || response.getTransactionReceipt().getStatus().equals("")) {
+                if (response.getTransactionReceipt().getStatus() == 0) {
                     System.out.println("description: " + "transaction executed successfully");
                 }
                 ConsoleUtils.singleLine();
                 System.out.println("Receipt message: " + response.getReceiptMessages());
                 System.out.println("Return message: " + response.getReturnMessage());
-                printReturnObject(
-                        response.getReturnObject(),
-                        response.getReturnABIObject(),
-                        response.getValues());
+                printReturnResults(response.getResults());
                 ConsoleUtils.singleLine();
                 if (response.getEvents() != null && !response.getEvents().equals("")) {
                     System.out.println("Event logs");
@@ -519,7 +659,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
         } catch (TransactionBaseException e) {
             System.out.println(
-                    "call for " + contractName + " failed, contractAddress is " + contractAddress);
+                    "call for "
+                            + contractName
+                            + " failed, contractAddress: "
+                            + (this.client.isWASM() ? contractNameOrPath : contractAddress));
             if (e.getRetCode() != null) {
                 ConsoleUtils.printJson(e.getRetCode().toString());
             } else {
@@ -540,7 +683,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void deployByCNS(String[] params) throws ConsoleMessageException {
         try {
-            String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
+            String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
             String contractVersion = params[2];
             String contractName = ConsoleUtils.getContractName(contractNameOrPath);
             // query the the contractName and version has been registered or not
@@ -559,7 +702,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             List<String> inputParams = Arrays.asList(params).subList(3, params.length);
             TransactionResponse response =
-                    deployContract(contractName, contractNameOrPath, inputParams);
+                    deploySolidity(contractName, contractNameOrPath, inputParams);
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 return;
             }
@@ -590,7 +733,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void callByCNS(String[] params) throws Exception {
         String contractNameAndVersion = params[1];
-        String contractNameOrPath = ConsoleUtils.resolveContractPath(contractNameAndVersion);
+        String contractNameOrPath = ConsoleUtils.resolvePath(contractNameAndVersion);
         String contractVersion = null;
         String contractAbi = "";
         if (contractNameAndVersion.contains(":")) {

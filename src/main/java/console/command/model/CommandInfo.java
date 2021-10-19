@@ -25,7 +25,8 @@ public class CommandInfo {
 
     @FunctionalInterface
     public interface CommandImplement {
-        void call(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
+        void call(ConsoleInitializer consoleInitializer, String[] params, String pwd)
+                throws Exception;
     }
 
     private final String command;
@@ -240,7 +241,7 @@ public class CommandInfo {
         return minSupportVersion;
     }
 
-    public void callCommand(ConsoleInitializer consoleInitializer, String[] params)
+    public void callCommand(ConsoleInitializer consoleInitializer, String[] params, String pwd)
             throws Exception {
         // print help info
         if (params.length >= 2) {
@@ -249,11 +250,21 @@ public class CommandInfo {
                 return;
             }
         }
+
         if (maxParamLength != -1 && (params.length - 1) > maxParamLength) {
+            System.out.println(
+                    String.format(
+                            "Expected at most %d arguments but found %d",
+                            maxParamLength, params.length - 1));
             HelpInfo.promptHelp(command);
             return;
         }
+
         if (minParamLength != -1 && (params.length - 1) < minParamLength) {
+            System.out.println(
+                    String.format(
+                            "Expected at least %d arguments but found %d",
+                            minParamLength, params.length - 1));
             HelpInfo.printHelp(command);
             return;
         }
@@ -261,7 +272,15 @@ public class CommandInfo {
         if (minSupportVersion != null) {
             return;
         }
-        commandImplement.call(consoleInitializer, params);
+        commandImplement.call(consoleInitializer, params, pwd);
         System.out.println();
+    }
+
+    public void setMaxParamLength(int maxParamLength) {
+        this.maxParamLength = maxParamLength;
+    }
+
+    public void setMinParamLength(int minParamLength) {
+        this.minParamLength = minParamLength;
     }
 }
