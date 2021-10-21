@@ -17,9 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
-import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.contract.precompiled.bfs.FileInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
@@ -613,7 +613,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void queryCNS(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
+        String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         List<CnsInfo> cnsInfos = null;
         if (params.length == 2) {
@@ -648,7 +648,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void registerCNS(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
+        String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         String contractAddress = params[2];
         String contractVersion = params[3];

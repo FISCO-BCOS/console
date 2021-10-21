@@ -29,8 +29,7 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
             String buffer = reader.getBuffer().toString().trim();
             String[] ss = buffer.split(" ");
             if (ss.length >= 2) {
-                String contractName =
-                        ConsoleUtils.getContractName(ConsoleUtils.resolveContractPath(ss[1]));
+                String contractName = ConsoleUtils.getContractName(ConsoleUtils.resolvePath(ss[1]));
                 File contractDir =
                         new File(
                                 ContractCompiler.COMPILED_PATH
