@@ -24,7 +24,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,7 +64,7 @@ public class SupportedCommand {
     public static final CommandInfo SWITCH =
             new CommandInfo(
                     "switch",
-                    "Switch to a specific new peer by the ip",
+                    "Switch to a specific group by name",
                     new ArrayList<String>(Arrays.asList("s")),
                     new CommandInfo.UsageDisplay() {
                         @Override
@@ -78,13 +77,13 @@ public class SupportedCommand {
                         public void call(
                                 ConsoleInitializer consoleInitializer, String[] params, String pwd)
                                 throws Exception {
-                            consoleInitializer.switchEndePoint(params);
+                            consoleInitializer.switchGroup(params);
                         }
                     },
                     1,
                     1,
                     false);
-    public static final CommandInfo SET_SYSTEMCONFIGBYKEY =
+    public static final CommandInfo SET_SYSTEM_CONFIG_BY_KEY =
             new CommandInfo(
                     "setSystemConfigByKey",
                     "Set a system config value by key",
@@ -139,7 +138,7 @@ public class SupportedCommand {
                             consoleInitializer.getPrecompiledFace().queryCNS(params),
                     1,
                     2);
-    public static final CommandInfo ADDOBSERVER =
+    public static final CommandInfo ADD_OBSERVER =
             new CommandInfo(
                     "addObserver",
                     "Add an observer node",
@@ -148,7 +147,7 @@ public class SupportedCommand {
                             consoleInitializer.getPrecompiledFace().addObserver(params),
                     1,
                     1);
-    public static final CommandInfo ADDSEALER =
+    public static final CommandInfo ADD_SEALER =
             new CommandInfo(
                     "addSealer",
                     "Add a sealer node",
@@ -157,7 +156,7 @@ public class SupportedCommand {
                             consoleInitializer.getPrecompiledFace().addSealer(params),
                     2,
                     2);
-    public static final CommandInfo REMOVENODE =
+    public static final CommandInfo REMOVE_NODE =
             new CommandInfo(
                     "removeNode",
                     "Remove a node",
@@ -167,7 +166,7 @@ public class SupportedCommand {
                     1,
                     1);
 
-    public static final CommandInfo SETCONSENSUSWEIGHT =
+    public static final CommandInfo SET_CONSENSUS_WEIGHT =
             new CommandInfo(
                     "setConsensusWeight",
                     "Set consensus weight for the specified node",
@@ -277,17 +276,6 @@ public class SupportedCommand {
                     HelpInfo::getPeersHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getPeers(params));
-    public static final CommandInfo GET_AVAILABLE_CONNECTIONS =
-            new CommandInfo(
-                    "getAvailableConnections",
-                    "Query all connections between the SDK and the node",
-                    (consoleInitializer, params, pwd) -> {
-                        Enumeration<String> connections =
-                                consoleInitializer.getBcosSDK().getAllConnections();
-                        while (connections.hasMoreElements()) {
-                            System.out.println(connections.nextElement());
-                        }
-                    });
 
     public static final CommandInfo GET_BLOCK_BY_HASH =
             new CommandInfo(
@@ -419,7 +407,7 @@ public class SupportedCommand {
                                 new File(
                                         ContractCompiler.COMPILED_PATH
                                                 + File.separator
-                                                + consoleInitializer.getClient().getGroupId()
+                                                + consoleInitializer.getClient().getGroup()
                                                 + File.separator
                                                 + contractName);
                         int recordNum = 20;
@@ -580,7 +568,7 @@ public class SupportedCommand {
                             commandToCommandInfo.put(s, constantCommandInfo);
                         }
                     }
-                } catch (IllegalAccessException e) {
+                } catch (IllegalAccessException ignored) {
                 }
             }
         }

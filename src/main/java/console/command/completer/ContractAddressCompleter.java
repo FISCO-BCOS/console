@@ -34,7 +34,7 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                         new File(
                                 ContractCompiler.COMPILED_PATH
                                         + File.separator
-                                        + client.getGroupId()
+                                        + client.getGroup()
                                         + File.separator
                                         + contractName);
                 if (!contractDir.exists()) {

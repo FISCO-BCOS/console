@@ -34,7 +34,7 @@ public class ContractMethodCompleter extends StringsCompleterIgnoreCase {
             try {
                 AbiAndBin abiAndBin =
                         ContractCompiler.loadAbiAndBin(
-                                client.getGroupId(), contractNameOrPath, contractAddress);
+                                client.getGroup(), contractNameOrPath, contractAddress);
                 List<ABIDefinition> abiDefinitions =
                         CodeGenUtils.loadContractAbiDefinition(abiAndBin.getAbi());
                 for (ABIDefinition definition : abiDefinitions) {

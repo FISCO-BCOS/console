@@ -250,7 +250,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             writeLog(contractName, contractAddress);
             // save the bin and abi
             ContractCompiler.saveAbiAndBin(
-                    client.getGroupId(), abiAndBin, contractName, contractAddress);
+                    client.getGroup(), abiAndBin, contractName, contractAddress);
             return response;
         } catch (ClientException | CompileContractException | IOException | ABICodecException e) {
             throw new ConsoleMessageException("deploy contract failed for " + e.getMessage(), e);
@@ -308,7 +308,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             .withoutPadding()
                             .encodeToString(path.getBytes(StandardCharsets.UTF_8));
             ContractCompiler.saveAbiAndBin(
-                    client.getGroupId(), abiAndBin, contractName, contractAddress);
+                    client.getGroup(), abiAndBin, contractName, contractAddress);
             return response;
         } catch (ClientException | IOException | ABICodecException e) {
             throw new ConsoleMessageException("deploy contract failed due to:" + e.getMessage(), e);
@@ -361,7 +361,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String log =
                 LocalDateTime.now().format(formatter)
                         + "  [group:"
-                        + client.getGroupId()
+                        + client.getGroup()
                         + "]  "
                         + contractName
                         + "  "
@@ -416,7 +416,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             while ((line = reader.readLine()) != null) {
                 String[] contractInfos = ConsoleUtils.tokenizeCommand(line);
                 if ((contractInfos.length > 2)
-                        && ("[group:" + client.getGroupId() + "]").equals(contractInfos[2])) {
+                        && ("[group:" + client.getGroup() + "]").equals(contractInfos[2])) {
                     textList.add(line);
                 }
             }
@@ -481,13 +481,13 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     new File(
                             ContractCompiler.COMPILED_PATH
                                     + File.separator
-                                    + client.getGroupId()
+                                    + client.getGroup()
                                     + File.separator
                                     + contractName);
             if (!contractDir.exists()) {
                 System.out.println(
                         "Can not find the latest address. Please make sure group "
-                                + client.getGroupId()
+                                + client.getGroup()
                                 + " has deployed contract \""
                                 + contractName
                                 + "\"!");
@@ -497,7 +497,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (contractAddressFiles == null || contractAddressFiles.length == 0) {
                 System.out.println(
                         "Can not find the latest address. Please make sure group "
-                                + client.getGroupId()
+                                + client.getGroup()
                                 + " has deployed contract \""
                                 + contractName
                                 + "\"!");
@@ -568,7 +568,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (abiAndBin == null) {
                 abiAndBin =
                         ContractCompiler.loadAbiAndBin(
-                                client.getGroupId(),
+                                client.getGroup(),
                                 contractName,
                                 contractNameOrPath,
                                 contractAddress,
@@ -709,7 +709,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractAddress = response.getContractAddress();
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbiAndBin(
-                            client.getGroupId(), contractNameOrPath, contractName, contractAddress);
+                            client.getGroup(), contractNameOrPath, contractName, contractAddress);
             // register cns
             ConsoleUtils.printJson(
                     cnsService

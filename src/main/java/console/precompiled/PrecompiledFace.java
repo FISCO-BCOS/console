@@ -49,7 +49,5 @@ public interface PrecompiledFace {
 
     void listDir(String[] params) throws Exception;
 
-    void deployWasm(String[] params) throws Exception;
-
     void pwd(String[] params) throws Exception;
 }
