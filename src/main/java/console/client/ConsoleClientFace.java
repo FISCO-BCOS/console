@@ -16,7 +16,7 @@ public interface ConsoleClientFace {
 
     void getSyncStatus(String[] params) throws IOException;
 
-    void getNodeInfo(String[] params) throws IOException;
+    void getGroupInfo(String[] params) throws IOException;
 
     void getPeers(String[] params) throws IOException;
 

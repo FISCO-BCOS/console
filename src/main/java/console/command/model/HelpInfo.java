@@ -110,7 +110,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetNodeVersion");
     }
 
-    public static void getNodeInfoHelp() {
+    public static void getGroupInfoHelp() {
         System.out.println("Query the specified node information.");
         System.out.println("Usage: \ngetNodeInfo [NodeEndPoint]");
         System.out.println(
