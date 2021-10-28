@@ -101,7 +101,7 @@ public class JlineUtils {
         }
         commands =
                 Arrays.asList(
-                        SupportedCommand.SET_SYSTEMCONFIGBYKEY.getCommand(),
+                        SupportedCommand.SET_SYSTEM_CONFIG_BY_KEY.getCommand(),
                         SupportedCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand());
 
         for (String command : commands) {

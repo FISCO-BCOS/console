@@ -38,7 +38,7 @@ public class ConsoleInitializer {
 
     public void init(String[] args) throws ConfigException {
         AccountInfo accountInfo = null;
-        String endPoint = null;
+        String endPoint = "group";
         try {
             String configFileName = "config.toml";
             URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
@@ -62,15 +62,8 @@ public class ConsoleInitializer {
                 System.exit(0);
             }
             // load default endPoint from the configuration file
-            endPoint = peers.get(0);
-            // bash start.sh -l
-            if (args.length == 1) {
-                if ("-l".equals(args[0])) { // input by scanner for log
-                    DisableAutoCompleter = true;
-                } else {
-                    endPoint = args[0];
-                }
-            }
+            // FIXME： get group id
+
             // bash start.sh groupID -l
             if (args.length >= 2) {
                 endPoint = args[0];
@@ -87,7 +80,7 @@ public class ConsoleInitializer {
             System.exit(0);
         }
         try {
-            this.client = bcosSDK.getClientByEndpoint(endPoint);
+            this.client = bcosSDK.getClient(endPoint);
             if (accountInfo != null) {
                 this.client
                         .getCryptoSuite()
@@ -229,30 +222,30 @@ public class ConsoleInitializer {
         return new AccountInfo(accountFileFormat, accountFile, password);
     }
 
-    public void switchEndePoint(String[] params) {
-        String endPoint = params[1];
+    public void switchGroup(String[] params) {
+        String group = params[1];
         try {
             // load the original account
             CryptoKeyPair cryptoKeyPair = this.client.getCryptoSuite().getCryptoKeyPair();
-            this.client = bcosSDK.getClientByEndpoint(endPoint);
+            this.client = bcosSDK.getClient(group);
             if (this.client == null) {
-                System.out.println("Switch to the node " + endPoint + " failed");
+                System.out.println("Switch to the group " + group + " failed");
                 System.exit(0);
             }
             this.client.getCryptoSuite().setCryptoKeyPair(cryptoKeyPair);
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
-            System.out.println("Switched to node " + endPoint + ".");
+            System.out.println("Switched to group " + group + ".");
             System.out.println();
         } catch (Exception e) {
             System.out.println(
-                    "Switch to node "
-                            + endPoint
+                    "Switch to group "
+                            + group
                             + " failed! "
                             + e.getMessage()
-                            + ", please check the existence of the node "
-                            + endPoint);
+                            + ", please check the existence of the group "
+                            + group);
         }
     }
 
@@ -329,7 +322,7 @@ public class ConsoleInitializer {
     }
 
     public String getGroupID() {
-        return this.client.getGroupId();
+        return this.client.getGroup();
     }
 
     public ConsoleClientFace getConsoleClientFace() {
