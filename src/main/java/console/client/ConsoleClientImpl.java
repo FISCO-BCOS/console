@@ -38,8 +38,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
-    public void getNodeInfo(String[] params) throws IOException {
-        ConsoleUtils.printJson(client.getNodeInfo().toString());
+    public void getGroupInfo(String[] params) throws IOException {
+        ConsoleUtils.printJson(client.getGroupInfo().toString());
     }
 
     @Override

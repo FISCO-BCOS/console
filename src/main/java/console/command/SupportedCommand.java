@@ -51,9 +51,9 @@ public class SupportedCommand {
             new CommandInfo(
                     "getNodeInfo",
                     "Query the specified node information.",
-                    HelpInfo::getNodeInfoHelp,
+                    HelpInfo::getGroupInfoHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getNodeInfo(params));
+                            consoleInitializer.getConsoleClientFace().getGroupInfo(params));
     public static final CommandInfo GET_DEPLOY_LOG =
             new CommandInfo(
                     "getDeployLog",

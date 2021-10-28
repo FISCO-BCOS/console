@@ -38,7 +38,17 @@ public class ConsoleInitializer {
 
     public void init(String[] args) throws ConfigException {
         AccountInfo accountInfo = null;
-        String endPoint = "group";
+        if (args.length < 1) {
+            System.out.println("Please set groupID.");
+            System.out.println();
+            System.exit(0);
+        }
+
+        String groupID = args[0];
+        if (args.length > 1 && "-l".equals(args[1])) { // input by scanner for log
+            DisableAutoCompleter = true;
+        }
+
         try {
             String configFileName = "config.toml";
             URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
@@ -61,16 +71,7 @@ public class ConsoleInitializer {
                 System.out.println();
                 System.exit(0);
             }
-            // load default endPoint from the configuration file
-            // FIXME： get group id
 
-            // bash start.sh groupID -l
-            if (args.length >= 2) {
-                endPoint = args[0];
-                if ("-l".equals(args[1])) { // input by scanner for log
-                    DisableAutoCompleter = true;
-                }
-            }
             if (args.length == 3) {
                 accountInfo = loadAccount(bcosSDK, args);
             }
@@ -80,7 +81,7 @@ public class ConsoleInitializer {
             System.exit(0);
         }
         try {
-            this.client = bcosSDK.getClient(endPoint);
+            this.client = bcosSDK.getClient(groupID);
             if (accountInfo != null) {
                 this.client
                         .getCryptoSuite()
