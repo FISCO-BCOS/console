@@ -1,5 +1,6 @@
 package console.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
 import org.fisco.bcos.sdk.client.Client;
 
@@ -15,8 +16,6 @@ public interface ConsoleClientFace {
     void getSealerList(String[] params) throws IOException;
 
     void getSyncStatus(String[] params) throws IOException;
-
-    void getGroupInfo(String[] params) throws IOException;
 
     void getPeers(String[] params) throws IOException;
 
@@ -47,4 +46,12 @@ public interface ConsoleClientFace {
     void newAccount(String[] params);
 
     void listAccount(String[] params);
+
+    void getGroupList(String[] params);
+
+    void getGroupInfo(String[] params) throws IOException;
+
+    void getGroupInfoList(String[] params) throws JsonProcessingException;
+
+    void getGroupNodeInfo(String[] params) throws JsonProcessingException;
 }

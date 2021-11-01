@@ -1,5 +1,6 @@
 package console.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import console.client.model.TotalTransactionCountResult;
 import console.common.Address;
 import console.common.Common;
@@ -35,11 +36,6 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void updateClient(Client client) {
         this.client = client;
-    }
-
-    @Override
-    public void getGroupInfo(String[] params) throws IOException {
-        ConsoleUtils.printJson(client.getGroupInfo().toString());
     }
 
     @Override
@@ -349,5 +345,35 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             }
         }
         return accountList;
+    }
+
+    @Override
+    public void getGroupList(String[] params) {
+        int i = 0;
+        for (String group : client.getGroupList().getResult().getGroupList()) {
+            System.out.println("group" + (i++) + ": " + group);
+        }
+    }
+
+    @Override
+    public void getGroupInfo(String[] params) throws IOException {
+        ConsoleUtils.printJson(
+                ObjectMapperFactory.getObjectMapper()
+                        .writeValueAsString(client.getGroupInfo().getResult()));
+    }
+
+    @Override
+    public void getGroupInfoList(String[] params) throws JsonProcessingException {
+        ConsoleUtils.printJson(
+                ObjectMapperFactory.getObjectMapper()
+                        .writeValueAsString(client.getGroupInfoList().getResult()));
+    }
+
+    @Override
+    public void getGroupNodeInfo(String[] params) throws JsonProcessingException {
+        String node = params[1];
+        ConsoleUtils.printJson(
+                ObjectMapperFactory.getObjectMapper()
+                        .writeValueAsString(client.getGroupNodeInfo(node).getResult()));
     }
 }

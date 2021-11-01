@@ -7,6 +7,7 @@ import console.command.model.WelcomeInfo;
 import console.common.ConsoleUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
 import java.util.Scanner;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.crypto.exceptions.SignatureException;
@@ -98,25 +99,17 @@ public class Console {
                         inputParamString[0] = request;
                         commandInfo.callCommand(consoleInitializer, inputParamString, null);
                     } else if (SupportedCommand.BFS_COMMANDS.contains(params[0])) {
-                        String[] bfsParams = new String[params.length];
-                        for (int i = 1; i < params.length; i++) {
-                            String param = params[i];
-                            if (param.equals(".")) {
-                                bfsParams[i] = pwd;
-                            } else if (param.startsWith(".") && !param.startsWith("..")) {
-                                bfsParams[i] = pwd + param.substring(1);
-                            } else {
-                                bfsParams[i] = param;
-                            }
-                        }
-                        params[0] = pwd;
-                        commandInfo.callCommand(consoleInitializer, params, null);
+                        commandInfo.callCommand(consoleInitializer, params, pwd);
                         if (commandInfo
-                                        .getCommand()
-                                        .equals(SupportedCommand.CHANGE_DIR.getCommand())
-                                && !params[1].equals(".")
-                                && !params[1].equals("..")) {
-                            pwd = params[1];
+                                .getCommand()
+                                .equals(SupportedCommand.CHANGE_DIR.getCommand())) {
+                            if (params.length == 1) {
+                                pwd = "/";
+                            } else if ("..".equals(params[1])) {
+                                pwd = ConsoleUtils.getParentPathAndBaseName(pwd).getValue1();
+                            } else if (!Objects.equals(params[1], ".")) {
+                                pwd = params[1];
+                            }
                         }
                     } else {
                         String[] paramWithoutQuotation = new String[params.length];
