@@ -26,6 +26,7 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
+import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.utils.Host;
 import org.fisco.bcos.sdk.utils.Numeric;
@@ -121,6 +122,54 @@ public class ConsoleUtils {
             System.out.println("Please provide a valid hash.");
             return true;
         }
+    }
+
+    public static String[] fixedBfsParams(String[] params, String pwd) throws Exception {
+        String[] fixedParams = new String[params.length];
+        fixedParams[0] = params[0];
+        for (int i = 1; i < params.length; i++) {
+            if (params[i].startsWith("..")) {
+                fixedParams[i] = getParentPathAndBaseName(pwd).getValue1() + params[i].substring(2);
+            } else if (params[i].startsWith(".")) {
+                fixedParams[i] = pwd + params[i].substring(1);
+            } else {
+                fixedParams[i] = params[i];
+            }
+        }
+        return fixedParams;
+    }
+
+    public static String pathFormat(String path) throws Exception {
+        if (path.isEmpty()) {
+            throw new Exception("path is empty");
+        }
+        List<String> pathList = path2Level(path);
+        return "/" + String.join("/", pathList);
+    }
+
+    public static List<String> path2Level(String path) throws Exception {
+        List<String> pathList = new ArrayList<>();
+        for (String s : path.split("/")) {
+            if (s.isEmpty()) {
+                continue;
+            }
+            if (!s.matches("^[0-9a-zA-Z-_]{1,56}$")) {
+                throw new Exception("path is invalid: " + path);
+            }
+            pathList.add(s);
+        }
+        return pathList;
+    }
+
+    public static Tuple2<String, String> getParentPathAndBaseName(String path) throws Exception {
+        if (path.equals("/")) return new Tuple2<>("/", "/");
+        List<String> path2Level = path2Level(path);
+        if (path2Level.isEmpty()) {
+            throw new Exception("path is invalid: " + path);
+        }
+        String baseName = path2Level.get(path2Level.size() - 1);
+        String parentPath = '/' + String.join("/", path2Level.subList(0, path2Level.size() - 2));
+        return new Tuple2<>(parentPath, baseName);
     }
 
     public static long processLong(String name, String number, long minValue, long maxValue) {

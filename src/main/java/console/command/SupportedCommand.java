@@ -490,6 +490,57 @@ public class SupportedCommand {
                     0,
                     0);
 
+    public static final CommandInfo GET_GROUP_LIST =
+            new CommandInfo(
+                    "getGroupList",
+                    "List all group list",
+                    () -> {
+                        System.out.println("list all group list");
+                        System.out.println("Usage: \nlistGroupList");
+                    },
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getGroupList(params),
+                    0,
+                    0);
+
+    public static final CommandInfo GET_GROUP_INFO =
+            new CommandInfo(
+                    "getGroupInfo",
+                    "Get the group info",
+                    () -> {
+                        System.out.println("get the group info");
+                        System.out.println("Usage: \ngetGroupInfo");
+                    },
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getGroupInfo(params),
+                    0,
+                    0);
+
+    public static final CommandInfo GET_GROUP_INFO_LIST =
+            new CommandInfo(
+                    "getGroupInfoList",
+                    "Get all groups info",
+                    () -> {
+                        System.out.println("get all group info");
+                        System.out.println("Usage: \ngetGroupInfoList");
+                    },
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getGroupInfoList(params),
+                    0,
+                    0);
+    public static final CommandInfo GET_GROUP_NODE_INFO =
+            new CommandInfo(
+                    "getGroupNodeInfo",
+                    "Get group node info",
+                    () -> {
+                        System.out.println("get group node info");
+                        System.out.println("Usage: \ngetGroupNodeInfo [nodeName]");
+                    },
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getGroupNodeInfo(params),
+                    1,
+                    1);
+
     public static final CommandInfo LIST_ABI =
             new CommandInfo(
                     "listAbi",
@@ -506,7 +557,7 @@ public class SupportedCommand {
                     "Change dir to given path.",
                     HelpInfo::changeDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().changeDir(params),
+                            consoleInitializer.getPrecompiledFace().changeDir(params, pwd),
                     1,
                     1);
     public static final CommandInfo MAKE_DIR =
@@ -515,7 +566,7 @@ public class SupportedCommand {
                     "Create dir in given path.",
                     HelpInfo::makeDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().makeDir(params),
+                            consoleInitializer.getPrecompiledFace().makeDir(params, pwd),
                     1,
                     1);
     public static final CommandInfo LIST_DIR =
@@ -524,7 +575,7 @@ public class SupportedCommand {
                     "List resources in given path.",
                     HelpInfo::listDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().listDir(params),
+                            consoleInitializer.getPrecompiledFace().listDir(params, pwd),
                     0,
                     1);
 

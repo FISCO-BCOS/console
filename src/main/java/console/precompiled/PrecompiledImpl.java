@@ -685,47 +685,52 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void changeDir(String[] params) throws Exception {
+    public void changeDir(String[] params, String pwd) throws Exception {
+        if (params.length == 1) {
+            System.out.println("cd: change dir to root /");
+            return;
+        }
+        String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
         List<FileInfo> listResult;
-        if (params[1].equals("..")) {
-            String parentPath = params[0].substring(0, params[0].lastIndexOf('/') + 1);
-            bfsService.list(parentPath);
-        } else {
-            String parentDir = params[1].substring(params[1].lastIndexOf('/'));
-            String baseName =
-                    params[1].substring(params[1].lastIndexOf('/') + 1, params.length - 1);
-            listResult = bfsService.list(parentDir);
-            if (!listResult.isEmpty()) {
-                boolean findFlag = false;
-                for (FileInfo fileInfo : listResult) {
-                    if (fileInfo.getName().equals(baseName)) {
-                        findFlag = true;
-                        if (!fileInfo.getType().equals("directory")) {
-                            throw new Exception("cd: not a directory: " + fileInfo.getName());
-                        }
+        Tuple2<String, String> parentAndBase =
+                ConsoleUtils.getParentPathAndBaseName(fixedBfsParams[1]);
+        String parentDir = parentAndBase.getValue1();
+        String baseName = parentAndBase.getValue2();
+        listResult = bfsService.list(parentDir);
+        if (!listResult.isEmpty()) {
+            boolean findFlag = false;
+            for (FileInfo fileInfo : listResult) {
+                if (fileInfo.getName().equals(baseName)) {
+                    findFlag = true;
+                    if (!fileInfo.getType().equals("directory")) {
+                        throw new Exception("cd: not a directory: " + fileInfo.getName());
                     }
                 }
-                if (!findFlag) {
-                    throw new Exception("cd: no such file or directory in  " + parentDir);
-                }
-            } else {
-                throw new Exception("cd: no such file or directory: " + params[1]);
             }
+            if (!findFlag) {
+                throw new Exception("cd: no such file or directory in  " + parentDir);
+            }
+        } else {
+            throw new Exception("cd: no such file or directory: " + params[1]);
         }
     }
 
     @Override
-    public void makeDir(String[] params) throws Exception {
-        RetCode mkdir = bfsService.mkdir(params[1]);
+    public void makeDir(String[] params, String pwd) throws Exception {
+        String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
+        RetCode mkdir = bfsService.mkdir(fixedBfsParams[1]);
         System.out.println(mkdir.getMessage());
     }
 
     @Override
-    public void listDir(String[] params) throws Exception {
+    public void listDir(String[] params, String pwd) throws Exception {
+        String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
         List<FileInfo> parentList;
-        String listPath = params.length == 1 ? params[0] : params[1];
-        String parentDir = listPath.substring(params[1].lastIndexOf('/'));
-        String baseName = listPath.substring(params[1].lastIndexOf('/') + 1, params.length - 1);
+        String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
+        listPath = ConsoleUtils.pathFormat(listPath);
+        Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(listPath);
+        String parentDir = parentAndBase.getValue1();
+        String baseName = parentAndBase.getValue2();
         parentList = bfsService.list(parentDir);
         if (!parentList.isEmpty()) {
             boolean findFlag = false;

@@ -397,7 +397,7 @@ public class HelpInfo {
         System.out.println("Set a system config.");
         System.out.println("Usage: \nsetSystemConfigByKey key value");
         System.out.println(
-                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_timeout supported currently).");
+                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_timeout/consensus_leader_period supported currently).");
         System.out.println("* value -- The value of system config to be set.");
         System.out.println(
                 "      -- The value of tx_count_limit "
@@ -423,7 +423,7 @@ public class HelpInfo {
         System.out.println("Query a system config value by key.");
         System.out.println("Usage: \ngetSystemConfigByKey key");
         System.out.println(
-                "* key -- The name of system config(tx_count_limit/tx_gas_limit/consensus_timeout supported currently).");
+                "* key -- The name of system config(tx_count_limit/tx_gas_limit/consensus_timeout/consensus_leader_period supported currently).");
     }
 
     public static void operateGroupHelp(String command, String operator) {
