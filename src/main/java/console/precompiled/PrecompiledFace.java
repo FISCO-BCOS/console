@@ -49,5 +49,5 @@ public interface PrecompiledFace {
 
     void listDir(String[] params, String pwd) throws Exception;
 
-    void pwd(String[] params) throws Exception;
+    void pwd(String pwd);
 }

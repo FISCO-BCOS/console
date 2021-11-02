@@ -7,7 +7,6 @@ import console.command.model.WelcomeInfo;
 import console.common.ConsoleUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Objects;
 import java.util.Scanner;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.crypto.exceptions.SignatureException;
@@ -72,18 +71,26 @@ public class Console {
                     System.out.println("Console can not read commands.");
                     break;
                 }
-                String request = "";
+                String request;
                 if (INPUT_FLAG == 0 && !consoleInitializer.DisableAutoCompleter) {
                     request =
                             lineReader.readLine(
-                                    "[" + consoleInitializer.getGroupID() + "]: " + pwd + "> ");
+                                    "["
+                                            + consoleInitializer.getGroupID()
+                                            + "]: "
+                                            + ConsoleUtils.prettyPwd(pwd)
+                                            + "> ");
                 } else {
                     System.out.print(
-                            "[group:" + consoleInitializer.getGroupID() + "]: " + pwd + "> ");
+                            "[group:"
+                                    + consoleInitializer.getGroupID()
+                                    + "]: "
+                                    + ConsoleUtils.prettyPwd(pwd)
+                                    + "> ");
                     sc = new Scanner(System.in);
                     request = sc.nextLine();
                 }
-                String[] params = null;
+                String[] params;
                 params = ConsoleUtils.tokenizeCommand(request);
                 if (params.length < 1) {
                     continue;
@@ -105,10 +112,8 @@ public class Console {
                                 .equals(SupportedCommand.CHANGE_DIR.getCommand())) {
                             if (params.length == 1) {
                                 pwd = "/";
-                            } else if ("..".equals(params[1])) {
-                                pwd = ConsoleUtils.getParentPathAndBaseName(pwd).getValue1();
-                            } else if (!Objects.equals(params[1], ".")) {
-                                pwd = params[1];
+                            } else {
+                                pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
                             }
                         }
                     } else {
