@@ -99,7 +99,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getBlockByNumber(String[] params) throws IOException {
         String blockNumberStr = params[1];
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }
@@ -130,7 +130,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getBlockHeaderByNumber(String[] params) throws IOException {
         String blockNumberStr = params[1];
-        int blockNumber = ConsoleUtils.proccessNonNegativeNumber("blockNumber", blockNumberStr);
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
         if (blockNumber == Common.InvalidReturnNumber) {
             return;
         }

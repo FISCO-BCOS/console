@@ -413,7 +413,7 @@ public class SupportedCommand {
                         int recordNum = 20;
                         if (params.length == 3) {
                             recordNum =
-                                    ConsoleUtils.proccessNonNegativeNumber(
+                                    ConsoleUtils.processNonNegativeNumber(
                                             "recordNum", params[2], 1, Integer.MAX_VALUE);
                             if (recordNum == Common.InvalidReturnNumber) {
                                 return;
@@ -558,7 +558,7 @@ public class SupportedCommand {
                     HelpInfo::changeDirHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().changeDir(params, pwd),
-                    1,
+                    0,
                     1);
     public static final CommandInfo MAKE_DIR =
             new CommandInfo(
@@ -585,7 +585,7 @@ public class SupportedCommand {
                     "Show absolute path of working directory name",
                     HelpInfo::pwdHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().pwd(params),
+                            consoleInitializer.getPrecompiledFace().pwd(pwd),
                     0,
                     0);
 

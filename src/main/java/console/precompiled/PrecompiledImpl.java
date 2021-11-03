@@ -68,7 +68,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void addSealer(String[] params) throws Exception {
         String nodeId = params[1];
-        int weight = ConsoleUtils.proccessNonNegativeNumber("consensusWeight", params[2]);
+        int weight = ConsoleUtils.processNonNegativeNumber("consensusWeight", params[2]);
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
@@ -100,7 +100,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void setConsensusNodeWeight(String[] params) throws Exception {
         String nodeId = params[1];
-        int weight = ConsoleUtils.proccessNonNegativeNumber("consensusWeight", params[2]);
+        int weight = ConsoleUtils.processNonNegativeNumber("consensusWeight", params[2]);
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
@@ -719,6 +719,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void makeDir(String[] params, String pwd) throws Exception {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
         RetCode mkdir = bfsService.mkdir(fixedBfsParams[1]);
+        logger.info("mkdir: make new dir {}", fixedBfsParams[1]);
         System.out.println(mkdir.getMessage());
     }
 
@@ -732,33 +733,29 @@ public class PrecompiledImpl implements PrecompiledFace {
         String parentDir = parentAndBase.getValue1();
         String baseName = parentAndBase.getValue2();
         parentList = bfsService.list(parentDir);
-        if (!parentList.isEmpty()) {
-            boolean findFlag = false;
-            for (FileInfo fileInfo : parentList) {
-                if (fileInfo.getName().equals(baseName)) {
-                    findFlag = true;
-                    if (fileInfo.getType().equals("directory")) {
-                        List<FileInfo> listResult = bfsService.list(listPath);
-                        for (FileInfo info : listResult) {
-                            System.out.print(info.getName() + '\t');
-                        }
-                        System.out.println();
-                    } else {
-                        System.out.println(
-                                "name:" + fileInfo.getName() + "\t type:" + fileInfo.getType());
+        boolean findFlag = false;
+        for (FileInfo fileInfo : parentList) {
+            if (fileInfo.getName().equals(baseName)) {
+                findFlag = true;
+                if (fileInfo.getType().equals("directory")) {
+                    List<FileInfo> listResult = bfsService.list(listPath);
+                    for (FileInfo info : listResult) {
+                        System.out.print(info.getName() + '\t');
                     }
+                    System.out.println();
+                } else {
+                    System.out.println(
+                            "name:" + fileInfo.getName() + "\t type:" + fileInfo.getType());
                 }
             }
-            if (!findFlag) {
-                throw new Exception("ls: no such file or directory in  " + parentDir);
-            }
-        } else {
+        }
+        if (!findFlag) {
             throw new Exception("ls: no such file or directory: " + listPath);
         }
     }
 
     @Override
-    public void pwd(String[] params) throws Exception {
-        System.out.println(params[0]);
+    public void pwd(String pwd) {
+        System.out.println(pwd);
     }
 }

@@ -131,9 +131,12 @@ public class ConsoleUtils {
             if (params[i].startsWith("..")) {
                 fixedParams[i] = getParentPathAndBaseName(pwd).getValue1() + params[i].substring(2);
             } else if (params[i].startsWith(".")) {
-                fixedParams[i] = pwd + params[i].substring(1);
-            } else {
+                fixedParams[i] =
+                        pwd.equals("/") ? pwd + params[i].substring(1) : params[i].substring(1);
+            } else if (params[i].startsWith("/")) {
                 fixedParams[i] = params[i];
+            } else {
+                fixedParams[i] = pwd + (pwd.equals("/") ? "" : "/") + params[i];
             }
         }
         return fixedParams;
@@ -168,8 +171,22 @@ public class ConsoleUtils {
             throw new Exception("path is invalid: " + path);
         }
         String baseName = path2Level.get(path2Level.size() - 1);
-        String parentPath = '/' + String.join("/", path2Level.subList(0, path2Level.size() - 2));
+        String parentPath = '/' + String.join("/", path2Level.subList(0, path2Level.size() - 1));
         return new Tuple2<>(parentPath, baseName);
+    }
+
+    public static String prettyPwd(String pwd) {
+        // pwd is formatted
+        try {
+            List<String> path2Level = path2Level(pwd);
+            if (path2Level.size() > 3) {
+                return String.join(
+                        "/", path2Level.subList(path2Level.size() - 3, path2Level.size()));
+            }
+        } catch (Exception e) {
+            return pwd;
+        }
+        return pwd;
     }
 
     public static long processLong(String name, String number, long minValue, long maxValue) {
@@ -202,11 +219,11 @@ public class ConsoleUtils {
         }
     }
 
-    public static int proccessNonNegativeNumber(String name, String intStr) {
-        return proccessNonNegativeNumber(name, intStr, 0, Integer.MAX_VALUE);
+    public static int processNonNegativeNumber(String name, String intStr) {
+        return processNonNegativeNumber(name, intStr, 0, Integer.MAX_VALUE);
     }
 
-    public static int proccessNonNegativeNumber(
+    public static int processNonNegativeNumber(
             String name, String intStr, Integer minValue, Integer maxValue) {
         int intParam = 0;
         try {
