@@ -269,6 +269,14 @@ public class SupportedCommand {
                     HelpInfo::getSyncStatusHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getSyncStatus(params));
+    public static final CommandInfo GET_CONSENSUS_STATUS =
+            new CommandInfo(
+                    "getConsensusStatus",
+                    "Query consensus status",
+                    HelpInfo::getConsensusStatusHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getConsensusStatus(params));
+
     public static final CommandInfo GET_PEERS =
             new CommandInfo(
                     "getPeers",
