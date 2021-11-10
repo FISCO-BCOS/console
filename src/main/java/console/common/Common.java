@@ -7,12 +7,6 @@ public class Common {
     // SystemConfig key
     public static final String TxCountLimit = "tx_count_limit";
     public static final String TxGasLimit = "tx_gas_limit";
-
-    // in seconds
-    public static final String ConsensusTimeout = "consensus_timeout";
-    public static int ConsensusTimeoutMin = 3;
-    public static int ConsensusTimeoutMax = Integer.MAX_VALUE / 1000;
-
     public static final String ConsensusLeaderPeriod = "consensus_leader_period";
 
     public static final int InvalidReturnNumber = -100;
@@ -25,12 +19,6 @@ public class Common {
     public static final String NonNegativeIntegerRange = "from 0 to 2147483647";
     public static final String DeployLogIntegerRange = "from 1 to 100";
     public static final String TxGasLimitRange = "from 100000 to 2147483647";
-    public static final String ConsensusTimeoutRange =
-            "from "
-                    + Integer.toString(ConsensusTimeoutMin)
-                    + " seconds to "
-                    + Integer.toString(ConsensusTimeoutMax - 1)
-                    + " seconds";
     public static final String ConsensusLeaderPeriodRange =
             " from 1 to " + Integer.toString(Integer.MAX_VALUE);
     public static final String EMPTY_CONTRACT_ADDRESS =

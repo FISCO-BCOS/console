@@ -118,11 +118,6 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.ConsensusTimeout),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
                             new StringsCompleter(Common.ConsensusLeaderPeriod),
                             new StringsCompleterIgnoreCase()));
         }

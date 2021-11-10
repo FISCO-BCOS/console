@@ -17,6 +17,8 @@ public interface ConsoleClientFace {
 
     void getSyncStatus(String[] params) throws IOException;
 
+    void getConsensusStatus(String[] params) throws IOException;
+
     void getPeers(String[] params) throws IOException;
 
     void getBlockByHash(String[] params) throws IOException;

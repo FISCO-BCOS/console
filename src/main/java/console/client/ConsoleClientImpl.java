@@ -74,6 +74,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
+    public void getConsensusStatus(String[] params) throws IOException {
+        ConsoleUtils.printJson(client.getConsensusStatus().getConsensusStatus().toString());
+    }
+
+    @Override
     public void getPeers(String[] params) throws IOException {
         ConsoleUtils.printJson(client.getPeers().getPeers().toString());
     }
