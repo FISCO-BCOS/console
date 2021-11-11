@@ -11,10 +11,12 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.sdk.client.Client;
@@ -25,8 +27,8 @@ import org.fisco.bcos.sdk.contract.precompiled.bfs.FileInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
-import org.fisco.bcos.sdk.contract.precompiled.contractmgr.ContractLifeCycleService;
 import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
+import org.fisco.bcos.sdk.contract.precompiled.crud.TablePrecompiled;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
@@ -50,7 +52,6 @@ public class PrecompiledImpl implements PrecompiledFace {
     private ConsensusService consensusService;
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
-    private ContractLifeCycleService contractLifeCycleService;
     private CnsService cnsService;
     private BFSService bfsService;
 
@@ -60,7 +61,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.consensusService = new ConsensusService(client, cryptoKeyPair);
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
-        this.contractLifeCycleService = new ContractLifeCycleService(client, cryptoKeyPair);
         this.cnsService = new CnsService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
     }
@@ -133,48 +133,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (Exception e) {
             throw e;
         }
-    }
-
-    @Override
-    public void freezeContract(String[] params) throws Exception {
-        String address = params[1];
-        ConsoleUtils.printJson(contractLifeCycleService.freeze(address).toString());
-    }
-
-    @Override
-    public void unfreezeContract(String[] params) throws Exception {
-        String address = params[1];
-        ConsoleUtils.printJson(contractLifeCycleService.unfreeze(address).toString());
-    }
-
-    @Override
-    public void grantContractStatusManager(String[] params) throws Exception {
-        String contractAddr = params[1];
-        String userAddr = params[2];
-        ConsoleUtils.printJson(
-                contractLifeCycleService.grantManager(contractAddr, userAddr).toString());
-    }
-
-    @Override
-    public void revokeContractStatusManager(String[] params) throws Exception {
-        String contractAddr = params[1];
-        String userAddr = params[2];
-        ConsoleUtils.printJson(
-                contractLifeCycleService.revokeManager(contractAddr, userAddr).toString());
-    }
-
-    @Override
-    public void getContractStatus(String[] params) throws Exception {
-        String address = params[1];
-        ConsoleUtils.printJson(contractLifeCycleService.getContractStatus(address));
-    }
-
-    @Override
-    public void listContractStatusManager(String[] params) throws Exception {
-        String address = params[1];
-        ConsoleUtils.printJson(
-                ObjectMapperFactory.getObjectMapper()
-                        .writeValueAsString(contractLifeCycleService.listManager(address)));
     }
 
     @Override
@@ -589,22 +547,26 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         String keyName = table.getKey();
         String keyValue = "";
-        Map<ConditionOperator, String> keyMap = condition.getConditions().get(keyName);
-        if (keyMap == null) {
+        Set<TablePrecompiled.CompareTriple> findKeySet = new HashSet<>();
+        for (TablePrecompiled.CompareTriple condField : condition.getConditions().condFields) {
+            if (condField.lvalue.equals(keyName)) {
+                findKeySet.add(condField);
+            }
+        }
+        if (findKeySet.isEmpty()) {
             throw new ConsoleMessageException(
                     "Please provide a equal condition for the key field '"
                             + keyName
                             + "' in where clause.");
         } else {
-            Set<ConditionOperator> keySet = keyMap.keySet();
-            for (ConditionOperator enumOP : keySet) {
-                if (enumOP != ConditionOperator.eq) {
+            for (TablePrecompiled.CompareTriple compareTriple : findKeySet) {
+                if (!Objects.equals(compareTriple.cmp, ConditionOperator.eq.getBigIntegerValue())) {
                     throw new ConsoleMessageException(
                             "Please provide a equal condition for the key field '"
                                     + keyName
                                     + "' in where clause.");
                 } else {
-                    keyValue = keyMap.get(enumOP);
+                    keyValue = compareTriple.rvalue;
                 }
             }
         }

@@ -24,19 +24,6 @@ public interface PrecompiledFace {
 
     void desc(String[] params) throws Exception;
 
-    // ContractLifeCyclecompiled
-    void freezeContract(String[] params) throws Exception;
-
-    void unfreezeContract(String[] params) throws Exception;
-
-    void grantContractStatusManager(String[] params) throws Exception;
-
-    void revokeContractStatusManager(String[] params) throws Exception;
-
-    void getContractStatus(String[] params) throws Exception;
-
-    void listContractStatusManager(String[] params) throws Exception;
-
     void queryCNS(String[] params) throws Exception;
 
     void registerCNS(String[] params) throws Exception;
