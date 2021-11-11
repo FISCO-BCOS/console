@@ -111,10 +111,8 @@ public class HelpInfo {
     }
 
     public static void getGroupInfoHelp() {
-        System.out.println("Query the specified node information.");
-        System.out.println("Usage: \ngetNodeInfo [NodeEndPoint]");
-        System.out.println(
-                "* NodeEndPoint -- The requested node information, the format is IP:Port");
+        System.out.println("Query the current group information.");
+        System.out.println("Usage: \ngetGroupInfo");
     }
 
     public static void getPeersHelp() {

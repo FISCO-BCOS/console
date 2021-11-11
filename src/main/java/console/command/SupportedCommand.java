@@ -47,13 +47,6 @@ public class SupportedCommand {
                             Arrays.asList("-h", "-help", "--h", "--H", "--help", "-H", "h")),
                     (consoleInitializer, params, pwd) -> printDescInfo());
 
-    public static final CommandInfo GET_NODE_INFO =
-            new CommandInfo(
-                    "getNodeInfo",
-                    "Query the specified node information.",
-                    HelpInfo::getGroupInfoHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getGroupInfo(params));
     public static final CommandInfo GET_DEPLOY_LOG =
             new CommandInfo(
                     "getDeployLog",
@@ -514,7 +507,7 @@ public class SupportedCommand {
     public static final CommandInfo GET_GROUP_INFO =
             new CommandInfo(
                     "getGroupInfo",
-                    "Get the group info",
+                    "Query the current group information.",
                     () -> {
                         System.out.println("get the group info");
                         System.out.println("Usage: \ngetGroupInfo");

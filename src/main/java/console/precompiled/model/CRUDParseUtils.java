@@ -1,6 +1,5 @@
 package console.precompiled.model;
 
-import console.common.Common;
 import console.exception.ConsoleMessageException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,7 +27,6 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
-import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -36,8 +34,8 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import org.fisco.bcos.sdk.contract.precompiled.crud.TablePrecompiled;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.model.PrecompiledConstant;
 import org.slf4j.Logger;
@@ -247,12 +245,7 @@ public class CRUDParseUtils {
             throw new ConsoleMessageException("The distinct clause is not supported.");
         }
         Expression expr = selectBody.getWhere();
-        condition = handleExpression(condition, expr);
-
-        Limit limit = selectBody.getLimit();
-        if (limit != null) {
-            parseLimit(condition, limit);
-        }
+        handleExpression(condition, expr);
 
         // parse select item
         List<SelectItem> selectItems = selectBody.getSelectItems();
@@ -294,21 +287,20 @@ public class CRUDParseUtils {
 
     private static Condition handleExpression(Condition condition, Expression expr)
             throws ConsoleMessageException {
-        if (expr instanceof BinaryExpression) {
-            condition = getWhereClause((BinaryExpression) (expr), condition);
-        }
         checkExpression(expr);
-        Map<String, Map<ConditionOperator, String>> conditions = condition.getConditions();
-        Set<String> keys = conditions.keySet();
-        for (String key : keys) {
-            Map<ConditionOperator, String> value = conditions.get(key);
-            ConditionOperator operation = value.keySet().iterator().next();
-            String itemValue = value.values().iterator().next();
-            String newValue = trimQuotes(itemValue);
-            value.put(operation, newValue);
-            conditions.put(key, value);
+        if (expr instanceof BinaryExpression) {
+            getWhereClause(expr, condition);
         }
-        condition.setConditions(conditions);
+        TablePrecompiled.Condition conditions = condition.getConditions();
+        List<TablePrecompiled.CompareTriple> condList = new ArrayList<>();
+        for (TablePrecompiled.CompareTriple condField : conditions.condFields) {
+            condList.add(
+                    new TablePrecompiled.CompareTriple(
+                            trimQuotes(condField.lvalue),
+                            trimQuotes(condField.rvalue),
+                            condField.cmp));
+        }
+        condition.setConditions(condList);
         return condition;
     }
 
@@ -357,8 +349,6 @@ public class CRUDParseUtils {
             BinaryExpression expr2 = (BinaryExpression) (where);
             handleExpression(condition, expr2);
         }
-        Limit limit = update.getLimit();
-        parseLimit(condition, limit);
     }
 
     public static void parseRemove(String sql, Table table, Condition condition)
@@ -375,30 +365,6 @@ public class CRUDParseUtils {
         if (where != null) {
             BinaryExpression expr = (BinaryExpression) (where);
             handleExpression(condition, expr);
-        }
-        Limit limit = delete.getLimit();
-        parseLimit(condition, limit);
-    }
-
-    private static void parseLimit(Condition condition, Limit limit)
-            throws ConsoleMessageException {
-        if (limit != null) {
-            Expression offset = limit.getOffset();
-            Expression count = limit.getRowCount();
-            try {
-                if (offset != null) {
-                    condition.Limit(
-                            Integer.parseInt(offset.toString()),
-                            Integer.parseInt(count.toString()));
-                } else {
-                    condition.Limit(Integer.parseInt(count.toString()));
-                }
-            } catch (NumberFormatException e) {
-                throw new ConsoleMessageException(
-                        "Please provide limit parameters by non-negative integer mode, "
-                                + Common.NonNegativeIntegerRange
-                                + ".");
-            }
         }
     }
 
@@ -451,12 +417,12 @@ public class CRUDParseUtils {
                         super.visitBinaryExpression(expr);
                     }
                 });
-        if (conflictKeys.size() > 0) {
+        if (!conflictKeys.isEmpty()) {
             throw new ConsoleMessageException(
                     "Wrong condition! There cannot be the same field in the same condition! The conflicting field is: "
                             + conflictKeys.toString());
         }
-        if (unsupportedConditions.size() > 0) {
+        if (!unsupportedConditions.isEmpty()) {
             throw new ConsoleMessageException(
                     "Wrong condition! Find unsupported conditions! message: "
                             + unsupportedConditions.toString());
