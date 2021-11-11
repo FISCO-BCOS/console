@@ -4,11 +4,16 @@ pragma experimental ABIEncoderV2;
 import "./Table.sol";
 
 contract TableTest {
+    event CreateResult(int256 count);
+    event InsertResult(int256 count);
+    event UpdateResult(int256 count);
+    event RemoveResult(int256 count);
 
     Table table;
+    string constant TABLE_NAME = "t_test";
     constructor () public{
         table = Table(0x1001);
-        table.createTable("t_test", "id","name,age");
+        table.createTable(TABLE_NAME, "id","name,age");
     }
     function select(string memory id) public view returns (string memory,string memory){
         CompareTriple memory compareTriple1 = CompareTriple("id",id,Comparator.EQ);
@@ -18,7 +23,7 @@ contract TableTest {
         Condition memory condition;
         condition.condFields = compareFields;
 
-        Entry[] memory entries = table.select("t_test", condition);
+        Entry[] memory entries = table.select(TABLE_NAME, condition);
         string memory name;
         string memory age;
         if(entries.length > 0){
@@ -37,8 +42,9 @@ contract TableTest {
         KVFields[1] = kv1;
         KVFields[2] = kv2;
         Entry memory entry1 = Entry(KVFields);
-        int256 result1 = table.insert("t_test",entry1);
-        return result1;
+        int256 result = table.insert(TABLE_NAME,entry1);
+        emit InsertResult(result);
+        return result;
     }
 
     function update(string memory id,string memory name,string memory age) public returns (int256){
@@ -55,9 +61,9 @@ contract TableTest {
 
         Condition memory condition;
         condition.condFields = compareFields;
-        int256 result1 = table.update("t_test",entry1, condition);
-
-        return result1;
+        int256 result = table.update(TABLE_NAME,entry1, condition);
+        emit UpdateResult(result);
+        return result;
     }
 
     function remove(string memory id) public returns(int256){
@@ -67,13 +73,14 @@ contract TableTest {
 
         Condition memory condition;
         condition.condFields = compareFields;
-        int256 result1 = table.remove("t_test", condition);
-
-        return result1;
+        int256 result = table.remove(TABLE_NAME, condition);
+        emit RemoveResult(result);
+        return result;
     }
 
     function createTable(string memory tableName,string memory key,string memory fields) public returns(int256){
         int256 result = table.createTable(tableName,key,fields);
+        emit CreateResult(result);
         return result;
     }
 

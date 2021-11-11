@@ -11,12 +11,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.fisco.bcos.sdk.client.Client;
@@ -28,7 +26,6 @@ import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.TablePrecompiled;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
@@ -547,26 +544,22 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         String keyName = table.getKey();
         String keyValue = "";
-        Set<TablePrecompiled.CompareTriple> findKeySet = new HashSet<>();
-        for (TablePrecompiled.CompareTriple condField : condition.getConditions().condFields) {
-            if (condField.lvalue.equals(keyName)) {
-                findKeySet.add(condField);
-            }
-        }
-        if (findKeySet.isEmpty()) {
+        Map<ConditionOperator, String> keyMap = condition.getConditions().get(keyName);
+        if (keyMap == null) {
             throw new ConsoleMessageException(
                     "Please provide a equal condition for the key field '"
                             + keyName
                             + "' in where clause.");
         } else {
-            for (TablePrecompiled.CompareTriple compareTriple : findKeySet) {
-                if (!Objects.equals(compareTriple.cmp, ConditionOperator.eq.getBigIntegerValue())) {
+            Set<ConditionOperator> keySet = keyMap.keySet();
+            for (ConditionOperator enumOP : keySet) {
+                if (enumOP != ConditionOperator.eq) {
                     throw new ConsoleMessageException(
                             "Please provide a equal condition for the key field '"
                                     + keyName
                                     + "' in where clause.");
                 } else {
-                    keyValue = compareTriple.rvalue;
+                    keyValue = keyMap.get(enumOP);
                 }
             }
         }

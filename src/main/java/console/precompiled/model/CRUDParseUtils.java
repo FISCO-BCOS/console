@@ -34,8 +34,8 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
-import org.fisco.bcos.sdk.contract.precompiled.crud.TablePrecompiled;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.model.PrecompiledConstant;
 import org.slf4j.Logger;
@@ -287,20 +287,21 @@ public class CRUDParseUtils {
 
     private static Condition handleExpression(Condition condition, Expression expr)
             throws ConsoleMessageException {
-        checkExpression(expr);
         if (expr instanceof BinaryExpression) {
-            getWhereClause(expr, condition);
+            condition = getWhereClause((BinaryExpression) (expr), condition);
         }
-        TablePrecompiled.Condition conditions = condition.getConditions();
-        List<TablePrecompiled.CompareTriple> condList = new ArrayList<>();
-        for (TablePrecompiled.CompareTriple condField : conditions.condFields) {
-            condList.add(
-                    new TablePrecompiled.CompareTriple(
-                            trimQuotes(condField.lvalue),
-                            trimQuotes(condField.rvalue),
-                            condField.cmp));
+        checkExpression(expr);
+        Map<String, Map<ConditionOperator, String>> conditions = condition.getConditions();
+        Set<String> keys = conditions.keySet();
+        for (String key : keys) {
+            Map<ConditionOperator, String> value = conditions.get(key);
+            ConditionOperator operation = value.keySet().iterator().next();
+            String itemValue = value.values().iterator().next();
+            String newValue = trimQuotes(itemValue);
+            value.put(operation, newValue);
+            conditions.put(key, value);
         }
-        condition.setConditions(condList);
+        condition.setConditions(conditions);
         return condition;
     }
 

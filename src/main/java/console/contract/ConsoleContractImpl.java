@@ -36,7 +36,6 @@ import org.fisco.bcos.sdk.codec.wrapper.ABIObject;
 import org.fisco.bcos.sdk.codec.wrapper.ContractABIDefinition;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.model.CryptoType;
@@ -562,9 +561,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throws IOException, CodeGenException, ABICodecException, CompileContractException {
         try {
             // load bin and abi
-            for (String p : callParams) {
-                System.out.println("P: " + p);
-            }
             if (abiAndBin == null) {
                 abiAndBin =
                         ContractCompiler.loadAbiAndBin(
@@ -775,20 +771,28 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 }
                 // get address
                 contractAddress = cnsTuple.getValue1();
+                if (contractAddress.equals("0x0000000000000000000000000000000000000000")) {
+                    throw new ContractException(
+                            "Can't find CNS info of version: " + contractVersion);
+                }
                 // get abi
                 contractAbi = cnsTuple.getValue2();
             } else {
-                List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
-                if (cnsInfos.size() == 0) {
-                    System.out.println(
-                            "Can't find \""
-                                    + contractName
-                                    + "\" information from the cns list! Please deploy it by cns firstly!\n");
-                    return;
-                }
-                CnsInfo latestCNSInfo = cnsInfos.get(cnsInfos.size() - 1);
-                contractAddress = latestCNSInfo.getAddress();
-                contractAbi = latestCNSInfo.getAbi();
+                // Not support in fisco bcos 3.0
+                throw new ContractException(
+                        "Please use specified version of contract: " + contractName);
+                //                List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
+                //                if (cnsInfos.size() == 0) {
+                //                    System.out.println(
+                //                            "Can't find \""
+                //                                    + contractName
+                //                                    + "\" information from the cns list! Please
+                // deploy it by cns firstly!\n");
+                //                    return;
+                //                }
+                //                CnsInfo latestCNSInfo = cnsInfos.get(cnsInfos.size() - 1);
+                //                contractAddress = latestCNSInfo.getAddress();
+                //                contractAbi = latestCNSInfo.getAbi();
             }
         } catch (ContractException e) {
             System.out.println("Error when getting cns information: ");
