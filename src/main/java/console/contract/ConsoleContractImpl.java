@@ -84,7 +84,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String abiPath = ConsoleUtils.resolvePath(params[2]);
             String path = params[3];
             if (!path.startsWith("/")) {
-                path = pwd + "/" + path;
+                path = pwd.equals("/") ? "/" + path : pwd + "/" + path;
             }
             List<String> inputParams = Arrays.asList(params).subList(4, params.length);
             deployWasm(binPath, abiPath, path, inputParams);
@@ -150,8 +150,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             List<Object> returnObject, List<ABIObject> returnABIObject, String returnValue) {
         if (returnABIObject == null
                 || returnABIObject == null
-                || returnObject.size() == 0
-                || returnABIObject.size() == 0) {
+                || returnObject.isEmpty()
+                || returnABIObject.isEmpty()) {
             System.out.println("Return values:" + returnValue);
             return;
         }
@@ -459,7 +459,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String path = params[1];
         String functionName = params[2];
         if (!path.startsWith("/")) {
-            path = pwd + "/" + path;
+            path = pwd.equals("/") ? "/" + path : pwd + "/" + path;
         }
         String contractName = FilenameUtils.getBaseName(path);
         String contractAddress =

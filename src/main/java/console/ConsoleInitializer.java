@@ -38,13 +38,13 @@ public class ConsoleInitializer {
 
     public void init(String[] args) throws ConfigException {
         AccountInfo accountInfo = null;
+        String groupID = null;
         if (args.length < 1) {
-            System.out.println("Please set groupID.");
-            System.out.println();
-            System.exit(0);
+            logger.info("Did not set group, use default group in config.");
+        } else {
+            groupID = args[0];
         }
 
-        String groupID = args[0];
         if (args.length > 1 && "-l".equals(args[1])) { // input by scanner for log
             DisableAutoCompleter = true;
         }
@@ -81,7 +81,7 @@ public class ConsoleInitializer {
             System.exit(0);
         }
         try {
-            this.client = bcosSDK.getClient(groupID);
+            this.client = groupID == null ? bcosSDK.getClient() : bcosSDK.getClient(groupID);
             if (accountInfo != null) {
                 this.client
                         .getCryptoSuite()
