@@ -324,7 +324,7 @@ public class HelpInfo {
         System.out.println(
                 "Usage: \ncallByCNS contractNameOrPath:contractVersion function parameters");
         System.out.println(
-                "* contractNameOrPath:contractVersion -- The name(or path) and version of a contract. If contract version is not provided, then the latest version of contract will be called.");
+                "* contractNameOrPath:contractVersion -- The name(or path) and version of a contract.");
         System.out.println("* function -- The function of a contract.");
         System.out.println("* parameters -- The parameters(splited by a space) of a function.");
     }
