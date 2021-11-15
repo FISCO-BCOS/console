@@ -39,7 +39,7 @@ public class SupportedCommand {
             SupportedCommand.getCommandInfo("deploy").setMinParamLength(3);
             SupportedCommand.getCommandInfo("call").setMinParamLength(2);
         } else {
-            SupportedCommand.getCommandInfo("deploy").setMinParamLength(2);
+            SupportedCommand.getCommandInfo("deploy").setMinParamLength(1);
             SupportedCommand.getCommandInfo("call").setMinParamLength(1);
         }
     }
