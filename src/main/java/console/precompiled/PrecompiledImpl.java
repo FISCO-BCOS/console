@@ -683,7 +683,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
         List<FileInfo> parentList;
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
-        listPath = ConsoleUtils.pathFormat(listPath);
         Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(listPath);
         String parentDir = parentAndBase.getValue1();
         String baseName = parentAndBase.getValue2();
@@ -695,6 +694,9 @@ public class PrecompiledImpl implements PrecompiledFace {
                 if (fileInfo.getType().equals("directory")) {
                     List<FileInfo> listResult = bfsService.list(listPath);
                     for (FileInfo info : listResult) {
+                        if (info.getName().equals("/")) {
+                            continue;
+                        }
                         System.out.print(info.getName() + '\t');
                     }
                     System.out.println();

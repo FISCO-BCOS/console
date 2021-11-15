@@ -59,11 +59,7 @@ public class Console {
 
         WelcomeInfo.welcome();
         String pwd = "/";
-        SupportedCommand.isWasm = consoleInitializer.getClient().isWASM();
-        if (SupportedCommand.isWasm) {
-            SupportedCommand.getCommandInfo("deploy").setMinParamLength(3);
-            SupportedCommand.getCommandInfo("call").setMinParamLength(2);
-        }
+        SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
         while (true) {
             try {
@@ -140,6 +136,7 @@ public class Console {
                         if (cmd.equals(SupportedCommand.SWITCH.getCommand())) {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
+                            SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
                         }
                     }
                 } else {

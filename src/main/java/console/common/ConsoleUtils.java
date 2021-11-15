@@ -128,40 +128,37 @@ public class ConsoleUtils {
         String[] fixedParams = new String[params.length];
         fixedParams[0] = params[0];
         for (int i = 1; i < params.length; i++) {
-            if (params[i].startsWith("..")) {
-                fixedParams[i] = getParentPathAndBaseName(pwd).getValue1() + params[i].substring(2);
-            } else if (params[i].startsWith(".")) {
-                fixedParams[i] =
-                        pwd.equals("/") ? pwd + params[i].substring(1) : params[i].substring(1);
-            } else if (params[i].startsWith("/")) {
-                fixedParams[i] = params[i];
+            String pathToFix;
+            if (params[i].startsWith("/")) {
+                // absolute path
+                pathToFix = params[i];
             } else {
-                fixedParams[i] = pwd + (pwd.equals("/") ? "" : "/") + params[i];
+                // relative path
+                pathToFix = pwd + ((pwd.equals("/")) ? "" : "/") + params[i];
             }
+            fixedParams[i] = "/" + String.join("/", path2Level(pathToFix));
         }
         return fixedParams;
     }
 
-    public static String pathFormat(String path) throws Exception {
-        if (path.isEmpty()) {
-            throw new Exception("path is empty");
-        }
-        List<String> pathList = path2Level(path);
-        return "/" + String.join("/", pathList);
-    }
-
-    public static List<String> path2Level(String path) throws Exception {
-        List<String> pathList = new ArrayList<>();
-        for (String s : path.split("/")) {
-            if (s.isEmpty()) {
+    public static List<String> path2Level(String absolutePath) throws Exception {
+        Stack<String> pathStack = new Stack<>();
+        for (String s : absolutePath.split("/")) {
+            if (s.isEmpty() || s.equals(".")) {
+                continue;
+            }
+            if (s.equals("..")) {
+                if (!pathStack.isEmpty()) {
+                    pathStack.pop();
+                }
                 continue;
             }
             if (!s.matches("^[0-9a-zA-Z-_]{1,56}$")) {
-                throw new Exception("path is invalid: " + path);
+                throw new Exception("path is invalid: " + absolutePath);
             }
-            pathList.add(s);
+            pathStack.push(s);
         }
-        return pathList;
+        return new ArrayList<>(pathStack);
     }
 
     public static Tuple2<String, String> getParentPathAndBaseName(String path) throws Exception {
