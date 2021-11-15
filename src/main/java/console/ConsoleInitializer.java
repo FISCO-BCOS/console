@@ -311,7 +311,9 @@ public class ConsoleInitializer {
     }
 
     public void stop() {
-        this.bcosSDK.stopAll();
+        // this.bcosSDK.stopAll();
+        logger.info("stop console initializer");
+        System.exit(0);
     }
 
     public Client getClient() {
