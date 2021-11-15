@@ -33,6 +33,17 @@ public class SupportedCommand {
     protected static Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
     public static boolean isWasm = false;
 
+    public static void setIsWasm(boolean wasm) {
+        isWasm = wasm;
+        if (wasm) {
+            SupportedCommand.getCommandInfo("deploy").setMinParamLength(3);
+            SupportedCommand.getCommandInfo("call").setMinParamLength(2);
+        } else {
+            SupportedCommand.getCommandInfo("deploy").setMinParamLength(2);
+            SupportedCommand.getCommandInfo("call").setMinParamLength(1);
+        }
+    }
+
     public static final CommandInfo HELP =
             new CommandInfo(
                     "help",

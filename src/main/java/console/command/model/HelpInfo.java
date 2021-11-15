@@ -272,13 +272,13 @@ public class HelpInfo {
     public static void deployHelp(boolean isWasm) {
         System.out.println("Deploy a contract on blockchain.");
         if (!isWasm) {
-            System.out.println("Usage: \ndeploy contractNameOrPath parameters...");
+            System.out.println("Usage: \ndeploy solidity contractNameOrPath parameters...");
             System.out.println(
                     "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
         } else {
-            System.out.println("Usage: \ndeploy bin abi path parameters...");
+            System.out.println("Usage: \ndeploy liquid bin abi path parameters...");
             System.out.println(
                     "* bin -- The path of binary file after contract being compiled via cargo-liquid.");
             System.out.println(

@@ -102,6 +102,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     public void printReturnResults(List<Type> results) {
+        if (results == null) {
+            return;
+        }
         StringBuilder resultType = new StringBuilder();
         StringBuilder resultData = new StringBuilder();
         resultType.append("(");
