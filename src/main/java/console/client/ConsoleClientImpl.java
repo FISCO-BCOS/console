@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Objects;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
+import org.fisco.bcos.sdk.client.protocol.response.BcosBlock;
+import org.fisco.bcos.sdk.client.protocol.response.SystemConfig;
 import org.fisco.bcos.sdk.client.protocol.response.TotalTransactionCount;
 import org.fisco.bcos.sdk.config.ConfigOption;
 import org.fisco.bcos.sdk.crypto.CryptoSuite;
@@ -98,7 +100,12 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 return;
             }
         }
-        ConsoleUtils.printJson(client.getBlockByHash(blockHash, false, flag).getBlock().toString());
+        BcosBlock.Block block = client.getBlockByHash(blockHash, false, flag).getBlock();
+        if (block == null) {
+            System.out.println("Block can not ne found, please check hash: " + blockHash);
+            return;
+        }
+        ConsoleUtils.printJson(block.toString());
     }
 
     @Override
@@ -119,10 +126,16 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 return;
             }
         }
-        ConsoleUtils.printJson(
-                client.getBlockByNumber(BigInteger.valueOf(blockNumber), false, flag)
-                        .getBlock()
-                        .toString());
+        BcosBlock blockByNumber =
+                client.getBlockByNumber(BigInteger.valueOf(blockNumber), false, flag);
+        if (blockByNumber.getBlock() == null) {
+            System.out.println("Block not found, please check number: " + blockNumber);
+        } else {
+            ConsoleUtils.printJson(
+                    client.getBlockByNumber(BigInteger.valueOf(blockNumber), false, flag)
+                            .getBlock()
+                            .toString());
+        }
     }
 
     @Override
@@ -164,7 +177,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
 
         TransactionReceipt receipt =
-                client.getTransactionReceipt(transactionHash, false).getTransactionReceipt().get();
+                client.getTransactionReceipt(transactionHash, false).getTransactionReceipt();
         if (Objects.isNull(receipt) || Objects.isNull(receipt.getTransactionHash())) {
             System.out.println("This transaction hash doesn't exist.");
             return;
@@ -249,8 +262,13 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getSystemConfigByKey(String[] params) throws Exception {
         String key = params[1];
-        String value = client.getSystemConfigByKey(key).getSystemConfig().getValue();
-        System.out.println(value);
+        SystemConfig systemConfigByKey = client.getSystemConfigByKey(key);
+        if (systemConfigByKey.getSystemConfig() == null) {
+            System.out.println("System config not found, please check key: " + key);
+        } else {
+            String value = client.getSystemConfigByKey(key).getSystemConfig().getValue();
+            System.out.println(value);
+        }
     }
 
     @Override

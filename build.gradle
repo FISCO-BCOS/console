@@ -30,7 +30,7 @@ dependencies {
     //compile 'org.fisco-bcos:solcJ:0.4.25.1'
     compile 'org.fisco-bcos:solcJ:0.6.10.3-SNAPSHOT'
     //compile 'org.fisco-bcos:solcJ:0.5.2.3-SNAPSHTOT'
-    compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.1.0-2021111401-SNAPSHOT')
+    compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.1.0-SNAPSHOT')
     compile("commons-cli:commons-cli:1.3.1")
     compile 'org.jline:jline:3.12.0'
     compile 'io.bretty:console-table-builder:1.2'

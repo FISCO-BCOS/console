@@ -480,9 +480,13 @@ public class PrecompiledImpl implements PrecompiledFace {
                 String[] valueArr =
                         descTable.get(0).get(PrecompiledConstant.VALUE_FIELD_NAME).split(",");
                 selectColumns.addAll(Arrays.asList(valueArr));
+                result.get(0).put(keyField, table.getKey());
                 result = getSelectedColumn(selectColumns, result);
                 rows = result.size();
             } else {
+                if (selectColumns.contains(keyField)) {
+                    result.get(0).put(keyField, table.getKey());
+                }
                 List<Map<String, String>> selectedResult = getSelectedColumn(selectColumns, result);
                 rows = selectedResult.size();
             }
