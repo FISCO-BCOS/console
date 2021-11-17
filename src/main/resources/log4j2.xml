@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN" monitorInterval="600">
+    <Properties>
+        <Property name="LOG_HOME">./log</Property>
+    </Properties>
+
+    <Appenders>
+        <RollingRandomAccessFile name="Console"
+                                 immediateFlush="true" fileName="${LOG_HOME}/console.log"
+                                 filePattern="${LOG_HOME}/console.log.%d{yyyy-MM-dd}.gz">
+            <PatternLayout>
+                <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level %class{36} %L %M -- %msg%xEx%n</pattern>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+        </RollingRandomAccessFile>
+    </Appenders>
+
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>

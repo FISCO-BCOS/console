@@ -65,7 +65,8 @@ elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
-   java -Djdk.tls.namedGroups="secp256k1" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
-   # Note: must put the ffi library into the -Djava.library.ffipath firstly 
-   #java -Djava.library.ffipath="dyn_libs" -Djava.library.path=. -Djdk.tls.namedGroups="secp256k1" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
+   java -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
+   # java -Dorg.fisco.bcos.jni.disableSsl="true" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
+   # Note: must put the ffi library into the -Djava.library.ffipath firstly
+   #java -Djava.library.ffipath="dyn_libs" -Djava.library.path=. -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
 fi
