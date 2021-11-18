@@ -3,7 +3,7 @@ package console.contract;
 import console.exception.ConsoleMessageException;
 
 public interface ConsoleContractFace {
-    void deploy(String[] params, String pwd) throws ConsoleMessageException;
+    void deploy(String[] params, String pwd) throws Exception;
 
     void call(String[] params, String pwd) throws Exception;
 

@@ -54,7 +54,7 @@ public class JlineUtils {
 
         List<Completer> completers = new ArrayList<Completer>();
 
-        List<String> commands = SupportedCommand.getAllCommand();
+        List<String> commands = SupportedCommand.getAllCommand(client.isWASM());
         contractAddressCompleter = new ContractAddressCompleter(client);
         contractMethodCompleter = new ContractMethodCompleter(client);
         accountCompleter = new AccountCompleter(client);
@@ -65,32 +65,63 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase(command),
                             new StringsCompleterIgnoreCase()));
         }
-        commands =
-                Arrays.asList(
-                        SupportedCommand.DEPLOY.getCommand(),
-                        SupportedCommand.DEPLOY_BY_CNS.getCommand(),
-                        SupportedCommand.CALL_BY_CNS.getCommand(),
-                        SupportedCommand.QUERY_CNS.getCommand(),
-                        SupportedCommand.LIST_DEPLOY_CONTRACT_ADDRESS.getCommand(),
-                        SupportedCommand.LIST_ABI.getCommand());
+        if (!client.isWASM()) {
+            // solidity
+            commands =
+                    Arrays.asList(
+                            SupportedCommand.DEPLOY.getCommand(),
+                            SupportedCommand.DEPLOY_BY_CNS.getCommand(),
+                            SupportedCommand.CALL_BY_CNS.getCommand(),
+                            SupportedCommand.QUERY_CNS.getCommand(),
+                            SupportedCommand.LIST_DEPLOY_CONTRACT_ADDRESS.getCommand(),
+                            SupportedCommand.LIST_ABI.getCommand());
 
-        for (String command : commands) {
+            for (String command : commands) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                                new StringsCompleterIgnoreCase()));
+            }
+            // contract address and method completer
+            commands = Arrays.asList(SupportedCommand.CALL.getCommand());
+            for (String command : commands) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                                contractAddressCompleter,
+                                contractMethodCompleter,
+                                new StringsCompleterIgnoreCase()));
+            }
+            // completer for REGISTER_CNS
             completers.add(
                     new ArgumentCompleter(
-                            new StringsCompleter(command),
+                            new StringsCompleter(SupportedCommand.REGISTER_CNS.getCommand()),
                             new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                            new StringsCompleterIgnoreCase()));
-        }
-        // contract address and method completer
-        commands = Arrays.asList(SupportedCommand.CALL.getCommand());
-        for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                            contractAddressCompleter,
-                            contractMethodCompleter,
-                            new StringsCompleterIgnoreCase()));
+                            contractAddressCompleter));
+        } else {
+            // liquid
+            commands = Arrays.asList(SupportedCommand.DEPLOY.getCommand());
+
+            for (String command : commands) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new ConsoleFilesCompleter(new File(ContractCompiler.LIQUID_PATH)),
+                                new StringsCompleterIgnoreCase()));
+            }
+            // contract address and method completer
+            commands = Arrays.asList(SupportedCommand.CALL.getCommand());
+            for (String command : commands) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new ConsoleFilesCompleter(new File(ContractCompiler.LIQUID_PATH)),
+                                contractAddressCompleter,
+                                contractMethodCompleter,
+                                new StringsCompleterIgnoreCase()));
+            }
         }
 
         commands = Arrays.asList(SupportedCommand.GET_TRANSACTION_RECEIPT.getCommand());
@@ -121,14 +152,6 @@ public class JlineUtils {
                             new StringsCompleter(Common.ConsensusLeaderPeriod),
                             new StringsCompleterIgnoreCase()));
         }
-
-        // completer for REGISTER_CNS
-        completers.add(
-                new ArgumentCompleter(
-                        new StringsCompleter(SupportedCommand.REGISTER_CNS.getCommand()),
-                        new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                        contractAddressCompleter));
-
         completers.add(
                 new ArgumentCompleter(
                         new StringsCompleter(SupportedCommand.LOAD_ACCOUNT.getCommand()),

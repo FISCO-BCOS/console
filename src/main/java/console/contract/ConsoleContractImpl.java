@@ -73,7 +73,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     @Override
-    public void deploy(String[] params, String pwd) throws ConsoleMessageException {
+    public void deploy(String[] params, String pwd) throws Exception {
         if (!client.isWASM()) {
             String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
             String contractName = ConsoleUtils.getContractName(contractNameOrPath);
@@ -83,9 +83,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String binPath = ConsoleUtils.resolvePath(params[1]);
             String abiPath = ConsoleUtils.resolvePath(params[2]);
             String path = params[3];
-            if (!path.startsWith("/")) {
-                path = pwd.equals("/") ? "/" + path : pwd + "/" + path;
-            }
+            path = ConsoleUtils.fixedBfsParam(path, pwd);
             List<String> inputParams = Arrays.asList(params).subList(4, params.length);
             deployWasm(binPath, abiPath, path, inputParams);
         }
@@ -461,9 +459,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     private void callWasm(String[] params, String pwd) throws Exception {
         String path = params[1];
         String functionName = params[2];
-        if (!path.startsWith("/")) {
-            path = pwd.equals("/") ? "/" + path : pwd + "/" + path;
-        }
+        path = ConsoleUtils.fixedBfsParam(path, pwd);
         String contractName = FilenameUtils.getBaseName(path);
         String contractAddress =
                 Base64.getUrlEncoder()
