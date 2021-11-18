@@ -12,7 +12,7 @@ public interface PrecompiledFace {
     void setSystemConfigByKey(String[] params) throws Exception;
 
     // CRUDPrecompiled
-    void createTable(String sql) throws Exception;
+    void createTable(String sql, boolean isWasm) throws Exception;
 
     void insert(String sql) throws Exception;
 

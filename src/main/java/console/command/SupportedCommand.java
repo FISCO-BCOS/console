@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SupportedCommand {
     protected static Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
@@ -56,7 +57,7 @@ public class SupportedCommand {
                     },
                     new ArrayList<>(
                             Arrays.asList("-h", "-help", "--h", "--H", "--help", "-H", "h")),
-                    (consoleInitializer, params, pwd) -> printDescInfo());
+                    (consoleInitializer, params, pwd) -> printDescInfo(isWasm));
 
     public static final CommandInfo GET_DEPLOY_LOG =
             new CommandInfo(
@@ -64,7 +65,11 @@ public class SupportedCommand {
                     "Query the log of deployed contracts",
                     HelpInfo::getDeployLogHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleContractFace().getDeployLog(params));
+                            consoleInitializer.getConsoleContractFace().getDeployLog(params),
+                    -1,
+                    -1,
+                    true,
+                    false);
     public static final CommandInfo SWITCH =
             new CommandInfo(
                     "switch",
@@ -123,7 +128,9 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().deployByCNS(params),
                     2,
-                    -1);
+                    -1,
+                    true,
+                    false);
     public static final CommandInfo CALL_BY_CNS =
             new CommandInfo(
                     "callByCNS",
@@ -132,7 +139,9 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().callByCNS(params),
                     2,
-                    -1);
+                    -1,
+                    true,
+                    false);
     public static final CommandInfo QUERY_CNS =
             new CommandInfo(
                     "queryCNS",
@@ -141,7 +150,9 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().queryCNS(params),
                     1,
-                    2);
+                    2,
+                    true,
+                    false);
     public static final CommandInfo ADD_OBSERVER =
             new CommandInfo(
                     "addObserver",
@@ -201,7 +212,7 @@ public class SupportedCommand {
                     "create",
                     "Create table by sql",
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().createTable(params[0]));
+                            consoleInitializer.getPrecompiledFace().createTable(params[0], isWasm));
     public static final CommandInfo SELECT =
             new CommandInfo(
                     "select",
@@ -457,7 +468,9 @@ public class SupportedCommand {
                         }
                     },
                     1,
-                    2);
+                    2,
+                    true,
+                    false);
 
     public static final CommandInfo REGISTER_CNS =
             new CommandInfo(
@@ -467,7 +480,9 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().registerCNS(params),
                     3,
-                    3);
+                    3,
+                    true,
+                    false);
 
     public static final CommandInfo NEW_ACCOUNT =
             new CommandInfo(
@@ -561,7 +576,9 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().listAbi(params),
                     1,
-                    1);
+                    1,
+                    true,
+                    false);
 
     public static final CommandInfo CHANGE_DIR =
             new CommandInfo(
@@ -644,18 +661,27 @@ public class SupportedCommand {
         return null;
     }
 
-    public static List<String> getAllCommand() {
-        return new ArrayList<>(commandToCommandInfo.keySet());
+    public static List<String> getAllCommand(boolean isWasm) {
+        if (isWasm) {
+            return commandToCommandInfo
+                    .keySet()
+                    .stream()
+                    .filter((key) -> commandToCommandInfo.get(key).isWasmSupport())
+                    .collect(Collectors.toList());
+        } else {
+            return new ArrayList<>(commandToCommandInfo.keySet());
+        }
     }
 
-    public static void printDescInfo() {
+    public static void printDescInfo(boolean isWasm) {
         Set<String> keys = commandToCommandInfo.keySet();
         List<String> commandList = new ArrayList<>(keys);
         Collections.sort(commandList);
         List<String> outputtedCommand = new ArrayList<>();
         for (String s : commandList) {
             CommandInfo commandInfo = commandToCommandInfo.get(s);
-            if (outputtedCommand.contains(commandInfo.getCommand())) {
+            if (outputtedCommand.contains(commandInfo.getCommand())
+                    || (isWasm && !commandInfo.isWasmSupport())) {
                 continue;
             }
             commandInfo.printDescInfo();

@@ -141,6 +141,20 @@ public class ConsoleUtils {
         return fixedParams;
     }
 
+    public static String fixedBfsParam(String param, String pwd) throws Exception {
+        String fixedParam, pathToFix;
+        if (param.startsWith("/")) {
+            // absolute path
+            pathToFix = param;
+        } else {
+            // relative path
+            pathToFix = pwd + ((pwd.equals("/")) ? "" : "/") + param;
+        }
+        fixedParam = "/" + String.join("/", path2Level(pathToFix));
+        ;
+        return fixedParam;
+    }
+
     public static List<String> path2Level(String absolutePath) throws Exception {
         Stack<String> pathStack = new Stack<>();
         for (String s : absolutePath.split("/")) {

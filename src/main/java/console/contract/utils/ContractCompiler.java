@@ -36,11 +36,13 @@ public class ContractCompiler {
     private static final Logger logger = LoggerFactory.getLogger(ContractCompiler.class);
 
     public static final String SOLIDITY_PATH = "contracts/solidity/";
+    public static final String LIQUID_PATH = "contracts/liquid/";
     public static final String COMPILED_PATH = "contracts/.compiled/";
-    public static final String SOL_POSTFIX = ".sol";
-    private static final String SM_POSTFIX = ".sm";
-    private static final String BIN_POSTFIX = ".bin";
-    private static final String ABI_POSTFIX = ".abi";
+    public static final String SOL_SUFFIX = ".sol";
+    private static final String SM_SUFFIX = ".sm";
+    private static final String BIN_SUFFIX = ".bin";
+    private static final String ABI_SUFFIX = ".abi";
+    private static final String WASM_SUFFIX = ".wasm";
 
     public static AbiAndBin compileContract(String contractNameOrPath)
             throws CompileContractException {
@@ -50,7 +52,7 @@ public class ContractCompiler {
             return dynamicCompileSolFilesToJava(contractFile);
         }
         // the contractName
-        String contractFileName = ConsoleUtils.removeSolPostfix(contractNameOrPath) + SOL_POSTFIX;
+        String contractFileName = ConsoleUtils.removeSolPostfix(contractNameOrPath) + SOL_SUFFIX;
         contractFile = new File(SOLIDITY_PATH + "/" + contractFileName);
         if (!contractFile.exists()) {
             throw new CompileContractException(
@@ -171,7 +173,7 @@ public class ContractCompiler {
                                 + contractAddress
                                 + File.separator
                                 + contractName
-                                + ABI_POSTFIX);
+                                + ABI_SUFFIX);
         File binPath =
                 new File(
                         COMPILED_PATH
@@ -183,7 +185,7 @@ public class ContractCompiler {
                                 + contractAddress
                                 + File.separator
                                 + contractName
-                                + BIN_POSTFIX);
+                                + BIN_SUFFIX);
         File smBinPath =
                 new File(
                         COMPILED_PATH
@@ -195,8 +197,8 @@ public class ContractCompiler {
                                 + contractAddress
                                 + File.separator
                                 + contractName
-                                + SM_POSTFIX
-                                + BIN_POSTFIX);
+                                + SM_SUFFIX
+                                + BIN_SUFFIX);
         FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());
         FileUtils.writeStringToFile(binPath, abiAndBin.getBin());
         FileUtils.writeStringToFile(smBinPath, abiAndBin.getSmBin());
@@ -233,7 +235,7 @@ public class ContractCompiler {
                                 + contractAddress
                                 + File.separator
                                 + contractName
-                                + ABI_POSTFIX);
+                                + ABI_SUFFIX);
         File binPath =
                 new File(
                         COMPILED_PATH
@@ -245,7 +247,7 @@ public class ContractCompiler {
                                 + contractAddress
                                 + File.separator
                                 + contractName
-                                + BIN_POSTFIX);
+                                + BIN_SUFFIX);
         File smBinPath =
                 new File(
                         COMPILED_PATH
@@ -257,8 +259,8 @@ public class ContractCompiler {
                                 + contractAddress
                                 + File.separator
                                 + contractName
-                                + SM_POSTFIX
-                                + BIN_POSTFIX);
+                                + SM_SUFFIX
+                                + BIN_SUFFIX);
         if (!abiPath.exists() || !binPath.exists() || !smBinPath.exists()) {
             if (needCompile) {
                 return ContractCompiler.compileContract(contractNameOrPath);

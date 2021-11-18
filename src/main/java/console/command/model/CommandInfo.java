@@ -36,6 +36,7 @@ public class CommandInfo {
     private final CommandImplement commandImplement;
     private int minParamLength = -1;
     private int maxParamLength = -1;
+    private boolean isWasmSupport = true;
     String minSupportVersion = null;
     boolean supportNonInteractive = true;
 
@@ -104,6 +105,20 @@ public class CommandInfo {
             CommandImplement commandImplement,
             int minParamLength,
             int maxParamLength,
+            boolean supportNonInteractive,
+            boolean isWasmSupport) {
+        this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
+        this.supportNonInteractive = supportNonInteractive;
+        this.isWasmSupport = isWasmSupport;
+    }
+
+    public CommandInfo(
+            String command,
+            String desc,
+            UsageDisplay usageDisplay,
+            CommandImplement commandImplement,
+            int minParamLength,
+            int maxParamLength,
             String minSupportVersion) {
         this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
         this.minSupportVersion = minSupportVersion;
@@ -159,6 +174,10 @@ public class CommandInfo {
                 minParamLength,
                 maxParamLength);
         this.supportNonInteractive = supportNonInteractive;
+    }
+
+    public boolean isWasmSupport() {
+        return isWasmSupport;
     }
 
     public boolean isSupportNonInteractive() {

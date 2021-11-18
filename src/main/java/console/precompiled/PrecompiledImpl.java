@@ -133,7 +133,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void createTable(String sql) throws Exception {
+    public void createTable(String sql, boolean isWasm) throws Exception {
         Table table = new Table();
         try {
             CRUDParseUtils.parseCreateTable(sql, table);
@@ -149,7 +149,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         try {
             RetCode result =
                     tableCRUDService.createTable(
-                            table.getTableName(), table.getKey(), table.getValueFields());
+                            isWasm ? "/" + table.getTableName() : table.getTableName(),
+                            table.getKey(),
+                            table.getValueFields());
             // parse the result
             if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
