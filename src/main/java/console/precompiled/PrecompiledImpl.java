@@ -36,6 +36,8 @@ import org.fisco.bcos.sdk.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
 import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.utils.AddressUtils;
+import org.fisco.bcos.sdk.utils.Numeric;
 import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -612,6 +614,10 @@ public class PrecompiledImpl implements PrecompiledFace {
         String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
         String contractAddress = params[2];
+        if (!AddressUtils.isValidAddress(contractAddress)) {
+            System.out.println("Contract address is invalid, address: " + contractAddress);
+        }
+        contractAddress = Numeric.prependHexPrefix(contractAddress);
         String contractVersion = params[3];
         String abi = "";
         try {
