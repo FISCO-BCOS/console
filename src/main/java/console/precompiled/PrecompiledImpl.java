@@ -586,7 +586,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                     cnsService.selectByNameAndVersion(contractName, params[2]);
             if (cnsTuple.getValue1() != null
                     && cnsTuple.getValue2() != null
-                    && !cnsTuple.getValue2().equals("")) {
+                    && !cnsTuple.getValue2().isEmpty()) {
                 cnsInfos = new LinkedList<>();
                 CnsInfo cnsInfo = new CnsInfo();
                 cnsInfo.setAddress(cnsTuple.getValue1());
@@ -632,11 +632,10 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         if (abi.equals("")) {
             System.out.println(
-                    "Warn: \nPlease make sure the existence of the contract, contractName: "
+                    "Warn: \nPlease make sure the existence of the contract, abi is empty. contractName: "
                             + contractName
                             + ", contractAddress: "
-                            + contractAddress
-                            + "!");
+                            + contractAddress);
         }
         ConsoleUtils.printJson(
                 cnsService

@@ -530,6 +530,19 @@ public class SupportedCommand {
                     0,
                     0);
 
+    public static final CommandInfo GET_GROUP_PEERS =
+            new CommandInfo(
+                    "getGroupPeers",
+                    "List all group peers",
+                    () -> {
+                        System.out.println("list all group peers");
+                        System.out.println("Usage: \ngetGroupPeers");
+                    },
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getGroupPeers(params),
+                    0,
+                    0);
+
     public static final CommandInfo GET_GROUP_INFO =
             new CommandInfo(
                     "getGroupInfo",

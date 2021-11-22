@@ -379,6 +379,14 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
+    public void getGroupPeers(String[] params) {
+        int i = 0;
+        for (String groupPeer : client.getGroupPeers().getGroupPeers()) {
+            System.out.println("peer" + (i++) + ": " + groupPeer);
+        }
+    }
+
+    @Override
     public void getGroupInfo(String[] params) throws IOException {
         ConsoleUtils.printJson(
                 ObjectMapperFactory.getObjectMapper()
