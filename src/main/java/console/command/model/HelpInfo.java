@@ -399,7 +399,7 @@ public class HelpInfo {
         System.out.println("* value -- The value of system config to be set.");
         System.out.println(
                 "      -- The value of tx_count_limit "
-                        + Common.PositiveIntegerRange
+                        + Common.TxCountLimitRange
                         + "(default 1000).");
         System.out.println(
                 "      -- the value of tx_gas_limit "
