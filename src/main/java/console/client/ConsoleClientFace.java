@@ -49,6 +49,8 @@ public interface ConsoleClientFace {
 
     void listAccount(String[] params);
 
+    void getGroupPeers(String[] params);
+
     void getGroupList(String[] params);
 
     void getGroupInfo(String[] params) throws IOException;

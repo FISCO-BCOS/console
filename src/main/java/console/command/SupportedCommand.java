@@ -37,11 +37,11 @@ public class SupportedCommand {
     public static void setIsWasm(boolean wasm) {
         isWasm = wasm;
         if (wasm) {
-            SupportedCommand.getCommandInfo("deploy").setMinParamLength(3);
-            SupportedCommand.getCommandInfo("call").setMinParamLength(2);
+            SupportedCommand.getCommandInfo("deploy", true).setMinParamLength(3);
+            SupportedCommand.getCommandInfo("call", true).setMinParamLength(2);
         } else {
-            SupportedCommand.getCommandInfo("deploy").setMinParamLength(1);
-            SupportedCommand.getCommandInfo("call").setMinParamLength(1);
+            SupportedCommand.getCommandInfo("deploy", false).setMinParamLength(1);
+            SupportedCommand.getCommandInfo("call", false).setMinParamLength(1);
         }
     }
 
@@ -530,6 +530,19 @@ public class SupportedCommand {
                     0,
                     0);
 
+    public static final CommandInfo GET_GROUP_PEERS =
+            new CommandInfo(
+                    "getGroupPeers",
+                    "List all group peers",
+                    () -> {
+                        System.out.println("list all group peers");
+                        System.out.println("Usage: \ngetGroupPeers");
+                    },
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getGroupPeers(params),
+                    0,
+                    0);
+
     public static final CommandInfo GET_GROUP_INFO =
             new CommandInfo(
                     "getGroupInfo",
@@ -654,9 +667,13 @@ public class SupportedCommand {
         }
     }
 
-    public static CommandInfo getCommandInfo(String command) {
+    public static CommandInfo getCommandInfo(String command, boolean isWasm) {
         if (commandToCommandInfo.containsKey(command)) {
-            return commandToCommandInfo.get(command);
+            CommandInfo commandInfo = commandToCommandInfo.get(command);
+            if (isWasm && !commandInfo.isWasmSupport()) {
+                return null;
+            }
+            return commandInfo;
         }
         return null;
     }

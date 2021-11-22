@@ -265,7 +265,7 @@ public class CommandInfo {
         // print help info
         if (params.length >= 2) {
             if (SupportedCommand.HELP.getOptionCommand().contains(params[1])) {
-                HelpInfo.printHelp(command);
+                HelpInfo.printHelp(command, consoleInitializer.getClient().isWASM());
                 return;
             }
         }
@@ -284,7 +284,7 @@ public class CommandInfo {
                     String.format(
                             "Expected at least %d arguments but found %d",
                             minParamLength, params.length - 1));
-            HelpInfo.printHelp(command);
+            HelpInfo.printHelp(command, consoleInitializer.getClient().isWASM());
             return;
         }
         // check version

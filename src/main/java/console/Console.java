@@ -95,7 +95,9 @@ public class Console {
                     continue;
                 }
                 // execute the command
-                CommandInfo commandInfo = SupportedCommand.getCommandInfo(params[0]);
+                CommandInfo commandInfo =
+                        SupportedCommand.getCommandInfo(
+                                params[0], consoleInitializer.getClient().isWASM());
                 if (commandInfo != null) {
                     if (SupportedCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];

@@ -60,12 +60,16 @@ public class NonInteractiveConsole {
             boolean CRUDCommand = false;
             // execute the command
             if (command != null && command.length > 1) {
-                commandInfo = SupportedCommand.getCommandInfo(command[0]);
+                commandInfo =
+                        SupportedCommand.getCommandInfo(
+                                command[0], consoleInitializer.getClient().isWASM());
                 if (SupportedCommand.CRUD_COMMANDS.contains(command[0])) {
                     CRUDCommand = true;
                 }
             } else {
-                commandInfo = SupportedCommand.getCommandInfo(params[0]);
+                commandInfo =
+                        SupportedCommand.getCommandInfo(
+                                params[0], consoleInitializer.getClient().isWASM());
             }
             if (commandInfo != null) {
                 if (CRUDCommand) {
