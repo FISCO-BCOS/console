@@ -18,9 +18,9 @@ public class Common {
     public static final String PositiveIntegerRange = "from 1 to 2147483647";
     public static final String NonNegativeIntegerRange = "from 0 to 2147483647";
     public static final String DeployLogIntegerRange = "from 1 to 100";
-    public static final String TxGasLimitRange = "from 100000 to 2147483647";
-    public static final String ConsensusLeaderPeriodRange =
-            " from 1 to " + Integer.toString(Integer.MAX_VALUE);
+    public static final String TxGasLimitRange = "must be greater than 100000";
+    public static final String TxCountLimitRange = "must be no smaller than 1";
+    public static final String ConsensusLeaderPeriodRange = "must be no smaller than 1";
     public static final String EMPTY_CONTRACT_ADDRESS =
             "0x0000000000000000000000000000000000000000";
     public static final String EMPTY_OUTPUT = "0x";
