@@ -57,14 +57,14 @@ public class SupportedCommand {
                     },
                     new ArrayList<>(
                             Arrays.asList("-h", "-help", "--h", "--H", "--help", "-H", "h")),
-                    (consoleInitializer, params, pwd) -> printDescInfo(isWasm));
+                    (consoleInitializer, nodeName, params, pwd) -> printDescInfo(isWasm));
 
     public static final CommandInfo GET_DEPLOY_LOG =
             new CommandInfo(
                     "getDeployLog",
                     "Query the log of deployed contracts",
                     HelpInfo::getDeployLogHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().getDeployLog(params),
                     -1,
                     -1,
@@ -84,7 +84,10 @@ public class SupportedCommand {
                     new CommandInfo.CommandImplement() {
                         @Override
                         public void call(
-                                ConsoleInitializer consoleInitializer, String[] params, String pwd)
+                                ConsoleInitializer consoleInitializer,
+                                String nodeName,
+                                String[] params,
+                                String pwd)
                                 throws Exception {
                             consoleInitializer.switchGroup(params);
                         }
@@ -97,7 +100,7 @@ public class SupportedCommand {
                     "setSystemConfigByKey",
                     "Set a system config value by key",
                     HelpInfo::setSystemConfigByKeyHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().setSystemConfigByKey(params),
                     2,
                     2);
@@ -107,7 +110,7 @@ public class SupportedCommand {
                     "deploy",
                     "Deploy a contract on blockchain",
                     () -> HelpInfo.deployHelp(isWasm),
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().deploy(params, pwd),
                     1,
                     -1);
@@ -116,7 +119,7 @@ public class SupportedCommand {
                     "call",
                     "Call a contract by a function and parameters",
                     () -> HelpInfo.callHelp(isWasm),
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().call(params, pwd),
                     3,
                     -1);
@@ -125,7 +128,7 @@ public class SupportedCommand {
                     "deployByCNS",
                     "Deploy a contract on blockchain by CNS",
                     HelpInfo::deployByCNSHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().deployByCNS(params),
                     2,
                     -1,
@@ -136,7 +139,7 @@ public class SupportedCommand {
                     "callByCNS",
                     "Call a contract by a function and parameters by CNS",
                     () -> HelpInfo.callByCNSHelp(),
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().callByCNS(params),
                     2,
                     -1,
@@ -147,7 +150,7 @@ public class SupportedCommand {
                     "queryCNS",
                     "Query CNS information by contract name and contract version",
                     HelpInfo::queryCNSHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().queryCNS(params),
                     1,
                     2,
@@ -158,7 +161,7 @@ public class SupportedCommand {
                     "addObserver",
                     "Add an observer node",
                     HelpInfo::addObserverHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().addObserver(params),
                     1,
                     1);
@@ -167,7 +170,7 @@ public class SupportedCommand {
                     "addSealer",
                     "Add a sealer node",
                     HelpInfo::addSealerHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().addSealer(params),
                     2,
                     2);
@@ -176,7 +179,7 @@ public class SupportedCommand {
                     "removeNode",
                     "Remove a node",
                     HelpInfo::removeNodeHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().removeNode(params),
                     1,
                     1);
@@ -186,7 +189,7 @@ public class SupportedCommand {
                     "setConsensusWeight",
                     "Set consensus weight for the specified node",
                     HelpInfo::setConsensusWeightHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().setConsensusNodeWeight(params),
                     2,
                     2);
@@ -195,7 +198,7 @@ public class SupportedCommand {
                     "quit",
                     "Quit console",
                     new ArrayList<>(Arrays.asList("quit", "q", "exit")),
-                    (consoleInitializer, params, pwd) -> System.exit(0),
+                    (consoleInitializer, nodeName, params, pwd) -> System.exit(0),
                     false);
 
     public static final CommandInfo DESC =
@@ -203,7 +206,7 @@ public class SupportedCommand {
                     "desc",
                     "Description table information",
                     HelpInfo::showDescHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().desc(params),
                     1,
                     1);
@@ -211,37 +214,37 @@ public class SupportedCommand {
             new CommandInfo(
                     "create",
                     "Create table by sql",
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().createTable(params[0], isWasm));
     public static final CommandInfo SELECT =
             new CommandInfo(
                     "select",
                     "Select records by sql",
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().select(params[0]));
     public static final CommandInfo INSERT =
             new CommandInfo(
                     "insert",
                     "Insert records by sql",
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().insert(params[0]));
     public static final CommandInfo UPDATE =
             new CommandInfo(
                     "update",
                     "Update records by sql",
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().update(params[0]));
     public static final CommandInfo DELETE =
             new CommandInfo(
                     "delete",
                     "Remove records by sql",
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().remove(params[0]));
     public static final CommandInfo GET_CURRENT_ACCOUNT =
             new CommandInfo(
                     "getCurrentAccount",
                     "Get the current account info",
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             System.out.println(
                                     consoleInitializer
                                             .getClient()
@@ -254,50 +257,62 @@ public class SupportedCommand {
                     "getBlockNumber",
                     "Query the number of most recent block",
                     HelpInfo::getBlockNumberHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getBlockNumber(params));
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getBlockNumber(nodeName, params));
     public static final CommandInfo GET_PBFT_VIEW =
             new CommandInfo(
                     "getPbftView",
                     "Query the pbft view of node",
                     HelpInfo::getPbftViewHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getPbftView(params));
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getPbftView(nodeName, params));
     public static final CommandInfo GET_SEALER_LIST =
             new CommandInfo(
                     "getSealerList",
                     "Query nodeId list for sealer nodes",
                     HelpInfo::getSealerListHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getSealerList(params));
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getSealerList(nodeName, params));
     public static final CommandInfo GET_OBSERVER_LIST =
             new CommandInfo(
                     "getObserverList",
                     "Query nodeId list for observer nodes.",
                     HelpInfo::getObserverListHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getObserverList(params));
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getObserverList(nodeName, params));
     public static final CommandInfo GET_SYNC_STATUS =
             new CommandInfo(
                     "getSyncStatus",
                     "Query sync status",
                     HelpInfo::getSyncStatusHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getSyncStatus(params));
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getSyncStatus(nodeName, params));
     public static final CommandInfo GET_CONSENSUS_STATUS =
             new CommandInfo(
                     "getConsensusStatus",
                     "Query consensus status",
                     HelpInfo::getConsensusStatusHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getConsensusStatus(params));
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getConsensusStatus(nodeName, params));
 
     public static final CommandInfo GET_PEERS =
             new CommandInfo(
                     "getPeers",
                     "Query peers currently connected to the client",
                     HelpInfo::getPeersHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getPeers(params));
 
     public static final CommandInfo GET_BLOCK_BY_HASH =
@@ -305,8 +320,10 @@ public class SupportedCommand {
                     "getBlockByHash",
                     "Query information about a block by hash",
                     HelpInfo::getBlockByHashHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getBlockByHash(params),
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getBlockByHash(nodeName, params),
                     1,
                     2);
 
@@ -315,8 +332,10 @@ public class SupportedCommand {
                     "getBlockByNumber",
                     "Query information about a block by number",
                     HelpInfo::getBlockByNumberHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getBlockByNumber(params),
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getBlockByNumber(nodeName, params),
                     1,
                     2);
 
@@ -325,8 +344,10 @@ public class SupportedCommand {
                     "getBlockHeaderByHash",
                     "Query information about a block header by hash",
                     HelpInfo::getBlockHeaderByHashHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getBlockHeaderByHash(params),
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getBlockHeaderByHash(nodeName, params),
                     1,
                     2);
     public static final CommandInfo GET_BLOCKHEADER_BY_NUMBER =
@@ -334,10 +355,10 @@ public class SupportedCommand {
                     "getBlockHeaderByNumber",
                     "Query information about a block header by block number",
                     HelpInfo::getBlockHeaderByNumberHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer
                                     .getConsoleClientFace()
-                                    .getBlockHeaderByNumber(params),
+                                    .getBlockHeaderByNumber(nodeName, params),
                     1,
                     2);
 
@@ -346,8 +367,10 @@ public class SupportedCommand {
                     "getTransactionByHash",
                     "Query information about a transaction requested by transaction hash",
                     HelpInfo::getTransactionByHashHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getTransactionByHash(params),
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getTransactionByHash(nodeName, params),
                     1,
                     2);
 
@@ -356,10 +379,10 @@ public class SupportedCommand {
                     "getTransactionByHashWithProof",
                     "Query the transaction and transaction proof by transaction hash",
                     HelpInfo::getTransactionByHashWithProofHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer
                                     .getConsoleClientFace()
-                                    .getTransactionByHashWithProof(params),
+                                    .getTransactionByHashWithProof(nodeName, params),
                     1,
                     2);
     public static final CommandInfo GET_TRANSACTION_RECEIPT_BY_HASH_WITH_PROOF =
@@ -367,10 +390,10 @@ public class SupportedCommand {
                     "getTransactionReceiptByHashWithProof",
                     "Query the receipt and transaction receipt proof by transaction hash",
                     HelpInfo::getTransactionReceiptByHashWithProofHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer
                                     .getConsoleClientFace()
-                                    .getTransactionReceiptByHashWithProof(params),
+                                    .getTransactionReceiptByHashWithProof(nodeName, params),
                     1,
                     2);
 
@@ -379,15 +402,17 @@ public class SupportedCommand {
                     "getPendingTxSize",
                     "Query pending transactions size",
                     HelpInfo::getPendingTxSizeHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getPendingTxSize(params));
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getPendingTxSize(nodeName, params));
     public static final CommandInfo GET_CODE =
             new CommandInfo(
                     "getCode",
                     "Query code at a given address",
                     HelpInfo::getCodeHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getCode(params),
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getCode(nodeName, params),
                     1,
                     1);
     public static final CommandInfo GET_TOTAL_TRANSACTION_COUNT =
@@ -395,17 +420,19 @@ public class SupportedCommand {
                     "getTotalTransactionCount",
                     "Query total transaction count",
                     HelpInfo::getTotalTransactionCountHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer
                                     .getConsoleClientFace()
-                                    .getTotalTransactionCount(params));
+                                    .getTotalTransactionCount(nodeName, params));
     public static final CommandInfo GET_TRANSACTION_RECEIPT =
             new CommandInfo(
                     "getTransactionReceipt",
                     "Query the receipt of a transaction by transaction hash",
                     HelpInfo::getTransactionReceiptHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getTransactionReceipt(params),
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getTransactionReceipt(nodeName, params),
                     1,
                     2);
     public static final CommandInfo GET_SYSTEM_CONFIG_BY_KEY =
@@ -413,8 +440,10 @@ public class SupportedCommand {
                     "getSystemConfigByKey",
                     "Query a system config value by key",
                     HelpInfo::getSystemConfigByKeyHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getSystemConfigByKey(params),
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getSystemConfigByKey(nodeName, params),
                     1,
                     1);
 
@@ -423,7 +452,7 @@ public class SupportedCommand {
                     "listDeployContractAddress",
                     "List the contractAddress for the specified contract",
                     HelpInfo::listDeployContractAddressHelp,
-                    (consoleInitializer, params, pwd) -> {
+                    (consoleInitializer, nodeName, params, pwd) -> {
                         String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
                         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
                         File contractFile =
@@ -477,7 +506,7 @@ public class SupportedCommand {
                     "registerCNS",
                     "RegisterCNS information for the given contract",
                     HelpInfo::registerCNSHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().registerCNS(params),
                     3,
                     3,
@@ -489,7 +518,7 @@ public class SupportedCommand {
                     "newAccount",
                     "Create account",
                     HelpInfo::newAccountHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().newAccount(params),
                     0,
                     2);
@@ -499,7 +528,8 @@ public class SupportedCommand {
                     "loadAccount",
                     "Load account for the transaction signature",
                     HelpInfo::loadAccountHelp,
-                    (consoleInitializer, params, pwd) -> consoleInitializer.loadAccount(params),
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer.loadAccount(params),
                     1,
                     2,
                     false);
@@ -512,7 +542,7 @@ public class SupportedCommand {
                         System.out.println("list all the accounts");
                         System.out.println("Usage: \nlistAccount");
                     },
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().listAccount(params),
                     0,
                     0);
@@ -525,7 +555,7 @@ public class SupportedCommand {
                         System.out.println("list all group list");
                         System.out.println("Usage: \nlistGroupList");
                     },
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getGroupList(params),
                     0,
                     0);
@@ -538,7 +568,7 @@ public class SupportedCommand {
                         System.out.println("list all group peers");
                         System.out.println("Usage: \ngetGroupPeers");
                     },
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getGroupPeers(params),
                     0,
                     0);
@@ -551,7 +581,7 @@ public class SupportedCommand {
                         System.out.println("get the group info");
                         System.out.println("Usage: \ngetGroupInfo");
                     },
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getGroupInfo(params),
                     0,
                     0);
@@ -564,7 +594,7 @@ public class SupportedCommand {
                         System.out.println("get all group info");
                         System.out.println("Usage: \ngetGroupInfoList");
                     },
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getGroupInfoList(params),
                     0,
                     0);
@@ -576,7 +606,7 @@ public class SupportedCommand {
                         System.out.println("get group node info");
                         System.out.println("Usage: \ngetGroupNodeInfo [nodeName]");
                     },
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getGroupNodeInfo(params),
                     1,
                     1);
@@ -586,7 +616,7 @@ public class SupportedCommand {
                     "listAbi",
                     "List functions and events info of the contract.",
                     HelpInfo::listAbiHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().listAbi(params),
                     1,
                     1,
@@ -598,7 +628,7 @@ public class SupportedCommand {
                     "cd",
                     "Change dir to given path.",
                     HelpInfo::changeDirHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().changeDir(params, pwd),
                     0,
                     1);
@@ -607,7 +637,7 @@ public class SupportedCommand {
                     "mkdir",
                     "Create dir in given path.",
                     HelpInfo::makeDirHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().makeDir(params, pwd),
                     1,
                     1);
@@ -616,7 +646,7 @@ public class SupportedCommand {
                     "ls",
                     "List resources in given path.",
                     HelpInfo::listDirHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().listDir(params, pwd),
                     0,
                     1);
@@ -626,8 +656,28 @@ public class SupportedCommand {
                     "pwd",
                     "Show absolute path of working directory name",
                     HelpInfo::pwdHelp,
-                    (consoleInitializer, params, pwd) ->
+                    (consoleInitializer, nodeName, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().pwd(pwd),
+                    0,
+                    0);
+
+    public static final CommandInfo SET_NODENAME =
+            new CommandInfo(
+                    "setNodeName",
+                    "set node name",
+                    HelpInfo::setNodeNameHelp,
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().setNodeName(params),
+                    1,
+                    1);
+
+    public static final CommandInfo CLEAR_NODENAME =
+            new CommandInfo(
+                    "clearNodeName",
+                    "clear node name",
+                    HelpInfo::clearNodeNameHelp,
+                    (consoleInitializer, nodeName, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().clearNodeName(),
                     0,
                     0);
 
@@ -647,6 +697,9 @@ public class SupportedCommand {
                             SELECT.getCommand(),
                             UPDATE.getCommand(),
                             DELETE.getCommand()));
+
+    public static List<String> NODENAME_COMMANDS =
+            new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODENAME.getCommand()));
 
     static {
         Field[] fields = SupportedCommand.class.getDeclaredFields();

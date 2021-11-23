@@ -76,7 +76,7 @@ public class NonInteractiveConsole {
                     String sqlCommand = params[0];
                     String[] inputParamString = new String[1];
                     inputParamString[0] = sqlCommand;
-                    commandInfo.callCommand(consoleInitializer, inputParamString, null);
+                    commandInfo.callCommand(consoleInitializer, "", inputParamString, null);
                 } else {
                     String[] paramWithoutQuotation = new String[params.length];
                     for (Integer i = 0; i < params.length; i++) {
@@ -87,7 +87,7 @@ public class NonInteractiveConsole {
                             paramWithoutQuotation[i] = param.substring(1, param.length() - 1);
                         }
                     }
-                    commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, null);
+                    commandInfo.callCommand(consoleInitializer, "", paramWithoutQuotation, null);
                 }
             } else {
                 System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");

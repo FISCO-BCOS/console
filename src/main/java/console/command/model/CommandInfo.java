@@ -25,7 +25,8 @@ public class CommandInfo {
 
     @FunctionalInterface
     public interface CommandImplement {
-        void call(ConsoleInitializer consoleInitializer, String[] params, String pwd)
+        void call(
+                ConsoleInitializer consoleInitializer, String nodeName, String[] params, String pwd)
                 throws Exception;
     }
 
@@ -260,7 +261,8 @@ public class CommandInfo {
         return minSupportVersion;
     }
 
-    public void callCommand(ConsoleInitializer consoleInitializer, String[] params, String pwd)
+    public void callCommand(
+            ConsoleInitializer consoleInitializer, String nodeName, String[] params, String pwd)
             throws Exception {
         // print help info
         if (params.length >= 2) {
@@ -291,7 +293,7 @@ public class CommandInfo {
         if (minSupportVersion != null) {
             return;
         }
-        commandImplement.call(consoleInitializer, params, pwd);
+        commandImplement.call(consoleInitializer, nodeName, params, pwd);
         System.out.println();
     }
 

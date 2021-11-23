@@ -35,6 +35,11 @@ public class Console {
         return JlineUtils.getLineReader(consoleInitializer.getClient());
     }
 
+    public static String shorterNodeName(String nodeName) {
+        if (nodeName.length() >= 16) return nodeName.substring(0, 16);
+        return nodeName;
+    }
+
     @SuppressWarnings("resource")
     public static void main(String[] args) {
 
@@ -59,6 +64,7 @@ public class Console {
 
         WelcomeInfo.welcome();
         String pwd = "/";
+        String nodeName = "";
         SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
         while (true) {
@@ -73,6 +79,8 @@ public class Console {
                             lineReader.readLine(
                                     "["
                                             + consoleInitializer.getGroupID()
+                                            + ", nodeName: "
+                                            + shorterNodeName(nodeName)
                                             + "]: "
                                             + ConsoleUtils.prettyPwd(pwd)
                                             + "> ");
@@ -102,9 +110,10 @@ public class Console {
                     if (SupportedCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
                         inputParamString[0] = request;
-                        commandInfo.callCommand(consoleInitializer, inputParamString, null);
+                        commandInfo.callCommand(
+                                consoleInitializer, nodeName, inputParamString, null);
                     } else if (SupportedCommand.BFS_COMMANDS.contains(params[0])) {
-                        commandInfo.callCommand(consoleInitializer, params, pwd);
+                        commandInfo.callCommand(consoleInitializer, nodeName, params, pwd);
                         if (commandInfo
                                 .getCommand()
                                 .equals(SupportedCommand.CHANGE_DIR.getCommand())) {
@@ -113,6 +122,18 @@ public class Console {
                             } else {
                                 pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
                             }
+                        }
+                    } else if (SupportedCommand.NODENAME_COMMANDS.contains(params[0])) {
+                        if (commandInfo
+                                .getCommand()
+                                .equals(SupportedCommand.SET_NODENAME.getCommand())) {
+                            commandInfo.callCommand(consoleInitializer, nodeName, params, pwd);
+                            nodeName = params[1];
+                        } else if (commandInfo
+                                .getCommand()
+                                .equals(SupportedCommand.CLEAR_NODENAME.getCommand())) {
+                            commandInfo.callCommand(consoleInitializer, nodeName, params, pwd);
+                            nodeName = "";
                         }
                     } else {
                         String[] paramWithoutQuotation = new String[params.length];
@@ -129,10 +150,11 @@ public class Console {
 
                         String cmd = commandInfo.getCommand();
                         if (cmd.startsWith("deploy") || cmd.startsWith("call")) {
-                            commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, pwd);
+                            commandInfo.callCommand(
+                                    consoleInitializer, nodeName, paramWithoutQuotation, pwd);
                         } else {
                             commandInfo.callCommand(
-                                    consoleInitializer, paramWithoutQuotation, null);
+                                    consoleInitializer, nodeName, paramWithoutQuotation, null);
                         }
 
                         if (cmd.equals(SupportedCommand.SWITCH.getCommand())) {
