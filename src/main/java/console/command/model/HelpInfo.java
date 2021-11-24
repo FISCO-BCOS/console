@@ -550,4 +550,15 @@ public class HelpInfo {
         System.out.println(
                 "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
     }
+
+    public static void setNodeNameHelp() {
+        System.out.println("set node name.");
+        System.out.println("Usage: setNodeName [nodeName]");
+        System.out.println("nodeName[Required] -- The name of node.");
+    }
+
+    public static void clearNodeNameHelp() {
+        System.out.println("clear node name.");
+        System.out.println("Usage: clearNodeName");
+    }
 }

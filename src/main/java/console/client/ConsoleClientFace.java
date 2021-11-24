@@ -58,4 +58,10 @@ public interface ConsoleClientFace {
     void getGroupInfoList(String[] params) throws JsonProcessingException;
 
     void getGroupNodeInfo(String[] params) throws JsonProcessingException;
+
+    void setNodeName(String[] params) throws IOException;
+
+    void clearNodeName();
+
+    String getNodeName();
 }

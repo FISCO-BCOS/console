@@ -35,6 +35,11 @@ public class Console {
         return JlineUtils.getLineReader(consoleInitializer.getClient());
     }
 
+    public static String shortenNodeName(String nodeName) {
+        if (nodeName.length() >= 16) return nodeName.substring(0, 16);
+        return nodeName;
+    }
+
     @SuppressWarnings("resource")
     public static void main(String[] args) {
 
@@ -73,6 +78,8 @@ public class Console {
                             lineReader.readLine(
                                     "["
                                             + consoleInitializer.getGroupID()
+                                            + ", nodeName: "
+                                            + shortenNodeName(consoleInitializer.getNodeName())
                                             + "]: "
                                             + ConsoleUtils.prettyPwd(pwd)
                                             + "> ");
@@ -113,6 +120,16 @@ public class Console {
                             } else {
                                 pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
                             }
+                        }
+                    } else if (SupportedCommand.NODENAME_COMMANDS.contains(params[0])) {
+                        if (commandInfo
+                                .getCommand()
+                                .equals(SupportedCommand.SET_NODENAME.getCommand())) {
+                            commandInfo.callCommand(consoleInitializer, params, pwd);
+                        } else if (commandInfo
+                                .getCommand()
+                                .equals(SupportedCommand.CLEAR_NODENAME.getCommand())) {
+                            commandInfo.callCommand(consoleInitializer, params, pwd);
                         }
                     } else {
                         String[] paramWithoutQuotation = new String[params.length];
