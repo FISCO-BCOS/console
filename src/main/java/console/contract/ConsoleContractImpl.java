@@ -24,7 +24,6 @@ import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.codec.ABICodec;
 import org.fisco.bcos.sdk.codec.ABICodecException;
 import org.fisco.bcos.sdk.codec.EventEncoder;
-import org.fisco.bcos.sdk.codec.datatypes.*;
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.codec.wrapper.ABICodecObject;
 import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
