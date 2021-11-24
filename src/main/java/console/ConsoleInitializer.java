@@ -35,6 +35,7 @@ public class ConsoleInitializer {
     private PrecompiledFace precompiledFace;
     private ConsoleContractFace consoleContractFace;
     public static boolean DisableAutoCompleter = false;
+    private String nodeName = "";
 
     public void init(String[] args) throws ConfigException {
         AccountInfo accountInfo = null;
@@ -314,6 +315,11 @@ public class ConsoleInitializer {
         // this.bcosSDK.stopAll();
         logger.info("stop console initializer");
         System.exit(0);
+    }
+
+    public String getNodeName() {
+        this.nodeName = consoleClientFace.getNodeName();
+        return this.nodeName;
     }
 
     public Client getClient() {

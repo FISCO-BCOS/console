@@ -631,6 +631,26 @@ public class SupportedCommand {
                     0,
                     0);
 
+    public static final CommandInfo SET_NODENAME =
+            new CommandInfo(
+                    "setNodeName",
+                    "set node name",
+                    HelpInfo::setNodeNameHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().setNodeName(params),
+                    1,
+                    1);
+
+    public static final CommandInfo CLEAR_NODENAME =
+            new CommandInfo(
+                    "clearNodeName",
+                    "clear node name",
+                    HelpInfo::clearNodeNameHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().clearNodeName(),
+                    0,
+                    0);
+
     public static List<String> BFS_COMMANDS =
             new ArrayList<>(
                     Arrays.asList(
@@ -647,6 +667,9 @@ public class SupportedCommand {
                             SELECT.getCommand(),
                             UPDATE.getCommand(),
                             DELETE.getCommand()));
+
+    public static List<String> NODENAME_COMMANDS =
+            new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODENAME.getCommand()));
 
     static {
         Field[] fields = SupportedCommand.class.getDeclaredFields();
