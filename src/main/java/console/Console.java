@@ -123,6 +123,7 @@ public class Console {
                             } else {
                                 pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
                             }
+                            JlineUtils.switchPwd(pwd);
                         }
                     } else if (SupportedCommand.NODENAME_COMMANDS.contains(params[0])) {
                         if (commandInfo
