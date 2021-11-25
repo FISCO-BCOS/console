@@ -40,6 +40,10 @@ public class Console {
         return nodeName;
     }
 
+    public static String prettyNodeName(String nodeName) {
+        return nodeName == "" ? "" : ", nodeName: " + shortenNodeName(nodeName);
+    }
+
     @SuppressWarnings("resource")
     public static void main(String[] args) {
 
@@ -78,8 +82,7 @@ public class Console {
                             lineReader.readLine(
                                     "["
                                             + consoleInitializer.getGroupID()
-                                            + ", nodeName: "
-                                            + shortenNodeName(consoleInitializer.getNodeName())
+                                            + prettyNodeName(consoleInitializer.getNodeName())
                                             + "]: "
                                             + ConsoleUtils.prettyPwd(pwd)
                                             + "> ");
