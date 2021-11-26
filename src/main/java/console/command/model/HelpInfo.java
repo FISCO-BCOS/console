@@ -544,11 +544,30 @@ public class HelpInfo {
         System.out.println("Usage: pwd");
     }
 
-    public static void deployWasm() {
-        System.out.println("Deploy WASM contract.");
-        System.out.println("Usage: deployWasm [contractNameOrPath]");
+    public static void initializeHelp() {
+        System.out.println("Usage: \ninitialize binPath abiPath");
+        System.out.println("* binPath -- The path of contract template.");
+        System.out.println("* abiPath -- The path of corresponding ABI.");
+    }
+
+    public static void signHelp() {
+        System.out.println("Usage: \nsign contractName parameters...");
+        System.out.println("* contractName -- The name of the contract.");
+        System.out.println("* parameters -- The parameters(split by space) of the contract.");
+    }
+
+    public static void exerciseHelp() {
+        System.out.println("Usage: \nexercise contract rightName parameters...");
         System.out.println(
-                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
+                "* contract -- The name and ID(split by `#`) of the exercised contract.");
+        System.out.println("* rightName -- The name of the exercised right.");
+        System.out.println("* parameters -- The parameters(split by space) of the contract.");
+    }
+
+    public static void fetchHelp() {
+        System.out.println("Usage: \nfetch contract");
+        System.out.println(
+                "* contract -- The name and ID(split by `#`) of the exercised contract.");
     }
 
     public static void setNodeNameHelp() {

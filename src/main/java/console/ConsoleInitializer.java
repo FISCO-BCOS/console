@@ -2,6 +2,8 @@ package console;
 
 import console.client.ConsoleClientFace;
 import console.client.ConsoleClientImpl;
+import console.collaboration.CollaborationFace;
+import console.collaboration.CollaborationImpl;
 import console.common.ConsoleUtils;
 import console.contract.ConsoleContractFace;
 import console.contract.ConsoleContractImpl;
@@ -34,6 +36,7 @@ public class ConsoleInitializer {
     private ConsoleClientFace consoleClientFace;
     private PrecompiledFace precompiledFace;
     private ConsoleContractFace consoleContractFace;
+    private CollaborationFace collaborationFace;
     public static boolean DisableAutoCompleter = false;
     private String nodeName = "";
 
@@ -118,6 +121,8 @@ public class ConsoleInitializer {
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
+            this.collaborationFace = new CollaborationImpl(client);
+
         } catch (Exception e) {
             System.out.println(
                     "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
@@ -238,6 +243,7 @@ public class ConsoleInitializer {
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
+            this.collaborationFace = new CollaborationImpl(client);
             System.out.println("Switched to group " + group + ".");
             System.out.println();
         } catch (Exception e) {
@@ -308,6 +314,7 @@ public class ConsoleInitializer {
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
         this.consoleContractFace = new ConsoleContractImpl(client);
+        this.collaborationFace = new CollaborationImpl(client);
         System.out.println("Load account " + params[1] + " success!");
     }
 
@@ -344,5 +351,9 @@ public class ConsoleInitializer {
 
     public ConsoleContractFace getConsoleContractFace() {
         return consoleContractFace;
+    }
+
+    public CollaborationFace getCollaborationFace() {
+        return collaborationFace;
     }
 }

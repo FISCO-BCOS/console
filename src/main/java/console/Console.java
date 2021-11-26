@@ -179,6 +179,7 @@ public class Console {
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
             } catch (ContractException e) {
+                e.printStackTrace();
                 ConsoleUtils.printJson(
                         "{\"code\":"
                                 + e.getErrorCode()
@@ -225,6 +226,7 @@ public class Console {
                 consoleInitializer.stop();
                 break;
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println(e.getMessage());
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);

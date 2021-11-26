@@ -24,10 +24,6 @@ import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.codec.ABICodec;
 import org.fisco.bcos.sdk.codec.ABICodecException;
 import org.fisco.bcos.sdk.codec.EventEncoder;
-import org.fisco.bcos.sdk.codec.datatypes.Array;
-import org.fisco.bcos.sdk.codec.datatypes.Bytes;
-import org.fisco.bcos.sdk.codec.datatypes.StructType;
-import org.fisco.bcos.sdk.codec.datatypes.Type;
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.codec.wrapper.ABICodecObject;
 import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
@@ -86,64 +82,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             path = ConsoleUtils.fixedBfsParam(path, pwd);
             List<String> inputParams = Arrays.asList(params).subList(4, params.length);
             deployWasm(binPath, abiPath, path, inputParams);
-        }
-    }
-
-    private static String bytesToHex(byte[] bytes) {
-        String strHex = "";
-        StringBuilder sb = new StringBuilder("");
-        for (int n = 0; n < bytes.length; n++) {
-            strHex = Integer.toHexString(bytes[n] & 0xFF);
-            sb.append((strHex.length() == 1) ? "0" + strHex : strHex);
-        }
-        return sb.toString().trim();
-    }
-
-    public void printReturnResults(List<Type> results) {
-        if (results == null) {
-            return;
-        }
-        StringBuilder resultType = new StringBuilder();
-        StringBuilder resultData = new StringBuilder();
-        resultType.append("(");
-        resultData.append("(");
-        for (int i = 0; i < results.size(); ++i) {
-            getReturnResults(resultType, resultData, results.get(i));
-            if (i != results.size() - 1) {
-                resultType.append(", ");
-                resultData.append(", ");
-            }
-        }
-        resultType.append(")");
-        resultData.append(")");
-        System.out.println("Return value size:" + results.size());
-        System.out.println("Return types: " + resultType);
-        System.out.println("Return values:" + resultData);
-    }
-
-    public void getReturnResults(StringBuilder resultType, StringBuilder resultData, Type result) {
-        if (result instanceof Array) {
-            resultType.append("[");
-            resultData.append("[");
-            List<Type> values = ((Array) result).getValue();
-            for (int i = 0; i < values.size(); ++i) {
-                getReturnResults(resultType, resultData, values.get(i));
-                if (i != values.size() - 1) {
-                    resultType.append(", ");
-                    resultData.append(", ");
-                }
-            }
-            resultData.append("]");
-            resultType.append("]");
-        } else if (result instanceof StructType) {
-            throw new UnsupportedOperationException();
-        } else if (result instanceof Bytes) {
-            String data = "hex://0x" + bytesToHex(((Bytes) result).getValue());
-            resultType.append(result.getTypeAsString());
-            resultData.append(data);
-        } else {
-            resultType.append(result.getTypeAsString());
-            resultData.append(result.getValue());
         }
     }
 
@@ -207,7 +145,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             resultType.append(abiObject.getValueType()).append(", ");
             if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
-                String data = "hex://0x" + bytesToHex(ABICodecObject.formatBytesN(abiObject));
+                String data =
+                        "hex://0x"
+                                + ConsoleUtils.bytesToHex(ABICodecObject.formatBytesN(abiObject));
                 resultData.append(data).append(", ");
             } else if (returnObject.size() > i) {
                 resultData.append(returnObject.get(i).toString()).append(", ");
@@ -604,7 +544,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     System.out.println("description: " + "transaction executed successfully");
                     System.out.println("Return message: " + response.getReturnMessage());
                     ConsoleUtils.singleLine();
-                    printReturnResults(response.getResults());
+                    ConsoleUtils.printReturnResults(response.getResults());
                 } else {
                     String errorMessage = response.getReturnMessage();
                     System.out.println(
@@ -644,7 +584,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 ConsoleUtils.singleLine();
                 System.out.println("Receipt message: " + response.getReceiptMessages());
                 System.out.println("Return message: " + response.getReturnMessage());
-                printReturnResults(response.getResults());
+                ConsoleUtils.printReturnResults(response.getResults());
                 ConsoleUtils.singleLine();
                 if (response.getEvents() != null && !response.getEvents().equals("")) {
                     System.out.println("Event logs");
