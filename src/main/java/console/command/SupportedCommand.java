@@ -130,7 +130,7 @@ public class SupportedCommand {
                     2,
                     -1,
                     true,
-                    false);
+                    true);
     public static final CommandInfo CALL_BY_CNS =
             new CommandInfo(
                     "callByCNS",
@@ -141,7 +141,7 @@ public class SupportedCommand {
                     2,
                     -1,
                     true,
-                    false);
+                    true);
     public static final CommandInfo QUERY_CNS =
             new CommandInfo(
                     "queryCNS",
@@ -152,7 +152,7 @@ public class SupportedCommand {
                     1,
                     2,
                     true,
-                    false);
+                    true);
     public static final CommandInfo ADD_OBSERVER =
             new CommandInfo(
                     "addObserver",
@@ -237,6 +237,43 @@ public class SupportedCommand {
                     "Remove records by sql",
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().remove(params[0]));
+
+    public static final CommandInfo INITIALIZE =
+            new CommandInfo(
+                    "initialize",
+                    "Initialize a collaboration",
+                    HelpInfo::initializeHelp,
+                    (consoleInitializer, params, pwd) -> {
+                        consoleInitializer.getCollaborationFace().initialize(params);
+                    });
+
+    public static final CommandInfo SIGN =
+            new CommandInfo(
+                    "sign",
+                    "Sign a contract",
+                    HelpInfo::signHelp,
+                    (consoleInitializer, params, pwd) -> {
+                        consoleInitializer.getCollaborationFace().sign(params);
+                    });
+
+    public static final CommandInfo EXERCISE =
+            new CommandInfo(
+                    "execute",
+                    "Exercise an right of a contract",
+                    HelpInfo::exerciseHelp,
+                    (consoleInitializer, params, pwd) -> {
+                        consoleInitializer.getCollaborationFace().exercise(params);
+                    });
+
+    public static final CommandInfo FETCH =
+            new CommandInfo(
+                    "fetch",
+                    "Fetch a contract",
+                    HelpInfo::fetchHelp,
+                    (consoleInitializer, params, pwd) -> {
+                        consoleInitializer.getCollaborationFace().fetch(params);
+                    });
+
     public static final CommandInfo GET_CURRENT_ACCOUNT =
             new CommandInfo(
                     "getCurrentAccount",
@@ -482,7 +519,7 @@ public class SupportedCommand {
                     3,
                     3,
                     true,
-                    false);
+                    true);
 
     public static final CommandInfo NEW_ACCOUNT =
             new CommandInfo(
@@ -670,6 +707,14 @@ public class SupportedCommand {
 
     public static List<String> NODENAME_COMMANDS =
             new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODENAME.getCommand()));
+
+    public static List<String> COLLABORATION_COMMANDS =
+            new ArrayList<>(
+                    Arrays.asList(
+                            INITIALIZE.getCommand(),
+                            SIGN.getCommand(),
+                            EXERCISE.getCommand(),
+                            FETCH.getCommand()));
 
     static {
         Field[] fields = SupportedCommand.class.getDeclaredFields();
