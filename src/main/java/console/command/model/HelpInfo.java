@@ -10,8 +10,8 @@ public class HelpInfo {
         System.out.println();
     }
 
-    public static void printHelp(String func, boolean isWasm) {
-        CommandInfo commandInfo = SupportedCommand.getCommandInfo(func, isWasm);
+    public static void printHelp(String func, boolean isWasm, boolean isAuthOpen) {
+        CommandInfo commandInfo = SupportedCommand.getCommandInfo(func, isWasm, isAuthOpen);
         if (commandInfo != null) {
             commandInfo.printUsageInfo();
         }

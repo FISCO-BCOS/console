@@ -54,6 +54,8 @@ public class NonInteractiveConsole {
         }
 
         SupportedCommand.isWasm = consoleInitializer.getClient().isWASM();
+        SupportedCommand.isAuthOpen =
+                consoleInitializer.getClient().getConfigOption().getAccountConfig().getAuthCheck();
         try {
             String[] command = params[0].split(" ");
             CommandInfo commandInfo = null;
@@ -62,14 +64,26 @@ public class NonInteractiveConsole {
             if (command != null && command.length > 1) {
                 commandInfo =
                         SupportedCommand.getCommandInfo(
-                                command[0], consoleInitializer.getClient().isWASM());
+                                command[0],
+                                consoleInitializer.getClient().isWASM(),
+                                consoleInitializer
+                                        .getClient()
+                                        .getConfigOption()
+                                        .getAccountConfig()
+                                        .getAuthCheck());
                 if (SupportedCommand.CRUD_COMMANDS.contains(command[0])) {
                     CRUDCommand = true;
                 }
             } else {
                 commandInfo =
                         SupportedCommand.getCommandInfo(
-                                params[0], consoleInitializer.getClient().isWASM());
+                                params[0],
+                                consoleInitializer.getClient().isWASM(),
+                                consoleInitializer
+                                        .getClient()
+                                        .getConfigOption()
+                                        .getAccountConfig()
+                                        .getAuthCheck());
             }
             if (commandInfo != null) {
                 if (CRUDCommand) {

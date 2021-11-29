@@ -59,6 +59,8 @@ public class Console {
 
         WelcomeInfo.welcome();
         String pwd = "/";
+        SupportedCommand.setIsAuthOpen(
+                consoleInitializer.getClient().getConfigOption().getAccountConfig().getAuthCheck());
         SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
         while (true) {
@@ -97,7 +99,13 @@ public class Console {
                 // execute the command
                 CommandInfo commandInfo =
                         SupportedCommand.getCommandInfo(
-                                params[0], consoleInitializer.getClient().isWASM());
+                                params[0],
+                                consoleInitializer.getClient().isWASM(),
+                                consoleInitializer
+                                        .getClient()
+                                        .getConfigOption()
+                                        .getAccountConfig()
+                                        .getAuthCheck());
                 if (commandInfo != null) {
                     if (SupportedCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
@@ -149,6 +157,12 @@ public class Console {
                         if (cmd.equals(SupportedCommand.SWITCH.getCommand())) {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
+                            SupportedCommand.setIsAuthOpen(
+                                    consoleInitializer
+                                            .getClient()
+                                            .getConfigOption()
+                                            .getAccountConfig()
+                                            .getAuthCheck());
                             SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
                         }
                     }
