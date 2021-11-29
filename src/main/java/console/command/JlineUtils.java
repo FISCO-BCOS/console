@@ -60,7 +60,10 @@ public class JlineUtils {
 
         List<Completer> completers = new ArrayList<Completer>();
 
-        List<String> commands = SupportedCommand.getAllCommand(client.isWASM());
+        List<String> commands =
+                SupportedCommand.getAllCommand(
+                        client.isWASM(),
+                        client.getConfigOption().getAccountConfig().getAuthCheck());
         contractAddressCompleter = new ContractAddressCompleter(client);
         contractMethodCompleter = new ContractMethodCompleter(client);
         accountCompleter = new AccountCompleter(client);

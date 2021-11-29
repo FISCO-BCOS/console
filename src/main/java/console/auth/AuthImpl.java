@@ -22,10 +22,16 @@ public class AuthImpl implements AuthFace {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthImpl.class);
     private AuthManager authManager;
+    private boolean authAvailable = false;
 
     public AuthImpl(Client client) throws ContractException {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        this.authManager = new AuthManager(client, cryptoKeyPair);
+        this.authAvailable = client.getConfigOption().getAccountConfig().getAuthCheck();
+        if (this.authAvailable) {
+            this.authManager = new AuthManager(client, cryptoKeyPair);
+        } else {
+            logger.info("Auth check disable, not use auth.");
+        }
     }
 
     @Override

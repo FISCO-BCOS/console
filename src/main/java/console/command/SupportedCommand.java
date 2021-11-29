@@ -33,15 +33,20 @@ import java.util.stream.Collectors;
 public class SupportedCommand {
     protected static Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
     public static boolean isWasm = false;
+    public static boolean isAuthOpen = false;
+
+    public static void setIsAuthOpen(boolean authOpen) {
+        isAuthOpen = authOpen;
+    }
 
     public static void setIsWasm(boolean wasm) {
         isWasm = wasm;
         if (wasm) {
-            SupportedCommand.getCommandInfo("deploy", true).setMinParamLength(3);
-            SupportedCommand.getCommandInfo("call", true).setMinParamLength(2);
+            SupportedCommand.getCommandInfo("deploy", true, isAuthOpen).setMinParamLength(3);
+            SupportedCommand.getCommandInfo("call", true, isAuthOpen).setMinParamLength(2);
         } else {
-            SupportedCommand.getCommandInfo("deploy", false).setMinParamLength(1);
-            SupportedCommand.getCommandInfo("call", false).setMinParamLength(1);
+            SupportedCommand.getCommandInfo("deploy", false, isAuthOpen).setMinParamLength(1);
+            SupportedCommand.getCommandInfo("call", false, isAuthOpen).setMinParamLength(1);
         }
     }
 
@@ -57,7 +62,7 @@ public class SupportedCommand {
                     },
                     new ArrayList<>(
                             Arrays.asList("-h", "-help", "--h", "--H", "--help", "-H", "h")),
-                    (consoleInitializer, params, pwd) -> printDescInfo(isWasm));
+                    (consoleInitializer, params, pwd) -> printDescInfo(isWasm, isAuthOpen));
 
     public static final CommandInfo GET_DEPLOY_LOG =
             new CommandInfo(
@@ -696,7 +701,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().createUpdateGovernorProposal(params),
                     2,
-                    2);
+                    2,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo SET_RATE_PROPOSAL =
             new CommandInfo(
@@ -706,7 +714,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().createSetRateProposal(params),
                     2,
-                    2);
+                    2,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo SET_DEPLOY_AUTH_TYPE_PROPOSAL =
             new CommandInfo(
@@ -718,7 +729,10 @@ public class SupportedCommand {
                                     .getAuthFace()
                                     .createSetDeployAuthTypeProposal(params),
                     1,
-                    1);
+                    1,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo OPEN_DEPLOY_ACL_PROPOSAL =
             new CommandInfo(
@@ -728,7 +742,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().createOpenDeployAuthProposal(params),
                     1,
-                    1);
+                    1,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo CLOSE_DEPLOY_ACL_PROPOSAL =
             new CommandInfo(
@@ -738,7 +755,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().createCloseDeployAuthProposal(params),
                     1,
-                    1);
+                    1,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo RESET_ADMIN_PROPOSAL =
             new CommandInfo(
@@ -748,7 +768,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().createResetAdminProposal(params),
                     2,
-                    2);
+                    2,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo REVOKE_PROPOSAL =
             new CommandInfo(
@@ -758,7 +781,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().revokeProposal(params),
                     1,
-                    1);
+                    1,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo VOTE_PROPOSAL =
             new CommandInfo(
@@ -768,7 +794,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().voteProposal(params),
                     1,
-                    2);
+                    2,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo GET_PROPOSAL_INFO =
             new CommandInfo(
@@ -778,7 +807,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().getProposalInfo(params),
                     1,
-                    1);
+                    1,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo GET_COMMITTEE_INFO =
             new CommandInfo(
@@ -788,7 +820,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().getCommitteeInfo(params),
                     0,
-                    0);
+                    0,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo GET_CONTRACT_ADMIN =
             new CommandInfo(
@@ -798,7 +833,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().getContractAdmin(params),
                     1,
-                    1);
+                    1,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo GET_DEPLOY_AUTH =
             new CommandInfo(
@@ -808,7 +846,10 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().getDeployStrategy(params),
                     0,
-                    0);
+                    0,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo SET_METHOD_AUTH_TYPE =
             new CommandInfo(
@@ -820,7 +861,10 @@ public class SupportedCommand {
                                     .getAuthFace()
                                     .setMethodAuthType(consoleInitializer, params),
                     3,
-                    3);
+                    3,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo OPEN_METHOD_AUTH =
             new CommandInfo(
@@ -832,7 +876,10 @@ public class SupportedCommand {
                                     .getAuthFace()
                                     .openMethodAuth(consoleInitializer, params),
                     3,
-                    3);
+                    3,
+                    false,
+                    false,
+                    true);
 
     public static final CommandInfo CLOSE_METHOD_AUTH =
             new CommandInfo(
@@ -844,7 +891,10 @@ public class SupportedCommand {
                                     .getAuthFace()
                                     .closeMethodAuth(consoleInitializer, params),
                     3,
-                    3);
+                    3,
+                    false,
+                    false,
+                    true);
 
     public static List<String> BFS_COMMANDS =
             new ArrayList<>(
@@ -893,10 +943,11 @@ public class SupportedCommand {
         }
     }
 
-    public static CommandInfo getCommandInfo(String command, boolean isWasm) {
+    public static CommandInfo getCommandInfo(String command, boolean isWasm, boolean isAuthOpen) {
         if (commandToCommandInfo.containsKey(command)) {
             CommandInfo commandInfo = commandToCommandInfo.get(command);
-            if (isWasm && !commandInfo.isWasmSupport()) {
+            if (isWasm && !commandInfo.isWasmSupport()
+                    || (!isAuthOpen && commandInfo.isNeedAuthOpen())) {
                 return null;
             }
             return commandInfo;
@@ -904,7 +955,7 @@ public class SupportedCommand {
         return null;
     }
 
-    public static List<String> getAllCommand(boolean isWasm) {
+    public static List<String> getAllCommand(boolean isWasm, boolean isAuthOpen) {
         if (isWasm) {
             return commandToCommandInfo
                     .keySet()
@@ -912,11 +963,18 @@ public class SupportedCommand {
                     .filter((key) -> commandToCommandInfo.get(key).isWasmSupport())
                     .collect(Collectors.toList());
         } else {
+            if (!isAuthOpen) {
+                return commandToCommandInfo
+                        .keySet()
+                        .stream()
+                        .filter((key) -> !commandToCommandInfo.get(key).isNeedAuthOpen())
+                        .collect(Collectors.toList());
+            }
             return new ArrayList<>(commandToCommandInfo.keySet());
         }
     }
 
-    public static void printDescInfo(boolean isWasm) {
+    public static void printDescInfo(boolean isWasm, boolean isAuthOpen) {
         Set<String> keys = commandToCommandInfo.keySet();
         List<String> commandList = new ArrayList<>(keys);
         Collections.sort(commandList);
@@ -924,7 +982,8 @@ public class SupportedCommand {
         for (String s : commandList) {
             CommandInfo commandInfo = commandToCommandInfo.get(s);
             if (outputtedCommand.contains(commandInfo.getCommand())
-                    || (isWasm && !commandInfo.isWasmSupport())) {
+                    || (isWasm && !commandInfo.isWasmSupport())
+                    || (!isAuthOpen && commandInfo.isNeedAuthOpen())) {
                 continue;
             }
             commandInfo.printDescInfo();
