@@ -31,10 +31,7 @@ import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.model.PrecompiledConstant;
-import org.fisco.bcos.sdk.model.PrecompiledRetCode;
-import org.fisco.bcos.sdk.model.RetCode;
-import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
+import org.fisco.bcos.sdk.model.*;
 import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.utils.AddressUtils;
 import org.fisco.bcos.sdk.utils.Numeric;
@@ -621,12 +618,14 @@ public class PrecompiledImpl implements PrecompiledFace {
         String contractVersion = params[3];
         String abi = "";
         try {
+            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbiAndBin(
                             client.getGroup(),
                             contractName,
                             contractNameOrPath,
                             contractAddress,
+                            sm,
                             false);
             abi = abiAndBin.getAbi();
         } catch (CompileContractException e) {

@@ -220,9 +220,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractName, String contractNameOrPath, List<String> inputParams)
             throws ConsoleMessageException {
         try {
-            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath);
+            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
+            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath, sm);
             String bin = abiAndBin.getBin();
-            if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE) {
+            if (sm) {
                 bin = abiAndBin.getSmBin();
             }
             TransactionResponse response =
@@ -559,6 +560,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             List<String> callParams)
             throws IOException, CodeGenException, ABICodecException, CompileContractException {
         try {
+            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
             // load bin and abi
             if (abiAndBin == null) {
                 abiAndBin =
@@ -567,6 +569,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                 contractName,
                                 contractNameOrPath,
                                 contractAddress,
+                                sm,
                                 !this.client.isWASM());
             }
             // call
@@ -702,9 +705,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return;
             }
             String contractAddress = response.getContractAddress();
+            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbiAndBin(
-                            client.getGroup(), contractNameOrPath, contractName, contractAddress);
+                            client.getGroup(),
+                            contractNameOrPath,
+                            contractName,
+                            contractAddress,
+                            sm);
             // register cns
             ConsoleUtils.printJson(
                     cnsService

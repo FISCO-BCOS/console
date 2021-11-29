@@ -336,7 +336,8 @@ public class ConsoleUtils {
         /** ecdsa compile */
         System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
         AbiAndBin abiAndBin =
-                ContractCompiler.compileSolToBinAndAbi(solFile, abiDir, binDir, librariesOption);
+                ContractCompiler.compileSolToBinAndAbi(
+                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
 
         FileUtils.writeStringToFile(new File(abiDir + contractName + ".abi"), abiAndBin.getAbi());
