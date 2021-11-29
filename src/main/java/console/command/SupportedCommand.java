@@ -671,22 +671,180 @@ public class SupportedCommand {
     public static final CommandInfo SET_NODENAME =
             new CommandInfo(
                     "setNodeName",
-                    "set node name",
+                    "Set default node name to send request.",
                     HelpInfo::setNodeNameHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().setNodeName(params),
                     1,
                     1);
 
-    public static final CommandInfo CLEAR_NODENAME =
+    public static final CommandInfo CLEAR_NODE_NAME =
             new CommandInfo(
                     "clearNodeName",
-                    "clear node name",
+                    "Clear default node name to empty.",
                     HelpInfo::clearNodeNameHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().clearNodeName(),
                     0,
                     0);
+
+    public static final CommandInfo UPDATE_PROPOSAL =
+            new CommandInfo(
+                    "updateGovernorProposal",
+                    "Create a proposal to committee, which attempt to update a governor.",
+                    HelpInfo::updateGovernorProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createUpdateGovernorProposal(params),
+                    2,
+                    2);
+
+    public static final CommandInfo SET_RATE_PROPOSAL =
+            new CommandInfo(
+                    "setRateProposal",
+                    "Create a proposal to committee, which attempt to update committee vote rate.",
+                    HelpInfo::setRateProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createSetRateProposal(params),
+                    2,
+                    2);
+
+    public static final CommandInfo SET_DEPLOY_AUTH_TYPE_PROPOSAL =
+            new CommandInfo(
+                    "setDeployAuthTypeProposal",
+                    "Create a proposal to committee, which attempt to set deploy ACL type globally.",
+                    HelpInfo::setDeployAuthTypeProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .createSetDeployAuthTypeProposal(params),
+                    1,
+                    1);
+
+    public static final CommandInfo OPEN_DEPLOY_ACL_PROPOSAL =
+            new CommandInfo(
+                    "openDeployAuthProposal",
+                    "Create a proposal to committee, which attempt to open deploy ACL for specific account.",
+                    HelpInfo::openDeployAuthProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createOpenDeployAuthProposal(params),
+                    1,
+                    1);
+
+    public static final CommandInfo CLOSE_DEPLOY_ACL_PROPOSAL =
+            new CommandInfo(
+                    "closeDeployAuthProposal",
+                    "Create a proposal to committee, which attempt to close deploy ACL for specific account.",
+                    HelpInfo::closeDeployAuthProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createCloseDeployAuthProposal(params),
+                    1,
+                    1);
+
+    public static final CommandInfo RESET_ADMIN_PROPOSAL =
+            new CommandInfo(
+                    "resetAdminProposal",
+                    "Create a proposal to committee, which attempt to reset a specific contract's admin.",
+                    HelpInfo::resetAdminProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createResetAdminProposal(params),
+                    2,
+                    2);
+
+    public static final CommandInfo REVOKE_PROPOSAL =
+            new CommandInfo(
+                    "revokeProposal",
+                    "Revoke a specific proposal from committee.",
+                    HelpInfo::revokeProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().revokeProposal(params),
+                    1,
+                    1);
+
+    public static final CommandInfo VOTE_PROPOSAL =
+            new CommandInfo(
+                    "voteProposal",
+                    "Vote a specific proposal to committee.",
+                    HelpInfo::voteProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().voteProposal(params),
+                    1,
+                    2);
+
+    public static final CommandInfo GET_PROPOSAL_INFO =
+            new CommandInfo(
+                    "getProposalInfo",
+                    "Get a specific proposal info from committee.",
+                    HelpInfo::getProposalInfoHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getProposalInfo(params),
+                    1,
+                    1);
+
+    public static final CommandInfo GET_COMMITTEE_INFO =
+            new CommandInfo(
+                    "getCommitteeInfo",
+                    "Get committee info.",
+                    HelpInfo::getCommitteeInfoHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getCommitteeInfo(params),
+                    0,
+                    0);
+
+    public static final CommandInfo GET_CONTRACT_ADMIN =
+            new CommandInfo(
+                    "getContractAdmin",
+                    "Get admin address from specific contract.",
+                    HelpInfo::getContractAdminHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getContractAdmin(params),
+                    1,
+                    1);
+
+    public static final CommandInfo GET_DEPLOY_AUTH =
+            new CommandInfo(
+                    "getDeployAuth",
+                    "Get deploy ACL strategy globally.",
+                    HelpInfo::getDeployAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getDeployStrategy(params),
+                    0,
+                    0);
+
+    public static final CommandInfo SET_METHOD_AUTH_TYPE =
+            new CommandInfo(
+                    "setMethodAuth",
+                    "Set a method ACL type in specific contract.",
+                    HelpInfo::setMethodAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .setMethodAuthType(consoleInitializer, params),
+                    3,
+                    3);
+
+    public static final CommandInfo OPEN_METHOD_AUTH =
+            new CommandInfo(
+                    "openMethodAuth",
+                    "Open method ACL for account in specific contract.",
+                    HelpInfo::openMethodAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .openMethodAuth(consoleInitializer, params),
+                    3,
+                    3);
+
+    public static final CommandInfo CLOSE_METHOD_AUTH =
+            new CommandInfo(
+                    "closeMethodAuth",
+                    "Close method ACL for account in specific contract.",
+                    HelpInfo::closeMethodAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .closeMethodAuth(consoleInitializer, params),
+                    3,
+                    3);
 
     public static List<String> BFS_COMMANDS =
             new ArrayList<>(
@@ -706,7 +864,7 @@ public class SupportedCommand {
                             DELETE.getCommand()));
 
     public static List<String> NODENAME_COMMANDS =
-            new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODENAME.getCommand()));
+            new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODE_NAME.getCommand()));
 
     public static List<String> COLLABORATION_COMMANDS =
             new ArrayList<>(

@@ -35,15 +35,6 @@ public class Console {
         return JlineUtils.getLineReader(consoleInitializer.getClient());
     }
 
-    public static String shortenNodeName(String nodeName) {
-        if (nodeName.length() >= 16) return nodeName.substring(0, 16);
-        return nodeName;
-    }
-
-    public static String prettyNodeName(String nodeName) {
-        return nodeName == "" ? "" : ", nodeName: " + shortenNodeName(nodeName);
-    }
-
     @SuppressWarnings("resource")
     public static void main(String[] args) {
 
@@ -82,7 +73,6 @@ public class Console {
                             lineReader.readLine(
                                     "["
                                             + consoleInitializer.getGroupID()
-                                            + prettyNodeName(consoleInitializer.getNodeName())
                                             + "]: "
                                             + ConsoleUtils.prettyPwd(pwd)
                                             + "> ");
@@ -132,7 +122,7 @@ public class Console {
                             commandInfo.callCommand(consoleInitializer, params, pwd);
                         } else if (commandInfo
                                 .getCommand()
-                                .equals(SupportedCommand.CLEAR_NODENAME.getCommand())) {
+                                .equals(SupportedCommand.CLEAR_NODE_NAME.getCommand())) {
                             commandInfo.callCommand(consoleInitializer, params, pwd);
                         }
                     } else {
@@ -180,7 +170,6 @@ public class Console {
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);
             } catch (ContractException e) {
-                e.printStackTrace();
                 ConsoleUtils.printJson(
                         "{\"code\":"
                                 + e.getErrorCode()
