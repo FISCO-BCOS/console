@@ -280,17 +280,12 @@ public class ConsoleUtils {
         } else {
             address.setValid(true);
             if (addressStr.startsWith("0x")) {
-                if (!addressStr.substring(2, addressStr.length()).matches("^[a-fA-F0-9]+$")) {
+                if (!addressStr.substring(2).matches("^[a-fA-F0-9]+$")) {
                     address.setValid(false);
                     address.setAddress(addressStr);
                 } else {
-                    if (addressStr.length() == Address.ValidLen) {
-                        address.setAddress(addressStr);
-                    } else {
-                        getAddress(address, addressStr, Address.ValidLen);
-                    }
+                    address.setAddress(addressStr);
                 }
-
             } else {
                 address.setValid(false);
                 address.setAddress(addressStr);
@@ -510,7 +505,8 @@ public class ConsoleUtils {
 
     public static boolean isValidAddress(String address) {
         String addressNoPrefix = Numeric.cleanHexPrefix(address);
-        return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX;
+        return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX
+                && addressNoPrefix.matches("^[0-9a-fA-F]{40}$");
     }
 
     public static String getFileCreationTime(File file) {

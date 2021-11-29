@@ -1,5 +1,7 @@
 package console;
 
+import console.auth.AuthFace;
+import console.auth.AuthImpl;
 import console.client.ConsoleClientFace;
 import console.client.ConsoleClientImpl;
 import console.collaboration.CollaborationFace;
@@ -36,6 +38,7 @@ public class ConsoleInitializer {
     private ConsoleClientFace consoleClientFace;
     private PrecompiledFace precompiledFace;
     private ConsoleContractFace consoleContractFace;
+    private AuthFace authFace;
     private CollaborationFace collaborationFace;
     public static boolean DisableAutoCompleter = false;
     private String nodeName = "";
@@ -122,6 +125,7 @@ public class ConsoleInitializer {
             this.precompiledFace = new PrecompiledImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
             this.collaborationFace = new CollaborationImpl(client);
+            this.authFace = new AuthImpl(client);
 
         } catch (Exception e) {
             System.out.println(
@@ -244,6 +248,7 @@ public class ConsoleInitializer {
             this.precompiledFace = new PrecompiledImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);
             this.collaborationFace = new CollaborationImpl(client);
+            this.authFace = new AuthImpl(client);
             System.out.println("Switched to group " + group + ".");
             System.out.println();
         } catch (Exception e) {
@@ -315,6 +320,7 @@ public class ConsoleInitializer {
         this.precompiledFace = new PrecompiledImpl(client);
         this.consoleContractFace = new ConsoleContractImpl(client);
         this.collaborationFace = new CollaborationImpl(client);
+        this.authFace = new AuthImpl(client);
         System.out.println("Load account " + params[1] + " success!");
     }
 
@@ -355,5 +361,9 @@ public class ConsoleInitializer {
 
     public CollaborationFace getCollaborationFace() {
         return collaborationFace;
+    }
+
+    public AuthFace getAuthFace() {
+        return authFace;
     }
 }
