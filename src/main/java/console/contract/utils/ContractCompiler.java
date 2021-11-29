@@ -24,6 +24,7 @@ import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
@@ -33,7 +34,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ContractCompiler {
+
     private static final Logger logger = LoggerFactory.getLogger(ContractCompiler.class);
+
+    public static final int OnlySM = 1;
+    public static final int OnlyNonSM = 2;
+    public static final int All = 3;
 
     public static final String SOLIDITY_PATH = "contracts/solidity/";
     public static final String LIQUID_PATH = "contracts/liquid/";
@@ -44,12 +50,12 @@ public class ContractCompiler {
     private static final String ABI_SUFFIX = ".abi";
     private static final String WASM_SUFFIX = ".wasm";
 
-    public static AbiAndBin compileContract(String contractNameOrPath)
+    public static AbiAndBin compileContract(String contractNameOrPath, boolean sm)
             throws CompileContractException {
         File contractFile = new File(contractNameOrPath);
         // the contractPath
         if (contractFile.exists() && !contractFile.isDirectory()) {
-            return dynamicCompileSolFilesToJava(contractFile);
+            return dynamicCompileSolFilesToJava(contractFile, sm);
         }
         // the contractName
         String contractFileName = ConsoleUtils.removeSolPostfix(contractNameOrPath) + SOL_SUFFIX;
@@ -58,13 +64,14 @@ public class ContractCompiler {
             throw new CompileContractException(
                     "There is no " + contractFileName + " in the directory of " + SOLIDITY_PATH);
         }
-        return dynamicCompileSolFilesToJava(contractFile);
+        return dynamicCompileSolFilesToJava(contractFile, sm);
     }
 
-    public static AbiAndBin dynamicCompileSolFilesToJava(File contractFile)
+    public static AbiAndBin dynamicCompileSolFilesToJava(File contractFile, boolean sm)
             throws CompileContractException {
         try {
-            return compileSolToBinAndAbi(contractFile, COMPILED_PATH, COMPILED_PATH);
+            return compileSolToBinAndAbi(
+                    contractFile, COMPILED_PATH, COMPILED_PATH, sm ? OnlySM : OnlyNonSM, null);
         } catch (IOException e) {
             throw new CompileContractException(
                     "compile " + contractFile.getName() + " failed, error info: " + e.getMessage(),
@@ -72,76 +79,65 @@ public class ContractCompiler {
         }
     }
 
-    // compile without libraries option
-    public static AbiAndBin compileSolToBinAndAbi(File contractFile, String abiDir, String binDir)
-            throws CompileContractException, IOException {
-        return compileSolToBinAndAbi(contractFile, abiDir, binDir, null);
-    }
     // compile with libraries option
     public static AbiAndBin compileSolToBinAndAbi(
-            File contractFile, String abiDir, String binDir, String librariesOption)
-            throws CompileContractException, IOException {
+            File contractFile,
+            String abiDir,
+            String binDir,
+            int compileType,
+            String librariesOption)
+            throws IOException, CompileContractException {
+        if (compileType == OnlyNonSM) {
+            return compileSolToBinAndAbi(contractFile, abiDir, binDir, false, librariesOption);
+        } else if (compileType == OnlySM) {
+            return compileSolToBinAndAbi(contractFile, abiDir, binDir, true, librariesOption);
+        } else {
+            AbiAndBin abiAndBin =
+                    compileSolToBinAndAbi(contractFile, abiDir, binDir, false, librariesOption);
+            AbiAndBin abiAndBinSM =
+                    compileSolToBinAndAbi(contractFile, abiDir, binDir, true, librariesOption);
+            return new AbiAndBin(abiAndBin.getAbi(), abiAndBin.getBin(), abiAndBinSM.getSmBin());
+        }
+    }
+
+    // compile with libraries option
+    public static AbiAndBin compileSolToBinAndAbi(
+            File contractFile, String abiDir, String binDir, boolean sm, String librariesOption)
+            throws IOException, CompileContractException {
         SolidityCompiler.CustomOption libraryOption = null;
         if (librariesOption != null && !librariesOption.equals("")) {
             libraryOption = new SolidityCompiler.CustomOption("libraries", librariesOption);
         }
 
         String contractName = contractFile.getName().split("\\.")[0];
-        /** ecdsa compile */
         SolidityCompiler.Result res = null;
         if (libraryOption == null) {
-            res =
-                    SolidityCompiler.compile(
-                            contractFile, false, true, ABI, BIN, INTERFACE, METADATA);
+            res = SolidityCompiler.compile(contractFile, sm, true, ABI, BIN, INTERFACE, METADATA);
         } else {
             res =
                     SolidityCompiler.compile(
-                            contractFile,
-                            false,
-                            true,
-                            ABI,
-                            BIN,
-                            INTERFACE,
-                            METADATA,
-                            libraryOption);
+                            contractFile, sm, true, ABI, BIN, INTERFACE, METADATA, libraryOption);
         }
+
         logger.debug(
-                " solidity compiler result, success: {}, output: {}, error: {}",
+                " solidity compiler result, sm: {}, success: {}, output: {}, error: {}",
+                sm,
                 !res.isFailed(),
                 res.getOutput(),
                 res.getErrors());
+
         if (res.isFailed() || "".equals(res.getOutput())) {
             throw new CompileContractException(" Compile error: " + res.getErrors());
         }
 
-        /** sm compile */
-        SolidityCompiler.Result smRes = null;
-        if (libraryOption == null) {
-            smRes =
-                    SolidityCompiler.compile(
-                            contractFile, true, true, ABI, BIN, INTERFACE, METADATA);
-        } else {
-            smRes =
-                    SolidityCompiler.compile(
-                            contractFile, true, true, ABI, BIN, INTERFACE, METADATA, libraryOption);
-        }
-        logger.debug(
-                " sm solidity compiler result, success: {}, output: {}, error: {}",
-                !smRes.isFailed(),
-                smRes.getOutput(),
-                smRes.getErrors());
-        if (smRes.isFailed() || "".equals(smRes.getOutput())) {
-            throw new CompileContractException(" Compile SM error: " + res.getErrors());
-        }
-
         CompilationResult result = CompilationResult.parse(res.getOutput());
-        CompilationResult smResult = CompilationResult.parse(smRes.getOutput());
         CompilationResult.ContractMetadata meta = result.getContract(contractName);
-        CompilationResult.ContractMetadata smMeta = smResult.getContract(contractName);
 
-        AbiAndBin abiAndBin = new AbiAndBin(meta.abi, meta.bin, smMeta.bin);
-        checkBinaryCode(contractName, abiAndBin.getBin());
-        checkBinaryCode(contractName, abiAndBin.getSmBin());
+        String bin = sm ? "" : meta.bin;
+        String smBin = sm ? meta.bin : "";
+
+        AbiAndBin abiAndBin = new AbiAndBin(meta.abi, bin, smBin);
+        checkBinaryCode(contractName, meta.bin);
         return abiAndBin;
     }
 
@@ -199,22 +195,50 @@ public class ContractCompiler {
                                 + contractName
                                 + SM_SUFFIX
                                 + BIN_SUFFIX);
-        FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());
-        FileUtils.writeStringToFile(binPath, abiAndBin.getBin());
-        FileUtils.writeStringToFile(smBinPath, abiAndBin.getSmBin());
+
+        if (Objects.nonNull(abiAndBin.getAbi()) && !abiAndBin.getAbi().isEmpty()) {
+            FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());
+        }
+
+        if (Objects.nonNull(abiAndBin.getBin()) && !abiAndBin.getBin().isEmpty()) {
+            FileUtils.writeStringToFile(binPath, abiAndBin.getBin());
+        }
+
+        if (Objects.nonNull(abiAndBin.getSmBin()) && !abiAndBin.getSmBin().isEmpty()) {
+            FileUtils.writeStringToFile(smBinPath, abiAndBin.getSmBin());
+        }
+    }
+
+    public static AbiAndBin loadAbi(
+            String groupId, String contractNameOrPath, String contractAddress)
+            throws IOException, CodeGenException {
+        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
+        File abiPath =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + groupId
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress
+                                + File.separator
+                                + contractName
+                                + ABI_SUFFIX);
+
+        if (!abiPath.exists()) {
+            return new AbiAndBin();
+        }
+
+        String abiContent = new String(CodeGenUtils.readBytes(abiPath));
+        return new AbiAndBin(abiContent, "", "");
     }
 
     public static AbiAndBin loadAbiAndBin(
-            String groupId, String contractNameOrPath, String contractAddress)
+            String groupId, String contractNameOrPath, String contractAddress, boolean sm)
             throws CompileContractException, IOException, CodeGenException {
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, true);
-    }
-
-    public static AbiAndBin loadAbiAndBin(
-            String groupId, String contractName, String contractNameOrPath, String contractAddress)
-            throws CompileContractException, IOException, CodeGenException {
-        return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, true);
+        return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, sm, true);
     }
 
     public static AbiAndBin loadAbiAndBin(
@@ -222,8 +246,19 @@ public class ContractCompiler {
             String contractName,
             String contractNameOrPath,
             String contractAddress,
+            boolean sm)
+            throws CompileContractException, IOException, CodeGenException {
+        return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, sm, true);
+    }
+
+    public static AbiAndBin loadAbiAndBin(
+            String groupId,
+            String contractName,
+            String contractNameOrPath,
+            String contractAddress,
+            boolean sm,
             boolean needCompile)
-            throws IOException, CodeGenException, CompileContractException {
+            throws CompileContractException, CodeGenException, IOException {
         File abiPath =
                 new File(
                         COMPILED_PATH
@@ -247,30 +282,20 @@ public class ContractCompiler {
                                 + contractAddress
                                 + File.separator
                                 + contractName
+                                + (sm ? SM_SUFFIX : "")
                                 + BIN_SUFFIX);
-        File smBinPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + SM_SUFFIX
-                                + BIN_SUFFIX);
-        if (!abiPath.exists() || !binPath.exists() || !smBinPath.exists()) {
+
+        if (!abiPath.exists() || !binPath.exists()) {
             if (needCompile) {
-                return ContractCompiler.compileContract(contractNameOrPath);
+                return ContractCompiler.compileContract(contractNameOrPath, sm);
             } else {
                 return new AbiAndBin();
             }
         }
+
         String abiContent = new String(CodeGenUtils.readBytes(abiPath));
         String binContent = new String(CodeGenUtils.readBytes(binPath));
-        String smBinContent = new String(CodeGenUtils.readBytes(smBinPath));
-        return new AbiAndBin(abiContent, binContent, smBinContent);
+
+        return new AbiAndBin(abiContent, sm ? "" : binContent, sm ? binContent : "");
     }
 }
