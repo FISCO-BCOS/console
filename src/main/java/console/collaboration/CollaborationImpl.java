@@ -1,5 +1,8 @@
 package console.collaboration;
 
+import static org.fisco.bcos.sdk.client.protocol.model.tars.Transaction.LIQUID_CREATE;
+import static org.fisco.bcos.sdk.client.protocol.model.tars.Transaction.LIQUID_SCALE_CODEC;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import console.common.ConsoleUtils;
@@ -270,11 +273,15 @@ public class CollaborationImpl implements CollaborationFace {
                             deployParams, null));
 
             String path = "collaboration/" + client.getCryptoSuite().hash(binStr + abiStr);
+            int txAttribute = LIQUID_CREATE | LIQUID_SCALE_CODEC;
             TransactionResponse response =
                     this.assembleTransactionProcessor.deployAndGetResponse(
                             FAKE_ABI,
                             this.assembleTransactionProcessor.createSignedTransaction(
-                                    path, outputStream.toByteArray(), this.cryptoKeyPair));
+                                    path,
+                                    outputStream.toByteArray(),
+                                    this.cryptoKeyPair,
+                                    txAttribute));
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("initialize collaboration failed");
                 System.out.println("return message: " + response.getReturnMessage());
@@ -325,12 +332,15 @@ public class CollaborationImpl implements CollaborationFace {
                         4);
         byte[] encodedParams = FunctionEncoder.encodeParameters(inputs, methodID);
         outputStream.write(encodedParams);
-
+        int txAttribute = LIQUID_SCALE_CODEC;
         TransactionReceipt receipt =
                 this.client
                         .sendTransaction(
                                 this.assembleTransactionProcessor.createSignedTransaction(
-                                        address, outputStream.toByteArray(), this.cryptoKeyPair),
+                                        address,
+                                        outputStream.toByteArray(),
+                                        this.cryptoKeyPair,
+                                        txAttribute),
                                 false)
                         .getTransactionReceipt();
         if (receipt.getStatus() != 0) {
@@ -420,7 +430,10 @@ public class CollaborationImpl implements CollaborationFace {
                 this.client
                         .sendTransaction(
                                 this.assembleTransactionProcessor.createSignedTransaction(
-                                        address, outputStream.toByteArray(), this.cryptoKeyPair),
+                                        address,
+                                        outputStream.toByteArray(),
+                                        this.cryptoKeyPair,
+                                        LIQUID_SCALE_CODEC),
                                 false)
                         .getTransactionReceipt();
         if (receipt.getStatus() != 0) {
@@ -482,7 +495,10 @@ public class CollaborationImpl implements CollaborationFace {
                 this.client
                         .sendTransaction(
                                 this.assembleTransactionProcessor.createSignedTransaction(
-                                        address, outputStream.toByteArray(), this.cryptoKeyPair),
+                                        address,
+                                        outputStream.toByteArray(),
+                                        this.cryptoKeyPair,
+                                        LIQUID_SCALE_CODEC),
                                 false)
                         .getTransactionReceipt();
         if (receipt.getStatus() != 0) {
