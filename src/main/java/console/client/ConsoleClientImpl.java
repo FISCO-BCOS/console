@@ -13,10 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.client.protocol.model.GroupNodeIniInfo;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
 import org.fisco.bcos.sdk.client.protocol.response.BcosBlock;
-import org.fisco.bcos.sdk.client.protocol.response.BcosGroupInfo;
 import org.fisco.bcos.sdk.client.protocol.response.BcosGroupNodeInfo;
 import org.fisco.bcos.sdk.client.protocol.response.SystemConfig;
 import org.fisco.bcos.sdk.client.protocol.response.TotalTransactionCount;
@@ -416,35 +414,33 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                         .writeValueAsString(client.getGroupNodeInfo(node).getResult()));
     }
 
-    public static List<String> getNodelist(Client client) {
-        List<String> nodeList = new ArrayList<>();
-        List<BcosGroupInfo.GroupInfo> groupInfoList = client.getGroupInfoList().getResult();
-        List<BcosGroupNodeInfo.GroupNodeInfo> nodeInfos = groupInfoList.get(0).getNodeList();
+    public static List<String> getNodeList(Client client) {
+        List<BcosGroupNodeInfo.GroupNodeInfo> nodeInfos =
+                client.getGroupInfo().getResult().getNodeList();
         List<String> nodeNameList = new ArrayList<>();
-        for (int i = 0; i < nodeInfos.size(); i++) {
-            BcosGroupNodeInfo.GroupNodeInfo nodeInfo = nodeInfos.get(i);
-            GroupNodeIniInfo iniCfg = nodeInfo.getIniConfig();
-            String nodeName = iniCfg.getNodeName();
-            nodeNameList.add(nodeName);
+        for (BcosGroupNodeInfo.GroupNodeInfo nodeInfo : nodeInfos) {
+            nodeNameList.add(nodeInfo.getIniConfig().getNodeName());
         }
         return nodeNameList;
     }
 
     @Override
-    public void setNodeName(String[] params) throws IOException {
-        String nodeName = params[1];
-        List<String> nodeList = getNodelist(this.client);
-        if (!nodeList.contains(nodeName)) {
+    public void setNodeName(String[] params) {
+        String newNodeName = params[1];
+        List<String> nodeList = getNodeList(this.client);
+        if (!nodeList.contains(newNodeName)) {
             System.out.println(
-                    "invalid nodeName: " + nodeName + ", please input a valid nodeName.");
-            throw new IOException("valid nodeName: " + nodeList);
+                    "Invalid nodeName: "
+                            + newNodeName
+                            + ", node not contains in node list, check command 'getGroupInfoList'.");
+            return;
         }
-        this.nodeName = nodeName;
+        this.nodeName = newNodeName;
     }
 
     @Override
     public void clearNodeName() {
-        System.out.println("clear nodeName");
+        System.out.println("Clear nodeName to empty.");
         this.nodeName = "";
     }
 

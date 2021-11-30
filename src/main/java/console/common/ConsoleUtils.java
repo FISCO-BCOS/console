@@ -26,6 +26,10 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
+import org.fisco.bcos.sdk.codec.datatypes.Array;
+import org.fisco.bcos.sdk.codec.datatypes.Bytes;
+import org.fisco.bcos.sdk.codec.datatypes.StructType;
+import org.fisco.bcos.sdk.codec.datatypes.Type;
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.utils.Host;
@@ -276,17 +280,12 @@ public class ConsoleUtils {
         } else {
             address.setValid(true);
             if (addressStr.startsWith("0x")) {
-                if (!addressStr.substring(2, addressStr.length()).matches("^[a-fA-F0-9]+$")) {
+                if (!addressStr.substring(2).matches("^[a-fA-F0-9]+$")) {
                     address.setValid(false);
                     address.setAddress(addressStr);
                 } else {
-                    if (addressStr.length() == Address.ValidLen) {
-                        address.setAddress(addressStr);
-                    } else {
-                        getAddress(address, addressStr, Address.ValidLen);
-                    }
+                    address.setAddress(addressStr);
                 }
-
             } else {
                 address.setValid(false);
                 address.setAddress(addressStr);
@@ -336,7 +335,8 @@ public class ConsoleUtils {
         /** ecdsa compile */
         System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
         AbiAndBin abiAndBin =
-                ContractCompiler.compileSolToBinAndAbi(solFile, abiDir, binDir, librariesOption);
+                ContractCompiler.compileSolToBinAndAbi(
+                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
 
         FileUtils.writeStringToFile(new File(abiDir + contractName + ".abi"), abiAndBin.getAbi());
@@ -506,7 +506,8 @@ public class ConsoleUtils {
 
     public static boolean isValidAddress(String address) {
         String addressNoPrefix = Numeric.cleanHexPrefix(address);
-        return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX;
+        return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX
+                && addressNoPrefix.matches("^[0-9a-fA-F]{40}$");
     }
 
     public static String getFileCreationTime(File file) {
@@ -573,6 +574,65 @@ public class ConsoleUtils {
             throws ConsoleMessageException {
         File contractFile = ConsoleUtils.getSolFile(contractNameOrPath, false);
         return ConsoleUtils.removeSolPostfix(contractFile.getName());
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        String strHex = "";
+        StringBuilder sb = new StringBuilder("");
+        for (int n = 0; n < bytes.length; n++) {
+            strHex = Integer.toHexString(bytes[n] & 0xFF);
+            sb.append((strHex.length() == 1) ? "0" + strHex : strHex);
+        }
+        return sb.toString().trim();
+    }
+
+    public static void getReturnResults(
+            StringBuilder resultType, StringBuilder resultData, Type result) {
+        if (result instanceof Array) {
+            resultType.append("[");
+            resultData.append("[");
+            List<Type> values = ((Array) result).getValue();
+            for (int i = 0; i < values.size(); ++i) {
+                getReturnResults(resultType, resultData, values.get(i));
+                if (i != values.size() - 1) {
+                    resultType.append(", ");
+                    resultData.append(", ");
+                }
+            }
+            resultData.append("]");
+            resultType.append("]");
+        } else if (result instanceof StructType) {
+            throw new UnsupportedOperationException();
+        } else if (result instanceof Bytes) {
+            String data = "hex://0x" + bytesToHex(((Bytes) result).getValue());
+            resultType.append(result.getTypeAsString());
+            resultData.append(data);
+        } else {
+            resultType.append(result.getTypeAsString());
+            resultData.append(result.getValue());
+        }
+    }
+
+    public static void printReturnResults(List<Type> results) {
+        if (results == null) {
+            return;
+        }
+        StringBuilder resultType = new StringBuilder();
+        StringBuilder resultData = new StringBuilder();
+        resultType.append("(");
+        resultData.append("(");
+        for (int i = 0; i < results.size(); ++i) {
+            getReturnResults(resultType, resultData, results.get(i));
+            if (i != results.size() - 1) {
+                resultType.append(", ");
+                resultData.append(", ");
+            }
+        }
+        resultType.append(")");
+        resultData.append(")");
+        System.out.println("Return value size:" + results.size());
+        System.out.println("Return types: " + resultType);
+        System.out.println("Return values:" + resultData);
     }
 
     public static void main(String[] args) {

@@ -5,6 +5,7 @@ import console.command.completer.AccountFileFormatCompleter;
 import console.command.completer.ConsoleFilesCompleter;
 import console.command.completer.ContractAddressCompleter;
 import console.command.completer.ContractMethodCompleter;
+import console.command.completer.CurrentPathCompleter;
 import console.command.completer.StringsCompleterIgnoreCase;
 import console.common.Common;
 import console.contract.utils.ContractCompiler;
@@ -33,6 +34,7 @@ public class JlineUtils {
     private static ContractAddressCompleter contractAddressCompleter = null;
     private static ContractMethodCompleter contractMethodCompleter = null;
     private static AccountCompleter accountCompleter = null;
+    private static CurrentPathCompleter currentPathCompleter = null;
 
     public static LineReader getLineReader() throws IOException {
         return createLineReader(new ArrayList<Completer>());
@@ -50,14 +52,22 @@ public class JlineUtils {
         }
     }
 
+    public static void switchPwd(String pwd) {
+        currentPathCompleter.setPwd(pwd);
+    }
+
     public static LineReader getLineReader(Client client) throws IOException {
 
         List<Completer> completers = new ArrayList<Completer>();
 
-        List<String> commands = SupportedCommand.getAllCommand(client.isWASM());
+        List<String> commands =
+                SupportedCommand.getAllCommand(
+                        client.isWASM(),
+                        client.getConfigOption().getAccountConfig().getAuthCheck());
         contractAddressCompleter = new ContractAddressCompleter(client);
         contractMethodCompleter = new ContractMethodCompleter(client);
         accountCompleter = new AccountCompleter(client);
+        currentPathCompleter = new CurrentPathCompleter(client);
 
         for (String command : commands) {
             completers.add(
@@ -162,6 +172,19 @@ public class JlineUtils {
                 new ArgumentCompleter(
                         new StringsCompleterIgnoreCase(SupportedCommand.NEW_ACCOUNT.getCommand()),
                         new AccountFileFormatCompleter()));
+
+        commands =
+                Arrays.asList(
+                        SupportedCommand.CHANGE_DIR.getCommand(),
+                        SupportedCommand.LIST_DIR.getCommand());
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            currentPathCompleter,
+                            new StringsCompleterIgnoreCase()));
+        }
         return createLineReader(completers);
     }
 
