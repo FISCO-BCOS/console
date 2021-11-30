@@ -35,11 +35,6 @@ public class Console {
         return JlineUtils.getLineReader(consoleInitializer.getClient());
     }
 
-    public static String shortenNodeName(String nodeName) {
-        if (nodeName.length() >= 16) return nodeName.substring(0, 16);
-        return nodeName;
-    }
-
     @SuppressWarnings("resource")
     public static void main(String[] args) {
 
@@ -64,6 +59,8 @@ public class Console {
 
         WelcomeInfo.welcome();
         String pwd = "/";
+        SupportedCommand.setIsAuthOpen(
+                consoleInitializer.getClient().getConfigOption().getAccountConfig().getAuthCheck());
         SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
         while (true) {
@@ -78,8 +75,6 @@ public class Console {
                             lineReader.readLine(
                                     "["
                                             + consoleInitializer.getGroupID()
-                                            + ", nodeName: "
-                                            + shortenNodeName(consoleInitializer.getNodeName())
                                             + "]: "
                                             + ConsoleUtils.prettyPwd(pwd)
                                             + "> ");
@@ -104,7 +99,13 @@ public class Console {
                 // execute the command
                 CommandInfo commandInfo =
                         SupportedCommand.getCommandInfo(
-                                params[0], consoleInitializer.getClient().isWASM());
+                                params[0],
+                                consoleInitializer.getClient().isWASM(),
+                                consoleInitializer
+                                        .getClient()
+                                        .getConfigOption()
+                                        .getAccountConfig()
+                                        .getAuthCheck());
                 if (commandInfo != null) {
                     if (SupportedCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
@@ -120,6 +121,7 @@ public class Console {
                             } else {
                                 pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
                             }
+                            JlineUtils.switchPwd(pwd);
                         }
                     } else if (SupportedCommand.NODENAME_COMMANDS.contains(params[0])) {
                         if (commandInfo
@@ -128,7 +130,7 @@ public class Console {
                             commandInfo.callCommand(consoleInitializer, params, pwd);
                         } else if (commandInfo
                                 .getCommand()
-                                .equals(SupportedCommand.CLEAR_NODENAME.getCommand())) {
+                                .equals(SupportedCommand.CLEAR_NODE_NAME.getCommand())) {
                             commandInfo.callCommand(consoleInitializer, params, pwd);
                         }
                     } else {
@@ -155,6 +157,12 @@ public class Console {
                         if (cmd.equals(SupportedCommand.SWITCH.getCommand())) {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
+                            SupportedCommand.setIsAuthOpen(
+                                    consoleInitializer
+                                            .getClient()
+                                            .getConfigOption()
+                                            .getAccountConfig()
+                                            .getAuthCheck());
                             SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
                         }
                     }
@@ -222,6 +230,7 @@ public class Console {
                 consoleInitializer.stop();
                 break;
             } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println(e.getMessage());
                 System.out.println();
                 logger.error(" message: {}, e: {}", e.getMessage(), e);

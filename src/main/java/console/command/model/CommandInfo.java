@@ -37,6 +37,7 @@ public class CommandInfo {
     private int minParamLength = -1;
     private int maxParamLength = -1;
     private boolean isWasmSupport = true;
+    private boolean needAuthOpen = false;
     String minSupportVersion = null;
     boolean supportNonInteractive = true;
 
@@ -119,6 +120,22 @@ public class CommandInfo {
             CommandImplement commandImplement,
             int minParamLength,
             int maxParamLength,
+            boolean supportNonInteractive,
+            boolean isWasmSupport,
+            boolean needAuthOpen) {
+        this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
+        this.supportNonInteractive = supportNonInteractive;
+        this.isWasmSupport = isWasmSupport;
+        this.needAuthOpen = needAuthOpen;
+    }
+
+    public CommandInfo(
+            String command,
+            String desc,
+            UsageDisplay usageDisplay,
+            CommandImplement commandImplement,
+            int minParamLength,
+            int maxParamLength,
             String minSupportVersion) {
         this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
         this.minSupportVersion = minSupportVersion;
@@ -178,6 +195,10 @@ public class CommandInfo {
 
     public boolean isWasmSupport() {
         return isWasmSupport;
+    }
+
+    public boolean isNeedAuthOpen() {
+        return needAuthOpen;
     }
 
     public boolean isSupportNonInteractive() {
@@ -265,7 +286,14 @@ public class CommandInfo {
         // print help info
         if (params.length >= 2) {
             if (SupportedCommand.HELP.getOptionCommand().contains(params[1])) {
-                HelpInfo.printHelp(command, consoleInitializer.getClient().isWASM());
+                HelpInfo.printHelp(
+                        command,
+                        consoleInitializer.getClient().isWASM(),
+                        consoleInitializer
+                                .getClient()
+                                .getConfigOption()
+                                .getAccountConfig()
+                                .getAuthCheck());
                 return;
             }
         }
@@ -284,7 +312,14 @@ public class CommandInfo {
                     String.format(
                             "Expected at least %d arguments but found %d",
                             minParamLength, params.length - 1));
-            HelpInfo.printHelp(command, consoleInitializer.getClient().isWASM());
+            HelpInfo.printHelp(
+                    command,
+                    consoleInitializer.getClient().isWASM(),
+                    consoleInitializer
+                            .getClient()
+                            .getConfigOption()
+                            .getAccountConfig()
+                            .getAuthCheck());
             return;
         }
         // check version

@@ -24,11 +24,14 @@ import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.codec.ABICodec;
 import org.fisco.bcos.sdk.codec.ABICodecException;
 import org.fisco.bcos.sdk.codec.EventEncoder;
+<<<<<<< HEAD
 import org.fisco.bcos.sdk.codec.datatypes.Array;
 import org.fisco.bcos.sdk.codec.datatypes.Bytes;
 import org.fisco.bcos.sdk.codec.datatypes.FixedType;
 import org.fisco.bcos.sdk.codec.datatypes.StructType;
 import org.fisco.bcos.sdk.codec.datatypes.Type;
+=======
+>>>>>>> 7d5dcbc43078835acadd2c0d267fe3feef652864
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.codec.wrapper.ABICodecObject;
 import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
@@ -90,6 +93,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
     }
 
+<<<<<<< HEAD
     private static String bytesToHex(byte[] bytes) {
         String strHex = "";
         StringBuilder sb = new StringBuilder("");
@@ -151,6 +155,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
     }
 
+=======
+>>>>>>> 7d5dcbc43078835acadd2c0d267fe3feef652864
     public void printReturnObject(
             List<Object> returnObject, List<ABIObject> returnABIObject, String returnValue) {
         if (returnABIObject == null
@@ -211,7 +217,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             resultType.append(abiObject.getValueType()).append(", ");
             if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
-                String data = "hex://0x" + bytesToHex(ABICodecObject.formatBytesN(abiObject));
+                String data =
+                        "hex://0x"
+                                + ConsoleUtils.bytesToHex(ABICodecObject.formatBytesN(abiObject));
                 resultData.append(data).append(", ");
             } else if (returnObject.size() > i) {
                 resultData.append(returnObject.get(i).toString()).append(", ");
@@ -224,9 +232,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractName, String contractNameOrPath, List<String> inputParams)
             throws ConsoleMessageException {
         try {
-            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath);
+            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
+            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath, sm);
             String bin = abiAndBin.getBin();
-            if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE) {
+            if (sm) {
                 bin = abiAndBin.getSmBin();
             }
             TransactionResponse response =
@@ -563,6 +572,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             List<String> callParams)
             throws IOException, CodeGenException, ABICodecException, CompileContractException {
         try {
+            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
             // load bin and abi
             if (abiAndBin == null) {
                 abiAndBin =
@@ -571,6 +581,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                 contractName,
                                 contractNameOrPath,
                                 contractAddress,
+                                sm,
                                 !this.client.isWASM());
             }
             // call
@@ -608,7 +619,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     System.out.println("description: " + "transaction executed successfully");
                     System.out.println("Return message: " + response.getReturnMessage());
                     ConsoleUtils.singleLine();
-                    printReturnResults(response.getResults());
+                    ConsoleUtils.printReturnResults(response.getResults());
                 } else {
                     String errorMessage = response.getReturnMessage();
                     System.out.println(
@@ -648,7 +659,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 ConsoleUtils.singleLine();
                 System.out.println("Receipt message: " + response.getReceiptMessages());
                 System.out.println("Return message: " + response.getReturnMessage());
-                printReturnResults(response.getResults());
+                ConsoleUtils.printReturnResults(response.getResults());
                 ConsoleUtils.singleLine();
                 if (response.getEvents() != null && !response.getEvents().equals("")) {
                     System.out.println("Event logs");
@@ -706,9 +717,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return;
             }
             String contractAddress = response.getContractAddress();
+            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbiAndBin(
-                            client.getGroup(), contractNameOrPath, contractName, contractAddress);
+                            client.getGroup(),
+                            contractNameOrPath,
+                            contractName,
+                            contractAddress,
+                            sm);
             // register cns
             ConsoleUtils.printJson(
                     cnsService

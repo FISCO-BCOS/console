@@ -33,15 +33,20 @@ import java.util.stream.Collectors;
 public class SupportedCommand {
     protected static Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
     public static boolean isWasm = false;
+    public static boolean isAuthOpen = false;
+
+    public static void setIsAuthOpen(boolean authOpen) {
+        isAuthOpen = authOpen;
+    }
 
     public static void setIsWasm(boolean wasm) {
         isWasm = wasm;
         if (wasm) {
-            SupportedCommand.getCommandInfo("deploy", true).setMinParamLength(3);
-            SupportedCommand.getCommandInfo("call", true).setMinParamLength(2);
+            SupportedCommand.getCommandInfo("deploy", true, isAuthOpen).setMinParamLength(3);
+            SupportedCommand.getCommandInfo("call", true, isAuthOpen).setMinParamLength(2);
         } else {
-            SupportedCommand.getCommandInfo("deploy", false).setMinParamLength(1);
-            SupportedCommand.getCommandInfo("call", false).setMinParamLength(1);
+            SupportedCommand.getCommandInfo("deploy", false, isAuthOpen).setMinParamLength(1);
+            SupportedCommand.getCommandInfo("call", false, isAuthOpen).setMinParamLength(1);
         }
     }
 
@@ -57,7 +62,7 @@ public class SupportedCommand {
                     },
                     new ArrayList<>(
                             Arrays.asList("-h", "-help", "--h", "--H", "--help", "-H", "h")),
-                    (consoleInitializer, params, pwd) -> printDescInfo(isWasm));
+                    (consoleInitializer, params, pwd) -> printDescInfo(isWasm, isAuthOpen));
 
     public static final CommandInfo GET_DEPLOY_LOG =
             new CommandInfo(
@@ -130,7 +135,7 @@ public class SupportedCommand {
                     2,
                     -1,
                     true,
-                    false);
+                    true);
     public static final CommandInfo CALL_BY_CNS =
             new CommandInfo(
                     "callByCNS",
@@ -141,7 +146,7 @@ public class SupportedCommand {
                     2,
                     -1,
                     true,
-                    false);
+                    true);
     public static final CommandInfo QUERY_CNS =
             new CommandInfo(
                     "queryCNS",
@@ -152,7 +157,7 @@ public class SupportedCommand {
                     1,
                     2,
                     true,
-                    false);
+                    true);
     public static final CommandInfo ADD_OBSERVER =
             new CommandInfo(
                     "addObserver",
@@ -237,6 +242,43 @@ public class SupportedCommand {
                     "Remove records by sql",
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().remove(params[0]));
+
+    public static final CommandInfo INITIALIZE =
+            new CommandInfo(
+                    "initialize",
+                    "Initialize a collaboration",
+                    HelpInfo::initializeHelp,
+                    (consoleInitializer, params, pwd) -> {
+                        consoleInitializer.getCollaborationFace().initialize(params);
+                    });
+
+    public static final CommandInfo SIGN =
+            new CommandInfo(
+                    "sign",
+                    "Sign a contract",
+                    HelpInfo::signHelp,
+                    (consoleInitializer, params, pwd) -> {
+                        consoleInitializer.getCollaborationFace().sign(params);
+                    });
+
+    public static final CommandInfo EXERCISE =
+            new CommandInfo(
+                    "execute",
+                    "Exercise an right of a contract",
+                    HelpInfo::exerciseHelp,
+                    (consoleInitializer, params, pwd) -> {
+                        consoleInitializer.getCollaborationFace().exercise(params);
+                    });
+
+    public static final CommandInfo FETCH =
+            new CommandInfo(
+                    "fetch",
+                    "Fetch a contract",
+                    HelpInfo::fetchHelp,
+                    (consoleInitializer, params, pwd) -> {
+                        consoleInitializer.getCollaborationFace().fetch(params);
+                    });
+
     public static final CommandInfo GET_CURRENT_ACCOUNT =
             new CommandInfo(
                     "getCurrentAccount",
@@ -482,7 +524,7 @@ public class SupportedCommand {
                     3,
                     3,
                     true,
-                    false);
+                    true);
 
     public static final CommandInfo NEW_ACCOUNT =
             new CommandInfo(
@@ -634,22 +676,225 @@ public class SupportedCommand {
     public static final CommandInfo SET_NODENAME =
             new CommandInfo(
                     "setNodeName",
-                    "set node name",
+                    "Set default node name to send request.",
                     HelpInfo::setNodeNameHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().setNodeName(params),
                     1,
                     1);
 
-    public static final CommandInfo CLEAR_NODENAME =
+    public static final CommandInfo CLEAR_NODE_NAME =
             new CommandInfo(
                     "clearNodeName",
-                    "clear node name",
+                    "Clear default node name to empty.",
                     HelpInfo::clearNodeNameHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().clearNodeName(),
                     0,
                     0);
+
+    public static final CommandInfo UPDATE_PROPOSAL =
+            new CommandInfo(
+                    "updateGovernorProposal",
+                    "Create a proposal to committee, which attempt to update a governor.",
+                    HelpInfo::updateGovernorProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createUpdateGovernorProposal(params),
+                    2,
+                    2,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo SET_RATE_PROPOSAL =
+            new CommandInfo(
+                    "setRateProposal",
+                    "Create a proposal to committee, which attempt to update committee vote rate.",
+                    HelpInfo::setRateProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createSetRateProposal(params),
+                    2,
+                    2,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo SET_DEPLOY_AUTH_TYPE_PROPOSAL =
+            new CommandInfo(
+                    "setDeployAuthTypeProposal",
+                    "Create a proposal to committee, which attempt to set deploy ACL type globally.",
+                    HelpInfo::setDeployAuthTypeProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .createSetDeployAuthTypeProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo OPEN_DEPLOY_ACL_PROPOSAL =
+            new CommandInfo(
+                    "openDeployAuthProposal",
+                    "Create a proposal to committee, which attempt to open deploy ACL for specific account.",
+                    HelpInfo::openDeployAuthProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createOpenDeployAuthProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo CLOSE_DEPLOY_ACL_PROPOSAL =
+            new CommandInfo(
+                    "closeDeployAuthProposal",
+                    "Create a proposal to committee, which attempt to close deploy ACL for specific account.",
+                    HelpInfo::closeDeployAuthProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createCloseDeployAuthProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo RESET_ADMIN_PROPOSAL =
+            new CommandInfo(
+                    "resetAdminProposal",
+                    "Create a proposal to committee, which attempt to reset a specific contract's admin.",
+                    HelpInfo::resetAdminProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createResetAdminProposal(params),
+                    2,
+                    2,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo REVOKE_PROPOSAL =
+            new CommandInfo(
+                    "revokeProposal",
+                    "Revoke a specific proposal from committee.",
+                    HelpInfo::revokeProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().revokeProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo VOTE_PROPOSAL =
+            new CommandInfo(
+                    "voteProposal",
+                    "Vote a specific proposal to committee.",
+                    HelpInfo::voteProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().voteProposal(params),
+                    1,
+                    2,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo GET_PROPOSAL_INFO =
+            new CommandInfo(
+                    "getProposalInfo",
+                    "Get a specific proposal info from committee.",
+                    HelpInfo::getProposalInfoHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getProposalInfo(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo GET_COMMITTEE_INFO =
+            new CommandInfo(
+                    "getCommitteeInfo",
+                    "Get committee info.",
+                    HelpInfo::getCommitteeInfoHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getCommitteeInfo(params),
+                    0,
+                    0,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo GET_CONTRACT_ADMIN =
+            new CommandInfo(
+                    "getContractAdmin",
+                    "Get admin address from specific contract.",
+                    HelpInfo::getContractAdminHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getContractAdmin(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo GET_DEPLOY_AUTH =
+            new CommandInfo(
+                    "getDeployAuth",
+                    "Get deploy ACL strategy globally.",
+                    HelpInfo::getDeployAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getDeployStrategy(params),
+                    0,
+                    0,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo SET_METHOD_AUTH_TYPE =
+            new CommandInfo(
+                    "setMethodAuth",
+                    "Set a method ACL type in specific contract.",
+                    HelpInfo::setMethodAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .setMethodAuthType(consoleInitializer, params),
+                    3,
+                    3,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo OPEN_METHOD_AUTH =
+            new CommandInfo(
+                    "openMethodAuth",
+                    "Open method ACL for account in specific contract.",
+                    HelpInfo::openMethodAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .openMethodAuth(consoleInitializer, params),
+                    3,
+                    3,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo CLOSE_METHOD_AUTH =
+            new CommandInfo(
+                    "closeMethodAuth",
+                    "Close method ACL for account in specific contract.",
+                    HelpInfo::closeMethodAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .closeMethodAuth(consoleInitializer, params),
+                    3,
+                    3,
+                    false,
+                    false,
+                    true);
 
     public static List<String> BFS_COMMANDS =
             new ArrayList<>(
@@ -669,7 +914,15 @@ public class SupportedCommand {
                             DELETE.getCommand()));
 
     public static List<String> NODENAME_COMMANDS =
-            new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODENAME.getCommand()));
+            new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODE_NAME.getCommand()));
+
+    public static List<String> COLLABORATION_COMMANDS =
+            new ArrayList<>(
+                    Arrays.asList(
+                            INITIALIZE.getCommand(),
+                            SIGN.getCommand(),
+                            EXERCISE.getCommand(),
+                            FETCH.getCommand()));
 
     static {
         Field[] fields = SupportedCommand.class.getDeclaredFields();
@@ -690,10 +943,11 @@ public class SupportedCommand {
         }
     }
 
-    public static CommandInfo getCommandInfo(String command, boolean isWasm) {
+    public static CommandInfo getCommandInfo(String command, boolean isWasm, boolean isAuthOpen) {
         if (commandToCommandInfo.containsKey(command)) {
             CommandInfo commandInfo = commandToCommandInfo.get(command);
-            if (isWasm && !commandInfo.isWasmSupport()) {
+            if (isWasm && !commandInfo.isWasmSupport()
+                    || (!isAuthOpen && commandInfo.isNeedAuthOpen())) {
                 return null;
             }
             return commandInfo;
@@ -701,7 +955,7 @@ public class SupportedCommand {
         return null;
     }
 
-    public static List<String> getAllCommand(boolean isWasm) {
+    public static List<String> getAllCommand(boolean isWasm, boolean isAuthOpen) {
         if (isWasm) {
             return commandToCommandInfo
                     .keySet()
@@ -709,11 +963,18 @@ public class SupportedCommand {
                     .filter((key) -> commandToCommandInfo.get(key).isWasmSupport())
                     .collect(Collectors.toList());
         } else {
+            if (!isAuthOpen) {
+                return commandToCommandInfo
+                        .keySet()
+                        .stream()
+                        .filter((key) -> !commandToCommandInfo.get(key).isNeedAuthOpen())
+                        .collect(Collectors.toList());
+            }
             return new ArrayList<>(commandToCommandInfo.keySet());
         }
     }
 
-    public static void printDescInfo(boolean isWasm) {
+    public static void printDescInfo(boolean isWasm, boolean isAuthOpen) {
         Set<String> keys = commandToCommandInfo.keySet();
         List<String> commandList = new ArrayList<>(keys);
         Collections.sort(commandList);
@@ -721,7 +982,8 @@ public class SupportedCommand {
         for (String s : commandList) {
             CommandInfo commandInfo = commandToCommandInfo.get(s);
             if (outputtedCommand.contains(commandInfo.getCommand())
-                    || (isWasm && !commandInfo.isWasmSupport())) {
+                    || (isWasm && !commandInfo.isWasmSupport())
+                    || (!isAuthOpen && commandInfo.isNeedAuthOpen())) {
                 continue;
             }
             commandInfo.printDescInfo();

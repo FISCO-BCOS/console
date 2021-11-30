@@ -42,3 +42,4 @@ build.gradle.bak
 .project
 .settings/**
 .classpath
+bin/**
