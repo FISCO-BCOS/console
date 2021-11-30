@@ -39,7 +39,6 @@ import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: REMOVE THIS
 public class PrecompiledImpl implements PrecompiledFace {
 
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);

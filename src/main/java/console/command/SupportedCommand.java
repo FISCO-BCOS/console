@@ -202,6 +202,8 @@ public class SupportedCommand {
                     new ArrayList<>(Arrays.asList("quit", "q", "exit")),
                     (consoleInitializer, params, pwd) -> System.exit(0),
                     false);
+    // TODO: Table CRUD service is not supported in FISCO BCOS 3.0.0 rc1
+    /*
 
     public static final CommandInfo DESC =
             new CommandInfo(
@@ -218,30 +220,32 @@ public class SupportedCommand {
                     "Create table by sql",
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().createTable(params[0], isWasm));
-    public static final CommandInfo SELECT =
-            new CommandInfo(
-                    "select",
-                    "Select records by sql",
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().select(params[0]));
-    public static final CommandInfo INSERT =
-            new CommandInfo(
-                    "insert",
-                    "Insert records by sql",
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().insert(params[0]));
-    public static final CommandInfo UPDATE =
-            new CommandInfo(
-                    "update",
-                    "Update records by sql",
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().update(params[0]));
-    public static final CommandInfo DELETE =
-            new CommandInfo(
-                    "delete",
-                    "Remove records by sql",
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().remove(params[0]));
+
+        public static final CommandInfo SELECT =
+                new CommandInfo(
+                        "select",
+                        "Select records by sql",
+                        (consoleInitializer, params, pwd) ->
+                                consoleInitializer.getPrecompiledFace().select(params[0]));
+        public static final CommandInfo INSERT =
+                new CommandInfo(
+                        "insert",
+                        "Insert records by sql",
+                        (consoleInitializer, params, pwd) ->
+                                consoleInitializer.getPrecompiledFace().insert(params[0]));
+        public static final CommandInfo UPDATE =
+                new CommandInfo(
+                        "update",
+                        "Update records by sql",
+                        (consoleInitializer, params, pwd) ->
+                                consoleInitializer.getPrecompiledFace().update(params[0]));
+        public static final CommandInfo DELETE =
+                new CommandInfo(
+                        "delete",
+                        "Remove records by sql",
+                        (consoleInitializer, params, pwd) ->
+                                consoleInitializer.getPrecompiledFace().remove(params[0]));
+     */
 
     public static final CommandInfo INITIALIZE =
             new CommandInfo(
@@ -904,14 +908,16 @@ public class SupportedCommand {
                             MAKE_DIR.getCommand(),
                             PWD.getCommand()));
 
+    // TODO: Table CRUD service is not supported in FISCO BCOS 3.0.0 rc1
     public static List<String> CRUD_COMMANDS =
             new ArrayList<>(
                     Arrays.asList(
-                            CREATE.getCommand(),
-                            INSERT.getCommand(),
-                            SELECT.getCommand(),
-                            UPDATE.getCommand(),
-                            DELETE.getCommand()));
+                            // CREATE.getCommand(),
+                            // INSERT.getCommand(),
+                            // SELECT.getCommand(),
+                            // UPDATE.getCommand(),
+                            // DELETE.getCommand()
+                            ));
 
     public static List<String> NODENAME_COMMANDS =
             new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODE_NAME.getCommand()));
