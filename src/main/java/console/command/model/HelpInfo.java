@@ -689,6 +689,13 @@ public class HelpInfo {
         System.out.println("Usage: getDeployAuth");
     }
 
+    public static void checkDeployAuthHelp() {
+        System.out.println("Check whether account has deploy access.");
+        System.out.println("Usage: checkDeployAuth [account]");
+        System.out.println(
+                "account[Optional] -- The address of a specific account. If you dont specify it, then check current account.");
+    }
+
     public static void setMethodAuthHelp() {
         System.out.println("Set a method ACL type in specific contract.");
         System.out.println("[Note]: this command is only available for admin of contract.");
@@ -729,5 +736,18 @@ public class HelpInfo {
                 "account[Required]  -- The address of a specific account, it's length should be 40 in hex.");
         System.out.println(
                 "    [example] closeMethodAuth 0x1234567890123456789012345678901234567890 \"set(string)\" 0x1234567890123456789012345678901234567890");
+    }
+
+    public static void checkMethodAuthHelp() {
+        System.out.println("Check method ACL for account in specific contract.");
+        System.out.println("Usage: closeMethodAuth contract selector account");
+        System.out.println(
+                "contract[Required] -- The address of a specific contract, it's length should be 40 in hex.");
+        System.out.println(
+                "selector[Required] -- The method selector string, an interface of contract");
+        System.out.println(
+                "account[Optional]  -- The address of a specific account. If you dont specify it, then check current account.");
+        System.out.println(
+                "    [example] checkMethodAuth 0x1234567890123456789012345678901234567890 \"set(string)\" 0x1234567890123456789012345678901234567890");
     }
 }

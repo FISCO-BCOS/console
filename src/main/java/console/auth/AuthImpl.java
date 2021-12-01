@@ -198,9 +198,13 @@ public class AuthImpl implements AuthFace {
     @Override
     public void getContractAdmin(String[] params) throws Exception {
         String contractAddress = params[1];
-        checkValidAddress(contractAddress, "");
-        String admin = authManager.getAdmin(contractAddress);
-        System.out.println("Admin for contract " + contractAddress + " is: " + admin);
+        try {
+            checkValidAddress(contractAddress, "");
+            String admin = authManager.getAdmin(contractAddress);
+            System.out.println("Admin for contract " + contractAddress + " is: " + admin);
+        } catch (TransactionException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     @Override
@@ -214,6 +218,32 @@ public class AuthImpl implements AuthFace {
             System.out.println("Deploy strategy is Black List Access.");
         } else {
             System.out.println("Deploy strategy is UNKNOWN, please check node status.");
+        }
+    }
+
+    @Override
+    public void checkDeployAuth(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
+        String accountAddress =
+                (params.length == 1)
+                        ? consoleInitializer
+                                .getClient()
+                                .getCryptoSuite()
+                                .getCryptoKeyPair()
+                                .getAddress()
+                        : params[1];
+        checkValidAddress(accountAddress, "accountAddress");
+        try {
+            checkValidAddress(accountAddress, "accountAddress");
+            Boolean hasDeployAuth = authManager.hasDeployAuth(accountAddress);
+            System.out.println(
+                    "Account: "
+                            + accountAddress
+                            + " has "
+                            + (hasDeployAuth ? "" : "no")
+                            + " access to deploy contract.");
+        } catch (TransactionException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 
@@ -287,6 +317,46 @@ public class AuthImpl implements AuthFace {
                 return;
             }
             System.out.println("Close success, resultCode is: " + openResult);
+        } catch (TransactionException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void checkMethodAuth(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
+        // contract, func, address
+        String contract = params[1];
+        String funcStr = params[2];
+        byte[] hash = consoleInitializer.getClient().getCryptoSuite().hash(funcStr.getBytes());
+        byte[] func = Arrays.copyOfRange(hash, 0, 4);
+        String account =
+                (params.length == 3)
+                        ? consoleInitializer
+                                .getClient()
+                                .getCryptoSuite()
+                                .getCryptoKeyPair()
+                                .getAddress()
+                        : params[3];
+        try {
+            checkValidAddress(contract, "contractAddress");
+            checkValidAddress(account, "accountAddress");
+            Boolean hasAuth = authManager.checkMethodAuth(contract, func, account);
+            logger.debug(
+                    "checkMethodAuth: account:{}, funcStr:{}, func:{}, contract:{}",
+                    account,
+                    funcStr,
+                    func,
+                    contract);
+            System.out.println(
+                    "Account: "
+                            + account
+                            + " has"
+                            + ((hasAuth) ? "" : "no")
+                            + " access to interface: "
+                            + funcStr
+                            + " of contract: "
+                            + contract);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
