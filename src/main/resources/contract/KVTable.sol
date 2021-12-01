@@ -29,4 +29,5 @@ contract KVTable {
         string memory key,
         Entry memory entry
     ) public returns (int256) {}
+    function desc(string memory tableName) public returns(string memory,string memory){}
 }

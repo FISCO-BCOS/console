@@ -10,6 +10,7 @@ import org.fisco.bcos.sdk.contract.auth.manager.AuthManager;
 import org.fisco.bcos.sdk.contract.auth.po.AuthType;
 import org.fisco.bcos.sdk.contract.auth.po.ProposalInfo;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.fisco.bcos.sdk.transaction.codec.decode.ReceiptParser;
@@ -185,8 +186,7 @@ public class AuthImpl implements AuthFace {
             }
             ConsoleUtils.printJson(proposalInfo.toString());
         } catch (NumberFormatException e) {
-            throw new Exception(
-                    "Number convert error, please check number you input", e.getCause());
+            System.out.println("Number convert error, please check proposal id you input.");
         }
     }
 
@@ -237,11 +237,11 @@ public class AuthImpl implements AuthFace {
             checkValidAddress(accountAddress, "accountAddress");
             Boolean hasDeployAuth = authManager.hasDeployAuth(accountAddress);
             System.out.println(
-                    "Account: "
-                            + accountAddress
-                            + " has "
-                            + (hasDeployAuth ? "" : "no")
-                            + " access to deploy contract.");
+                    "Deploy :"
+                            + ((hasDeployAuth)
+                                    ? "\033[32m" + "ACCESS" + "\033[m"
+                                    : "\033[31m" + "PERMISSION DENIED" + "\033[m"));
+            System.out.println("Account: " + accountAddress);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -264,13 +264,18 @@ public class AuthImpl implements AuthFace {
             } else if (type.equals("black_list")) {
                 setResult = authManager.setMethodAuthType(address, func, AuthType.BLACK_LIST);
             } else {
-                throw new Exception("Error authType, auth type is white_list or black_list");
-            }
-            if (setResult.compareTo(BigInteger.ZERO) != 0) {
-                System.out.println("Set method auth type failed, resultCode is" + setResult);
+                System.out.println("Error authType, auth type is white_list or black_list.");
                 return;
             }
-            System.out.println("Set method auth type success, resultCode is: " + setResult);
+            RetCode precompiledResponse =
+                    PrecompiledRetCode.getPrecompiledResponse(setResult.intValue(), "Success");
+            ConsoleUtils.printJson(
+                    "{\"code\":"
+                            + precompiledResponse.getCode()
+                            + ", \"msg\":"
+                            + "\""
+                            + precompiledResponse.getMessage()
+                            + "\"}");
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -349,14 +354,13 @@ public class AuthImpl implements AuthFace {
                     func,
                     contract);
             System.out.println(
-                    "Account: "
-                            + account
-                            + " has"
-                            + ((hasAuth) ? "" : "no")
-                            + " access to interface: "
-                            + funcStr
-                            + " of contract: "
-                            + contract);
+                    "Method   :"
+                            + ((hasAuth)
+                                    ? "\033[32m" + "ACCESS" + "\033[m"
+                                    : "\033[31m" + "PERMISSION DENIED" + "\033[m"));
+            System.out.println("Account  : " + account);
+            System.out.println("Interface: " + funcStr);
+            System.out.println("Contract : " + contract);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }

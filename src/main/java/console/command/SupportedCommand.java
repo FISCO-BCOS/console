@@ -247,6 +247,8 @@ public class SupportedCommand {
                                 consoleInitializer.getPrecompiledFace().remove(params[0]));
      */
 
+    // TODO: Liquid collaboration service is not supported in FISCO BCOS 3.0.0 rc1
+    /*
     public static final CommandInfo INITIALIZE =
             new CommandInfo(
                     "initialize",
@@ -282,6 +284,7 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) -> {
                         consoleInitializer.getCollaborationFace().fetch(params);
                     });
+     */
 
     public static final CommandInfo GET_CURRENT_ACCOUNT =
             new CommandInfo(
@@ -677,7 +680,7 @@ public class SupportedCommand {
                     0,
                     0);
 
-    public static final CommandInfo SET_NODENAME =
+    public static final CommandInfo SET_NODE_NAME =
             new CommandInfo(
                     "setNodeName",
                     "Set default node name to send request.",
@@ -694,6 +697,16 @@ public class SupportedCommand {
                     HelpInfo::clearNodeNameHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().clearNodeName(),
+                    0,
+                    0);
+
+    public static final CommandInfo GET_NODE_NAME =
+            new CommandInfo(
+                    "getNodeName",
+                    "Get default node name in this client.",
+                    HelpInfo::getNodeNameHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getNodeName(),
                     0,
                     0);
 
@@ -949,16 +962,15 @@ public class SupportedCommand {
                             // DELETE.getCommand()
                             ));
 
-    public static List<String> NODENAME_COMMANDS =
-            new ArrayList<>(Arrays.asList(SET_NODENAME.getCommand(), CLEAR_NODE_NAME.getCommand()));
-
+    // TODO: Liquid collaboration service is not supported in FISCO BCOS 3.0.0 rc1
     public static List<String> COLLABORATION_COMMANDS =
             new ArrayList<>(
                     Arrays.asList(
-                            INITIALIZE.getCommand(),
-                            SIGN.getCommand(),
-                            EXERCISE.getCommand(),
-                            FETCH.getCommand()));
+                            // INITIALIZE.getCommand(),
+                            // SIGN.getCommand(),
+                            // EXERCISE.getCommand(),
+                            // FETCH.getCommand()
+                            ));
 
     static {
         Field[] fields = SupportedCommand.class.getDeclaredFields();

@@ -123,16 +123,6 @@ public class Console {
                             }
                             JlineUtils.switchPwd(pwd);
                         }
-                    } else if (SupportedCommand.NODENAME_COMMANDS.contains(params[0])) {
-                        if (commandInfo
-                                .getCommand()
-                                .equals(SupportedCommand.SET_NODENAME.getCommand())) {
-                            commandInfo.callCommand(consoleInitializer, params, pwd);
-                        } else if (commandInfo
-                                .getCommand()
-                                .equals(SupportedCommand.CLEAR_NODE_NAME.getCommand())) {
-                            commandInfo.callCommand(consoleInitializer, params, pwd);
-                        }
                     } else {
                         String[] paramWithoutQuotation = new String[params.length];
                         for (Integer i = 0; i < params.length; i++) {
