@@ -855,6 +855,21 @@ public class SupportedCommand {
                     false,
                     true);
 
+    public static final CommandInfo CHECK_DEPLOY_AUTH =
+            new CommandInfo(
+                    "checkDeployAuth",
+                    "Check whether account has deploy access.",
+                    HelpInfo::checkDeployAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .checkDeployAuth(consoleInitializer, params),
+                    0,
+                    1,
+                    false,
+                    false,
+                    true);
+
     public static final CommandInfo SET_METHOD_AUTH_TYPE =
             new CommandInfo(
                     "setMethodAuth",
@@ -895,6 +910,21 @@ public class SupportedCommand {
                                     .getAuthFace()
                                     .closeMethodAuth(consoleInitializer, params),
                     3,
+                    3,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo CHECK_METHOD_AUTH =
+            new CommandInfo(
+                    "checkMethodAuth",
+                    "Check method ACL for account in specific contract.",
+                    HelpInfo::checkMethodAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .checkMethodAuth(consoleInitializer, params),
+                    2,
                     3,
                     false,
                     false,

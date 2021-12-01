@@ -28,9 +28,13 @@ public interface AuthFace {
 
     void getDeployStrategy(String[] params) throws Exception;
 
+    void checkDeployAuth(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
+
     void setMethodAuthType(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
 
     void openMethodAuth(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
 
     void closeMethodAuth(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
+
+    void checkMethodAuth(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
 }
