@@ -330,11 +330,6 @@ public class ConsoleInitializer {
         System.exit(0);
     }
 
-    public String getNodeName() {
-        this.nodeName = consoleClientFace.getNodeName();
-        return this.nodeName;
-    }
-
     public Client getClient() {
         return client;
     }

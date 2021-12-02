@@ -63,5 +63,5 @@ public interface ConsoleClientFace {
 
     void clearNodeName();
 
-    String getNodeName();
+    void getNodeName();
 }

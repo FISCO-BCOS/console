@@ -2,6 +2,7 @@ package console.command.model;
 
 import console.command.SupportedCommand;
 import console.common.Common;
+import console.common.ConsoleUtils;
 import org.fisco.bcos.sdk.model.PrecompiledConstant;
 
 public class HelpInfo {
@@ -580,33 +581,48 @@ public class HelpInfo {
     public static void clearNodeNameHelp() {
         System.out.println("Clear default node name to empty.");
         System.out.println("Usage: clearNodeName");
+        System.out.println(
+                "[Note]: If you clear node name to empty, RPC will send request to node randomly.");
+    }
+
+    public static void getNodeNameHelp() {
+        System.out.println("Get default node name in this client.");
+        System.out.println("Usage: getNodeName");
     }
 
     public static void updateGovernorProposalHelp() {
         System.out.println("Create a proposal to committee, which attempt to update a governor.");
-        System.out.println("[Note]: this command is only available for governors of committee.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: updateGovernorProposal account weight");
         System.out.println(
                 "account[Required] -- The address of governor, it's length should be 40 in hex.");
         System.out.println(
                 "weight[Required] -- The weight of governor, which is larger equal than 0.");
         System.out.println(
-                "        [Note]: if you set a new governor, you can set a new weigh of governor.");
+                "        [Note]: if you set a new governor, you can set a new weigh for governor.");
         System.out.println(
-                "        [WARNING]: if you set governor's weight to 0, it will delete this governor from committee.");
+                "\033[31m"
+                        + "        [WARNING]: if you set governor's weight to 0, it will delete this governor from committee."
+                        + "\033[m");
     }
 
     public static void setRateProposalHelp() {
         System.out.println(
                 "Create a proposal to committee, which attempt to update committee vote rate.");
-        System.out.println("[Note]: this command is only available for governors of committee.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: setRateProposal participatesRate winRate");
         System.out.println(
-                "participatesRate[Required] -- The rate of participate threshold, it should range in [0,100].");
+                "participatesRate[Required] -- The percent rate of participate threshold, it should range in [0,100].");
         System.out.println(
-                "winRate[Required] -- The rate of proposal win threshold, it should range in [0,100].");
-        System.out.println(
-                "        [Note]: if you set a new governor, you can set a new weigh of governor.");
+                "winRate[Required] -- The percent rate of proposal win threshold, it should range in [0,100].");
         System.out.println(
                 "        [Note]: if you set any rate to 0, proposal will always success.");
     }
@@ -614,7 +630,11 @@ public class HelpInfo {
     public static void setDeployAuthTypeProposalHelp() {
         System.out.println(
                 "Create a proposal to committee, which attempt to set deploy ACL type globally.");
-        System.out.println("[Note]: this command is only available for governors of committee.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: setDeployAuthTypeProposal authType");
         System.out.println(
                 "authType[Required] -- The ACL strategy of deploy, it should be 'white_list' or 'black_list'.");
@@ -623,7 +643,11 @@ public class HelpInfo {
     public static void openDeployAuthProposalHelp() {
         System.out.println(
                 "Create a proposal to committee, which attempt to open deploy ACL for specific account.");
-        System.out.println("[Note]: this command is only available for governors of committee.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: openDeployAuthProposal account");
         System.out.println(
                 "account[Required] -- The address of admin account, it's length should be 40 in hex.");
@@ -632,7 +656,11 @@ public class HelpInfo {
     public static void closeDeployAuthProposalHelp() {
         System.out.println(
                 "Create a proposal to committee, which attempt to close deploy ACL for specific account.");
-        System.out.println("[Note]: this command is only available for governors of committee.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: closeDeployAuthProposal account");
         System.out.println(
                 "account[Required] -- The address of admin account, it's length should be 40 in hex.");
@@ -641,7 +669,11 @@ public class HelpInfo {
     public static void resetAdminProposalHelp() {
         System.out.println(
                 "Create a proposal to committee, which attempt to reset a specific contract's admin.");
-        System.out.println("[Note]: this command is only available for governors of committee.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: resetAdminProposal newAdmin address");
         System.out.println(
                 "newAdmin[Required] -- The address of admin account, it's length should be 40 in hex.");
@@ -651,7 +683,11 @@ public class HelpInfo {
 
     public static void revokeProposalHelp() {
         System.out.println("Revoke a specific proposal from committee.");
-        System.out.println("[Note]: this command is only available for proposal sender.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for proposal sender."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: revokeProposal proposalId");
         System.out.println(
                 "proposalId[Required] -- The ID of a proposal, it should be larger than 0.");
@@ -659,14 +695,20 @@ public class HelpInfo {
 
     public static void voteProposalHelp() {
         System.out.println("Vote a specific proposal from committee.");
-        System.out.println("[Note]: this command is only available for  governors of committee.");
-        System.out.println("Usage: voteProposal proposalId");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for  governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: voteProposal proposalId agree");
         System.out.println(
                 "proposalId[Required] -- The ID of a proposal, it should be larger than 0.");
+        System.out.println("agree[Optional] -- Agree this proposal or not, default is true.");
     }
 
     public static void getProposalInfoHelp() {
         System.out.println("Get a specific proposal info from committee.");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: getProposalInfo proposalId");
         System.out.println(
                 "proposalId[Required] -- The ID of a proposal, it should be larger than 0.");
@@ -698,7 +740,11 @@ public class HelpInfo {
 
     public static void setMethodAuthHelp() {
         System.out.println("Set a method ACL type in specific contract.");
-        System.out.println("[Note]: this command is only available for admin of contract.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for admin of contract."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: setMethodAuth contract selector authType");
         System.out.println(
                 "contract[Required] -- The address of a specific contract, it's length should be 40 in hex.");
@@ -712,7 +758,11 @@ public class HelpInfo {
 
     public static void openMethodAuthHelp() {
         System.out.println("Open method ACL for account in specific contract.");
-        System.out.println("[Note]: this command is only available for admin of contract.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for admin of contract."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: openMethodAuth contract selector account");
         System.out.println(
                 "contract[Required] -- The address of a specific contract, it's length should be 40 in hex.");
@@ -726,7 +776,11 @@ public class HelpInfo {
 
     public static void closeMethodAuthHelp() {
         System.out.println("Close method ACL for account in specific contract.");
-        System.out.println("[Note]: this command is only available for admin of contract.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for admin of contract."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: closeMethodAuth contract selector account");
         System.out.println(
                 "contract[Required] -- The address of a specific contract, it's length should be 40 in hex.");
@@ -740,6 +794,7 @@ public class HelpInfo {
 
     public static void checkMethodAuthHelp() {
         System.out.println("Check method ACL for account in specific contract.");
+        ConsoleUtils.singleLine();
         System.out.println("Usage: closeMethodAuth contract selector account");
         System.out.println(
                 "contract[Required] -- The address of a specific contract, it's length should be 40 in hex.");

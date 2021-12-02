@@ -12,6 +12,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
 import org.fisco.bcos.sdk.client.protocol.response.BcosBlock;
@@ -414,21 +415,19 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                         .writeValueAsString(client.getGroupNodeInfo(node).getResult()));
     }
 
-    public static List<String> getNodeList(Client client) {
-        List<BcosGroupNodeInfo.GroupNodeInfo> nodeInfos =
-                client.getGroupInfo().getResult().getNodeList();
-        List<String> nodeNameList = new ArrayList<>();
-        for (BcosGroupNodeInfo.GroupNodeInfo nodeInfo : nodeInfos) {
-            nodeNameList.add(nodeInfo.getIniConfig().getNodeName());
-        }
-        return nodeNameList;
-    }
-
     @Override
     public void setNodeName(String[] params) {
         String newNodeName = params[1];
-        List<String> nodeList = getNodeList(this.client);
-        if (!nodeList.contains(newNodeName)) {
+        List<BcosGroupNodeInfo.GroupNodeInfo> nodeInfos =
+                client.getGroupInfo().getResult().getNodeList();
+        AtomicBoolean findFlag = new AtomicBoolean(false);
+        nodeInfos.forEach(
+                groupNodeInfo -> {
+                    if (groupNodeInfo.getName().equals(newNodeName)) {
+                        findFlag.set(true);
+                    }
+                });
+        if (!findFlag.get()) {
             System.out.println(
                     "Invalid nodeName: "
                             + newNodeName
@@ -436,6 +435,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return;
         }
         this.nodeName = newNodeName;
+        getNodeName();
     }
 
     @Override
@@ -444,7 +444,13 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         this.nodeName = "";
     }
 
-    public String getNodeName() {
-        return this.nodeName;
+    @Override
+    public void getNodeName() {
+        if (this.nodeName.isEmpty()) {
+            System.out.println(
+                    "Current default node name is empty, RPC will send request to node randomly.");
+            return;
+        }
+        System.out.println("Current default node name: " + this.nodeName);
     }
 }
