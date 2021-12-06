@@ -47,8 +47,11 @@ contract Asset {
         bool result;
         (result, entry) = tf.get("t_asset", account);
         uint256 asset_value = 0;
+        if (entry.fields.length == 0) {
+            return (false, 0);
+        }
         asset_value = safeParseInt(entry.fields[0].value);
-        return (result, uint256(asset_value));
+        return (result, asset_value);
     }
 
     /*
@@ -114,7 +117,7 @@ contract Asset {
         string memory from_account,
         string memory to_account,
         uint256 amount
-    ) public returns (int256) {
+    ) public returns (int16) {
         // 查询转移资产账户信息
         bool ret = true;
         uint256 from_asset_value = 0;

@@ -7,7 +7,6 @@
 *.war
 *.ear
 *.bin
-*.abi
 
 ### Gradle template
 .gradle

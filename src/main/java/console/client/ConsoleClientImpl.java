@@ -398,10 +398,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getGroupList(String[] params) {
-        int i = 0;
-        for (String group : client.getGroupList().getResult().getGroupList()) {
-            System.out.println("group" + (i++) + ": " + group);
-        }
+        ConsoleUtils.printJson(client.getGroupList().getResult().getGroupList().toString());
     }
 
     @Override

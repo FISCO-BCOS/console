@@ -73,13 +73,25 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         if (!client.isWASM()) {
             String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
             String contractName = ConsoleUtils.getContractName(contractNameOrPath);
+            if (contractName.endsWith(".wasm")) {
+                throw new Exception("Error: you should not treat a WASM file as solidity!");
+            }
             List<String> inputParams = Arrays.asList(params).subList(2, params.length);
             deploySolidity(contractName, contractNameOrPath, inputParams);
         } else {
             String binPath = ConsoleUtils.resolvePath(params[1]);
+            if (binPath.endsWith(".sol")) {
+                throw new Exception("Error: you should not treat a solidity file as WASM!");
+            }
             String abiPath = ConsoleUtils.resolvePath(params[2]);
             String path = params[3];
-            path = ConsoleUtils.fixedBfsParam(path, pwd);
+            try {
+                path = ConsoleUtils.fixedBfsParam(path, pwd);
+            } catch (Exception e) {
+                System.out.println("Path parse error for: " + e.getMessage());
+                System.out.println("Please use 'deploy -h' to check deploy arguments.");
+                return;
+            }
             List<String> inputParams = Arrays.asList(params).subList(4, params.length);
             deployWasm(binPath, abiPath, path, inputParams);
         }

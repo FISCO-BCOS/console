@@ -582,9 +582,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (params.length == 3) {
             Tuple2<String, String> cnsTuple =
                     cnsService.selectByNameAndVersion(contractName, params[2]);
-            if (cnsTuple.getValue1() != null
-                    && cnsTuple.getValue2() != null
-                    && !cnsTuple.getValue2().isEmpty()) {
+            if (cnsTuple.getValue1() != null) {
                 cnsInfos = new LinkedList<>();
                 CnsInfo cnsInfo = new CnsInfo();
                 cnsInfo.setAddress(cnsTuple.getValue1());
@@ -650,44 +648,51 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void changeDir(String[] params, String pwd) throws Exception {
-        if (params.length == 1 || params[0].equals("/")) {
+        if (params.length == 1) {
             System.out.println("cd: change dir to root /");
             return;
         }
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
+        String path = fixedBfsParams[1];
+        if (path.equals("/")) {
+            System.out.println("cd: change dir to root /");
+            return;
+        }
         List<FileInfo> listResult;
-        Tuple2<String, String> parentAndBase =
-                ConsoleUtils.getParentPathAndBaseName(fixedBfsParams[1]);
+        Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
         String parentDir = parentAndBase.getValue1();
         String baseName = parentAndBase.getValue2();
         listResult = bfsService.list(parentDir);
-        try {
-            if (!listResult.isEmpty()) {
-                boolean findFlag = false;
-                for (FileInfo fileInfo : listResult) {
-                    if (fileInfo.getName().equals(baseName)) {
-                        findFlag = true;
-                        if (!fileInfo.getType().equals("directory")) {
-                            throw new Exception("cd: not a directory: " + fileInfo.getName());
-                        }
+        if (!listResult.isEmpty()) {
+            boolean findFlag = false;
+            for (FileInfo fileInfo : listResult) {
+                if (fileInfo.getName().equals(baseName)) {
+                    findFlag = true;
+                    if (!fileInfo.getType().equals("directory")) {
+                        throw new Exception("cd: not a directory: " + fileInfo.getName());
                     }
                 }
-                if (!findFlag) {
-                    throw new Exception("cd: no such file or directory in  " + parentDir);
-                }
-            } else {
-                throw new Exception("cd: no such file or directory: " + params[1]);
             }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
+            if (!findFlag) {
+                throw new Exception("cd: no such file or directory: " + baseName);
+            }
+        } else {
+            throw new Exception("cd: no such file or directory: " + params[1]);
         }
     }
 
     @Override
     public void makeDir(String[] params, String pwd) throws Exception {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
-        RetCode mkdir = bfsService.mkdir(fixedBfsParams[1]);
-        logger.info("mkdir: make new dir {}", fixedBfsParams[1]);
+        String path = fixedBfsParams[1];
+        RetCode mkdir = bfsService.mkdir(path);
+        logger.info("mkdir: make new dir {}", path);
+        if (mkdir.getCode() == PrecompiledRetCode.CODE_FILE_INVALID_PATH.getCode()) {
+            if (!path.startsWith("/apps/") || !path.startsWith("/tables/")) {
+                System.out.println("Only permitted to mkdir in '/apps/' and '/tables/'");
+                return;
+            }
+        }
         System.out.println(mkdir.getMessage());
     }
 
@@ -698,9 +703,6 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
         List<FileInfo> fileInfoList = bfsService.list(listPath);
-        if (fileInfoList.isEmpty()) {
-            System.out.println("ls: no such file or directory: " + listPath);
-        }
         int newLineCount = 0;
         for (FileInfo fileInfo : fileInfoList) {
             newLineCount++;

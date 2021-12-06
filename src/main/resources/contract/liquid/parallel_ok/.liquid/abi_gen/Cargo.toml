@@ -11,7 +11,7 @@ path = "main.rs"
 
 [dependencies.contract]
 path = "../../"
-package = "asset_test"
+package = "parallel_ok"
 default-features = false
 features = ["liquid-abi-gen"]
 
