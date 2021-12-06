@@ -28,6 +28,7 @@ import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.sdk.codec.datatypes.Array;
 import org.fisco.bcos.sdk.codec.datatypes.Bytes;
+import org.fisco.bcos.sdk.codec.datatypes.DynamicBytes;
 import org.fisco.bcos.sdk.codec.datatypes.StructType;
 import org.fisco.bcos.sdk.codec.datatypes.Type;
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
@@ -602,9 +603,14 @@ public class ConsoleUtils {
             resultData.append("]");
             resultType.append("]");
         } else if (result instanceof StructType) {
+            // FIXME: out put struct
             throw new UnsupportedOperationException();
         } else if (result instanceof Bytes) {
             String data = "hex://0x" + bytesToHex(((Bytes) result).getValue());
+            resultType.append(result.getTypeAsString());
+            resultData.append(data);
+        } else if (result instanceof DynamicBytes) {
+            String data = "hex://0x" + bytesToHex(((DynamicBytes) result).getValue());
             resultType.append(result.getTypeAsString());
             resultData.append(data);
         } else {
@@ -737,7 +743,7 @@ public class ConsoleUtils {
 
             Option liquidSmBinPathOption =
                     new Option(
-                            "sb",
+                            "s",
                             SM_BIN_OPTION,
                             true,
                             "[Required] The SM binary file path of Liquid contract.");

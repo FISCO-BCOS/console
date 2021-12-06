@@ -33,6 +33,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     private static final Logger logger = LoggerFactory.getLogger(ConsoleContractImpl.class);
     private Client client;
     private String nodeName = "";
+    private static String EMPTY_HASH_HEX =
+            "0x0000000000000000000000000000000000000000000000000000000000000000";
 
     public ConsoleClientImpl(Client client) {
         this.client = client;
@@ -147,6 +149,23 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         if (ConsoleUtils.isInvalidHash(blockHash)) return;
         ConsoleUtils.printJson(
                 client.getBlockByHash(nodeName, blockHash, true, false).getBlock().toString());
+    }
+
+    @Override
+    public void getBlockHashByNumber(String[] params) throws IOException {
+        String blockNumberStr = params[1];
+        int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
+        if (blockNumber == Common.InvalidReturnNumber) {
+            return;
+        }
+        String blockHashByNumber =
+                client.getBlockHashByNumber(BigInteger.valueOf(blockNumber)).getBlockHashByNumber();
+        if (blockHashByNumber.equals(EMPTY_HASH_HEX)) {
+            System.out.println("BlockHash is empty, please check block number exists.");
+        }
+        System.out.println(
+                client.getBlockHashByNumber(BigInteger.valueOf(blockNumber))
+                        .getBlockHashByNumber());
     }
 
     @Override

@@ -27,6 +27,8 @@ public interface ConsoleClientFace {
 
     void getBlockHeaderByHash(String[] params) throws IOException;
 
+    void getBlockHashByNumber(String[] params) throws IOException;
+
     void getBlockHeaderByNumber(String[] params) throws IOException;
 
     void getTransactionByHash(String[] params);

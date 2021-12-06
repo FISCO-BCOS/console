@@ -4,10 +4,13 @@ import console.ConsoleInitializer;
 import console.common.ConsoleUtils;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.contract.auth.manager.AuthManager;
 import org.fisco.bcos.sdk.contract.auth.po.AuthType;
+import org.fisco.bcos.sdk.contract.auth.po.CommitteeInfo;
+import org.fisco.bcos.sdk.contract.auth.po.GovernorInfo;
 import org.fisco.bcos.sdk.contract.auth.po.ProposalInfo;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.model.PrecompiledRetCode;
@@ -47,6 +50,7 @@ public class AuthImpl implements AuthFace {
             }
             BigInteger proposalId = authManager.updateGovernor(account, weight);
             System.out.println("Update governor proposal created, id is: " + proposalId);
+            showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
             throw new Exception(
                     "Number convert error, please check number you input", e.getCause());
@@ -65,6 +69,7 @@ public class AuthImpl implements AuthFace {
             checkValidRate(winRate, "winRate");
             BigInteger proposalId = authManager.setRate(participatesRate, winRate);
             System.out.println("Set rate proposal created, id is: " + proposalId);
+            showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
             throw new Exception(
                     "Number convert error, please check number you input", e.getCause());
@@ -86,6 +91,7 @@ public class AuthImpl implements AuthFace {
                 throw new Exception("Error authType, auth type is white_list or black_list");
             }
             System.out.println("Set deploy auth type proposal created, id is: " + proposalId);
+            showProposalInfo(proposalId);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -98,6 +104,7 @@ public class AuthImpl implements AuthFace {
             checkValidAddress(account, account);
             BigInteger proposalId = authManager.modifyDeployAuth(account, true);
             System.out.println("Open deploy auth proposal created, id is: " + proposalId);
+            showProposalInfo(proposalId);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -110,6 +117,7 @@ public class AuthImpl implements AuthFace {
             checkValidAddress(account, account);
             BigInteger proposalId = authManager.modifyDeployAuth(account, false);
             System.out.println("Close deploy auth proposal created, id is: " + proposalId);
+            showProposalInfo(proposalId);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -124,6 +132,7 @@ public class AuthImpl implements AuthFace {
             checkValidAddress(contractAddr, "contractAddress");
             BigInteger proposalId = authManager.resetAdmin(newAdmin, contractAddr);
             System.out.println("Reset contract admin proposal created, id is: " + proposalId);
+            showProposalInfo(proposalId);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -140,6 +149,7 @@ public class AuthImpl implements AuthFace {
             } else {
                 System.out.println("Revoke proposal failed, msg: " + retCode.getMessage());
             }
+            showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
             throw new Exception(
                     "Number convert error, please check number you input", e.getCause());
@@ -168,6 +178,7 @@ public class AuthImpl implements AuthFace {
             } else {
                 System.out.println("Vote proposal failed, msg: " + retCode.getMessage());
             }
+            showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
             throw new Exception(
                     "Number convert error, please check number you input", e.getCause());
@@ -178,21 +189,59 @@ public class AuthImpl implements AuthFace {
     public void getProposalInfo(String[] params) throws Exception {
         try {
             BigInteger proposalId = BigInteger.valueOf(Long.parseLong(params[1]));
-            ProposalInfo proposalInfo = authManager.getProposalInfo(proposalId);
-            if (proposalInfo.getProposalType() == 0 && proposalInfo.getStatus() == 0) {
-                System.out.println(
-                        "Proposal not found in committee, please check id: " + proposalId);
-                return;
-            }
-            ConsoleUtils.printJson(proposalInfo.toString());
+            showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
             System.out.println("Number convert error, please check proposal id you input.");
         }
     }
 
+    private void showProposalInfo(BigInteger proposalId) throws ContractException {
+        ProposalInfo proposalInfo = authManager.getProposalInfo(proposalId);
+        if (proposalInfo.getProposalType() == 0 && proposalInfo.getStatus() == 0) {
+            System.out.println("Proposal not found in committee, please check id: " + proposalId);
+            return;
+        }
+        ConsoleUtils.singleLine();
+        System.out.println("Proposer: " + proposalInfo.getProposer());
+        System.out.println("Proposal Type   : " + proposalInfo.getProposalTypeString());
+        System.out.println("Proposal Status : " + proposalInfo.getStatusString());
+        ConsoleUtils.singleLine();
+        System.out.println("Agree Voters:");
+        for (String agreeVoter : proposalInfo.getAgreeVoters()) {
+            System.out.println(agreeVoter);
+        }
+        ConsoleUtils.singleLine();
+        System.out.println("Against Voters:");
+        for (String againstVoter : proposalInfo.getAgainstVoters()) {
+            System.out.println(againstVoter);
+        }
+    }
+
     @Override
     public void getCommitteeInfo(String[] params) throws Exception {
-        ConsoleUtils.printJson(authManager.getCommitteeInfo().toString());
+        ConsoleUtils.singleLine();
+        System.out.println("Committee address   : " + authManager.getCommitteeAddress());
+        System.out.println("ProposalMgr address : " + authManager.getProposalManagerAddress());
+        ConsoleUtils.singleLine();
+        CommitteeInfo committeeInfo = authManager.getCommitteeInfo();
+        System.out.println(
+                "ParticipatesRate: "
+                        + committeeInfo.getParticipatesRate()
+                        + "% , WinRate: "
+                        + committeeInfo.getWinRate()
+                        + "%");
+        ConsoleUtils.singleLine();
+        System.out.println("Governor Address                                        | Weight");
+        List<GovernorInfo> governorList = committeeInfo.getGovernorList();
+        for (int i = 0; i < governorList.size(); i++) {
+            System.out.println(
+                    "index"
+                            + i
+                            + " : "
+                            + governorList.get(i).getGovernorAddress()
+                            + "     | "
+                            + governorList.get(i).getWeight());
+        }
     }
 
     @Override
@@ -235,9 +284,9 @@ public class AuthImpl implements AuthFace {
         checkValidAddress(accountAddress, "accountAddress");
         try {
             checkValidAddress(accountAddress, "accountAddress");
-            Boolean hasDeployAuth = authManager.hasDeployAuth(accountAddress);
+            Boolean hasDeployAuth = authManager.checkDeployAuth(accountAddress);
             System.out.println(
-                    "Deploy :"
+                    "Deploy : "
                             + ((hasDeployAuth)
                                     ? "\033[32m" + "ACCESS" + "\033[m"
                                     : "\033[31m" + "PERMISSION DENIED" + "\033[m"));
@@ -354,7 +403,7 @@ public class AuthImpl implements AuthFace {
                     func,
                     contract);
             System.out.println(
-                    "Method   :"
+                    "Method   : "
                             + ((hasAuth)
                                     ? "\033[32m" + "ACCESS" + "\033[m"
                                     : "\033[31m" + "PERMISSION DENIED" + "\033[m"));

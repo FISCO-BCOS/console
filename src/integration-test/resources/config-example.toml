@@ -1,7 +1,7 @@
 [cryptoMaterial]
 
 certPath = "conf"                           # The certification path  
-useSMCrypto = "false"
+useSMCrypto = "false"                       # RPC SM crypto type
 
 # The following configurations take the certPath by default if commented
 # caCert = "conf/ca.crt"                    # CA cert file path
@@ -17,7 +17,7 @@ useSMCrypto = "false"
 
 [network]
 messageTimeout = "10000"
-defaultGroup="group"
+defaultGroup="group"                            # Console default group to connect
 peers=["127.0.0.1:20200", "127.0.0.1:20201"]    # The peer list to connect
 
 [account]
