@@ -13,7 +13,6 @@
  */
 package console.command;
 
-import console.ConsoleInitializer;
 import console.command.model.CommandInfo;
 import console.command.model.HelpInfo;
 import console.common.Common;
@@ -79,21 +78,9 @@ public class SupportedCommand {
             new CommandInfo(
                     "switch",
                     "Switch to a specific group by name",
-                    new ArrayList<String>(Arrays.asList("s")),
-                    new CommandInfo.UsageDisplay() {
-                        @Override
-                        public void printUsageInfo() {
-                            HelpInfo.switchEndPointHelp();
-                        }
-                    },
-                    new CommandInfo.CommandImplement() {
-                        @Override
-                        public void call(
-                                ConsoleInitializer consoleInitializer, String[] params, String pwd)
-                                throws Exception {
-                            consoleInitializer.switchGroup(params);
-                        }
-                    },
+                    new ArrayList<>(Arrays.asList("s")),
+                    HelpInfo::switchEndPointHelp,
+                    (consoleInitializer, params, pwd) -> consoleInitializer.switchGroup(params),
                     1,
                     1,
                     false);
@@ -135,7 +122,7 @@ public class SupportedCommand {
                     2,
                     -1,
                     true,
-                    true);
+                    false);
     public static final CommandInfo CALL_BY_CNS =
             new CommandInfo(
                     "callByCNS",
@@ -146,7 +133,7 @@ public class SupportedCommand {
                     2,
                     -1,
                     true,
-                    true);
+                    false);
     public static final CommandInfo QUERY_CNS =
             new CommandInfo(
                     "queryCNS",
@@ -157,7 +144,7 @@ public class SupportedCommand {
                     1,
                     2,
                     true,
-                    true);
+                    false);
     public static final CommandInfo ADD_OBSERVER =
             new CommandInfo(
                     "addObserver",
@@ -377,7 +364,7 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getBlockHeaderByHash(params),
                     1,
-                    2);
+                    1);
     public static final CommandInfo GET_BLOCKHEADER_BY_NUMBER =
             new CommandInfo(
                     "getBlockHeaderByNumber",
@@ -388,7 +375,17 @@ public class SupportedCommand {
                                     .getConsoleClientFace()
                                     .getBlockHeaderByNumber(params),
                     1,
-                    2);
+                    1);
+
+    public static final CommandInfo GET_BLOCK_HASH_BY_NUMBER =
+            new CommandInfo(
+                    "getBlockHashByNumber",
+                    "Query block hash by block number.",
+                    HelpInfo::getBlockHashByNumberHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getBlockHashByNumber(params),
+                    1,
+                    1);
 
     public static final CommandInfo GET_TRANSACTION_BY_HASH =
             new CommandInfo(
@@ -531,7 +528,7 @@ public class SupportedCommand {
                     3,
                     3,
                     true,
-                    true);
+                    false);
 
     public static final CommandInfo NEW_ACCOUNT =
             new CommandInfo(

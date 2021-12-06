@@ -123,22 +123,16 @@ public class CommandInfo {
             boolean supportNonInteractive,
             boolean isWasmSupport,
             boolean needAuthOpen) {
-        this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
-        this.supportNonInteractive = supportNonInteractive;
-        this.isWasmSupport = isWasmSupport;
+        this(
+                command,
+                desc,
+                usageDisplay,
+                commandImplement,
+                minParamLength,
+                maxParamLength,
+                supportNonInteractive,
+                isWasmSupport);
         this.needAuthOpen = needAuthOpen;
-    }
-
-    public CommandInfo(
-            String command,
-            String desc,
-            UsageDisplay usageDisplay,
-            CommandImplement commandImplement,
-            int minParamLength,
-            int maxParamLength,
-            String minSupportVersion) {
-        this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
-        this.minSupportVersion = minSupportVersion;
     }
 
     public CommandInfo(

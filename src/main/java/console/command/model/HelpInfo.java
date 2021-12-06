@@ -173,20 +173,15 @@ public class HelpInfo {
         System.out.println("Query information about a block header by hash.");
         System.out.println("Usage: \ngetBlockHeaderByHash blockHash [boolean]");
         System.out.println("* blockHash -- 32 Bytes - The hash of a block.");
-        System.out.println(
-                "* boolean -- (optional) If true the signature list will also be returned.");
     }
 
     public static void getBlockHeaderByNumberHelp() {
         System.out.println("Query information about a block header by block number.");
-        System.out.println("Usage: \ngetBlockHeaderByNumber blockNumber [boolean]");
+        System.out.println("Usage: \ngetBlockHeaderByNumber blockNumber");
         System.out.println(
                 "* blockNumber -- Integer of a block number, "
                         + Common.NonNegativeIntegerRange
                         + ".");
-
-        System.out.println(
-                "* boolean -- (optional) If true the signature list will also be returned.");
     }
 
     public static void getBlockHashByNumberHelp() {

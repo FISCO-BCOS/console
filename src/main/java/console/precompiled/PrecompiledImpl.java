@@ -650,7 +650,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void changeDir(String[] params, String pwd) throws Exception {
-        if (params.length == 1) {
+        if (params.length == 1 || params[0].equals("/")) {
             System.out.println("cd: change dir to root /");
             return;
         }
@@ -661,21 +661,25 @@ public class PrecompiledImpl implements PrecompiledFace {
         String parentDir = parentAndBase.getValue1();
         String baseName = parentAndBase.getValue2();
         listResult = bfsService.list(parentDir);
-        if (!listResult.isEmpty()) {
-            boolean findFlag = false;
-            for (FileInfo fileInfo : listResult) {
-                if (fileInfo.getName().equals(baseName)) {
-                    findFlag = true;
-                    if (!fileInfo.getType().equals("directory")) {
-                        throw new Exception("cd: not a directory: " + fileInfo.getName());
+        try {
+            if (!listResult.isEmpty()) {
+                boolean findFlag = false;
+                for (FileInfo fileInfo : listResult) {
+                    if (fileInfo.getName().equals(baseName)) {
+                        findFlag = true;
+                        if (!fileInfo.getType().equals("directory")) {
+                            throw new Exception("cd: not a directory: " + fileInfo.getName());
+                        }
                     }
                 }
+                if (!findFlag) {
+                    throw new Exception("cd: no such file or directory in  " + parentDir);
+                }
+            } else {
+                throw new Exception("cd: no such file or directory: " + params[1]);
             }
-            if (!findFlag) {
-                throw new Exception("cd: no such file or directory in  " + parentDir);
-            }
-        } else {
-            throw new Exception("cd: no such file or directory: " + params[1]);
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -689,34 +693,25 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void listDir(String[] params, String pwd) throws Exception {
+        // TODO: add limit args
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
-        List<FileInfo> parentList;
+
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
-        Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(listPath);
-        String parentDir = parentAndBase.getValue1();
-        String baseName = parentAndBase.getValue2();
-        parentList = bfsService.list(parentDir);
-        boolean findFlag = false;
-        for (FileInfo fileInfo : parentList) {
-            if (fileInfo.getName().equals(baseName)) {
-                findFlag = true;
-                if (fileInfo.getType().equals("directory")) {
-                    List<FileInfo> listResult = bfsService.list(listPath);
-                    for (FileInfo info : listResult) {
-                        if (info.getName().equals("/")) {
-                            continue;
-                        }
-                        System.out.print(info.getName() + '\t');
-                    }
-                    System.out.println();
-                } else {
-                    System.out.println(
-                            "name:" + fileInfo.getName() + "\t type:" + fileInfo.getType());
-                }
-            }
+        List<FileInfo> fileInfoList = bfsService.list(listPath);
+        if (fileInfoList.isEmpty()) {
+            System.out.println("ls: no such file or directory: " + listPath);
         }
-        if (!findFlag) {
-            throw new Exception("ls: no such file or directory: " + listPath);
+        int newLineCount = 0;
+        for (FileInfo fileInfo : fileInfoList) {
+            newLineCount++;
+            if (fileInfo.getType().equals("contract")) {
+                System.out.print("\033[32m" + fileInfo.getName() + "\033[m" + '\t');
+            } else {
+                System.out.print(fileInfo.getName() + '\t');
+            }
+            if (newLineCount % 6 == 0) {
+                System.out.println();
+            }
         }
     }
 

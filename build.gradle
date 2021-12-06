@@ -114,7 +114,7 @@ jar {
 		}
 		copy {
 			from file('src/main/resources/contract/')
-			into 'dist/contracts/solidity/'
+			into 'dist/contracts/'
 		}
 		new File('dist/contracts/console').mkdirs()
 		new File('dist/contracts/sdk').mkdirs()
