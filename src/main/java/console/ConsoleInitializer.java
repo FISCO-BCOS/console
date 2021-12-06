@@ -15,6 +15,7 @@ import java.io.Console;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import org.fisco.bcos.sdk.BcosSDK;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.config.ConfigOption;
@@ -41,7 +42,6 @@ public class ConsoleInitializer {
     private AuthFace authFace;
     private CollaborationFace collaborationFace;
     public static boolean DisableAutoCompleter = false;
-    private String nodeName = "";
 
     public void init(String[] args) throws ConfigException {
         AccountInfo accountInfo = null;
@@ -236,14 +236,18 @@ public class ConsoleInitializer {
     public void switchGroup(String[] params) {
         String group = params[1];
         try {
-            // load the original account
+            Integer cryptoType = client.getCryptoType();
             CryptoKeyPair cryptoKeyPair = this.client.getCryptoSuite().getCryptoKeyPair();
             this.client = bcosSDK.getClient(group);
             if (this.client == null) {
                 System.out.println("Switch to the group " + group + " failed");
                 System.exit(0);
             }
-            this.client.getCryptoSuite().setCryptoKeyPair(cryptoKeyPair);
+            if (Objects.equals(client.getCryptoType(), cryptoType)) {
+                // switch group will change crypto type
+                // if same crypto type, then load the original account
+                this.client.getCryptoSuite().setCryptoKeyPair(cryptoKeyPair);
+            }
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client);

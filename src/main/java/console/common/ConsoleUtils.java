@@ -147,7 +147,8 @@ public class ConsoleUtils {
     }
 
     public static String fixedBfsParam(String param, String pwd) throws Exception {
-        String fixedParam, pathToFix;
+        String fixedParam;
+        String pathToFix;
         if (param.startsWith("/")) {
             // absolute path
             pathToFix = param;
@@ -156,7 +157,6 @@ public class ConsoleUtils {
             pathToFix = pwd + ((pwd.equals("/")) ? "" : "/") + param;
         }
         fixedParam = "/" + String.join("/", path2Level(pathToFix));
-        ;
         return fixedParam;
     }
 
