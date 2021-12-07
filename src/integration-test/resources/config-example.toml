@@ -21,7 +21,6 @@ defaultGroup="group"                            # Console default group to conne
 peers=["127.0.0.1:20200", "127.0.0.1:20201"]    # The peer list to connect
 
 [account]
-authCheck = "false"
 keyStoreDir = "account"         # The directory to load/store the account file, default is "account"
 # accountFilePath = ""          # The account file path (default load from the path specified by the keyStoreDir)
 accountFileFormat = "pem"       # The storage format of account file (Default is "pem", "p12" as an option)

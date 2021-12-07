@@ -30,7 +30,7 @@ public class AuthImpl implements AuthFace {
 
     public AuthImpl(Client client) throws ContractException {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        this.authAvailable = client.getConfigOption().getAccountConfig().getAuthCheck();
+        this.authAvailable = client.isAuthCheck();
         if (this.authAvailable) {
             this.authManager = new AuthManager(client, cryptoKeyPair);
         } else {
