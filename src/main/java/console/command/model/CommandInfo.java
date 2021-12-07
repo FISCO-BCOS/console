@@ -283,11 +283,7 @@ public class CommandInfo {
                 HelpInfo.printHelp(
                         command,
                         consoleInitializer.getClient().isWASM(),
-                        consoleInitializer
-                                .getClient()
-                                .getConfigOption()
-                                .getAccountConfig()
-                                .getAuthCheck());
+                        consoleInitializer.getClient().isAuthCheck());
                 return;
             }
         }
@@ -309,11 +305,7 @@ public class CommandInfo {
             HelpInfo.printHelp(
                     command,
                     consoleInitializer.getClient().isWASM(),
-                    consoleInitializer
-                            .getClient()
-                            .getConfigOption()
-                            .getAccountConfig()
-                            .getAuthCheck());
+                    consoleInitializer.getClient().isAuthCheck());
             return;
         }
         // check version
