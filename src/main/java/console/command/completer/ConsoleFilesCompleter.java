@@ -20,23 +20,27 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
     private static final Logger logger = LoggerFactory.getLogger(ConsoleFilesCompleter.class);
 
     public final String SOL_STR = ".sol";
+    public final String WASM_STR = ".wasm";
+    public final String ABI_STR = ".abi";
     public final String TABLE_SOL = "Table.sol";
-    private Path solidityPath;
+    public final String KV_TABLE_SOL = "KVTable.sol";
+    private Path contractPath;
     private boolean solidityCompleter = true;
+    private boolean isWasm = false;
 
-    public ConsoleFilesCompleter(boolean solidityCompleter) {
+    public ConsoleFilesCompleter(File contractFile) {
         super(new File("." + File.separator));
-        this.solidityCompleter = solidityCompleter;
+        contractPath = contractFile.toPath();
     }
 
-    public ConsoleFilesCompleter(File solidityFile) {
-        super(new File("." + File.separator));
-        solidityPath = solidityFile.toPath();
+    public ConsoleFilesCompleter(File contractFile, boolean isWasm) {
+        this(contractFile);
+        this.isWasm = isWasm;
     }
 
-    public ConsoleFilesCompleter(Path solidityPath) {
+    public ConsoleFilesCompleter(Path contractPath) {
         super(new File("." + File.separator));
-        this.solidityPath = solidityPath;
+        this.contractPath = contractPath;
     }
 
     @Override
@@ -92,7 +96,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                 }
             } else {
                 if (completeSol) {
-                    current = solidityPath.resolve(curBuf);
+                    current = contractPath.resolve(curBuf);
                 } else {
                     current = getUserDir().resolve(curBuf);
                 }
@@ -100,7 +104,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
         } else {
             curBuf = "";
             if (completeSol) {
-                current = solidityPath;
+                current = contractPath;
             } else {
                 current = getUserDir();
             }
@@ -116,16 +120,24 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                             return;
                         }
                         String value = curBuf + p.getFileName().toString();
-                        // filter not sol file and Table.sol
-                        if (TABLE_SOL.equals(value)) {
+                        // filter not sol file and Table.sol and KVTable.sol
+                        if (TABLE_SOL.equals(value) || KV_TABLE_SOL.equals(value)) {
                             return;
                         }
-                        if (solidityCompleter
-                                && !Files.isDirectory(p)
-                                && !value.endsWith(SOL_STR)) {
-                            return;
+                        if (isWasm) {
+                            if (!Files.isDirectory(p)
+                                    && !value.endsWith(WASM_STR)
+                                    && !value.endsWith(ABI_STR)) {
+                                return;
+                            }
+                        } else {
+                            if (solidityCompleter
+                                    && !Files.isDirectory(p)
+                                    && !value.endsWith(SOL_STR)) {
+                                return;
+                            }
                         }
-                        if (solidityCompleter && completeSol) {
+                        if (solidityCompleter && completeSol && !isWasm) {
                             value = value.substring(0, value.length() - SOL_STR.length());
                         }
                         if (Files.isDirectory(p)) {

@@ -43,11 +43,13 @@ public class ConsoleUtils {
     private static final Logger logger = LoggerFactory.getLogger(ConsoleUtils.class);
 
     public static final String SOLIDITY_PATH = "contracts/solidity/";
+    public static final String LIQUID_PATH = "contracts/liquid/";
     public static final String JAVA_PATH = "contracts/sdk/java/";
     public static final String ABI_PATH = "contracts/sdk/abi/";
     public static final String BIN_PATH = "contracts/sdk/bin/";
-    public static final String SOL_POSTFIX = ".sol";
-    public static final String GM_ACCOUNT_POSTFIX = "_gm";
+    public static final String SOL_SUFFIX = ".sol";
+    public static final String WASM_SUFFIX = ".wasm";
+    public static final String GM_ACCOUNT_SUFFIX = "_gm";
     public static final int ADDRESS_SIZE = 160;
     public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
 
@@ -133,15 +135,7 @@ public class ConsoleUtils {
         String[] fixedParams = new String[params.length];
         fixedParams[0] = params[0];
         for (int i = 1; i < params.length; i++) {
-            String pathToFix;
-            if (params[i].startsWith("/")) {
-                // absolute path
-                pathToFix = params[i];
-            } else {
-                // relative path
-                pathToFix = pwd + ((pwd.equals("/")) ? "" : "/") + params[i];
-            }
-            fixedParams[i] = "/" + String.join("/", path2Level(pathToFix));
+            fixedParams[i] = fixedBfsParam(params[i], pwd);
         }
         return fixedParams;
     }
@@ -531,8 +525,8 @@ public class ConsoleUtils {
     }
 
     public static String removeSolPostfix(String name) {
-        return (name.endsWith(SOL_POSTFIX)
-                ? name.substring(0, name.length() - SOL_POSTFIX.length())
+        return (name.endsWith(SOL_SUFFIX)
+                ? name.substring(0, name.length() - SOL_SUFFIX.length())
                 : name);
     }
 
@@ -549,7 +543,7 @@ public class ConsoleUtils {
             return solFile;
         }
         filePath = ConsoleUtils.removeSolPostfix(filePath);
-        filePath += SOL_POSTFIX;
+        filePath += SOL_SUFFIX;
         /** Check that the file exists in the default directory first */
         solFile = new File(SOLIDITY_PATH + File.separator + filePath);
         /** file not exist */
@@ -557,6 +551,22 @@ public class ConsoleUtils {
             throw new ConsoleMessageException(solFileNameOrPath + " does not exist ");
         }
         return solFile;
+    }
+
+    public static String getLiquidFilePath(String liquidFileNameOrPath)
+            throws ConsoleMessageException {
+
+        File liquidFile = new File(liquidFileNameOrPath);
+        if (liquidFile.exists()) {
+            return liquidFile.getAbsolutePath();
+        }
+        /** Check that the file exists in the default directory first */
+        liquidFile = new File(LIQUID_PATH + File.separator + liquidFileNameOrPath);
+        /** file not exist */
+        if (!liquidFile.exists()) {
+            throw new ConsoleMessageException(liquidFileNameOrPath + " does not exist ");
+        }
+        return liquidFile.getAbsolutePath();
     }
 
     public static String resolvePath(String path) {

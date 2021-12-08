@@ -299,7 +299,7 @@ public class ConsoleInitializer {
                     if (accountPathArray.length > 1) {
                         accountPath =
                                 accountPathArray[0]
-                                        + ConsoleUtils.GM_ACCOUNT_POSTFIX
+                                        + ConsoleUtils.GM_ACCOUNT_SUFFIX
                                         + "."
                                         + accountPathArray[1];
                     }
