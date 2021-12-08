@@ -940,6 +940,19 @@ public class SupportedCommand {
                     false,
                     true);
 
+    public static final CommandInfo GET_LATEST_PROPOSAL =
+            new CommandInfo(
+                    "getLatestProposal",
+                    "Get the latest proposal info.",
+                    HelpInfo::getLatestProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getLatestProposal(params),
+                    0,
+                    0,
+                    false,
+                    false,
+                    true);
+
     public static List<String> BFS_COMMANDS =
             new ArrayList<>(
                     Arrays.asList(

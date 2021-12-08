@@ -800,4 +800,9 @@ public class HelpInfo {
         System.out.println(
                 "    [example] checkMethodAuth 0x1234567890123456789012345678901234567890 \"set(string)\" 0x1234567890123456789012345678901234567890");
     }
+
+    public static void getLatestProposalHelp() {
+        System.out.println("Get the latest proposal info.");
+        System.out.println("Usage: getLatestProposal");
+    }
 }

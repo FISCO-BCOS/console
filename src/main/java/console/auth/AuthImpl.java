@@ -49,11 +49,10 @@ public class AuthImpl implements AuthFace {
                         "weight is less than 0, please use a weight LE than 0");
             }
             BigInteger proposalId = authManager.updateGovernor(account, weight);
-            System.out.println("Update governor proposal created, id is: " + proposalId);
+            System.out.println("Update governor proposal created, ID is: " + proposalId);
             showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
-            throw new Exception(
-                    "Number convert error, please check number you input", e.getCause());
+            System.out.println("Number convert error, please check number you input");
         } catch (TransactionException e) {
             logger.error("createUpdateGovernorProposal, e:", e);
             System.out.println("Error: " + e.getMessage());
@@ -68,11 +67,10 @@ public class AuthImpl implements AuthFace {
             checkValidRate(participatesRate, "participatesRate");
             checkValidRate(winRate, "winRate");
             BigInteger proposalId = authManager.setRate(participatesRate, winRate);
-            System.out.println("Set rate proposal created, id is: " + proposalId);
+            System.out.println("Set rate proposal created, ID is: " + proposalId);
             showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
-            throw new Exception(
-                    "Number convert error, please check number you input", e.getCause());
+            System.out.println("Number convert error, please check number you input");
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -90,7 +88,7 @@ public class AuthImpl implements AuthFace {
             } else {
                 throw new Exception("Error authType, auth type is white_list or black_list");
             }
-            System.out.println("Set deploy auth type proposal created, id is: " + proposalId);
+            System.out.println("Set deploy auth type proposal created, ID is: " + proposalId);
             showProposalInfo(proposalId);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
@@ -103,7 +101,7 @@ public class AuthImpl implements AuthFace {
             String account = params[1];
             checkValidAddress(account, account);
             BigInteger proposalId = authManager.modifyDeployAuth(account, true);
-            System.out.println("Open deploy auth proposal created, id is: " + proposalId);
+            System.out.println("Open deploy auth proposal created, ID is: " + proposalId);
             showProposalInfo(proposalId);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
@@ -116,7 +114,7 @@ public class AuthImpl implements AuthFace {
             String account = params[1];
             checkValidAddress(account, account);
             BigInteger proposalId = authManager.modifyDeployAuth(account, false);
-            System.out.println("Close deploy auth proposal created, id is: " + proposalId);
+            System.out.println("Close deploy auth proposal created, ID is: " + proposalId);
             showProposalInfo(proposalId);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
@@ -131,7 +129,7 @@ public class AuthImpl implements AuthFace {
             checkValidAddress(newAdmin, "newAdmin");
             checkValidAddress(contractAddr, "contractAddress");
             BigInteger proposalId = authManager.resetAdmin(newAdmin, contractAddr);
-            System.out.println("Reset contract admin proposal created, id is: " + proposalId);
+            System.out.println("Reset contract admin proposal created, ID is: " + proposalId);
             showProposalInfo(proposalId);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
@@ -151,8 +149,7 @@ public class AuthImpl implements AuthFace {
             }
             showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
-            throw new Exception(
-                    "Number convert error, please check number you input", e.getCause());
+            System.out.println("Number convert error, please check number you input");
         }
     }
 
@@ -180,8 +177,7 @@ public class AuthImpl implements AuthFace {
             }
             showProposalInfo(proposalId);
         } catch (NumberFormatException e) {
-            throw new Exception(
-                    "Number convert error, please check number you input", e.getCause());
+            System.out.println("Number convert error, please check number you input");
         }
     }
 
@@ -343,11 +339,15 @@ public class AuthImpl implements AuthFace {
             checkValidAddress(contract, "contractAddress");
             checkValidAddress(account, "accountAddress");
             BigInteger openResult = authManager.setMethodAuth(contract, func, account, true);
-            if (!Objects.equals(openResult, BigInteger.ZERO)) {
-                System.out.println("Open failed, resultCode is: " + openResult);
-                return;
-            }
-            System.out.println("Open success, resultCode is: " + openResult);
+            RetCode precompiledResponse =
+                    PrecompiledRetCode.getPrecompiledResponse(openResult.intValue(), "Success");
+            ConsoleUtils.printJson(
+                    "{\"code\":"
+                            + precompiledResponse.getCode()
+                            + ", \"msg\":"
+                            + "\""
+                            + precompiledResponse.getMessage()
+                            + "\"}");
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -365,12 +365,16 @@ public class AuthImpl implements AuthFace {
         try {
             checkValidAddress(contract, "contractAddress");
             checkValidAddress(account, "accountAddress");
-            BigInteger openResult = authManager.setMethodAuth(contract, func, account, false);
-            if (!Objects.equals(openResult, BigInteger.ZERO)) {
-                System.out.println("Close failed, resultCode is: " + openResult);
-                return;
-            }
-            System.out.println("Close success, resultCode is: " + openResult);
+            BigInteger closeResult = authManager.setMethodAuth(contract, func, account, false);
+            RetCode precompiledResponse =
+                    PrecompiledRetCode.getPrecompiledResponse(closeResult.intValue(), "Success");
+            ConsoleUtils.printJson(
+                    "{\"code\":"
+                            + precompiledResponse.getCode()
+                            + ", \"msg\":"
+                            + "\""
+                            + precompiledResponse.getMessage()
+                            + "\"}");
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -412,6 +416,15 @@ public class AuthImpl implements AuthFace {
             System.out.println("Contract : " + contract);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void getLatestProposal(String[] params) throws Exception {
+        BigInteger proposalId = this.authManager.proposalCount();
+        System.out.println("Latest proposal ID: " + proposalId.toString());
+        if (proposalId.compareTo(BigInteger.ZERO) > 0) {
+            showProposalInfo(proposalId);
         }
     }
 
