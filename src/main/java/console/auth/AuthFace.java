@@ -37,4 +37,6 @@ public interface AuthFace {
     void closeMethodAuth(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
 
     void checkMethodAuth(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
+
+    void getLatestProposal(String[] params) throws Exception;
 }
