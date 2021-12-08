@@ -384,7 +384,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             }
             // trim _gm
             String[] accountAddressListArray =
-                    accountAddressList[0].split(ConsoleUtils.GM_ACCOUNT_POSTFIX);
+                    accountAddressList[0].split(ConsoleUtils.GM_ACCOUNT_SUFFIX);
             if (accountAddressListArray.length == 0) {
                 continue;
             }

@@ -116,7 +116,10 @@ public class JlineUtils {
                 completers.add(
                         new ArgumentCompleter(
                                 new StringsCompleter(command),
-                                new ConsoleFilesCompleter(new File(ContractCompiler.LIQUID_PATH)),
+                                new ConsoleFilesCompleter(
+                                        new File(ContractCompiler.LIQUID_PATH), true),
+                                new ConsoleFilesCompleter(
+                                        new File(ContractCompiler.LIQUID_PATH), true),
                                 new StringsCompleterIgnoreCase()));
             }
             // contract address and method completer
@@ -149,11 +152,13 @@ public class JlineUtils {
                             new StringsCompleter(command),
                             new StringsCompleter(Common.TxCountLimit),
                             new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(Common.TxGasLimit),
-                            new StringsCompleterIgnoreCase()));
+
+            // FIXME: console tx gas limit not available in FISCO BCOS 3.0.0-rc1
+            //            completers.add(
+            //                    new ArgumentCompleter(
+            //                            new StringsCompleter(command),
+            //                            new StringsCompleter(Common.TxGasLimit),
+            //                            new StringsCompleterIgnoreCase()));
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),

@@ -132,12 +132,7 @@ public class Console {
                         }
 
                         String cmd = commandInfo.getCommand();
-                        if (cmd.startsWith("deploy") || cmd.startsWith("call")) {
-                            commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, pwd);
-                        } else {
-                            commandInfo.callCommand(
-                                    consoleInitializer, paramWithoutQuotation, null);
-                        }
+                        commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, pwd);
 
                         if (cmd.equals(SupportedCommand.SWITCH.getCommand())) {
                             // update the client when switch group
@@ -163,7 +158,7 @@ public class Console {
                                 + errorMessage
                                 + "\"}");
                 System.out.println();
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                logger.error("ClientException, e: ", e);
             } catch (ContractException e) {
                 ConsoleUtils.printJson(
                         "{\"code\":"
@@ -173,7 +168,7 @@ public class Console {
                                 + e.getMessage()
                                 + "\"}");
                 System.out.println();
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                logger.error("ContractException, e: ", e);
             } catch (SignatureException e) {
                 System.out.println("\nSignatureException for " + e.getMessage());
                 if (consoleInitializer.getClient().getCryptoType() == CryptoType.SM_TYPE) {
@@ -197,7 +192,7 @@ public class Console {
                             "The groupID is not configured in dist/conf/applicationContext.xml file.");
                 } else {
                     System.out.println(e.getMessage());
-                    logger.error(" message: {}, e: {}", e.getMessage(), e);
+                    logger.error("IOException, e:", e);
                 }
                 System.out.println();
             } catch (InvocationTargetException e) {
@@ -209,11 +204,12 @@ public class Console {
                 break;
             } catch (EndOfFileException e) {
                 consoleInitializer.stop();
+                logger.error("EndOfFileException, e:", e);
                 break;
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println();
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                logger.error("Exception, e:", e);
             }
         }
     }

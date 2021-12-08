@@ -22,12 +22,14 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FilenameUtils;
 
 public class SupportedCommand {
     protected static Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
@@ -72,8 +74,7 @@ public class SupportedCommand {
                             consoleInitializer.getConsoleContractFace().getDeployLog(params),
                     -1,
                     -1,
-                    true,
-                    false);
+                    true);
     public static final CommandInfo SWITCH =
             new CommandInfo(
                     "switch",
@@ -471,7 +472,10 @@ public class SupportedCommand {
                     HelpInfo::listDeployContractAddressHelp,
                     (consoleInitializer, params, pwd) -> {
                         String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
-                        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
+                        String contractName =
+                                isWasm
+                                        ? FilenameUtils.getBaseName(contractNameOrPath)
+                                        : ConsoleUtils.getContractName(contractNameOrPath);
                         File contractFile =
                                 new File(
                                         ContractCompiler.COMPILED_PATH
@@ -500,12 +504,20 @@ public class SupportedCommand {
                         }
                         ConsoleUtils.sortFiles(contractFileList);
                         for (File contractAddressFile : contractFileList) {
-                            if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                            if (!isWasm
+                                    && !ConsoleUtils.isValidAddress(
+                                            contractAddressFile.getName())) {
                                 continue;
                             }
+                            String contractAddress =
+                                    isWasm
+                                            ? new String(
+                                                    Base64.getUrlDecoder()
+                                                            .decode(contractAddressFile.getName()))
+                                            : contractAddressFile.getName();
                             System.out.printf(
                                     "%s  %s\n",
-                                    contractAddressFile.getName(),
+                                    contractAddress,
                                     ConsoleUtils.getFileCreationTime(contractAddressFile));
                             i++;
                             if (i == recordNum) {
@@ -515,8 +527,7 @@ public class SupportedCommand {
                     },
                     1,
                     2,
-                    true,
-                    false);
+                    true);
 
     public static final CommandInfo REGISTER_CNS =
             new CommandInfo(
@@ -631,13 +642,14 @@ public class SupportedCommand {
             new CommandInfo(
                     "listAbi",
                     "List functions and events info of the contract.",
-                    HelpInfo::listAbiHelp,
+                    () -> HelpInfo.listAbiHelp(isWasm),
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleContractFace().listAbi(params),
+                            consoleInitializer
+                                    .getConsoleContractFace()
+                                    .listAbi(consoleInitializer, params, pwd),
                     1,
                     1,
-                    true,
-                    false);
+                    true);
 
     public static final CommandInfo CHANGE_DIR =
             new CommandInfo(

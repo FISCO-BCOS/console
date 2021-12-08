@@ -1,5 +1,6 @@
 package console.contract;
 
+import console.ConsoleInitializer;
 import console.exception.ConsoleMessageException;
 
 public interface ConsoleContractFace {
@@ -13,5 +14,6 @@ public interface ConsoleContractFace {
 
     void getDeployLog(String[] params) throws Exception;
 
-    void listAbi(String[] params) throws Exception;
+    void listAbi(ConsoleInitializer consoleInitializer, String[] params, String pwd)
+            throws Exception;
 }

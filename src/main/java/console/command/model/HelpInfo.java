@@ -268,18 +268,29 @@ public class HelpInfo {
     public static void deployHelp(boolean isWasm) {
         System.out.println("Deploy a contract on blockchain.");
         if (!isWasm) {
-            System.out.println("Usage: \ndeploy solidity contractNameOrPath parameters...");
+            System.out.println(
+                    "Usage: \ndeploy "
+                            + "\033[32m"
+                            + "Solidity"
+                            + "\033[m"
+                            + " contractNameOrPath parameters...");
             System.out.println(
                     "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
         } else {
-            System.out.println("Usage: \ndeploy liquid bin abi path parameters...");
+            System.out.println(
+                    "Usage: \ndeploy "
+                            + "\033[32m"
+                            + "Liquid"
+                            + "\033[m"
+                            + " bin abi path parameters...");
             System.out.println(
                     "* bin -- The path of binary file after contract being compiled via cargo-liquid.");
             System.out.println(
                     "* abi -- The path of ABI file after contract being compiled via cargo-liquid.");
-            System.out.println("* path -- The path where the contract will be located at.");
+            System.out.println(
+                    "* path -- The path of BFS where the contract will be located at, such as /apps/liquid/YouContract/");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
         }
@@ -294,7 +305,7 @@ public class HelpInfo {
                     "* contractNameOrPath -- The name of a contract or the path of a contract, when set to \"latest\", the contract address is the latest contract address (Default load contract from the \"contracts/solidity\" path when using contractName).");
             System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
             System.out.println("* function -- The function of a contract.");
-            System.out.println("* parameters -- The parameters(splited by a space) of a function.");
+            System.out.println("* parameters -- The parameters(split by a space) of a function.");
         } else {
             System.out.println("Usage: \ncall path function parameters");
             System.out.println(
@@ -507,9 +518,14 @@ public class HelpInfo {
         System.out.println("./start.sh groupID -p12 p12Name");
     }
 
-    public static void listAbiHelp() {
+    public static void listAbiHelp(boolean isWasm) {
         System.out.println("List functions and events info of the contract.");
         System.out.println("Usage: listAbi [contractPath/contractName]");
+        if (isWasm) {
+            System.out.println(
+                    "contractPath[Required] -- The BFS path of Liquid contract, this contract should be deployed in this console.");
+            return;
+        }
         System.out.println(
                 "contractPath/contractName[Required] -- The name or the path of a contract, if a name is specified, the contract should in the default directory \"contracts/solidity\"");
     }

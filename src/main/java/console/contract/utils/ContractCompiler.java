@@ -44,6 +44,7 @@ public class ContractCompiler {
     public static final String SOLIDITY_PATH = "contracts/solidity/";
     public static final String LIQUID_PATH = "contracts/liquid/";
     public static final String COMPILED_PATH = "contracts/.compiled/";
+    public static final String BFS_APPS_PREFIX = "/apps";
     public static final String SOL_SUFFIX = ".sol";
     private static final String SM_SUFFIX = ".sm";
     private static final String BIN_SUFFIX = ".bin";
@@ -295,6 +296,11 @@ public class ContractCompiler {
 
         String abiContent = new String(CodeGenUtils.readBytes(abiPath));
         String binContent = new String(CodeGenUtils.readBytes(binPath));
+        logger.trace(
+                "loadAbiAndBin load abi and bin, contract: {}, abiPath: {}, binPath: {}",
+                contractAddress,
+                abiPath,
+                binPath);
 
         return new AbiAndBin(abiContent, sm ? "" : binContent, sm ? binContent : "");
     }
