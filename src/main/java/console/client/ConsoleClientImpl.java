@@ -447,7 +447,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             System.out.println(
                     "Invalid nodeName: "
                             + newNodeName
-                            + ", node not contains in node list, check command 'getGroupInfoList'.");
+                            + ", node not contains in node list, check command 'getGroupInfo'.");
             return;
         }
         this.nodeName = newNodeName;

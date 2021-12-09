@@ -47,7 +47,7 @@ public class SupportedCommand {
             SupportedCommand.getCommandInfo("call", true, isAuthOpen).setMinParamLength(2);
         } else {
             SupportedCommand.getCommandInfo("deploy", false, isAuthOpen).setMinParamLength(1);
-            SupportedCommand.getCommandInfo("call", false, isAuthOpen).setMinParamLength(1);
+            SupportedCommand.getCommandInfo("call", false, isAuthOpen).setMinParamLength(3);
         }
     }
 

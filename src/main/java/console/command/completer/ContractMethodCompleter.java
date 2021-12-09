@@ -39,6 +39,7 @@ public class ContractMethodCompleter extends StringsCompleterIgnoreCase {
                         CodeGenUtils.loadContractAbiDefinition(abiAndBin.getAbi());
                 for (ABIDefinition definition : abiDefinitions) {
                     String functionName = definition.getName();
+                    if (functionName == null) continue;
                     candidates.add(
                             new Candidate(
                                     AttributedString.stripAnsi(functionName),
