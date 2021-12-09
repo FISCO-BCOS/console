@@ -266,25 +266,18 @@ public class HelpInfo {
     }
 
     public static void deployHelp(boolean isWasm) {
-        System.out.println("Deploy a contract on blockchain.");
         if (!isWasm) {
             System.out.println(
-                    "Usage: \ndeploy "
-                            + "\033[32m"
-                            + "Solidity"
-                            + "\033[m"
-                            + " contractNameOrPath parameters...");
+                    "Deploy a " + "\033[32m" + "Solidity" + "\033[m" + " contract on blockchain.");
+            System.out.println("Usage: \ndeploy contractNameOrPath parameters...");
             System.out.println(
                     "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
         } else {
             System.out.println(
-                    "Usage: \ndeploy "
-                            + "\033[32m"
-                            + "Liquid"
-                            + "\033[m"
-                            + " bin abi path parameters...");
+                    "Deploy a " + "\033[32m" + "Liquid" + "\033[m" + " contract on blockchain.");
+            System.out.println("Usage: \ndeploy bin abi path parameters...");
             System.out.println(
                     "* bin -- The path of binary file after contract being compiled via cargo-liquid.");
             System.out.println(
