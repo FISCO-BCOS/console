@@ -1,6 +1,6 @@
 #!/bin/bash
 package_name="console.tar.gz"
-default_version="2.7.2"
+default_version="3.0.0-rc1"
 download_version="${default_version}"
 specify_console=0
 solc_suffix=""
