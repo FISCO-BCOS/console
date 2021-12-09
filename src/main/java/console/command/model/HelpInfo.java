@@ -155,7 +155,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockByHash blockHash [boolean]");
         System.out.println("* blockHash -- 32 Bytes - The hash of a block.");
         System.out.println(
-                "* boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
+                "* boolean -- (optional) If true it returns only the hashes of the transactions, if false then return the full transaction objects.");
     }
 
     public static void getBlockByNumberHelp() {
@@ -166,7 +166,7 @@ public class HelpInfo {
                         + Common.NonNegativeIntegerRange
                         + ".");
         System.out.println(
-                "* boolean -- (optional) If true it returns the full transaction objects, if false only the hashes of the transactions.");
+                "* boolean -- (optional) If true it returns only the hashes of the transactions, if false then return the full transaction objects.");
     }
 
     public static void getBlockHeaderByHashHelp() {
