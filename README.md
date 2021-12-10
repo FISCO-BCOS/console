@@ -9,39 +9,34 @@ English / [中文](doc/README_CN.md)
 [![GitHub All Releases](https://img.shields.io/github/downloads/FISCO-BCOS/console/total.svg)](https://github.com/FISCO-BCOS/console)
 ---
 
-The console is an important interactive client tool of [FISCO BCOS 2.0+](https://fisco-bcos-documentation.readthedocs.io/en/latest/). The console has a wealth of commands, including querying blockchain status, managing blockchain nodes, deploying and invoking contracts. 
+The console is an important interactive client tool of [FISCO BCOS 3.0+](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/). The console has a wealth of commands, including querying blockchain status, managing blockchain nodes, deploying and invoking contracts. 
 
 ## Features
 
 - Provide a lot of query commands for blockchain.
 - Provide the easiest way to deploy and invoke contracts. 
 - Provide some commands which can manage blockchain node.
-- Providea a contract compilation tool that allows users to easily and quickly compile Solidity contract files into Java contract files.
+- Provide a contract compilation tool that allows users to easily and quickly compile Solidity contract files into Java contract files.
+- Provide an easy way to transfer compiled Liquid contract material, such as WASM and ABI, into Java contract files.
 
 ## Usage
 
-- You can download a tar file and decompress it to enjoy console. See [console manual](https://fisco-bcos-documentation.readthedocs.io/en/latest/docs/manual/console_of_java_sdk.html) for more details.
+- You can download a tar file and decompress it to enjoy console. See [console manual](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html) for more details.
 
 ## Source Installation
 ```
 $ git clone https://github.com/FISCO-BCOS/console.git
 $ cd console
-$ ./gradlew build
+$ bash gradlew build
 ```
 
-If you want to use sm crypto, and use hardware secure module, you can install with following commands.
-```
-$ git clone https://github.com/FISCO-BCOS/console.git
-$ cd console
-$ ./gradlew build -b build-hsm.gradle
-```
 If you install successfully, it produces the `dist` directory.
 
 ## Configuration
-Please see the [documentation](https://fisco-bcos-documentation.readthedocs.io/en/latest/docs/manual/console_of_java_sdk.html#id8) about configurating for the console. Have fun.
+Please see the [documentation](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/console_config.html) about configuration for the console. Have fun :)
 
 ## Code Contribution
-- Star our Github.
+- Star our GitHub.
 - Pull requests. See [CONTRIBUTING](CONTRIBUTING.md).
 - [Ask questions](https://github.com/FISCO-BCOS/console/issues).
 
@@ -54,7 +49,6 @@ The FISCO BCOS community is one of the most active open-source blockchain commun
 
 ## License
 ![license](https://img.shields.io/badge/license-Apache%20v2-blue.svg)
-
 
 
 All contributions are made under the [Apache License 2.0](http://www.apache.org/licenses/). See [LICENSE](LICENSE).
