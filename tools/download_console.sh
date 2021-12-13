@@ -54,6 +54,7 @@ done
 # check params
 check_params()
 {
+    local version=${download_version}
     local major_version=$(echo ${version} | awk -F'.' '{print $1}')
     local middle_version=$(echo ${version} | awk -F'.' '{print $2}')
     local minor_version=$(echo ${version} | awk -F'.' '{print $3}')
@@ -78,19 +79,10 @@ check_params()
 }
 
 download_console(){
-	if [ $specify_console -eq 0 ];then
-        version=$(curl -s https://api.github.com/repos/FISCO-BCOS/console/releases | grep "tag_name" | sort -V | tail -n 1 | cut -d \" -f 4 | sed "s/^[vV]//")
-	else
-        version="${download_version}"
-    fi
-    if [ -z "${version}" ];then
-        echo "Failed to get latest version number via github api, download default version: ${default_version}"
-        version="${default_version}"
-    fi
     check_params
-    download_link=https://github.com/FISCO-BCOS/console/releases/download/v${version}/${package_name}
+    download_link=https://github.com/FISCO-BCOS/console/releases/download/v${download_version}/${package_name}
     cos_download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${version}/${package_name}
-    LOG_INFO "Downloading console ${version} from ${download_link}"
+    LOG_INFO "Downloading console ${download_version} from ${download_link}"
 
     if [ $(curl -IL -o /dev/null -s -w %{http_code} "${cos_download_link}") == 200 ];then
         curl -LO ${download_link} --speed-time 30 --speed-limit 102400 -m 150 || {
