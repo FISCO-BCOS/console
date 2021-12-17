@@ -246,6 +246,11 @@ public class AuthImpl implements AuthFace {
         try {
             checkValidAddress(contractAddress, "");
             String admin = authManager.getAdmin(contractAddress);
+            if (admin.equals("0x0000000000000000000000000000000000000000")) {
+                System.out.println(
+                        "Contract address not exist, please check address: " + contractAddress);
+                return;
+            }
             System.out.println("Admin for contract " + contractAddress + " is: " + admin);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
@@ -422,6 +427,10 @@ public class AuthImpl implements AuthFace {
     @Override
     public void getLatestProposal(String[] params) throws Exception {
         BigInteger proposalId = this.authManager.proposalCount();
+        if (proposalId.equals(BigInteger.ZERO)) {
+            System.out.println("No proposal exists currently, try to propose one.");
+            return;
+        }
         System.out.println("Latest proposal ID: " + proposalId.toString());
         if (proposalId.compareTo(BigInteger.ZERO) > 0) {
             showProposalInfo(proposalId);
