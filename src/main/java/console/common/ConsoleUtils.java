@@ -52,6 +52,7 @@ public class ConsoleUtils {
     public static final String GM_ACCOUNT_SUFFIX = "_gm";
     public static final int ADDRESS_SIZE = 160;
     public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
+    public static final String EMPTY_ADDRESS = "0x0000000000000000000000000000000000000000";
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
@@ -148,7 +149,11 @@ public class ConsoleUtils {
             pathToFix = param;
         } else {
             // relative path
-            pathToFix = pwd + ((pwd.equals("/")) ? "" : "/") + param;
+            if (param.startsWith("~")) {
+                pathToFix = "/apps/" + param.substring(1);
+            } else {
+                pathToFix = pwd + ((pwd.equals("/")) ? "" : "/") + param;
+            }
         }
         fixedParam = "/" + String.join("/", path2Level(pathToFix));
         return fixedParam;

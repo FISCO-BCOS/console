@@ -582,7 +582,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (params.length == 3) {
             Tuple2<String, String> cnsTuple =
                     cnsService.selectByNameAndVersion(contractName, params[2]);
-            if (cnsTuple.getValue1() != null) {
+            if (cnsTuple.getValue1() != null
+                    && !cnsTuple.getValue1().equals(ConsoleUtils.EMPTY_ADDRESS)) {
                 cnsInfos = new LinkedList<>();
                 CnsInfo cnsInfo = new CnsInfo();
                 cnsInfo.setAddress(cnsTuple.getValue1());
@@ -649,7 +650,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void changeDir(String[] params, String pwd) throws Exception {
         if (params.length == 1) {
-            System.out.println("cd: change dir to root /");
+            System.out.println("cd: change dir to /apps");
             return;
         }
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);

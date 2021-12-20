@@ -88,6 +88,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String path = params[3];
             try {
                 path = ConsoleUtils.fixedBfsParam(path, pwd);
+                if (path.startsWith(ContractCompiler.BFS_APPS_FULL_PREFIX)) {
+                    path = path.substring(ContractCompiler.BFS_APPS_PREFIX.length());
+                }
             } catch (Exception e) {
                 System.out.println("Path parse error for: " + e.getMessage());
                 System.out.println("Please use 'deploy -h' to check deploy arguments.");
@@ -420,7 +423,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String functionName = params[2];
         path = ConsoleUtils.fixedBfsParam(path, pwd);
         String contractName = FilenameUtils.getBaseName(path);
-        if (path.startsWith(ContractCompiler.BFS_APPS_PREFIX)) {
+        if (path.startsWith(ContractCompiler.BFS_APPS_FULL_PREFIX)) {
             path = path.substring(ContractCompiler.BFS_APPS_PREFIX.length());
         }
         String contractAddress =

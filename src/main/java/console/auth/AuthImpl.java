@@ -246,7 +246,7 @@ public class AuthImpl implements AuthFace {
         try {
             checkValidAddress(contractAddress, "");
             String admin = authManager.getAdmin(contractAddress);
-            if (admin.equals("0x0000000000000000000000000000000000000000")) {
+            if (admin.equals(ConsoleUtils.EMPTY_ADDRESS)) {
                 System.out.println(
                         "Contract address not exist, please check address: " + contractAddress);
                 return;
