@@ -58,7 +58,7 @@ public class Console {
         }
 
         WelcomeInfo.welcome();
-        String pwd = "/";
+        String pwd = "/apps";
         SupportedCommand.setIsAuthOpen(consoleInitializer.getClient().isAuthCheck());
         SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
@@ -112,7 +112,7 @@ public class Console {
                                 .getCommand()
                                 .equals(SupportedCommand.CHANGE_DIR.getCommand())) {
                             if (params.length == 1) {
-                                pwd = "/";
+                                pwd = "/apps";
                             } else {
                                 pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
                             }
