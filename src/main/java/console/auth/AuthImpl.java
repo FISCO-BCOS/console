@@ -27,6 +27,8 @@ public class AuthImpl implements AuthFace {
     private static final Logger logger = LoggerFactory.getLogger(AuthImpl.class);
     private AuthManager authManager;
     private boolean authAvailable = false;
+    private static final long WEIGHT_MAX = 10000;
+    private static final int GOVERNOR_NUM_MAX = 1000;
 
     public AuthImpl(Client client) throws ContractException {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
@@ -44,9 +46,24 @@ public class AuthImpl implements AuthFace {
             String account = params[1];
             checkValidAddress(account, "account");
             BigInteger weight = BigInteger.valueOf(Long.parseLong(params[2]));
-            if (weight.compareTo(BigInteger.ZERO) < 0) {
+            if (weight.compareTo(BigInteger.ZERO) < 0
+                    || weight.compareTo(BigInteger.valueOf(WEIGHT_MAX)) > 0) {
                 throw new TransactionException(
-                        "weight is less than 0, please use a weight LE than 0");
+                        "Weight is limit in [0, "
+                                + WEIGHT_MAX
+                                + "], please use a weight in this range.");
+            }
+            List<GovernorInfo> governorList = authManager.getCommitteeInfo().getGovernorList();
+            if (governorList.size() > GOVERNOR_NUM_MAX
+                    && governorList
+                            .stream()
+                            .noneMatch(
+                                    governorInfo ->
+                                            account.equals(governorInfo.getGovernorAddress()))) {
+                throw new TransactionException(
+                        "The number of governor is over "
+                                + GOVERNOR_NUM_MAX
+                                + ", can not add new governor.");
             }
             BigInteger proposalId = authManager.updateGovernor(account, weight);
             System.out.println("Update governor proposal created, ID is: " + proposalId);

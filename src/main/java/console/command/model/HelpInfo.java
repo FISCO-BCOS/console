@@ -605,7 +605,7 @@ public class HelpInfo {
         System.out.println(
                 "account[Required] -- The address of governor, it's length should be 40 in hex.");
         System.out.println(
-                "weight[Required] -- The weight of governor, which is larger equal than 0.");
+                "weight[Required] -- The weight of governor, which should range in [0, 10000].");
         System.out.println(
                 "        [Note]: if you set a new governor, you can set a new weigh for governor.");
         System.out.println(
