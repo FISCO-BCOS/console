@@ -25,6 +25,7 @@ import org.fisco.bcos.sdk.contract.precompiled.bfs.FileInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
+import org.fisco.bcos.sdk.contract.precompiled.crud.KVTableService;
 import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
@@ -47,6 +48,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     private ConsensusService consensusService;
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
+    private KVTableService kvTableService;
     private CnsService cnsService;
     private BFSService bfsService;
 
@@ -56,6 +58,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.consensusService = new ConsensusService(client, cryptoKeyPair);
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
+        this.kvTableService = new KVTableService(client, cryptoKeyPair);
         this.cnsService = new CnsService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
     }
@@ -118,16 +121,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (tableName.endsWith(";")) {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
-        try {
-            List<Map<String, String>> tableDesc = tableCRUDService.desc(tableName);
-            if (!checkTableExistence(tableName, tableDesc)) {
-                return;
-            }
-            String tableInfo = ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc);
-            ConsoleUtils.printJson(tableInfo);
-        } catch (Exception e) {
-            throw e;
+        Map<String, String> tableDesc = kvTableService.desc(tableName);
+        if (tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME).equals("")) {
+            System.out.println("The table \"" + tableName + "\" doesn't exist!");
+            return;
         }
+        ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc));
     }
 
     @Override
@@ -146,10 +145,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             RetCode result =
-                    tableCRUDService.createTable(
-                            isWasm ? "/" + table.getTableName() : table.getTableName(),
-                            table.getKey(),
-                            table.getValueFields());
+                    kvTableService.createTable(
+                            table.getTableName(), table.getKey(), table.getValueFields());
             // parse the result
             if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
