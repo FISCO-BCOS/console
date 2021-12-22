@@ -42,15 +42,14 @@ public class StringsCompleterIgnoreCase implements Completer {
 
     public void complete(
             LineReader reader, final ParsedLine commandLine, final List<Candidate> candidates) {
-        assert commandLine != null;
-        assert candidates != null;
+        if (commandLine == null || candidates == null) {
+            return;
+        }
 
         Buffer buffer = reader.getBuffer();
         String start = (buffer == null) ? "" : buffer.toString();
         int index = start.lastIndexOf(" ");
         String tmp = start.substring(index + 1).toLowerCase();
-        logger.info("this.candidates.size: {}" + this.candidates.size());
-        logger.info("Strings.candidates.size: {}" + candidates.size());
 
         for (Candidate candidate : this.candidates) {
             String candidateStr = candidate.value().toLowerCase();

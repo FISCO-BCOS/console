@@ -283,7 +283,7 @@ public class HelpInfo {
             System.out.println(
                     "* abi -- The path of ABI file after contract being compiled via cargo-liquid.");
             System.out.println(
-                    "* path -- The path of BFS where the contract will be located at, such as /apps/liquid/YouContract/");
+                    "* path -- The path of BFS where the contract will be located at, such as '/apps/liquid/YouContract/'.");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
         }
@@ -302,9 +302,9 @@ public class HelpInfo {
         } else {
             System.out.println("Usage: \ncall path function parameters");
             System.out.println(
-                    "* path -- The path where the contract located at, when set to \"latest\", the path of latest contract deployment will be used.");
+                    "* path -- The path of BFS where the contract will be located at, such as '/apps/liquid/YouContract/'.");
             System.out.println("* function -- The function of a contract.");
-            System.out.println("* parameters -- The parameters(splited by a space) of a function.");
+            System.out.println("* parameters -- The parameters(split by a space) of a function.");
         }
     }
 

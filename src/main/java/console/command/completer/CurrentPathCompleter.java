@@ -47,25 +47,28 @@ public class CurrentPathCompleter extends StringsCompleterIgnoreCase {
     @Override
     public void complete(LineReader reader, ParsedLine commandLine, List<Candidate> candidates) {
         try {
-            String buffer = reader.getBuffer().toString().trim();
-            String[] ss = buffer.split(" ");
+            String buffer = commandLine.word().substring(0, commandLine.wordCursor());
+            String curBuf;
+            int lastSep = buffer.lastIndexOf('/');
+            if (lastSep >= 0) {
+                curBuf = buffer.substring(0, lastSep + 1);
+            } else {
+                curBuf = "";
+            }
+
             String fixedPath = pwd;
 
-            if (ss.length >= 2) {
-                fixedPath = ConsoleUtils.fixedBfsParam(ss[1], pwd);
+            if (!curBuf.isEmpty()) {
+                fixedPath = ConsoleUtils.fixedBfsParam(curBuf, pwd);
             }
 
             List<FileInfo> listResult = bfsService.list(fixedPath);
-            logger.info("fixedPath: {}", fixedPath);
             for (FileInfo fileInfo : listResult) {
+                String relativePath = curBuf + fileInfo.getName();
                 if (fileInfo.getType().equals("directory")) {
                     candidates.add(
                             new Candidate(
-                                    AttributedString.stripAnsi(
-                                            fixedPath
-                                                    + (fixedPath.equals("/") ? "" : "/")
-                                                    + fileInfo.getName()
-                                                    + "/"),
+                                    AttributedString.stripAnsi(relativePath + "/"),
                                     getDisplay(reader.getTerminal(), fileInfo),
                                     null,
                                     null,
@@ -75,10 +78,7 @@ public class CurrentPathCompleter extends StringsCompleterIgnoreCase {
                 } else {
                     candidates.add(
                             new Candidate(
-                                    AttributedString.stripAnsi(
-                                            fixedPath
-                                                    + (fixedPath.equals("/") ? "" : "/")
-                                                    + fileInfo.getName()),
+                                    AttributedString.stripAnsi(relativePath),
                                     getDisplay(reader.getTerminal(), fileInfo),
                                     null,
                                     null,
@@ -87,7 +87,6 @@ public class CurrentPathCompleter extends StringsCompleterIgnoreCase {
                                     true));
                 }
             }
-            logger.info("candidates.size(): {}", candidates.size());
             super.complete(reader, commandLine, candidates);
         } catch (Exception e) {
             logger.debug("CurrentPathCompleter exception, error: {}", e.getMessage(), e);

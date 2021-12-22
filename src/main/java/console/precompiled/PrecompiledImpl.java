@@ -686,7 +686,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         RetCode mkdir = bfsService.mkdir(path);
         logger.info("mkdir: make new dir {}", path);
         if (mkdir.getCode() == PrecompiledRetCode.CODE_FILE_INVALID_PATH.getCode()) {
-            if (!path.startsWith("/apps/") || !path.startsWith("/tables/")) {
+            if (!path.startsWith("/apps/") && !path.startsWith("/tables/")) {
                 System.out.println("Only permitted to mkdir in '/apps/' and '/tables/'");
                 return;
             }
