@@ -11,8 +11,6 @@ public interface PrecompiledFace {
     // SystemConfigPrecompiled
     void setSystemConfigByKey(String[] params) throws Exception;
 
-    /** @deprecated this command is not supported now */
-    @Deprecated
     void createTable(String sql, boolean isWasm) throws Exception;
 
     /** @deprecated this command is not supported now */
@@ -31,8 +29,6 @@ public interface PrecompiledFace {
     @Deprecated
     void select(String sql) throws Exception;
 
-    /** @deprecated this command is not supported now */
-    @Deprecated
     void desc(String[] params) throws Exception;
 
     void queryCNS(String[] params) throws Exception;

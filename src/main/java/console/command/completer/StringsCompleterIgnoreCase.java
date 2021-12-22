@@ -3,7 +3,6 @@ package console.command.completer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import org.jline.reader.Buffer;
 import org.jline.reader.Candidate;
@@ -43,16 +42,16 @@ public class StringsCompleterIgnoreCase implements Completer {
 
     public void complete(
             LineReader reader, final ParsedLine commandLine, final List<Candidate> candidates) {
-        assert commandLine != null;
-        assert candidates != null;
+        if (commandLine == null || candidates == null) {
+            return;
+        }
 
         Buffer buffer = reader.getBuffer();
         String start = (buffer == null) ? "" : buffer.toString();
         int index = start.lastIndexOf(" ");
-        String tmp = start.substring(index + 1, start.length()).toLowerCase();
+        String tmp = start.substring(index + 1).toLowerCase();
 
-        for (Iterator<Candidate> iter = this.candidates.iterator(); iter.hasNext(); ) {
-            Candidate candidate = iter.next();
+        for (Candidate candidate : this.candidates) {
             String candidateStr = candidate.value().toLowerCase();
             if (candidateStr.startsWith(tmp)) {
                 candidates.add(candidate);
