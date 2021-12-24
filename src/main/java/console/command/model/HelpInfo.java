@@ -544,6 +544,15 @@ public class HelpInfo {
                 "relativePath/absolutePath[Required] -- The name or the path of a directory.");
     }
 
+    public static void treeHelp() {
+        System.out.println("List contents of directories in a tree-like format.");
+        System.out.println("Usage: tree [relativePath/absolutePath] [limit]");
+        System.out.println(
+                "relativePath/absolutePath[Required] -- The name or the path of a directory.");
+        System.out.println(
+                "limit[Optional] -- The limit deep of tree contents, range in (0,5], default is 3.");
+    }
+
     public static void pwdHelp() {
         System.out.println("Show absolute path of working directory name.");
         System.out.println("Usage: pwd");

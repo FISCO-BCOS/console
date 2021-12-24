@@ -756,7 +756,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 // get abi
                 contractAbi = cnsTuple.getValue2();
             } else {
-                // Not support in fisco bcos 3.0
+                // FIXME: Not support in fisco bcos 3.0
                 throw new ContractException(
                         "Please use specified version of contract: " + contractName);
                 //                List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);

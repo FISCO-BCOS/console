@@ -176,11 +176,7 @@ public class JlineUtils {
                         new StringsCompleterIgnoreCase(SupportedCommand.NEW_ACCOUNT.getCommand()),
                         new AccountFileFormatCompleter()));
 
-        commands =
-                Arrays.asList(
-                        SupportedCommand.CHANGE_DIR.getCommand(),
-                        SupportedCommand.LIST_DIR.getCommand(),
-                        SupportedCommand.MAKE_DIR.getCommand());
+        commands = SupportedCommand.BFS_COMMANDS;
 
         for (String command : commands) {
             completers.add(
