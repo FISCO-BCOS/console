@@ -680,6 +680,16 @@ public class SupportedCommand {
                     0,
                     1);
 
+    public static final CommandInfo TREE =
+            new CommandInfo(
+                    "tree",
+                    "List contents of directories in a tree-like format.",
+                    HelpInfo::treeHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().tree(params, pwd),
+                    1,
+                    2);
+
     public static final CommandInfo PWD =
             new CommandInfo(
                     "pwd",
@@ -972,7 +982,7 @@ public class SupportedCommand {
                             LIST_DIR.getCommand(),
                             CHANGE_DIR.getCommand(),
                             MAKE_DIR.getCommand(),
-                            PWD.getCommand()));
+                            TREE.getCommand()));
 
     // TODO: Table CRUD service is not supported in FISCO BCOS 3.0.0 rc1
     public static List<String> CRUD_COMMANDS =

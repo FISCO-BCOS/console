@@ -716,7 +716,71 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
+    public void tree(String[] params, String pwd) throws Exception {
+        String absolutePath = ConsoleUtils.fixedBfsParam(params[1], pwd);
+        int limit = 3;
+        try {
+            if (params.length > 2) {
+                limit = Integer.parseInt(params[2]);
+                if (limit <= 0 || limit > 5) {
+                    System.out.println("Limit should be in range (0,5]");
+                    return;
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("NumberFormatException: Please check the number you input.");
+            return;
+        }
+        System.out.println(absolutePath);
+        Tuple2<Integer, Integer> treeCount = travelBfs(absolutePath, "", 0, limit);
+        System.out.println(
+                "\n"
+                        + treeCount.getValue1()
+                        + " directory, "
+                        + treeCount.getValue2()
+                        + " contracts.");
+    }
+
+    @Override
     public void pwd(String pwd) {
         System.out.println(pwd);
+    }
+
+    private Tuple2<Integer, Integer> travelBfs(
+            String absolutePath, String prefix, int deep, int limit) throws ContractException {
+        if (deep >= limit) return new Tuple2<>(0, 0);
+        Integer dirCount = 0;
+        Integer contractCount = 0;
+        List<FileInfo> children = bfsService.list(absolutePath);
+        for (int i = 0; i < children.size(); i++) {
+            String thisPrefix = "";
+            String nextPrefix = "";
+            if (deep >= 0) {
+                if ((i + 1) < children.size()) {
+                    nextPrefix = prefix + "│ ";
+                    thisPrefix = prefix + "├─";
+                } else {
+                    nextPrefix = prefix + "  ";
+                    thisPrefix = prefix + "└─";
+                }
+                System.out.println(thisPrefix + children.get(i).getName());
+                if (children.get(i).getType().equals("directory")) {
+                    dirCount++;
+                    Tuple2<Integer, Integer> childCount =
+                            travelBfs(
+                                    absolutePath
+                                            + (absolutePath.equals("/") ? "" : "/")
+                                            + children.get(i).getName(),
+                                    nextPrefix,
+                                    deep + 1,
+                                    limit);
+                    dirCount += childCount.getValue1();
+                    contractCount += childCount.getValue2();
+                } else {
+                    contractCount++;
+                }
+            }
+        }
+        return new Tuple2<>(dirCount, contractCount);
     }
 }
