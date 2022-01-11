@@ -24,7 +24,7 @@ googleJavaFormat {
   include '**/*.java'
 }
 
-def log4j_version="2.15.0"
+def log4j_version="2.17.1"
 List logger = [
         "org.apache.logging.log4j:log4j-api:$log4j_version",
         "org.apache.logging.log4j:log4j-core:$log4j_version",
