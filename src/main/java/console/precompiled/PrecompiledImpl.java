@@ -1,5 +1,6 @@
 package console.precompiled;
 
+import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
@@ -12,17 +13,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
+import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSService;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.FileInfo;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.contract.precompiled.crud.KVTableService;
@@ -568,106 +568,26 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void queryCNS(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        List<CnsInfo> cnsInfos = null;
-        if (params.length == 2) {
-            // get contract name
-            cnsInfos = cnsService.selectByName(contractName);
-        }
-        if (params.length == 3) {
-            Tuple2<String, String> cnsTuple =
-                    cnsService.selectByNameAndVersion(contractName, params[2]);
-            if (cnsTuple.getValue1() != null
-                    && !cnsTuple.getValue1().equals(ConsoleUtils.EMPTY_ADDRESS)) {
-                cnsInfos = new LinkedList<>();
-                CnsInfo cnsInfo = new CnsInfo();
-                cnsInfo.setAddress(cnsTuple.getValue1());
-                cnsInfo.setVersion(params[2]);
-                cnsInfos.add(cnsInfo);
-            }
-        }
-        ConsoleUtils.singleLine();
-        if (cnsInfos == null || cnsInfos.isEmpty()) {
-            System.out.println("Empty set.");
-            ConsoleUtils.singleLine();
-            return;
-        }
-        for (CnsInfo cnsInfo : cnsInfos) {
-            System.out.println("* contract address: " + cnsInfo.getAddress());
-            System.out.println("* contract version: " + cnsInfo.getVersion());
-            ConsoleUtils.singleLine();
-        }
-    }
-
-    @Override
-    public void registerCNS(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        String contractAddress = params[2];
-        if (!AddressUtils.isValidAddress(contractAddress)) {
-            System.out.println("Contract address is invalid, address: " + contractAddress);
-        }
-        contractAddress = Numeric.prependHexPrefix(contractAddress);
-        String contractVersion = params[3];
-        String abi = "";
-        try {
-            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
-            AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbiAndBin(
-                            client.getGroup(),
-                            contractName,
-                            contractNameOrPath,
-                            contractAddress,
-                            sm,
-                            false);
-            abi = abiAndBin.getAbi();
-        } catch (CompileContractException e) {
-            logger.warn(
-                    "load abi for contract failed, contract name: {}, address: {}, e: {}",
-                    contractAddress,
-                    contractAddress,
-                    e.getMessage());
-        }
-        if (abi.equals("")) {
-            System.out.println(
-                    "Warn: \nPlease make sure the existence of the contract, abi is empty. contractName: "
-                            + contractName
-                            + ", contractAddress: "
-                            + contractAddress);
-        }
-        ConsoleUtils.printJson(
-                cnsService
-                        .registerCNS(contractName, contractVersion, contractAddress, abi)
-                        .toString());
-        System.out.println();
-    }
-
-    @Override
     public void changeDir(String[] params, String pwd) throws Exception {
         if (params.length == 1) {
             System.out.println("cd: change dir to /apps");
             return;
         }
-        String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
-        String path = fixedBfsParams[1];
+        String path = ConsoleUtils.fixedBfsParam(params[1], pwd);
         if (path.equals("/")) {
-            System.out.println("cd: change dir to root /");
             return;
         }
-        List<FileInfo> listResult;
         Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
         String parentDir = parentAndBase.getValue1();
         String baseName = parentAndBase.getValue2();
-        listResult = bfsService.list(parentDir);
+        List<BfsInfo> listResult = bfsService.list(parentDir);
         if (!listResult.isEmpty()) {
             boolean findFlag = false;
-            for (FileInfo fileInfo : listResult) {
-                if (fileInfo.getName().equals(baseName)) {
+            for (BfsInfo bfsInfo : listResult) {
+                if (bfsInfo.getFileName().equals(baseName)) {
                     findFlag = true;
-                    if (!fileInfo.getType().equals("directory")) {
-                        throw new Exception("cd: not a directory: " + fileInfo.getName());
+                    if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                        throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
                     }
                 }
             }
@@ -696,18 +616,31 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void listDir(String[] params, String pwd) throws Exception {
-        // TODO: add limit args
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
 
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
-        List<FileInfo> fileInfoList = bfsService.list(listPath);
+        List<BfsInfo> fileInfoList = bfsService.list(listPath);
+        String baseName = FilenameUtils.getBaseName(listPath);
         int newLineCount = 0;
-        for (FileInfo fileInfo : fileInfoList) {
+        for (BfsInfo fileInfo : fileInfoList) {
             newLineCount++;
-            if (fileInfo.getType().equals("contract")) {
-                System.out.print("\033[32m" + fileInfo.getName() + "\033[m" + '\t');
-            } else {
-                System.out.print(fileInfo.getName() + '\t');
+            switch (fileInfo.getFileType()) {
+                case Common.BFS_TYPE_CON:
+                    System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
+                    break;
+                case Common.BFS_TYPE_DIR:
+                    System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
+                    break;
+                case Common.BFS_TYPE_LNK:
+                    System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
+                    if (fileInfoList.size() == 1 && fileInfo.getFileName().equals(baseName)) {
+                        System.out.print(" -> " + fileInfo.getExt().get(0));
+                    }
+                    System.out.print('\t');
+                    break;
+                default:
+                    System.out.println();
+                    break;
             }
             if (newLineCount % 6 == 0) {
                 System.out.println();
@@ -742,6 +675,51 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
+    public void link(String[] params, String pwd) throws Exception {
+        String linkPath = ConsoleUtils.fixedBfsParam(params[1], pwd);
+        List<String> path2Level = ConsoleUtils.path2Level(linkPath);
+        if (path2Level.size() != 3 || !path2Level.get(0).equals("apps")) {
+            System.out.println("Link must in /apps, and not support multi-level directory.");
+            System.out.println("Example: ln /apps/Name/Version 0x1234567890");
+            return;
+        }
+        String contractName = path2Level.get(1);
+        String contractVersion = path2Level.get(2);
+        String contractAddress = params[2];
+        if (!client.isWASM() && !AddressUtils.isValidAddress(contractAddress)) {
+            System.out.println("Contract address is invalid, address: " + contractAddress);
+        }
+        contractAddress = Numeric.prependHexPrefix(contractAddress);
+        String abi = "";
+        try {
+            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
+            AbiAndBin abiAndBin =
+                    ContractCompiler.loadAbiAndBin(
+                            client.getGroup(), contractName, contractAddress, sm);
+            abi = abiAndBin.getAbi();
+        } catch (CompileContractException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error(
+                        "load abi for contract failed, contract name: {}, address: {}, e: ",
+                        contractAddress,
+                        contractAddress,
+                        e);
+            }
+        }
+        if (abi.isEmpty()) {
+            System.out.println(
+                    "Warn: \nPlease make sure the existence of the contract, abi is empty. contractName: "
+                            + contractName
+                            + ", contractAddress: "
+                            + contractAddress);
+        }
+
+        ConsoleUtils.printJson(
+                bfsService.link(contractName, contractVersion, contractAddress, abi).toString());
+        System.out.println();
+    }
+
+    @Override
     public void pwd(String pwd) {
         System.out.println(pwd);
     }
@@ -751,7 +729,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (deep >= limit) return new Tuple2<>(0, 0);
         Integer dirCount = 0;
         Integer contractCount = 0;
-        List<FileInfo> children = bfsService.list(absolutePath);
+        List<BfsInfo> children = bfsService.list(absolutePath);
         for (int i = 0; i < children.size(); i++) {
             String thisPrefix = "";
             String nextPrefix = "";
@@ -763,14 +741,14 @@ public class PrecompiledImpl implements PrecompiledFace {
                     nextPrefix = prefix + "  ";
                     thisPrefix = prefix + "└─";
                 }
-                System.out.println(thisPrefix + children.get(i).getName());
-                if (children.get(i).getType().equals("directory")) {
+                System.out.println(thisPrefix + children.get(i).getFileName());
+                if (children.get(i).getFileType().equals(Common.BFS_TYPE_DIR)) {
                     dirCount++;
                     Tuple2<Integer, Integer> childCount =
                             travelBfs(
                                     absolutePath
                                             + (absolutePath.equals("/") ? "" : "/")
-                                            + children.get(i).getName(),
+                                            + children.get(i).getFileName(),
                                     nextPrefix,
                                     deep + 1,
                                     limit);

@@ -14,7 +14,6 @@ public class Common {
 
     public static final int QueryLogCount = 20;
     public static final int LogMaxCount = 10000;
-    public static final String GroupIDRange = "from 1 to 32767";
     public static final String PositiveIntegerRange = "from 1 to 2147483647";
     public static final String NonNegativeIntegerRange = "from 0 to 2147483647";
     public static final String DeployLogIntegerRange = "from 1 to 100";
@@ -26,6 +25,10 @@ public class Common {
     public static final String EMPTY_OUTPUT = "0x";
     public static final int TxGasLimitMin = 100000;
 
-    public static final int MaxGroupID = 32767;
     public static int SYS_TABLE_KEY_MAX_LENGTH = 48;
+
+    // BFS common
+    public static final String BFS_TYPE_DIR = "directory";
+    public static final String BFS_TYPE_CON = "contract";
+    public static final String BFS_TYPE_LNK = "link";
 }

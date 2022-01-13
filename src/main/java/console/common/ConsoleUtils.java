@@ -4,7 +4,6 @@ import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
-import io.netty.util.NetUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -33,7 +32,6 @@ import org.fisco.bcos.sdk.codec.datatypes.StructType;
 import org.fisco.bcos.sdk.codec.datatypes.Type;
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
-import org.fisco.bcos.sdk.utils.Host;
 import org.fisco.bcos.sdk.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,7 +169,7 @@ public class ConsoleUtils {
                 }
                 continue;
             }
-            if (!s.matches("^[0-9a-zA-Z-_]{1,56}$")) {
+            if (!s.matches("^[0-9a-zA-Z][^\\>\\<\\*\\?\\/\\=\\+\\(\\)\\$\\\"\\']+$")) {
                 throw new Exception("path is invalid: " + absolutePath);
             }
             pathStack.push(s);
@@ -267,50 +265,6 @@ public class ConsoleUtils {
             return Common.InvalidReturnNumber;
         }
         return intParam;
-    }
-
-    public static Address convertAddress(String addressStr) {
-        Address address = new Address();
-        if (!addressStr.startsWith("0x") && addressStr.length() != (Address.ValidLen - 2)) {
-            address.setValid(false);
-            address.setAddress(addressStr);
-        } else if (addressStr.length() != Address.ValidLen) {
-            address.setValid(false);
-            address.setAddress(addressStr);
-        } else {
-            address.setValid(true);
-            if (addressStr.startsWith("0x")) {
-                if (!addressStr.substring(2).matches("^[a-fA-F0-9]+$")) {
-                    address.setValid(false);
-                    address.setAddress(addressStr);
-                } else {
-                    address.setAddress(addressStr);
-                }
-            } else {
-                address.setValid(false);
-                address.setAddress(addressStr);
-            }
-        }
-        if (!address.isValid()) {
-            System.out.println("Please provide a valid address.");
-        }
-        return address;
-    }
-
-    private static void getAddress(Address address, String addressStr, int length) {
-        int len = length - addressStr.length();
-        StringBuilder builderAddress = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            builderAddress.append("0");
-        }
-        String newAddessStr;
-        if (length == Address.ValidLen) {
-            newAddessStr =
-                    "0x" + builderAddress.toString() + addressStr.substring(2, addressStr.length());
-        } else {
-            newAddessStr = "0x" + builderAddress.toString() + addressStr;
-        }
-        address.setAddress(newAddessStr);
     }
 
     /**
@@ -464,25 +418,6 @@ public class ConsoleUtils {
                 "=============================================================================================");
     }
 
-    public static boolean checkEndPoint(String endPoint) {
-        int index = endPoint.lastIndexOf(':');
-        if (index == -1) {
-            System.out.println("Invalid endpoint format, the endpoint format should be IP:Port");
-            return false;
-        }
-        String IP = endPoint.substring(0, index);
-        String port = endPoint.substring(index + 1);
-        if (!(NetUtil.isValidIpV4Address(IP) || NetUtil.isValidIpV6Address(IP))) {
-            System.out.println("Invalid IP " + IP);
-            return false;
-        }
-        if (!Host.validPort(port)) {
-            System.out.println("Invalid Port " + port);
-            return false;
-        }
-        return true;
-    }
-
     public static void sortFiles(File[] files) {
         if (files == null || files.length <= 1) {
             return;
@@ -529,7 +464,7 @@ public class ConsoleUtils {
         return format;
     }
 
-    public static String removeSolPostfix(String name) {
+    public static String removeSolSuffix(String name) {
         return (name.endsWith(SOL_SUFFIX)
                 ? name.substring(0, name.length() - SOL_SUFFIX.length())
                 : name);
@@ -547,7 +482,7 @@ public class ConsoleUtils {
         if (solFile.exists()) {
             return solFile;
         }
-        filePath = ConsoleUtils.removeSolPostfix(filePath);
+        filePath = ConsoleUtils.removeSolSuffix(filePath);
         filePath += SOL_SUFFIX;
         /** Check that the file exists in the default directory first */
         solFile = new File(SOLIDITY_PATH + File.separator + filePath);
@@ -583,13 +518,13 @@ public class ConsoleUtils {
 
     public static String getContractName(String contractNameOrPath) throws ConsoleMessageException {
         File contractFile = ConsoleUtils.getSolFile(contractNameOrPath, true);
-        return ConsoleUtils.removeSolPostfix(contractFile.getName());
+        return ConsoleUtils.removeSolSuffix(contractFile.getName());
     }
 
     public static String getContractNameWithoutCheckExists(String contractNameOrPath)
             throws ConsoleMessageException {
         File contractFile = ConsoleUtils.getSolFile(contractNameOrPath, false);
-        return ConsoleUtils.removeSolPostfix(contractFile.getName());
+        return ConsoleUtils.removeSolSuffix(contractFile.getName());
     }
 
     public static String bytesToHex(byte[] bytes) {

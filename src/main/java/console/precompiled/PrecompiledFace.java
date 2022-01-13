@@ -31,10 +31,6 @@ public interface PrecompiledFace {
 
     void desc(String[] params) throws Exception;
 
-    void queryCNS(String[] params) throws Exception;
-
-    void registerCNS(String[] params) throws Exception;
-
     void setConsensusNodeWeight(String[] params) throws Exception;
 
     void changeDir(String[] params, String pwd) throws Exception;
@@ -44,6 +40,8 @@ public interface PrecompiledFace {
     void listDir(String[] params, String pwd) throws Exception;
 
     void tree(String[] params, String pwd) throws Exception;
+
+    void link(String[] params, String pwd) throws Exception;
 
     void pwd(String pwd);
 }

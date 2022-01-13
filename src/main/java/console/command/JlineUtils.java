@@ -78,9 +78,6 @@ public class JlineUtils {
             commands =
                     Arrays.asList(
                             SupportedCommand.DEPLOY.getCommand(),
-                            SupportedCommand.DEPLOY_BY_CNS.getCommand(),
-                            SupportedCommand.CALL_BY_CNS.getCommand(),
-                            SupportedCommand.QUERY_CNS.getCommand(),
                             SupportedCommand.LIST_DEPLOY_CONTRACT_ADDRESS.getCommand(),
                             SupportedCommand.LIST_ABI.getCommand());
 
@@ -101,12 +98,18 @@ public class JlineUtils {
                                 contractAddressCompleter,
                                 contractMethodCompleter,
                                 new StringsCompleterIgnoreCase()));
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new CurrentPathCompleter(client),
+                                contractMethodCompleter,
+                                new StringsCompleterIgnoreCase()));
             }
-            // completer for REGISTER_CNS
+            // completer for link
             completers.add(
                     new ArgumentCompleter(
-                            new StringsCompleter(SupportedCommand.REGISTER_CNS.getCommand()),
-                            new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                            new StringsCompleter(SupportedCommand.LINK.getCommand()),
+                            new CurrentPathCompleter(client),
                             contractAddressCompleter));
         } else {
             // liquid

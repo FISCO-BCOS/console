@@ -2,7 +2,6 @@ package console.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import console.client.model.TotalTransactionCountResult;
-import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.ConsoleContractImpl;
@@ -249,11 +248,10 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getCode(String[] params) throws IOException {
         String address = params[1];
-        Address convertAddr = ConsoleUtils.convertAddress(address);
-        if (!convertAddr.isValid()) {
+        if (!ConsoleUtils.isValidAddress(address)) {
+            System.out.println("Invalid contract address: " + address);
             return;
         }
-        address = convertAddr.getAddress();
         String code = client.getCode(nodeName, address).getCode();
         if ("0x".equals(code)) {
             System.out.println("This address doesn't exist.");
