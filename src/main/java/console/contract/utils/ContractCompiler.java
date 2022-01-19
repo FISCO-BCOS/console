@@ -60,7 +60,7 @@ public class ContractCompiler {
             return dynamicCompileSolFilesToJava(contractFile, sm);
         }
         // the contractName
-        String contractFileName = ConsoleUtils.removeSolPostfix(contractNameOrPath) + SOL_SUFFIX;
+        String contractFileName = ConsoleUtils.removeSolSuffix(contractNameOrPath) + SOL_SUFFIX;
         contractFile = new File(SOLIDITY_PATH + "/" + contractFileName);
         if (!contractFile.exists()) {
             throw new CompileContractException(
@@ -237,29 +237,7 @@ public class ContractCompiler {
     }
 
     public static AbiAndBin loadAbiAndBin(
-            String groupId, String contractNameOrPath, String contractAddress, boolean sm)
-            throws CompileContractException, IOException, CodeGenException {
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, sm, true);
-    }
-
-    public static AbiAndBin loadAbiAndBin(
-            String groupId,
-            String contractName,
-            String contractNameOrPath,
-            String contractAddress,
-            boolean sm)
-            throws CompileContractException, IOException, CodeGenException {
-        return loadAbiAndBin(groupId, contractName, contractNameOrPath, contractAddress, sm, true);
-    }
-
-    public static AbiAndBin loadAbiAndBin(
-            String groupId,
-            String contractName,
-            String contractNameOrPath,
-            String contractAddress,
-            boolean sm,
-            boolean needCompile)
+            String groupId, String contractName, String contractAddress, boolean sm)
             throws CompileContractException, CodeGenException, IOException {
         File abiPath =
                 new File(
@@ -288,13 +266,8 @@ public class ContractCompiler {
                                 + BIN_SUFFIX);
 
         if (!abiPath.exists() || !binPath.exists()) {
-            if (needCompile) {
-                return ContractCompiler.compileContract(contractNameOrPath, sm);
-            } else {
-                return new AbiAndBin();
-            }
+            return new AbiAndBin();
         }
-
         String abiContent = new String(CodeGenUtils.readBytes(abiPath));
         String binContent = new String(CodeGenUtils.readBytes(binPath));
         logger.trace(
