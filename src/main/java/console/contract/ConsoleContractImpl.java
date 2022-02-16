@@ -41,6 +41,7 @@ import org.fisco.bcos.sdk.transaction.manager.AssembleTransactionProcessorInterf
 import org.fisco.bcos.sdk.transaction.manager.TransactionProcessorFactory;
 import org.fisco.bcos.sdk.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
+import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.transaction.model.exception.TransactionBaseException;
 import org.fisco.bcos.sdk.utils.Hex;
 import org.fisco.solc.compiler.CompilationResult;
@@ -497,7 +498,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     public void call(String[] params, String pwd) throws Exception {
         String path = params[1];
         String fixedBfsParam = ConsoleUtils.fixedBfsParam(path, pwd);
-        List<BFSPrecompiled.BfsInfo> bfsInfos = bfsService.list(fixedBfsParam);
+        List<BFSPrecompiled.BfsInfo> bfsInfos = new ArrayList<>();
+        try {
+            bfsInfos = bfsService.list(fixedBfsParam);
+        } catch (ContractException e) {
+            logger.debug("call contract, path: {}", path);
+        }
         if (bfsInfos.size() == 1 && bfsInfos.get(0).getFileType().equals(Common.BFS_TYPE_LNK)) {
             // call link
             BFSPrecompiled.BfsInfo bfsInfo = bfsInfos.get(0);
