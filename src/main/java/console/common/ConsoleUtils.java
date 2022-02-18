@@ -293,28 +293,29 @@ public class ConsoleUtils {
                 ContractCompiler.compileSolToBinAndAbi(
                         solFile, abiDir, binDir, ContractCompiler.All, librariesOption);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
+        File abiFile = new File(abiDir + contractName + ".abi");
+        File binFile = new File(binDir + contractName + ".bin");
+        String abiFilePath = abiFile.getAbsolutePath();
+        String binFilePath = binFile.getAbsolutePath();
+        FileUtils.writeStringToFile(abiFile, abiAndBin.getAbi());
+        FileUtils.writeStringToFile(binFile, abiAndBin.getBin());
 
-        FileUtils.writeStringToFile(new File(abiDir + contractName + ".abi"), abiAndBin.getAbi());
-        FileUtils.writeStringToFile(new File(binDir + contractName + ".bin"), abiAndBin.getBin());
-
+        File smBinFile = new File(binDir + "/sm/" + contractName + ".bin");
+        String smBinFilePath = smBinFile.getAbsolutePath();
         FileUtils.writeStringToFile(
                 new File(abiDir + "/sm/" + contractName + ".abi"), abiAndBin.getAbi());
-        FileUtils.writeStringToFile(
-                new File(binDir + "/sm/" + contractName + ".bin"), abiAndBin.getSmBin());
+        FileUtils.writeStringToFile(smBinFile, abiAndBin.getSmBin());
 
-        String abiFile = abiDir + contractName + ".abi";
-        String binFile = binDir + contractName + ".bin";
-        String smBinFile = binDir + "/sm/" + contractName + ".bin";
         CodeGenMain.main(
                 Arrays.asList(
-                                "-a", abiFile,
-                                "-b", binFile,
-                                "-s", smBinFile,
+                                "-a", abiFilePath,
+                                "-b", binFilePath,
+                                "-s", smBinFilePath,
                                 "-p", packageName,
                                 "-o", javaDir)
                         .toArray(new String[0]));
         // evm static analysis
-        EvmAnalyser.Result result = EvmAnalyser.process(abiFile, binFile, false);
+        EvmAnalyser.Result result = EvmAnalyser.process(abiFilePath, binFilePath, false);
         if (result.isFailed()) {
             String error =
                     "*** Analysis evm bytecode "
@@ -324,7 +325,7 @@ public class ConsoleUtils {
             System.out.println(error);
             throw new CompileContractException(error);
         }
-        result = EvmAnalyser.process(abiFile, smBinFile, true);
+        result = EvmAnalyser.process(abiFilePath, smBinFilePath, true);
         if (result.isFailed()) {
             String error =
                     "*** Analysis evm gm bytecode "
