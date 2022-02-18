@@ -435,7 +435,9 @@ public class SupportedCommand {
                     "Query code at a given address",
                     HelpInfo::getCodeHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getCode(params),
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getCode(params, consoleInitializer.getClient().isWASM(), pwd),
                     1,
                     1);
     public static final CommandInfo GET_TOTAL_TRANSACTION_COUNT =

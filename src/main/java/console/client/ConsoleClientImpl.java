@@ -247,15 +247,24 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
-    public void getCode(String[] params) throws IOException {
+    public void getCode(String[] params, boolean isWasm, String pwd) throws IOException {
         String address = params[1];
-        Address convertAddr = ConsoleUtils.convertAddress(address);
-        if (!convertAddr.isValid()) {
-            return;
+        if (!isWasm) {
+            Address convertAddr = ConsoleUtils.convertAddress(address);
+            if (!convertAddr.isValid()) {
+                return;
+            }
+            address = convertAddr.getAddress();
+        } else {
+            try {
+                address = ConsoleUtils.fixedBfsParam(address, pwd).substring("/apps".length());
+            } catch (Exception e) {
+                System.out.println("Path is error: " + address);
+                return;
+            }
         }
-        address = convertAddr.getAddress();
         String code = client.getCode(nodeName, address).getCode();
-        if ("0x".equals(code)) {
+        if ("0x".equals(code) || code.isEmpty()) {
             System.out.println("This address doesn't exist.");
             return;
         }
