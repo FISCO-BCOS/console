@@ -1,7 +1,7 @@
 package console.collaboration;
 
-import static org.fisco.bcos.sdk.client.protocol.model.tars.Transaction.LIQUID_CREATE;
-import static org.fisco.bcos.sdk.client.protocol.model.tars.Transaction.LIQUID_SCALE_CODEC;
+import static org.fisco.bcos.sdk.client.protocol.model.Transaction.LIQUID_CREATE;
+import static org.fisco.bcos.sdk.client.protocol.model.Transaction.LIQUID_SCALE_CODEC;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,6 +30,7 @@ import org.fisco.bcos.sdk.codec.scale.ScaleCodecWriter;
 import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.jni.utilities.tx.TxPair;
 import org.fisco.bcos.sdk.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.model.TransactionReceipt;
 import org.fisco.bcos.sdk.transaction.manager.AssembleTransactionProcessor;
@@ -274,14 +275,18 @@ public class CollaborationImpl implements CollaborationFace {
 
             String path = "collaboration/" + client.getCryptoSuite().hash(binStr + abiStr);
             int txAttribute = LIQUID_CREATE | LIQUID_SCALE_CODEC;
+
+            TxPair txPair =
+                    this.assembleTransactionProcessor.createSignedTransaction(
+                            path,
+                            outputStream.toByteArray(),
+                            abiStr,
+                            this.cryptoKeyPair,
+                            txAttribute);
+
             TransactionResponse response =
                     this.assembleTransactionProcessor.deployAndGetResponse(
-                            FAKE_ABI,
-                            this.assembleTransactionProcessor.createSignedTransaction(
-                                    path,
-                                    outputStream.toByteArray(),
-                                    this.cryptoKeyPair,
-                                    txAttribute));
+                            FAKE_ABI, txPair.getSignedTx());
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("initialize collaboration failed");
                 System.out.println("return message: " + response.getReturnMessage());
@@ -333,16 +338,16 @@ public class CollaborationImpl implements CollaborationFace {
         byte[] encodedParams = FunctionEncoder.encodeParameters(inputs, methodID);
         outputStream.write(encodedParams);
         int txAttribute = LIQUID_SCALE_CODEC;
+
+        TxPair txPair =
+                this.assembleTransactionProcessor.createSignedTransaction(
+                        address,
+                        outputStream.toByteArray(),
+                        abiStr,
+                        this.cryptoKeyPair,
+                        txAttribute);
         TransactionReceipt receipt =
-                this.client
-                        .sendTransaction(
-                                this.assembleTransactionProcessor.createSignedTransaction(
-                                        address,
-                                        outputStream.toByteArray(),
-                                        this.cryptoKeyPair,
-                                        txAttribute),
-                                false)
-                        .getTransactionReceipt();
+                this.client.sendTransaction(txPair.getSignedTx(), false).getTransactionReceipt();
         if (receipt.getStatus() != 0) {
             System.out.println("sign contract failed");
             System.out.println("return message: " + receipt.getMessage());
@@ -426,16 +431,16 @@ public class CollaborationImpl implements CollaborationFace {
         byte[] encodedParams = FunctionEncoder.encodeParameters(inputTypes, methodID);
         outputStream.write(encodedParams);
 
+        TxPair txPair =
+                this.assembleTransactionProcessor.createSignedTransaction(
+                        address,
+                        outputStream.toByteArray(),
+                        abi,
+                        this.cryptoKeyPair,
+                        LIQUID_SCALE_CODEC);
+
         TransactionReceipt receipt =
-                this.client
-                        .sendTransaction(
-                                this.assembleTransactionProcessor.createSignedTransaction(
-                                        address,
-                                        outputStream.toByteArray(),
-                                        this.cryptoKeyPair,
-                                        LIQUID_SCALE_CODEC),
-                                false)
-                        .getTransactionReceipt();
+                this.client.sendTransaction(txPair.getSignedTx(), false).getTransactionReceipt();
         if (receipt.getStatus() != 0) {
             System.out.println("exercise right failed");
             System.out.println("return message: " + receipt.getMessage());
@@ -491,16 +496,16 @@ public class CollaborationImpl implements CollaborationFace {
         byte[] encodedParams = FunctionEncoder.encodeParameters(inputs, methodID);
         outputStream.write(encodedParams);
 
+        TxPair txPair =
+                this.assembleTransactionProcessor.createSignedTransaction(
+                        address,
+                        outputStream.toByteArray(),
+                        abiStr,
+                        this.cryptoKeyPair,
+                        LIQUID_SCALE_CODEC);
+
         TransactionReceipt receipt =
-                this.client
-                        .sendTransaction(
-                                this.assembleTransactionProcessor.createSignedTransaction(
-                                        address,
-                                        outputStream.toByteArray(),
-                                        this.cryptoKeyPair,
-                                        LIQUID_SCALE_CODEC),
-                                false)
-                        .getTransactionReceipt();
+                this.client.sendTransaction(txPair.getSignedTx(), false).getTransactionReceipt();
         if (receipt.getStatus() != 0) {
             System.out.println("exercise right failed");
             System.out.println("return message: " + receipt.getMessage());
