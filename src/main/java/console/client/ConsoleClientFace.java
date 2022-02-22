@@ -41,7 +41,7 @@ public interface ConsoleClientFace {
 
     void getPendingTxSize(String[] params) throws IOException;
 
-    void getCode(String[] params) throws IOException;
+    void getCode(String[] params, boolean isWasm, String pwd) throws IOException;
 
     void getTotalTransactionCount(String[] params) throws IOException;
 

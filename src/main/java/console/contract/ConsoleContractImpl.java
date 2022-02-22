@@ -33,6 +33,7 @@ import org.fisco.bcos.sdk.codec.wrapper.ABIObject;
 import org.fisco.bcos.sdk.codec.wrapper.ContractABIDefinition;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
+import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
 import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.model.CryptoType;
@@ -88,6 +89,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String path = params[3];
             try {
                 path = ConsoleUtils.fixedBfsParam(path, pwd);
+                if (path.startsWith(ContractCompiler.BFS_APPS_FULL_PREFIX)) {
+                    path = path.substring(ContractCompiler.BFS_APPS_PREFIX.length());
+                }
             } catch (Exception e) {
                 System.out.println("Path parse error for: " + e.getMessage());
                 System.out.println("Please use 'deploy -h' to check deploy arguments.");
@@ -420,7 +424,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String functionName = params[2];
         path = ConsoleUtils.fixedBfsParam(path, pwd);
         String contractName = FilenameUtils.getBaseName(path);
-        if (path.startsWith(ContractCompiler.BFS_APPS_PREFIX)) {
+        if (path.startsWith(ContractCompiler.BFS_APPS_FULL_PREFIX)) {
             path = path.substring(ContractCompiler.BFS_APPS_PREFIX.length());
         }
         String contractAddress =
@@ -753,21 +757,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 // get abi
                 contractAbi = cnsTuple.getValue2();
             } else {
-                // Not support in fisco bcos 3.0
-                throw new ContractException(
-                        "Please use specified version of contract: " + contractName);
-                //                List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
-                //                if (cnsInfos.size() == 0) {
-                //                    System.out.println(
-                //                            "Can't find \""
-                //                                    + contractName
-                //                                    + "\" information from the cns list! Please
-                // deploy it by cns firstly!\n");
-                //                    return;
-                //                }
-                //                CnsInfo latestCNSInfo = cnsInfos.get(cnsInfos.size() - 1);
-                //                contractAddress = latestCNSInfo.getAddress();
-                //                contractAbi = latestCNSInfo.getAbi();
+                List<CnsInfo> cnsInfos = cnsService.selectByName(contractName);
+                if (cnsInfos.isEmpty()) {
+                    System.out.println(
+                            "Can't find \""
+                                    + contractName
+                                    + "\" information from the cns list! Please deploy it by cns firstly!\n");
+                    return;
+                }
+                CnsInfo latestCNSInfo = cnsInfos.get(cnsInfos.size() - 1);
+                contractAddress = latestCNSInfo.getAddress();
+                contractAbi = latestCNSInfo.getAbi();
             }
         } catch (ContractException e) {
             System.out.println("Error when getting cns information: ");

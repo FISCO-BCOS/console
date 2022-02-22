@@ -45,6 +45,7 @@ public class ContractCompiler {
     public static final String LIQUID_PATH = "contracts/liquid/";
     public static final String COMPILED_PATH = "contracts/.compiled/";
     public static final String BFS_APPS_PREFIX = "/apps";
+    public static final String BFS_APPS_FULL_PREFIX = "/apps/";
     public static final String SOL_SUFFIX = ".sol";
     private static final String SM_SUFFIX = ".sm";
     private static final String BIN_SUFFIX = ".bin";

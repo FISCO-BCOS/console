@@ -120,6 +120,7 @@ public class JlineUtils {
                                         new File(ContractCompiler.LIQUID_PATH), true),
                                 new ConsoleFilesCompleter(
                                         new File(ContractCompiler.LIQUID_PATH), true),
+                                currentPathCompleter,
                                 new StringsCompleterIgnoreCase()));
             }
             // contract address and method completer
@@ -128,8 +129,7 @@ public class JlineUtils {
                 completers.add(
                         new ArgumentCompleter(
                                 new StringsCompleter(command),
-                                new ConsoleFilesCompleter(new File(ContractCompiler.LIQUID_PATH)),
-                                contractAddressCompleter,
+                                currentPathCompleter,
                                 contractMethodCompleter,
                                 new StringsCompleterIgnoreCase()));
             }
@@ -176,10 +176,7 @@ public class JlineUtils {
                         new StringsCompleterIgnoreCase(SupportedCommand.NEW_ACCOUNT.getCommand()),
                         new AccountFileFormatCompleter()));
 
-        commands =
-                Arrays.asList(
-                        SupportedCommand.CHANGE_DIR.getCommand(),
-                        SupportedCommand.LIST_DIR.getCommand());
+        commands = SupportedCommand.BFS_COMMANDS;
 
         for (String command : commands) {
             completers.add(

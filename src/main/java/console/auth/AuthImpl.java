@@ -27,10 +27,12 @@ public class AuthImpl implements AuthFace {
     private static final Logger logger = LoggerFactory.getLogger(AuthImpl.class);
     private AuthManager authManager;
     private boolean authAvailable = false;
+    private static final long WEIGHT_MAX = 10000;
+    private static final int GOVERNOR_NUM_MAX = 1000;
 
     public AuthImpl(Client client) throws ContractException {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        this.authAvailable = client.isAuthCheck();
+        this.authAvailable = client.isAuthCheck() && !client.isWASM();
         if (this.authAvailable) {
             this.authManager = new AuthManager(client, cryptoKeyPair);
         } else {
@@ -44,9 +46,24 @@ public class AuthImpl implements AuthFace {
             String account = params[1];
             checkValidAddress(account, "account");
             BigInteger weight = BigInteger.valueOf(Long.parseLong(params[2]));
-            if (weight.compareTo(BigInteger.ZERO) < 0) {
+            if (weight.compareTo(BigInteger.ZERO) < 0
+                    || weight.compareTo(BigInteger.valueOf(WEIGHT_MAX)) > 0) {
                 throw new TransactionException(
-                        "weight is less than 0, please use a weight LE than 0");
+                        "Weight is limit in [0, "
+                                + WEIGHT_MAX
+                                + "], please use a weight in this range.");
+            }
+            List<GovernorInfo> governorList = authManager.getCommitteeInfo().getGovernorList();
+            if (governorList.size() > GOVERNOR_NUM_MAX
+                    && governorList
+                            .stream()
+                            .noneMatch(
+                                    governorInfo ->
+                                            account.equals(governorInfo.getGovernorAddress()))) {
+                throw new TransactionException(
+                        "The number of governor is over "
+                                + GOVERNOR_NUM_MAX
+                                + ", can not add new governor.");
             }
             BigInteger proposalId = authManager.updateGovernor(account, weight);
             System.out.println("Update governor proposal created, ID is: " + proposalId);
@@ -246,6 +263,11 @@ public class AuthImpl implements AuthFace {
         try {
             checkValidAddress(contractAddress, "");
             String admin = authManager.getAdmin(contractAddress);
+            if (admin.equals(ConsoleUtils.EMPTY_ADDRESS)) {
+                System.out.println(
+                        "Contract address not exist, please check address: " + contractAddress);
+                return;
+            }
             System.out.println("Admin for contract " + contractAddress + " is: " + admin);
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
@@ -422,6 +444,10 @@ public class AuthImpl implements AuthFace {
     @Override
     public void getLatestProposal(String[] params) throws Exception {
         BigInteger proposalId = this.authManager.proposalCount();
+        if (proposalId.equals(BigInteger.ZERO)) {
+            System.out.println("No proposal exists currently, try to propose one.");
+            return;
+        }
         System.out.println("Latest proposal ID: " + proposalId.toString());
         if (proposalId.compareTo(BigInteger.ZERO) > 0) {
             showProposalInfo(proposalId);

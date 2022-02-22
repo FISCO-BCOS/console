@@ -58,8 +58,10 @@ public class Console {
         }
 
         WelcomeInfo.welcome();
-        String pwd = "/";
-        SupportedCommand.setIsAuthOpen(consoleInitializer.getClient().isAuthCheck());
+        String pwd = "/apps";
+        SupportedCommand.setIsAuthOpen(
+                consoleInitializer.getClient().isAuthCheck()
+                        && !consoleInitializer.getClient().isWASM());
         SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
         while (true) {
@@ -112,8 +114,10 @@ public class Console {
                                 .getCommand()
                                 .equals(SupportedCommand.CHANGE_DIR.getCommand())) {
                             if (params.length == 1) {
-                                pwd = "/";
-                            } else {
+                                pwd = "/apps";
+                            } else if (!SupportedCommand.HELP
+                                    .getOptionCommand()
+                                    .contains(params[1])) {
                                 pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
                             }
                             JlineUtils.switchPwd(pwd);
@@ -138,7 +142,8 @@ public class Console {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
                             SupportedCommand.setIsAuthOpen(
-                                    consoleInitializer.getClient().isAuthCheck());
+                                    consoleInitializer.getClient().isAuthCheck()
+                                            && !consoleInitializer.getClient().isWASM());
                             SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
                         }
                     }

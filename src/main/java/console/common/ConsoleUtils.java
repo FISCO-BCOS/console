@@ -4,7 +4,6 @@ import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
-import io.netty.util.NetUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -33,7 +32,6 @@ import org.fisco.bcos.sdk.codec.datatypes.StructType;
 import org.fisco.bcos.sdk.codec.datatypes.Type;
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
-import org.fisco.bcos.sdk.utils.Host;
 import org.fisco.bcos.sdk.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +50,7 @@ public class ConsoleUtils {
     public static final String GM_ACCOUNT_SUFFIX = "_gm";
     public static final int ADDRESS_SIZE = 160;
     public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
+    public static final String EMPTY_ADDRESS = "0x0000000000000000000000000000000000000000";
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
@@ -148,7 +147,11 @@ public class ConsoleUtils {
             pathToFix = param;
         } else {
             // relative path
-            pathToFix = pwd + ((pwd.equals("/")) ? "" : "/") + param;
+            if (param.startsWith("~")) {
+                pathToFix = "/apps/" + param.substring(1);
+            } else {
+                pathToFix = pwd + ((pwd.equals("/")) ? "" : "/") + param;
+            }
         }
         fixedParam = "/" + String.join("/", path2Level(pathToFix));
         return fixedParam;
@@ -457,25 +460,6 @@ public class ConsoleUtils {
     public static void doubleLine() {
         System.out.println(
                 "=============================================================================================");
-    }
-
-    public static boolean checkEndPoint(String endPoint) {
-        int index = endPoint.lastIndexOf(':');
-        if (index == -1) {
-            System.out.println("Invalid endpoint format, the endpoint format should be IP:Port");
-            return false;
-        }
-        String IP = endPoint.substring(0, index);
-        String port = endPoint.substring(index + 1);
-        if (!(NetUtil.isValidIpV4Address(IP) || NetUtil.isValidIpV6Address(IP))) {
-            System.out.println("Invalid IP " + IP);
-            return false;
-        }
-        if (!Host.validPort(port)) {
-            System.out.println("Invalid Port " + port);
-            return false;
-        }
-        return true;
     }
 
     public static void sortFiles(File[] files) {

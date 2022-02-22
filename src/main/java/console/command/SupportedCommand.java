@@ -190,8 +190,6 @@ public class SupportedCommand {
                     new ArrayList<>(Arrays.asList("quit", "q", "exit")),
                     (consoleInitializer, params, pwd) -> System.exit(0),
                     false);
-    // TODO: Table CRUD service is not supported in FISCO BCOS 3.0.0 rc1
-    /*
 
     public static final CommandInfo DESC =
             new CommandInfo(
@@ -209,31 +207,34 @@ public class SupportedCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().createTable(params[0], isWasm));
 
-        public static final CommandInfo SELECT =
-                new CommandInfo(
-                        "select",
-                        "Select records by sql",
-                        (consoleInitializer, params, pwd) ->
-                                consoleInitializer.getPrecompiledFace().select(params[0]));
-        public static final CommandInfo INSERT =
-                new CommandInfo(
-                        "insert",
-                        "Insert records by sql",
-                        (consoleInitializer, params, pwd) ->
-                                consoleInitializer.getPrecompiledFace().insert(params[0]));
-        public static final CommandInfo UPDATE =
-                new CommandInfo(
-                        "update",
-                        "Update records by sql",
-                        (consoleInitializer, params, pwd) ->
-                                consoleInitializer.getPrecompiledFace().update(params[0]));
-        public static final CommandInfo DELETE =
-                new CommandInfo(
-                        "delete",
-                        "Remove records by sql",
-                        (consoleInitializer, params, pwd) ->
-                                consoleInitializer.getPrecompiledFace().remove(params[0]));
-     */
+    // TODO: Table CRUD service is not supported in FISCO BCOS 3.0.0 rc1
+    /*
+
+       public static final CommandInfo SELECT =
+               new CommandInfo(
+                       "select",
+                       "Select records by sql",
+                       (consoleInitializer, params, pwd) ->
+                               consoleInitializer.getPrecompiledFace().select(params[0]));
+       public static final CommandInfo INSERT =
+               new CommandInfo(
+                       "insert",
+                       "Insert records by sql",
+                       (consoleInitializer, params, pwd) ->
+                               consoleInitializer.getPrecompiledFace().insert(params[0]));
+       public static final CommandInfo UPDATE =
+               new CommandInfo(
+                       "update",
+                       "Update records by sql",
+                       (consoleInitializer, params, pwd) ->
+                               consoleInitializer.getPrecompiledFace().update(params[0]));
+       public static final CommandInfo DELETE =
+               new CommandInfo(
+                       "delete",
+                       "Remove records by sql",
+                       (consoleInitializer, params, pwd) ->
+                               consoleInitializer.getPrecompiledFace().remove(params[0]));
+    */
 
     // TODO: Liquid collaboration service is not supported in FISCO BCOS 3.0.0 rc1
     /*
@@ -434,7 +435,9 @@ public class SupportedCommand {
                     "Query code at a given address",
                     HelpInfo::getCodeHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getCode(params),
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getCode(params, consoleInitializer.getClient().isWASM(), pwd),
                     1,
                     1);
     public static final CommandInfo GET_TOTAL_TRANSACTION_COUNT =
@@ -678,6 +681,16 @@ public class SupportedCommand {
                             consoleInitializer.getPrecompiledFace().listDir(params, pwd),
                     0,
                     1);
+
+    public static final CommandInfo TREE =
+            new CommandInfo(
+                    "tree",
+                    "List contents of directories in a tree-like format.",
+                    HelpInfo::treeHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().tree(params, pwd),
+                    1,
+                    2);
 
     public static final CommandInfo PWD =
             new CommandInfo(
@@ -971,13 +984,13 @@ public class SupportedCommand {
                             LIST_DIR.getCommand(),
                             CHANGE_DIR.getCommand(),
                             MAKE_DIR.getCommand(),
-                            PWD.getCommand()));
+                            TREE.getCommand()));
 
     // TODO: Table CRUD service is not supported in FISCO BCOS 3.0.0 rc1
     public static List<String> CRUD_COMMANDS =
             new ArrayList<>(
                     Arrays.asList(
-                            // CREATE.getCommand(),
+                            CREATE.getCommand()
                             // INSERT.getCommand(),
                             // SELECT.getCommand(),
                             // UPDATE.getCommand(),
