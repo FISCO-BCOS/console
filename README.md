@@ -29,7 +29,7 @@
 
 - **代码**: [GitHub](https://github.com/FISCO-BCOS/console/tree/master), [Gitee](https://gitee.com/FISCO-BCOS/console/tree/master)
 
-- **FISCO BCOS v2.x**: [GitHub](https://github.com/FISCO-BCOS/FISCO-BCOS/tree/master), [Gitee](https://gitee.com/FISCO-BCOS/FISCO-BCOS/tree/master)
+- **FISCO BCOS v3.x**: [GitHub](https://github.com/FISCO-BCOS/FISCO-BCOS/tree/master), [Gitee](https://gitee.com/FISCO-BCOS/FISCO-BCOS/tree/master)
 
 
 ## 关键特性
