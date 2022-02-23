@@ -6,11 +6,31 @@
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Build Status](https://travis-ci.org/FISCO-BCOS/console.svg?branch=master)](https://travis-ci.org/FISCO-BCOS/console)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/a2a6c2eb499e42739d066ff775d1b288)](https://www.codacy.com/app/fisco/console?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=FISCO-BCOS/console&amp;utm_campaign=Badge_Grade)
 [![GitHub All Releases](https://img.shields.io/github/downloads/FISCO-BCOS/console/total.svg)](https://github.com/FISCO-BCOS/console)
 ---
 
-控制台是[FISCO BCOS 3.0+](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/)的重要交互式客户端工具。控制台拥有丰富的命令，包括查询区块链状态、管理区块链节点、部署并调用合约等。
+控制台是FISCO BCOS的重要交互式客户端工具。控制台拥有丰富的命令，包括查询区块链状态、管理区块链节点、部署并调用合约等。
+
+## 兼容性说明
+
+**`v3.x`版本控制台仅适用于FISCO BCOS v3.x，不兼容FISCO BCOS v2.x**。
+
+### **v2.x控制台**
+
+- [部署文档](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/installation.html)
+
+- **代码**: [GitHub](https://github.com/FISCO-BCOS/console/tree/master-2.0), [Gitee](https://gitee.com/FISCO-BCOS/console/tree/master-2.0/)
+
+- **FISCO BCOS v2.x**: [GitHub](https://github.com/FISCO-BCOS/FISCO-BCOS/tree/master-2.0), [Gitee](https://gitee.com/FISCO-BCOS/FISCO-BCOS/tree/master-2.0/)
+
+### **v3.x控制台**
+
+- [部署文档](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/quick_start/air_installation.html)
+
+- **代码**: [GitHub](https://github.com/FISCO-BCOS/console/tree/master), [Gitee](https://gitee.com/FISCO-BCOS/console/tree/master)
+
+- **FISCO BCOS v2.x**: [GitHub](https://github.com/FISCO-BCOS/FISCO-BCOS/tree/master), [Gitee](https://gitee.com/FISCO-BCOS/FISCO-BCOS/tree/master)
+
 
 ## 关键特性
 
