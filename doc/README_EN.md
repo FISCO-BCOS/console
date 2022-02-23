@@ -28,7 +28,7 @@ English / [中文](../README.md)
 
 - **Code**: [GitHub](https://github.com/FISCO-BCOS/console/tree/master), [Gitee](https://gitee.com/FISCO-BCOS/console/tree/master)
 
-- **FISCO BCOS v2.x**: [GitHub](https://github.com/FISCO-BCOS/FISCO-BCOS/tree/master), [Gitee](https://gitee.com/FISCO-BCOS/FISCO-BCOS/tree/master)
+- **FISCO BCOS v3.x**: [GitHub](https://github.com/FISCO-BCOS/FISCO-BCOS/tree/master), [Gitee](https://gitee.com/FISCO-BCOS/FISCO-BCOS/tree/master)
 
 
 ## Features
