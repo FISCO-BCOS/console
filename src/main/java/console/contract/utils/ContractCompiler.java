@@ -24,10 +24,12 @@ import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
+import org.fisco.evm.analysis.EvmAnalyser;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -127,7 +129,6 @@ public class ContractCompiler {
                 !res.isFailed(),
                 res.getOutput(),
                 res.getErrors());
-
         if (res.isFailed() || "".equals(res.getOutput())) {
             throw new CompileContractException(" Compile error: " + res.getErrors());
         }
@@ -137,8 +138,32 @@ public class ContractCompiler {
 
         String bin = sm ? "" : meta.bin;
         String smBin = sm ? meta.bin : "";
-
         AbiAndBin abiAndBin = new AbiAndBin(meta.abi, bin, smBin);
+
+        // evm static analysis
+        File abiFile = new File(abiDir + contractName + ".abi");
+        File binFile = new File(binDir + contractName + ".bin");
+        String abiFilePath = abiFile.getAbsolutePath();
+        String binFilePath = binFile.getAbsolutePath();
+        FileUtils.writeStringToFile(abiFile, abiAndBin.getAbi());
+        if (sm) {
+            FileUtils.writeStringToFile(binFile, abiAndBin.getSmBin());
+        } else {
+            FileUtils.writeStringToFile(binFile, abiAndBin.getBin());
+        }
+
+        EvmAnalyser.Result ret = EvmAnalyser.process(abiFilePath, binFilePath, sm);
+        if (ret.isFailed()) {
+            String error =
+                    "*** Analysis evm bytecode "
+                            + contractFile.getName()
+                            + " failed *** \n error: "
+                            + ret.getErrors();
+            logger.debug(error);
+            throw new CompileContractException(error);
+        }
+        String abi = FileUtils.readFileToString(abiFile, StandardCharsets.UTF_8);
+        abiAndBin.setAbi(abi);
         checkBinaryCode(contractName, meta.bin);
         return abiAndBin;
     }
