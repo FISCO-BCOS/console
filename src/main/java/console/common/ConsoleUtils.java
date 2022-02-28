@@ -33,7 +33,6 @@ import org.fisco.bcos.sdk.codec.datatypes.Type;
 import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.utils.Numeric;
-import org.fisco.evm.analysis.EvmAnalyser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,27 +313,6 @@ public class ConsoleUtils {
                                 "-p", packageName,
                                 "-o", javaDir)
                         .toArray(new String[0]));
-        // evm static analysis
-        EvmAnalyser.Result result = EvmAnalyser.process(abiFilePath, binFilePath, false);
-        if (result.isFailed()) {
-            String error =
-                    "*** Analysis evm bytecode "
-                            + solFile.getName()
-                            + " failed *** \n error: "
-                            + result.getErrors();
-            System.out.println(error);
-            throw new CompileContractException(error);
-        }
-        result = EvmAnalyser.process(abiFilePath, smBinFilePath, true);
-        if (result.isFailed()) {
-            String error =
-                    "*** Analysis evm gm bytecode "
-                            + solFile.getName()
-                            + " failed *** \n error: "
-                            + result.getErrors();
-            System.out.println(error);
-            throw new CompileContractException(error);
-        }
         System.out.println(
                 "*** Convert solidity to java  for " + solFile.getName() + " success ***\n");
     }
