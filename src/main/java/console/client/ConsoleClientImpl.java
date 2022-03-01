@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
 import org.fisco.bcos.sdk.client.protocol.response.BcosBlock;
 import org.fisco.bcos.sdk.client.protocol.response.BcosGroupNodeInfo;
@@ -197,10 +198,17 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getTransactionReceipt(String[] params) throws Exception {
         String transactionHash = params[1];
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
+        TransactionReceipt receipt = null;
+        try {
+            receipt =
+                    client.getTransactionReceipt(nodeName, transactionHash, false)
+                            .getTransactionReceipt();
+        } catch (ClientException e) {
+            System.out.println(
+                    "This transaction hash doesn't exist, errorMsg:" + e.getErrorMessage());
+            return;
+        }
 
-        TransactionReceipt receipt =
-                client.getTransactionReceipt(nodeName, transactionHash, false)
-                        .getTransactionReceipt();
         if (Objects.isNull(receipt) || Objects.isNull(receipt.getTransactionHash())) {
             System.out.println("This transaction hash doesn't exist.");
             return;
@@ -226,11 +234,17 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getTransactionReceiptByHashWithProof(String[] params) throws Exception {
         String transactionHash = params[1];
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-
-        String transactionReceiptWithProof =
-                client.getTransactionReceipt(nodeName, transactionHash, true)
-                        .getResult()
-                        .toString();
+        String transactionReceiptWithProof;
+        try {
+            transactionReceiptWithProof =
+                    client.getTransactionReceipt(nodeName, transactionHash, true)
+                            .getResult()
+                            .toString();
+        } catch (ClientException e) {
+            System.out.println(
+                    "This transaction hash doesn't exist, errorMsg:" + e.getErrorMessage());
+            return;
+        }
 
         if (Objects.isNull(transactionReceiptWithProof) || "".equals(transactionReceiptWithProof)) {
             System.out.println("This transaction hash doesn't exist.");
@@ -246,14 +260,23 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
-    public void getCode(String[] params) throws IOException {
+    public void getCode(String[] params, boolean isWasm, String pwd) throws IOException {
         String address = params[1];
-        if (!ConsoleUtils.isValidAddress(address)) {
-            System.out.println("Invalid contract address: " + address);
-            return;
+        if (!isWasm) {
+            if (!ConsoleUtils.isValidAddress(address)) {
+                System.out.println("This address is invalid.");
+                return;
+            }
+        } else {
+            try {
+                address = ConsoleUtils.fixedBfsParam(address, pwd).substring("/apps".length());
+            } catch (Exception e) {
+                System.out.println("Path is error: " + address);
+                return;
+            }
         }
         String code = client.getCode(nodeName, address).getCode();
-        if ("0x".equals(code)) {
+        if ("0x".equals(code) || code.isEmpty()) {
             System.out.println("This address doesn't exist.");
             return;
         }
