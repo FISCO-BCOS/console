@@ -278,11 +278,7 @@ public class CollaborationImpl implements CollaborationFace {
 
             TxPair txPair =
                     this.assembleTransactionProcessor.createSignedTransaction(
-                            path,
-                            outputStream.toByteArray(),
-                            abiStr,
-                            this.cryptoKeyPair,
-                            txAttribute);
+                            path, outputStream.toByteArray(), this.cryptoKeyPair, txAttribute);
 
             TransactionResponse response =
                     this.assembleTransactionProcessor.deployAndGetResponse(
@@ -341,11 +337,7 @@ public class CollaborationImpl implements CollaborationFace {
 
         TxPair txPair =
                 this.assembleTransactionProcessor.createSignedTransaction(
-                        address,
-                        outputStream.toByteArray(),
-                        abiStr,
-                        this.cryptoKeyPair,
-                        txAttribute);
+                        address, outputStream.toByteArray(), this.cryptoKeyPair, txAttribute);
         TransactionReceipt receipt =
                 this.client.sendTransaction(txPair.getSignedTx(), false).getTransactionReceipt();
         if (receipt.getStatus() != 0) {
@@ -435,7 +427,6 @@ public class CollaborationImpl implements CollaborationFace {
                 this.assembleTransactionProcessor.createSignedTransaction(
                         address,
                         outputStream.toByteArray(),
-                        abi,
                         this.cryptoKeyPair,
                         LIQUID_SCALE_CODEC);
 
@@ -500,7 +491,6 @@ public class CollaborationImpl implements CollaborationFace {
                 this.assembleTransactionProcessor.createSignedTransaction(
                         address,
                         outputStream.toByteArray(),
-                        abiStr,
                         this.cryptoKeyPair,
                         LIQUID_SCALE_CODEC);
 
