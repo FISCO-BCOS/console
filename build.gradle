@@ -37,7 +37,8 @@ dependencies {
     compile logger
     //compile 'org.fisco-bcos:solcJ:0.4.25.1'
     compile 'org.fisco-bcos:solcJ:0.6.10.3-SNAPSHOT'
-    //compile 'org.fisco-bcos:solcJ:0.5.2.3-SNAPSHTOT'
+    // compile 'org.fisco-bcos:solcJ:0.5.2.3-SNAPSHTOT'
+    // compile 'org.fisco-bcos:solcJ:0.8.11.0-SNAPSHOT'
 
     compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.0.0-rc3-SNAPSHOT')
     compile ('org.fisco-bcos:evm-static-analysis:0.0.1-SNAPSHOT')

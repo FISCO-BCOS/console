@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity ^0.6.0;
+pragma solidity>=0.6.10 <0.8.20;
 pragma experimental ABIEncoderV2;
 
 import "./KVTable.sol";
@@ -8,7 +8,9 @@ contract KVTableTest {
 
     KVTable kv_table;
     constructor () public{
-        kv_table = KVTable(0x1009);
+
+        address kvAddr = address(0x1009);
+        kv_table = KVTable(kvAddr);
         kv_table.createTable("t_kv_test", "id", "item_price,item_name");
     }
     function get(string memory id) public view returns (bool, string memory, string memory) {
