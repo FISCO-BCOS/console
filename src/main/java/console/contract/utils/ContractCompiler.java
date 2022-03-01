@@ -16,7 +16,6 @@ package console.contract.utils;
 
 import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
-import static org.fisco.solc.compiler.SolidityCompiler.Options.INTERFACE;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
 import console.common.ConsoleUtils;
@@ -116,11 +115,11 @@ public class ContractCompiler {
         String contractName = contractFile.getName().split("\\.")[0];
         SolidityCompiler.Result res = null;
         if (libraryOption == null) {
-            res = SolidityCompiler.compile(contractFile, sm, true, ABI, BIN, INTERFACE, METADATA);
+            res = SolidityCompiler.compile(contractFile, sm, true, ABI, BIN, METADATA);
         } else {
             res =
                     SolidityCompiler.compile(
-                            contractFile, sm, true, ABI, BIN, INTERFACE, METADATA, libraryOption);
+                            contractFile, sm, true, ABI, BIN, METADATA, libraryOption);
         }
 
         logger.debug(
