@@ -610,6 +610,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             cryptoKeyPair.storeKeyPairWithP12Format(password);
             System.out.println("AccountPath: " + cryptoKeyPair.getP12KeyStoreFilePath());
         }
+        System.out.println(
+                "Note: This operation does not create an account in the blockchain, but only creates a local account, and deploying a contract through this account will create an account in the blockchain");
         System.out.println("newAccount: " + cryptoKeyPair.getAddress());
         System.out.println(
                 "AccountType: "
