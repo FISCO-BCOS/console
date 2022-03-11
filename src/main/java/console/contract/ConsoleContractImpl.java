@@ -11,39 +11,48 @@ import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.CompileSolidityException;
 import console.exception.ConsoleMessageException;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.codec.ABICodec;
-import org.fisco.bcos.sdk.codec.ABICodecException;
-import org.fisco.bcos.sdk.codec.EventEncoder;
-import org.fisco.bcos.sdk.codec.wrapper.ABICodecObject;
-import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.codec.wrapper.ABIDefinitionFactory;
-import org.fisco.bcos.sdk.codec.wrapper.ABIObject;
-import org.fisco.bcos.sdk.codec.wrapper.ContractABIDefinition;
-import org.fisco.bcos.sdk.codegen.CodeGenUtils;
-import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSPrecompiled;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSService;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.model.CryptoType;
-import org.fisco.bcos.sdk.model.PrecompiledRetCode;
-import org.fisco.bcos.sdk.transaction.manager.AssembleTransactionProcessorInterface;
-import org.fisco.bcos.sdk.transaction.manager.TransactionProcessorFactory;
-import org.fisco.bcos.sdk.transaction.model.dto.CallResponse;
-import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
-import org.fisco.bcos.sdk.transaction.model.exception.TransactionBaseException;
-import org.fisco.bcos.sdk.utils.Hex;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.codec.ContractCodecException;
+import org.fisco.bcos.sdk.v3.codec.EventEncoder;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinitionFactory;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIObject;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ContractABIDefinition;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
+import org.fisco.bcos.sdk.v3.codegen.CodeGenUtils;
+import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.v3.transaction.manager.AssembleTransactionProcessorInterface;
+import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessorFactory;
+import org.fisco.bcos.sdk.v3.transaction.model.dto.CallResponse;
+import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionBaseException;
+import org.fisco.bcos.sdk.v3.utils.Hex;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -52,23 +61,18 @@ import org.slf4j.LoggerFactory;
 public class ConsoleContractImpl implements ConsoleContractFace {
 
     private static final Logger logger = LoggerFactory.getLogger(ConsoleContractImpl.class);
-    public static String DEPLOY_METHOD = "deploy";
 
-    private Client client;
-    private AssembleTransactionProcessorInterface assembleTransactionProcessor;
-    private CnsService cnsService;
-    private BFSService bfsService;
-    private ABICodec abiCodec;
+    private final Client client;
+    private final AssembleTransactionProcessorInterface assembleTransactionProcessor;
+    private final BFSService bfsService;
 
-    public ConsoleContractImpl(Client client) throws Exception {
+    public ConsoleContractImpl(Client client) {
         this.client = client;
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
         this.assembleTransactionProcessor =
                 TransactionProcessorFactory.createAssembleTransactionProcessor(
                         client, cryptoKeyPair);
-        this.cnsService = new CnsService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
-        this.abiCodec = new ABICodec(client.getCryptoSuite(), client.isWASM());
     }
 
     @Override
@@ -105,10 +109,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     public void printReturnObject(
             List<Object> returnObject, List<ABIObject> returnABIObject, String returnValue) {
-        if (returnABIObject == null
-                || returnABIObject == null
-                || returnObject.isEmpty()
-                || returnABIObject.isEmpty()) {
+        if (returnABIObject == null || returnObject.isEmpty() || returnABIObject.isEmpty()) {
             System.out.println("Return values:" + returnValue);
             return;
         }
@@ -165,7 +166,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
                 String data =
                         "hex://0x"
-                                + ConsoleUtils.bytesToHex(ABICodecObject.formatBytesN(abiObject));
+                                + ConsoleUtils.bytesToHex(
+                                        ContractCodecTools.formatBytesN(abiObject));
                 resultData.append(data).append(", ");
             } else if (returnObject.size() > i) {
                 resultData.append(returnObject.get(i).toString()).append(", ");
@@ -211,7 +213,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             ContractCompiler.saveAbiAndBin(
                     client.getGroup(), abiAndBin, contractName, contractAddress);
             return response;
-        } catch (ClientException | CompileContractException | IOException | ABICodecException e) {
+        } catch (ClientException
+                | CompileContractException
+                | IOException
+                | ContractCodecException e) {
             throw new ConsoleMessageException("deploy contract failed for " + e.getMessage(), e);
         }
     }
@@ -271,7 +276,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             ContractCompiler.saveAbiAndBin(
                     client.getGroup(), abiAndBin, contractName, contractAddress);
             return response;
-        } catch (ClientException | IOException | ABICodecException e) {
+        } catch (ClientException | IOException | ContractCodecException e) {
             throw new ConsoleMessageException("deploy contract failed due to:" + e.getMessage(), e);
         }
     }
@@ -436,7 +441,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
         String contractAddressStr = params[2];
         if (params.length < 4) {
-            throw new Exception("Expected at least 3 arguments but found " + (params.length - 1));
+            throw new Exception(
+                    "Expected at least 3 arguments but found "
+                            + (params.length - 1)
+                            + ".\nPlease check the contract address or link is valid.");
         }
         String functionName = params[3];
         String contractName = ConsoleUtils.getContractName(contractNameOrPath);
@@ -533,7 +541,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractAddress,
             String functionName,
             List<String> callParams)
-            throws IOException, CodeGenException, ABICodecException, CompileContractException {
+            throws IOException, CodeGenException, ContractCodecException, CompileContractException {
         try {
             boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
             // load bin and abi
@@ -611,7 +619,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String functionName,
             List<String> callParams,
             ABIDefinition abiDefinition)
-            throws ABICodecException, TransactionBaseException {
+            throws ContractCodecException, TransactionBaseException {
         if (logger.isTraceEnabled()) {
             logger.trace(
                     "sendTransactionAndGetResponse request, params: {}, contractAddress: {}, contractName: {}, functionName: {}, paramSize:{},  abiDefinition: {}",
@@ -650,7 +658,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractAddress,
             String functionName,
             List<String> callParams)
-            throws TransactionBaseException, ABICodecException {
+            throws TransactionBaseException, ContractCodecException {
         if (logger.isDebugEnabled()) {
             logger.debug(
                     "sendCall request, params: {}, contractAddress: {}, contractName: {}, functionName:{}, paramSize: {}",

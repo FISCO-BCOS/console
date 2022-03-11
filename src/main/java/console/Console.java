@@ -8,10 +8,10 @@ import console.common.ConsoleUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.crypto.exceptions.SignatureException;
-import org.fisco.bcos.sdk.model.CryptoType;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.crypto.exceptions.SignatureException;
+import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
 import org.jline.reader.EndOfFileException;
@@ -118,7 +118,7 @@ public class Console {
                             } else if (!SupportedCommand.HELP
                                     .getOptionCommand()
                                     .contains(params[1])) {
-                                pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
+                                pwd = ConsoleUtils.fixedBfsParam(params[1], pwd);
                             }
                             JlineUtils.switchPwd(pwd);
                         }

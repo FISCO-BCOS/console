@@ -278,30 +278,26 @@ public class CommandInfo {
     public void callCommand(ConsoleInitializer consoleInitializer, String[] params, String pwd)
             throws Exception {
         // print help info
-        if (params.length >= 2) {
-            if (SupportedCommand.HELP.getOptionCommand().contains(params[1])) {
-                HelpInfo.printHelp(
-                        command,
-                        consoleInitializer.getClient().isWASM(),
-                        consoleInitializer.getClient().isAuthCheck());
-                return;
-            }
+        if (params.length >= 2 && SupportedCommand.HELP.getOptionCommand().contains(params[1])) {
+            HelpInfo.printHelp(
+                    command,
+                    consoleInitializer.getClient().isWASM(),
+                    consoleInitializer.getClient().isAuthCheck());
+            return;
         }
 
         if (maxParamLength != -1 && (params.length - 1) > maxParamLength) {
-            System.out.println(
-                    String.format(
-                            "Expected at most %d arguments but found %d",
-                            maxParamLength, params.length - 1));
+            System.out.printf(
+                    "Expected at most %d arguments but found %d%n",
+                    maxParamLength, params.length - 1);
             HelpInfo.promptHelp(command);
             return;
         }
 
         if (minParamLength != -1 && (params.length - 1) < minParamLength) {
-            System.out.println(
-                    String.format(
-                            "Expected at least %d arguments but found %d",
-                            minParamLength, params.length - 1));
+            System.out.printf(
+                    "Expected at least %d arguments but found %d%n",
+                    minParamLength, params.length - 1);
             HelpInfo.printHelp(
                     command,
                     consoleInitializer.getClient().isWASM(),

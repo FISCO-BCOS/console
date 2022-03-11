@@ -1,7 +1,7 @@
 package console.collaboration;
 
-import static org.fisco.bcos.sdk.client.protocol.model.Transaction.LIQUID_CREATE;
-import static org.fisco.bcos.sdk.client.protocol.model.Transaction.LIQUID_SCALE_CODEC;
+import static org.fisco.bcos.sdk.v3.client.protocol.model.Transaction.LIQUID_CREATE;
+import static org.fisco.bcos.sdk.v3.client.protocol.model.Transaction.LIQUID_SCALE_CODEC;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,24 +19,32 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.bouncycastle.util.Strings;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.codec.ABICodecException;
-import org.fisco.bcos.sdk.codec.datatypes.*;
-import org.fisco.bcos.sdk.codec.datatypes.generated.Uint32;
-import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.codec.scale.FunctionEncoder;
-import org.fisco.bcos.sdk.codec.scale.FunctionReturnDecoder;
-import org.fisco.bcos.sdk.codec.scale.ScaleCodecWriter;
-import org.fisco.bcos.sdk.codec.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.jni.utilities.tx.TxPair;
-import org.fisco.bcos.sdk.model.PrecompiledRetCode;
-import org.fisco.bcos.sdk.model.TransactionReceipt;
-import org.fisco.bcos.sdk.transaction.manager.AssembleTransactionProcessor;
-import org.fisco.bcos.sdk.transaction.manager.TransactionProcessorFactory;
-import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
-import org.fisco.bcos.sdk.utils.Hex;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.codec.ContractCodecException;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Bool;
+import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicArray;
+import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicBytes;
+import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicStruct;
+import org.fisco.bcos.sdk.v3.codec.datatypes.StaticArray;
+import org.fisco.bcos.sdk.v3.codec.datatypes.StaticStruct;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
+import org.fisco.bcos.sdk.v3.codec.datatypes.TypeReference;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Utf8String;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.Uint32;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.codec.scale.FunctionEncoder;
+import org.fisco.bcos.sdk.v3.codec.scale.FunctionReturnDecoder;
+import org.fisco.bcos.sdk.v3.codec.scale.ScaleCodecWriter;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.cns.CnsService;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.transaction.manager.AssembleTransactionProcessor;
+import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessorFactory;
+import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
+import org.fisco.bcos.sdk.v3.utils.Hex;
 
 public class CollaborationImpl implements CollaborationFace {
     private final Client client;
@@ -61,7 +69,7 @@ public class CollaborationImpl implements CollaborationFace {
     }
 
     private Type buildType(ABIDefinition.NamedType namedType, String param)
-            throws ABICodecException, IOException {
+            throws ContractCodecException, IOException {
         String typeStr = namedType.getType();
         ABIDefinition.Type paramType = new ABIDefinition.Type(typeStr);
         Type type = null;
@@ -110,7 +118,7 @@ public class CollaborationImpl implements CollaborationFace {
                         bitSize = Integer.parseInt(bitSizeStr);
                     } catch (NumberFormatException e) {
                         String errorMsg = " unrecognized uint type: " + typeStr;
-                        throw new ABICodecException(errorMsg);
+                        throw new ContractCodecException(errorMsg);
                     }
                 }
 
@@ -129,7 +137,7 @@ public class CollaborationImpl implements CollaborationFace {
                         | IllegalAccessException
                         | InvocationTargetException e) {
                     String errorMsg = "unrecognized uint type: " + typeStr;
-                    throw new ABICodecException(errorMsg);
+                    throw new ContractCodecException(errorMsg);
                 }
 
                 return type;
@@ -143,7 +151,7 @@ public class CollaborationImpl implements CollaborationFace {
                         bitSize = Integer.parseInt(bitSizeStr);
                     } catch (NumberFormatException e) {
                         String errorMsg = "unrecognized int type: " + typeStr;
-                        throw new ABICodecException(errorMsg);
+                        throw new ContractCodecException(errorMsg);
                     }
                 }
 
@@ -162,7 +170,7 @@ public class CollaborationImpl implements CollaborationFace {
                         | IllegalAccessException
                         | InvocationTargetException e) {
                     String errorMsg = "unrecognized uint type: " + typeStr;
-                    throw new ABICodecException(errorMsg);
+                    throw new ContractCodecException(errorMsg);
                 }
 
                 return type;
@@ -190,12 +198,12 @@ public class CollaborationImpl implements CollaborationFace {
                     length = Integer.parseInt(lengthStr);
                 } catch (NumberFormatException e) {
                     String errorMsg = "unrecognized static byte array type: " + typeStr;
-                    throw new ABICodecException(errorMsg);
+                    throw new ContractCodecException(errorMsg);
                 }
 
                 if (length > 32) {
                     String errorMsg = "the length of static byte array exceeds 32: " + typeStr;
-                    throw new ABICodecException(errorMsg);
+                    throw new ContractCodecException(errorMsg);
                 }
 
                 JsonNode jsonNode = this.objectMapper.readTree(param);
@@ -205,7 +213,7 @@ public class CollaborationImpl implements CollaborationFace {
                             String.format(
                                     "expected byte array at length %d but length of provided in data is %d",
                                     length, jsonNode.size());
-                    throw new ABICodecException(errorMsg);
+                    throw new ContractCodecException(errorMsg);
                 }
 
                 byte[] bytes = new byte[jsonNode.size()];
@@ -232,7 +240,7 @@ public class CollaborationImpl implements CollaborationFace {
             }
         }
         String errorMsg = "unrecognized type: " + typeStr;
-        throw new ABICodecException(errorMsg);
+        throw new ContractCodecException(errorMsg);
     }
 
     @Override
@@ -270,7 +278,7 @@ public class CollaborationImpl implements CollaborationFace {
             deployParams.add(new DynamicBytes(inputParams));
             deployParams.add(new Utf8String(abiStr));
             outputStream.write(
-                    org.fisco.bcos.sdk.codec.scale.FunctionEncoder.encodeParameters(
+                    org.fisco.bcos.sdk.v3.codec.scale.FunctionEncoder.encodeParameters(
                             deployParams, null));
 
             String path = "collaboration/" + client.getCryptoSuite().hash(binStr + abiStr);
