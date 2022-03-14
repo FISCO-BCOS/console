@@ -242,7 +242,7 @@ public class HelpInfo {
         if (!isWasm) {
             System.out.println(
                     "Usage: \ncall contractNameOrPath contractAddress function parameters");
-            System.out.println("         call link function parameters");
+            System.out.println("\ncall link function parameters");
             System.out.println(
                     "* contractNameOrPath -- The name of a contract or the path of a contract, when set to \"latest\", the contract address is the latest contract address (Default load contract from the \"contracts/solidity\" path when using contractName).");
             System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");

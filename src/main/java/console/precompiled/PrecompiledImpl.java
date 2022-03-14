@@ -2,12 +2,12 @@ package console.precompiled;
 
 import console.common.Common;
 import console.common.ConsoleUtils;
-import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,25 +18,29 @@ import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.io.FilenameUtils;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSService;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
-import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.KVTableService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
-import org.fisco.bcos.sdk.contract.precompiled.sysconfig.SystemConfigService;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.model.*;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
-import org.fisco.bcos.sdk.utils.AddressUtils;
-import org.fisco.bcos.sdk.utils.Numeric;
-import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.cns.CnsService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.KVTableService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.TableCRUDService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionOperator;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
+import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.v3.model.RetCode;
+import org.fisco.bcos.sdk.v3.model.TransactionReceiptStatus;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
+import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -692,12 +696,10 @@ public class PrecompiledImpl implements PrecompiledFace {
         contractAddress = Numeric.prependHexPrefix(contractAddress);
         String abi = "";
         try {
-            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
             AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbiAndBin(
-                            client.getGroup(), contractName, contractAddress, sm);
+                    ContractCompiler.loadAbi(client.getGroup(), contractName, contractAddress);
             abi = abiAndBin.getAbi();
-        } catch (CompileContractException e) {
+        } catch (IOException | CodeGenException e) {
             if (logger.isErrorEnabled()) {
                 logger.error(
                         "load abi for contract failed, contract name: {}, address: {}, e: ",

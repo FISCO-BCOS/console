@@ -34,10 +34,10 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
-import org.fisco.bcos.sdk.model.PrecompiledConstant;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionOperator;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

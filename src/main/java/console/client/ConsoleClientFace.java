@@ -2,7 +2,7 @@ package console.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
-import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.v3.client.Client;
 
 public interface ConsoleClientFace {
     void updateClient(Client client);
