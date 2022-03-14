@@ -605,7 +605,7 @@ public class SupportedCommand {
                     "Change dir to given path.",
                     HelpInfo::changeDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().changeDir(params, pwd),
+                            consoleInitializer.getPrecompiledFace().changeDir(params),
                     0,
                     1);
     public static final CommandInfo MAKE_DIR =
@@ -614,7 +614,7 @@ public class SupportedCommand {
                     "Create dir in given path.",
                     HelpInfo::makeDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().makeDir(params, pwd),
+                            consoleInitializer.getPrecompiledFace().makeDir(params),
                     1,
                     1);
     public static final CommandInfo LIST_DIR =
@@ -623,7 +623,7 @@ public class SupportedCommand {
                     "List resources in given path.",
                     HelpInfo::listDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().listDir(params, pwd),
+                            consoleInitializer.getPrecompiledFace().listDir(params),
                     0,
                     1);
 
@@ -633,7 +633,7 @@ public class SupportedCommand {
                     "List contents of directories in a tree-like format.",
                     HelpInfo::treeHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().tree(params, pwd),
+                            consoleInitializer.getPrecompiledFace().tree(params),
                     1,
                     2);
 
@@ -643,7 +643,7 @@ public class SupportedCommand {
                     "Create a link to access contract.",
                     () -> HelpInfo.linkHelp(isWasm),
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().link(params, pwd),
+                            consoleInitializer.getPrecompiledFace().link(params),
                     2,
                     2);
 
@@ -653,7 +653,7 @@ public class SupportedCommand {
                     "Show absolute path of working directory name",
                     HelpInfo::pwdHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().pwd(pwd),
+                            System.out.println(consoleInitializer.getPrecompiledFace().getPwd()),
                     0,
                     0);
 

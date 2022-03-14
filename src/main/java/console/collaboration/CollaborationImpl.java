@@ -15,10 +15,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import org.bouncycastle.util.Strings;
 import org.fisco.bcos.sdk.jni.utilities.tx.TxPair;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.codec.ContractCodecException;
@@ -29,18 +27,12 @@ import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicStruct;
 import org.fisco.bcos.sdk.v3.codec.datatypes.StaticArray;
 import org.fisco.bcos.sdk.v3.codec.datatypes.StaticStruct;
 import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
-import org.fisco.bcos.sdk.v3.codec.datatypes.TypeReference;
 import org.fisco.bcos.sdk.v3.codec.datatypes.Utf8String;
-import org.fisco.bcos.sdk.v3.codec.datatypes.generated.Uint32;
-import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.v3.codec.scale.FunctionEncoder;
 import org.fisco.bcos.sdk.v3.codec.scale.FunctionReturnDecoder;
 import org.fisco.bcos.sdk.v3.codec.scale.ScaleCodecWriter;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.v3.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
-import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
 import org.fisco.bcos.sdk.v3.transaction.manager.AssembleTransactionProcessor;
 import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessorFactory;
 import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
@@ -50,20 +42,18 @@ public class CollaborationImpl implements CollaborationFace {
     private final Client client;
     private final AssembleTransactionProcessor assembleTransactionProcessor;
     private final CryptoKeyPair cryptoKeyPair;
-    private final CnsService cnsService;
     private final FunctionReturnDecoder functionReturnDecoder;
     private final ObjectMapper objectMapper;
     private final String FAKE_ABI =
             "[{\"inputs\":[],\"type\":\"constructor\"},{\"constant\":true,\"inputs\":[],\"name\":\"get\",\"outputs\":[{\"internalType\":\"string\",\"type\":\"string\"}],\"type\":\"function\"}]";
 
-    public CollaborationImpl(Client client) throws Exception {
+    public CollaborationImpl(Client client) {
         this.client = client;
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
         this.assembleTransactionProcessor =
                 TransactionProcessorFactory.createAssembleTransactionProcessor(
                         client, cryptoKeyPair);
         this.cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        this.cnsService = new CnsService(client, cryptoKeyPair);
         this.functionReturnDecoder = new FunctionReturnDecoder();
         this.objectMapper = new ObjectMapper();
     }
@@ -310,219 +300,231 @@ public class CollaborationImpl implements CollaborationFace {
         }
     }
 
+    // TODO: liquid collaboration not supported now
     @Override
     public void sign(String[] params) throws Exception {
-        String contractName = params[1];
-        List<String> inputParams = Arrays.asList(params).subList(2, params.length);
-
-        Tuple2<String, String> contractInfo =
-                cnsService.selectByNameAndVersion(contractName, "collaboration");
-        String address = contractInfo.getValue1();
-        String abiStr = contractInfo.getValue2();
-
-        JsonNode jsonNode = this.objectMapper.readTree(abiStr);
-        JsonNode data = jsonNode.get("data");
-        System.out.println(data.toString());
-        List<Type> inputs = new ArrayList<>();
-        for (int i = 0; i < data.size(); ++i) {
-            JsonNode item = data.get(i);
-            ABIDefinition.NamedType input =
-                    this.objectMapper.readValue(item.asText(), ABIDefinition.NamedType.class);
-            inputs.add(buildType(input, inputParams.get(i)));
-        }
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(new byte[] {1});
-
-        byte[] methodID =
-                Arrays.copyOfRange(
-                        this.client
-                                .getCryptoSuite()
-                                .hash(contractName.getBytes(StandardCharsets.UTF_8)),
-                        0,
-                        4);
-        byte[] encodedParams = FunctionEncoder.encodeParameters(inputs, methodID);
-        outputStream.write(encodedParams);
-        int txAttribute = LIQUID_SCALE_CODEC;
-
-        TxPair txPair =
-                this.assembleTransactionProcessor.createSignedTransaction(
-                        address, outputStream.toByteArray(), this.cryptoKeyPair, txAttribute);
-        TransactionReceipt receipt =
-                this.client.sendTransaction(txPair.getSignedTx(), false).getTransactionReceipt();
-        if (receipt.getStatus() != 0) {
-            System.out.println("sign contract failed");
-            System.out.println("return message: " + receipt.getMessage());
-            return;
-        }
-
-        List<TypeReference<Type>> outputTypes = new ArrayList<>();
-        outputTypes.add(TypeReference.makeTypeReference("uint32", false));
-        System.out.println(
-                "contract ID: "
-                        + this.functionReturnDecoder.decode(receipt.getOutput(), outputTypes));
+        //        String contractName = params[1];
+        //        List<String> inputParams = Arrays.asList(params).subList(2, params.length);
+        //
+        //        Tuple2<String, String> contractInfo =
+        //                cnsService.selectByNameAndVersion(contractName, "collaboration");
+        //        String address = contractInfo.getValue1();
+        //        String abiStr = contractInfo.getValue2();
+        //
+        //        JsonNode jsonNode = this.objectMapper.readTree(abiStr);
+        //        JsonNode data = jsonNode.get("data");
+        //        System.out.println(data.toString());
+        //        List<Type> inputs = new ArrayList<>();
+        //        for (int i = 0; i < data.size(); ++i) {
+        //            JsonNode item = data.get(i);
+        //            ABIDefinition.NamedType input =
+        //                    this.objectMapper.readValue(item.asText(),
+        // ABIDefinition.NamedType.class);
+        //            inputs.add(buildType(input, inputParams.get(i)));
+        //        }
+        //
+        //        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        //        outputStream.write(new byte[] {1});
+        //
+        //        byte[] methodID =
+        //                Arrays.copyOfRange(
+        //                        this.client
+        //                                .getCryptoSuite()
+        //                                .hash(contractName.getBytes(StandardCharsets.UTF_8)),
+        //                        0,
+        //                        4);
+        //        byte[] encodedParams = FunctionEncoder.encodeParameters(inputs, methodID);
+        //        outputStream.write(encodedParams);
+        //        int txAttribute = LIQUID_SCALE_CODEC;
+        //
+        //        TxPair txPair =
+        //                this.assembleTransactionProcessor.createSignedTransaction(
+        //                        address, outputStream.toByteArray(), this.cryptoKeyPair,
+        // txAttribute);
+        //        TransactionReceipt receipt =
+        //                this.client.sendTransaction(txPair.getSignedTx(),
+        // false).getTransactionReceipt();
+        //        if (receipt.getStatus() != 0) {
+        //            System.out.println("sign contract failed");
+        //            System.out.println("return message: " + receipt.getMessage());
+        //            return;
+        //        }
+        //
+        //        List<TypeReference<Type>> outputTypes = new ArrayList<>();
+        //        outputTypes.add(TypeReference.makeTypeReference("uint32", false));
+        //        System.out.println(
+        //                "contract ID: "
+        //                        + this.functionReturnDecoder.decode(receipt.getOutput(),
+        // outputTypes));
     }
 
+    // TODO: liquid collaboration not supported now
     @Override
     public void exercise(String[] params) throws Exception {
-        String contract = params[1];
-        String rightName = params[2];
-        List<String> inputParams = Arrays.asList(params).subList(3, params.length);
-
-        String[] items = Strings.split(contract, '#');
-        if (items.length != 2) {
-            throw new ConsoleMessageException("invalid contract format");
-        }
-        String contractName = items[0];
-        int contractID;
-
-        try {
-            contractID = Integer.parseInt(items[1]);
-        } catch (Exception e) {
-            throw new ConsoleMessageException("invalid contract ID");
-        }
-
-        Tuple2<String, String> contractInfo =
-                this.cnsService.selectByNameAndVersion(contractName, "collaboration");
-        String address = contractInfo.getValue1();
-        String abi = contractInfo.getValue2();
-
-        JsonNode jsonNode = this.objectMapper.readTree(abi);
-        JsonNode rights = jsonNode.get("rights");
-        JsonNode rightAbi = null;
-        for (JsonNode item : rights) {
-            if (rightName.equals(item.get("name").toString())) {
-                rightAbi = item;
-            }
-        }
-
-        if (rightAbi == null) {
-            throw new ConsoleMessageException("no right named as: " + rightName);
-        }
-
-        List<Type> inputTypes = new ArrayList<>();
-        inputTypes.add(new Uint32(contractID));
-
-        JsonNode rightInputs = rightAbi.get("inputs");
-        if (rightInputs.size() != params.length) {
-            throw new ConsoleMessageException(
-                    String.format(
-                            "number of parameters mismatched: expected %d but got %d",
-                            rightInputs.size(), params.length));
-        }
-
-        for (int i = 0; i < rightInputs.size(); ++i) {
-            JsonNode input = rightInputs.get(i);
-            ABIDefinition.NamedType inputType =
-                    this.objectMapper.readValue(input.asText(), ABIDefinition.NamedType.class);
-            inputTypes.add(buildType(inputType, inputParams.get(i)));
-        }
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(new byte[] {1});
-
-        byte[] methodID =
-                Arrays.copyOfRange(
-                        this.client
-                                .getCryptoSuite()
-                                .hash(
-                                        String.format("%s(%s)", contractName, rightName)
-                                                .getBytes(StandardCharsets.UTF_8)),
-                        0,
-                        4);
-        byte[] encodedParams = FunctionEncoder.encodeParameters(inputTypes, methodID);
-        outputStream.write(encodedParams);
-
-        TxPair txPair =
-                this.assembleTransactionProcessor.createSignedTransaction(
-                        address,
-                        outputStream.toByteArray(),
-                        this.cryptoKeyPair,
-                        LIQUID_SCALE_CODEC);
-
-        TransactionReceipt receipt =
-                this.client.sendTransaction(txPair.getSignedTx(), false).getTransactionReceipt();
-        if (receipt.getStatus() != 0) {
-            System.out.println("exercise right failed");
-            System.out.println("return message: " + receipt.getMessage());
-            return;
-        }
-
-        List<TypeReference<Type>> outputTypes = new ArrayList<>();
-        for (JsonNode output : rightAbi.get("outputs")) {
-            ABIDefinition.NamedType outputType =
-                    this.objectMapper.readValue(output.asText(), ABIDefinition.NamedType.class);
-            outputTypes.add(TypeReference.makeTypeReference(outputType.getType(), false));
-        }
-        List<Type> decodedOutputs =
-                this.functionReturnDecoder.decode(receipt.getOutput(), outputTypes);
-        ConsoleUtils.printReturnResults(decodedOutputs);
+        //        String contract = params[1];
+        //        String rightName = params[2];
+        //        List<String> inputParams = Arrays.asList(params).subList(3, params.length);
+        //
+        //        String[] items = Strings.split(contract, '#');
+        //        if (items.length != 2) {
+        //            throw new ConsoleMessageException("invalid contract format");
+        //        }
+        //        String contractName = items[0];
+        //        int contractID;
+        //
+        //        try {
+        //            contractID = Integer.parseInt(items[1]);
+        //        } catch (Exception e) {
+        //            throw new ConsoleMessageException("invalid contract ID");
+        //        }
+        //
+        //        Tuple2<String, String> contractInfo =
+        //                this.cnsService.selectByNameAndVersion(contractName, "collaboration");
+        //        String address = contractInfo.getValue1();
+        //        String abi = contractInfo.getValue2();
+        //
+        //        JsonNode jsonNode = this.objectMapper.readTree(abi);
+        //        JsonNode rights = jsonNode.get("rights");
+        //        JsonNode rightAbi = null;
+        //        for (JsonNode item : rights) {
+        //            if (rightName.equals(item.get("name").toString())) {
+        //                rightAbi = item;
+        //            }
+        //        }
+        //
+        //        if (rightAbi == null) {
+        //            throw new ConsoleMessageException("no right named as: " + rightName);
+        //        }
+        //
+        //        List<Type> inputTypes = new ArrayList<>();
+        //        inputTypes.add(new Uint32(contractID));
+        //
+        //        JsonNode rightInputs = rightAbi.get("inputs");
+        //        if (rightInputs.size() != params.length) {
+        //            throw new ConsoleMessageException(
+        //                    String.format(
+        //                            "number of parameters mismatched: expected %d but got %d",
+        //                            rightInputs.size(), params.length));
+        //        }
+        //
+        //        for (int i = 0; i < rightInputs.size(); ++i) {
+        //            JsonNode input = rightInputs.get(i);
+        //            ABIDefinition.NamedType inputType =
+        //                    this.objectMapper.readValue(input.asText(),
+        // ABIDefinition.NamedType.class);
+        //            inputTypes.add(buildType(inputType, inputParams.get(i)));
+        //        }
+        //
+        //        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        //        outputStream.write(new byte[] {1});
+        //
+        //        byte[] methodID =
+        //                Arrays.copyOfRange(
+        //                        this.client
+        //                                .getCryptoSuite()
+        //                                .hash(
+        //                                        String.format("%s(%s)", contractName, rightName)
+        //                                                .getBytes(StandardCharsets.UTF_8)),
+        //                        0,
+        //                        4);
+        //        byte[] encodedParams = FunctionEncoder.encodeParameters(inputTypes, methodID);
+        //        outputStream.write(encodedParams);
+        //
+        //        TxPair txPair =
+        //                this.assembleTransactionProcessor.createSignedTransaction(
+        //                        address,
+        //                        outputStream.toByteArray(),
+        //                        this.cryptoKeyPair,
+        //                        LIQUID_SCALE_CODEC);
+        //
+        //        TransactionReceipt receipt =
+        //                this.client.sendTransaction(txPair.getSignedTx(),
+        // false).getTransactionReceipt();
+        //        if (receipt.getStatus() != 0) {
+        //            System.out.println("exercise right failed");
+        //            System.out.println("return message: " + receipt.getMessage());
+        //            return;
+        //        }
+        //
+        //        List<TypeReference<Type>> outputTypes = new ArrayList<>();
+        //        for (JsonNode output : rightAbi.get("outputs")) {
+        //            ABIDefinition.NamedType outputType =
+        //                    this.objectMapper.readValue(output.asText(),
+        // ABIDefinition.NamedType.class);
+        //            outputTypes.add(TypeReference.makeTypeReference(outputType.getType(), false));
+        //        }
+        //        List<Type> decodedOutputs =
+        //                this.functionReturnDecoder.decode(receipt.getOutput(), outputTypes);
+        //        ConsoleUtils.printReturnResults(decodedOutputs);
     }
 
+    // TODO: liquid collaboration not supported now
     @Override
     public void fetch(String[] params) throws Exception {
-        String contract = params[1];
-
-        String[] items = Strings.split(contract, '#');
-        if (items.length != 2) {
-            throw new ConsoleMessageException("invalid contract format");
-        }
-        String contractName = items[0];
-        int contractID;
-
-        try {
-            contractID = Integer.parseInt(items[1]);
-        } catch (Exception e) {
-            throw new ConsoleMessageException("invalid contract ID");
-        }
-
-        Tuple2<String, String> contractInfo =
-                cnsService.selectByNameAndVersion(contractName, "collaboration");
-        String address = contractInfo.getValue1();
-        String abiStr = contractInfo.getValue2();
-
-        List<Type> inputs = new ArrayList<>();
-        inputs.add(new Uint32(contractID));
-
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(new byte[] {1});
-
-        byte[] methodID =
-                Arrays.copyOfRange(
-                        this.client
-                                .getCryptoSuite()
-                                .hash(contractName.getBytes(StandardCharsets.UTF_8)),
-                        0,
-                        4);
-        byte[] encodedParams = FunctionEncoder.encodeParameters(inputs, methodID);
-        outputStream.write(encodedParams);
-
-        TxPair txPair =
-                this.assembleTransactionProcessor.createSignedTransaction(
-                        address,
-                        outputStream.toByteArray(),
-                        this.cryptoKeyPair,
-                        LIQUID_SCALE_CODEC);
-
-        TransactionReceipt receipt =
-                this.client.sendTransaction(txPair.getSignedTx(), false).getTransactionReceipt();
-        if (receipt.getStatus() != 0) {
-            System.out.println("exercise right failed");
-            System.out.println("return message: " + receipt.getMessage());
-            return;
-        }
-
-        JsonNode root = this.objectMapper.readTree(abiStr);
-        JsonNode data = root.get("data");
-        List<TypeReference<Type>> outputTypes = new ArrayList<>();
-        for (JsonNode output : data) {
-            ABIDefinition.NamedType outputType =
-                    this.objectMapper.readValue(output.asText(), ABIDefinition.NamedType.class);
-            outputTypes.add(TypeReference.makeTypeReference(outputType.getType(), false));
-        }
-        List<Type> decodedOutputs =
-                this.functionReturnDecoder.decode(receipt.getOutput(), outputTypes);
-        ConsoleUtils.printReturnResults(decodedOutputs);
+        //        String contract = params[1];
+        //
+        //        String[] items = Strings.split(contract, '#');
+        //        if (items.length != 2) {
+        //            throw new ConsoleMessageException("invalid contract format");
+        //        }
+        //        String contractName = items[0];
+        //        int contractID;
+        //
+        //        try {
+        //            contractID = Integer.parseInt(items[1]);
+        //        } catch (Exception e) {
+        //            throw new ConsoleMessageException("invalid contract ID");
+        //        }
+        //
+        //        Tuple2<String, String> contractInfo =
+        //                cnsService.selectByNameAndVersion(contractName, "collaboration");
+        //        String address = contractInfo.getValue1();
+        //        String abiStr = contractInfo.getValue2();
+        //
+        //        List<Type> inputs = new ArrayList<>();
+        //        inputs.add(new Uint32(contractID));
+        //
+        //        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        //        outputStream.write(new byte[] {1});
+        //
+        //        byte[] methodID =
+        //                Arrays.copyOfRange(
+        //                        this.client
+        //                                .getCryptoSuite()
+        //                                .hash(contractName.getBytes(StandardCharsets.UTF_8)),
+        //                        0,
+        //                        4);
+        //        byte[] encodedParams = FunctionEncoder.encodeParameters(inputs, methodID);
+        //        outputStream.write(encodedParams);
+        //
+        //        TxPair txPair =
+        //                this.assembleTransactionProcessor.createSignedTransaction(
+        //                        address,
+        //                        outputStream.toByteArray(),
+        //                        this.cryptoKeyPair,
+        //                        LIQUID_SCALE_CODEC);
+        //
+        //        TransactionReceipt receipt =
+        //                this.client.sendTransaction(txPair.getSignedTx(),
+        // false).getTransactionReceipt();
+        //        if (receipt.getStatus() != 0) {
+        //            System.out.println("exercise right failed");
+        //            System.out.println("return message: " + receipt.getMessage());
+        //            return;
+        //        }
+        //
+        //        JsonNode root = this.objectMapper.readTree(abiStr);
+        //        JsonNode data = root.get("data");
+        //        List<TypeReference<Type>> outputTypes = new ArrayList<>();
+        //        for (JsonNode output : data) {
+        //            ABIDefinition.NamedType outputType =
+        //                    this.objectMapper.readValue(output.asText(),
+        // ABIDefinition.NamedType.class);
+        //            outputTypes.add(TypeReference.makeTypeReference(outputType.getType(), false));
+        //        }
+        //        List<Type> decodedOutputs =
+        //                this.functionReturnDecoder.decode(receipt.getOutput(), outputTypes);
+        //        ConsoleUtils.printReturnResults(decodedOutputs);
     }
 
     private byte[] readBytes(File file) throws IOException {
