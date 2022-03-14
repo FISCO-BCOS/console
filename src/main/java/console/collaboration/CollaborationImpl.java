@@ -125,7 +125,8 @@ public class CollaborationImpl implements CollaborationFace {
                 try {
                     Class<?> uintClass =
                             Class.forName(
-                                    "org.fisco.bcos.sdk.codec.datatypes.generated.Uint" + bitSize);
+                                    "org.fisco.bcos.sdk.v3codec.datatypes.generated.Uint"
+                                            + bitSize);
                     type =
                             (Type)
                                     uintClass
@@ -158,7 +159,7 @@ public class CollaborationImpl implements CollaborationFace {
                 try {
                     Class<?> uintClass =
                             Class.forName(
-                                    "org.fisco.bcos.sdk.codec.datatypes.generated.Int" + bitSize);
+                                    "org.fisco.bcos.sdk.v3codec.datatypes.generated.Int" + bitSize);
                     type =
                             (Type)
                                     uintClass
@@ -223,7 +224,8 @@ public class CollaborationImpl implements CollaborationFace {
                 try {
                     Class<?> bytesClass =
                             Class.forName(
-                                    "org.fisco.bcos.sdk.codec.datatypes.generated.Bytes" + length);
+                                    "org.fisco.bcos.sdk.v3codec.datatypes.generated.Bytes"
+                                            + length);
                     type =
                             (Type)
                                     bytesClass
