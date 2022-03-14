@@ -26,14 +26,13 @@ public class AuthImpl implements AuthFace {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthImpl.class);
     private AuthManager authManager;
-    private boolean authAvailable = false;
     private static final long WEIGHT_MAX = 10000;
     private static final int GOVERNOR_NUM_MAX = 1000;
 
-    public AuthImpl(Client client) throws ContractException {
+    public AuthImpl(Client client) {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        this.authAvailable = client.isAuthCheck() && !client.isWASM();
-        if (this.authAvailable) {
+        boolean authAvailable = client.isAuthCheck() && !client.isWASM();
+        if (authAvailable) {
             this.authManager = new AuthManager(client, cryptoKeyPair);
         } else {
             logger.info("Auth check disable, not use auth.");

@@ -373,14 +373,14 @@ public class ConsoleUtils {
     }
 
     public static String[] tokenizeCommand(String command) throws Exception {
-        // example: callByCNS HelloWorld.sol set"Hello" parse [callByCNS, HelloWorld.sol,
+        // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol,
         // set"Hello"]
         List<String> tokens1 = new ArrayList<>();
         StringTokenizer stringTokenizer = new StringTokenizer(command, " ");
         while (stringTokenizer.hasMoreTokens()) {
             tokens1.add(stringTokenizer.nextToken());
         }
-        // example: callByCNS HelloWorld.sol set"Hello" parse [callByCNS, HelloWorld.sol, set,
+        // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol, set,
         // "Hello"]
         List<String> tokens2 = new ArrayList<>();
         StreamTokenizer tokenizer = new CommandTokenizer(new StringReader(command));

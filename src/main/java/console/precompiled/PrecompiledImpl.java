@@ -24,7 +24,6 @@ import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
-import org.fisco.bcos.sdk.v3.contract.precompiled.cns.CnsService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.KVTableService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.TableCRUDService;
@@ -53,8 +52,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
     private KVTableService kvTableService;
-    private CnsService cnsService;
     private BFSService bfsService;
+    private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
         this.client = client;
@@ -63,7 +62,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.kvTableService = new KVTableService(client, cryptoKeyPair);
-        this.cnsService = new CnsService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
     }
 
@@ -572,15 +570,13 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void changeDir(String[] params, String pwd) throws Exception {
+    public void changeDir(String[] params) throws Exception {
         if (params.length == 1) {
             System.out.println("cd: change dir to /apps");
+            pwd = "/apps";
             return;
         }
         String path = ConsoleUtils.fixedBfsParam(params[1], pwd);
-        if (path.equals("/")) {
-            return;
-        }
         Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
         String parentDir = parentAndBase.getValue1();
         String baseName = parentAndBase.getValue2();
@@ -601,10 +597,11 @@ public class PrecompiledImpl implements PrecompiledFace {
         } else {
             throw new Exception("cd: no such file or directory: " + params[1]);
         }
+        pwd = path;
     }
 
     @Override
-    public void makeDir(String[] params, String pwd) throws Exception {
+    public void makeDir(String[] params) throws Exception {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
         String path = fixedBfsParams[1];
         RetCode mkdir = bfsService.mkdir(path);
@@ -619,7 +616,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void listDir(String[] params, String pwd) throws Exception {
+    public void listDir(String[] params) throws Exception {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
 
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
@@ -653,7 +650,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void tree(String[] params, String pwd) throws Exception {
+    public void tree(String[] params) throws Exception {
         String absolutePath = ConsoleUtils.fixedBfsParam(params[1], pwd);
         int limit = 3;
         try {
@@ -679,7 +676,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void link(String[] params, String pwd) throws Exception {
+    public void link(String[] params) throws Exception {
         String linkPath = ConsoleUtils.fixedBfsParam(params[1], pwd);
         List<String> path2Level = ConsoleUtils.path2Level(linkPath);
         if (path2Level.size() != 3 || !path2Level.get(0).equals("apps")) {
@@ -721,11 +718,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         System.out.println();
     }
 
-    @Override
-    public void pwd(String pwd) {
-        System.out.println(pwd);
-    }
-
     private Tuple2<Integer, Integer> travelBfs(
             String absolutePath, String prefix, int deep, int limit) throws ContractException {
         if (deep >= limit) return new Tuple2<>(0, 0);
@@ -762,5 +754,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         return new Tuple2<>(dirCount, contractCount);
+    }
+
+    @Override
+    public String getPwd() {
+        return pwd;
     }
 }
