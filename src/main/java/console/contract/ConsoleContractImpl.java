@@ -42,7 +42,6 @@ import org.fisco.bcos.sdk.v3.codec.wrapper.ContractABIDefinition;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
 import org.fisco.bcos.sdk.v3.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
-import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
@@ -508,23 +507,20 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     public void call(String[] params, String pwd) throws Exception {
         String path = params[1];
         String fixedBfsParam = ConsoleUtils.fixedBfsParam(path, pwd);
-        List<BFSPrecompiled.BfsInfo> bfsInfos = new ArrayList<>();
+        String address = "";
         try {
-            bfsInfos = bfsService.list(fixedBfsParam);
+            address = bfsService.readlink(fixedBfsParam);
         } catch (ContractException e) {
             logger.debug("call contract, path: {}", path);
         }
-        if (bfsInfos.size() == 1 && bfsInfos.get(0).getFileType().equals(Common.BFS_TYPE_LNK)) {
-            // call link
-            BFSPrecompiled.BfsInfo bfsInfo = bfsInfos.get(0);
-            List<String> ext = bfsInfo.getExt();
-            if (ext.size() < 2) {
+        if (!address.isEmpty() && !address.equals(Common.EMPTY_CONTRACT_ADDRESS)) {
+            String abi = client.getABI(address).getABI();
+            if (abi.isEmpty()) {
                 System.out.println(
-                        "Resource " + path + " doesnt have abi ext, maybe this is not a link.");
+                        "Resource " + path + " doesnt have abi, maybe this is not a link.");
                 return;
             }
-            AbiAndBin abiAndBin = new AbiAndBin(ext.get(1), "", "");
-            String address = ext.get(0);
+            AbiAndBin abiAndBin = new AbiAndBin(abi, "", "");
             String functionName = params[2];
             List<String> inputParams = Arrays.asList(params).subList(3, params.length);
             callContract(abiAndBin, "", address, functionName, inputParams);
