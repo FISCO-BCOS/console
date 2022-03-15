@@ -174,7 +174,7 @@ public class ConsoleUtils {
                 }
                 continue;
             }
-            if (!s.matches("^[0-9a-zA-Z][^\\>\\<\\*\\?\\/\\=\\+\\(\\)\\$\\\"\\']+$")) {
+            if (!s.matches("^[0-9a-zA-Z][^\\>\\<\\*\\?\\/\\=\\+\\(\\)\\$\\\"\\']*$")) {
                 throw new Exception("path is invalid: " + absolutePath);
             }
             pathStack.push(s);

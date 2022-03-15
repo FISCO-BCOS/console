@@ -32,6 +32,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.ContractCodecException;
 import org.fisco.bcos.sdk.v3.codec.EventEncoder;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
@@ -53,6 +54,7 @@ import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionBaseException;
 import org.fisco.bcos.sdk.v3.utils.Hex;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -536,16 +538,16 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     protected void callContract(
-            AbiAndBin abiAndBin,
+            AbiAndBin abi,
             String contractName,
             String contractAddress,
             String functionName,
             List<String> callParams)
-            throws IOException, CodeGenException, ContractCodecException, CompileContractException {
+            throws IOException, CodeGenException, ContractCodecException {
         try {
-            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
-            // load bin and abi
-            if (abiAndBin == null) {
+            // just load abi
+            // load local abi first
+            if (abi == null) {
                 String wasmAbiAddress = "";
                 if (client.isWASM()) {
                     wasmAbiAddress =
@@ -555,19 +557,32 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                             (ContractCompiler.BFS_APPS_PREFIX + contractAddress)
                                                     .getBytes(StandardCharsets.UTF_8));
                 }
-                abiAndBin =
-                        ContractCompiler.loadAbiAndBin(
+                abi =
+                        ContractCompiler.loadAbi(
                                 client.getGroup(),
                                 contractName,
-                                client.isWASM() ? wasmAbiAddress : contractAddress,
-                                sm);
+                                client.isWASM()
+                                        ? wasmAbiAddress
+                                        : Numeric.prependHexPrefix(contractAddress));
+                // still empty, get abi on chain
+                if (abi.getAbi().isEmpty()) {
+                    Abi remoteAbi = client.getABI(contractAddress);
+                    abi.setAbi(remoteAbi.getABI());
+                    ContractCompiler.saveAbiAndBin(
+                            client.getGroup(),
+                            abi,
+                            contractName,
+                            client.isWASM()
+                                    ? wasmAbiAddress
+                                    : Numeric.prependHexPrefix(contractAddress));
+                }
             }
             logger.trace(
                     "callContract contractName: {}, contractAddress: {}",
                     contractName,
                     contractAddress);
             // call
-            ABIDefinition abiDefinition = getAbiDefinition(abiAndBin, functionName);
+            ABIDefinition abiDefinition = getAbiDefinition(abi, functionName);
             if (abiDefinition == null) {
                 System.out.println(
                         "call contract \""
@@ -579,12 +594,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
 
             if (abiDefinition.isConstant()) {
-                sendCall(abiAndBin, contractName, contractAddress, functionName, callParams);
+                sendCall(abi, contractName, contractAddress, functionName, callParams);
             }
             // send transaction
             else {
                 sendTransaction(
-                        abiAndBin,
+                        abi,
                         contractName,
                         contractAddress,
                         functionName,
@@ -715,8 +730,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                             .getBytes(StandardCharsets.UTF_8));
             contractName = FilenameUtils.getBaseName(contractFileName);
             AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbiAndBin(
-                            consoleInitializer.getGroupID(), contractName, contractAddress, false);
+                    ContractCompiler.loadAbi(
+                            consoleInitializer.getGroupID(), contractName, contractAddress);
             abiStr = abiAndBin.getAbi();
         } else {
             if (!contractFileName.endsWith(ConsoleUtils.SOL_SUFFIX)) {
