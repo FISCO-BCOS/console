@@ -9,8 +9,10 @@ import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -20,6 +22,7 @@ import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
@@ -690,11 +693,24 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (!client.isWASM() && !AddressUtils.isValidAddress(contractAddress)) {
             System.out.println("Contract address is invalid, address: " + contractAddress);
         }
-        contractAddress = Numeric.prependHexPrefix(contractAddress);
         String abi = "";
         try {
+            String wasmAbiAddress = "";
+            if (client.isWASM()) {
+                wasmAbiAddress =
+                        Base64.getUrlEncoder()
+                                .withoutPadding()
+                                .encodeToString(
+                                        (ContractCompiler.BFS_APPS_PREFIX + contractAddress)
+                                                .getBytes(StandardCharsets.UTF_8));
+            }
             AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbi(client.getGroup(), contractName, contractAddress);
+                    ContractCompiler.loadAbi(
+                            client.getGroup(),
+                            contractName,
+                            client.isWASM()
+                                    ? wasmAbiAddress
+                                    : Numeric.prependHexPrefix(contractAddress));
             abi = abiAndBin.getAbi();
         } catch (IOException | CodeGenException e) {
             if (logger.isErrorEnabled()) {
@@ -706,11 +722,16 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         if (abi.isEmpty()) {
-            System.out.println(
-                    "Warn: \nPlease make sure the existence of the contract, abi is empty. contractName: "
-                            + contractName
-                            + ", contractAddress: "
-                            + contractAddress);
+            // abi still empty, get abi on chain
+            Abi remoteAbi = client.getABI(contractAddress);
+            abi = remoteAbi.getABI();
+            if (abi.isEmpty()) {
+                System.out.println(
+                        "Warn: \nPlease make sure the existence of the contract, abi is empty. contractName: "
+                                + contractName
+                                + ", contractAddress: "
+                                + contractAddress);
+            }
         }
 
         ConsoleUtils.printJson(

@@ -236,9 +236,15 @@ public class ContractCompiler {
     }
 
     public static AbiAndBin loadAbi(
-            String groupId, String contractNameOrPath, String contractAddress)
+            String groupId, String contractNameOrPath, String contractAddress, boolean isPath)
             throws IOException, CodeGenException {
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
+        String contractName =
+                isPath ? ConsoleUtils.getContractName(contractNameOrPath) : contractNameOrPath;
+        return loadAbi(groupId, contractName, contractAddress);
+    }
+
+    public static AbiAndBin loadAbi(String groupId, String contractName, String contractAddress)
+            throws IOException, CodeGenException {
         File abiPath =
                 new File(
                         COMPILED_PATH
@@ -262,7 +268,7 @@ public class ContractCompiler {
 
     public static AbiAndBin loadAbiAndBin(
             String groupId, String contractName, String contractAddress, boolean sm)
-            throws CompileContractException, CodeGenException, IOException {
+            throws CodeGenException, IOException {
         File abiPath =
                 new File(
                         COMPILED_PATH
