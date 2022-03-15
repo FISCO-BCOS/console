@@ -333,7 +333,7 @@ public class HelpInfo {
         System.out.println(
                 "      -- the value of tx_gas_limit "
                         + Common.TxGasLimitRange
-                        + "(default 300000000).");
+                        + "(default 3000000000).");
         System.out.println(
                 "      -- the value of  "
                         + Common.ConsensusLeaderPeriod

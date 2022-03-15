@@ -156,12 +156,11 @@ public class JlineUtils {
                             new StringsCompleter(Common.TxCountLimit),
                             new StringsCompleterIgnoreCase()));
 
-            // FIXME: console tx gas limit not available in FISCO BCOS 3.0.0-rc1
-            //            completers.add(
-            //                    new ArgumentCompleter(
-            //                            new StringsCompleter(command),
-            //                            new StringsCompleter(Common.TxGasLimit),
-            //                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.TxGasLimit),
+                            new StringsCompleterIgnoreCase()));
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
