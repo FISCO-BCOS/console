@@ -1314,6 +1314,67 @@ public class SupportedCommand {
                             consoleInitializer.getConsoleClientFace().getPeers(params);
                         }
                     });
+
+    public static final CommandInfo ADD_PEERS =
+            new CommandInfo(
+                    "addPeers",
+                    "Add more connected peers to the node p2p network",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.addPeersHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().addPeers(params);
+                        }
+                    },
+                    2,
+                    -1);
+
+    public static final CommandInfo QUERY_PEERS =
+            new CommandInfo(
+                    "queryPeers",
+                    "Query the configured connected node list of the p2p network",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.queryPeersHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().queryPeers(params);
+                        }
+                    },
+                    1,
+                    1);
+
+    public static final CommandInfo ERASE_PEERS =
+            new CommandInfo(
+                    "erasePeers",
+                    "Remove connected peers of the node p2p network",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.erasePeersHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().erasePeers(params);
+                        }
+                    },
+                    2,
+                    -1);
+
     public static final CommandInfo GET_NODEIDLIST =
             new CommandInfo(
                     "getNodeIDList",

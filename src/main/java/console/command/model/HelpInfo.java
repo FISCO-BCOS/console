@@ -125,6 +125,32 @@ public class HelpInfo {
                         + "the list of all connected nodes can be obtained through getAvailableConnections");
     }
 
+    public static void addPeersHelp() {
+        System.out.println("Add more connected peers to the node p2p network");
+        System.out.println("Usage: \naddPeers NodeEndPoint EndPoint0 ... EndPointN");
+        System.out.println(
+                "* NodeEndPoint -- The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
+        System.out.println("* EndPointN -- The connected endpoint");
+    }
+
+    public static void queryPeersHelp() {
+        System.out.println("Query the configured connected node list of the p2p network");
+        System.out.println("Usage: \nqueryPeers NodeEndPoint");
+        System.out.println(
+                "* NodeEndPoint -- The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
+    }
+
+    public static void erasePeersHelp() {
+        System.out.println("Remove connected peers of the node p2p network");
+        System.out.println("Usage: \nerasePeers NodeEndPoint EndPoint0 ... EndPointN");
+        System.out.println(
+                "* NodeEndPoint -- The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
+        System.out.println("* EndPointN -- The connected endpoint");
+    }
+
     public static void getNodeIDListHelp() {
         System.out.println("Query nodeId list for all connected nodes.");
         System.out.println("Usage: \ngetNodeIDList");

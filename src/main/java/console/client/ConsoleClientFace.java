@@ -24,6 +24,12 @@ public interface ConsoleClientFace {
 
     void getPeers(String[] params) throws IOException;
 
+    void queryPeers(String[] params) throws IOException;
+
+    void addPeers(String[] params) throws IOException;
+
+    void erasePeers(String[] params) throws IOException;
+
     void getNodeIDList(String[] params) throws IOException;
 
     void getGroupPeers(String[] params) throws IOException;
