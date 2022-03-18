@@ -1,6 +1,8 @@
 package console.contract;
 
 import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
 import console.ConsoleInitializer;
 import console.common.Common;
@@ -747,7 +749,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // compile ecdsa
             SolidityCompiler.Result res =
                     SolidityCompiler.compile(
-                            solFile, (client.getCryptoType() == CryptoType.SM_TYPE), true, ABI);
+                            solFile,
+                            (client.getCryptoType() == CryptoType.SM_TYPE),
+                            true,
+                            ABI,
+                            BIN,
+                            METADATA);
 
             if (logger.isDebugEnabled()) {
                 logger.debug(
