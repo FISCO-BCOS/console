@@ -1,6 +1,8 @@
 package console.contract;
 
 import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
+import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
 import console.ConsoleInitializer;
 import console.common.Common;
@@ -511,7 +513,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         try {
             address = bfsService.readlink(fixedBfsParam);
         } catch (ContractException e) {
-            logger.debug("call contract, path: {}", path);
+            logger.debug("call contract, path: {}", path, e);
         }
         if (!address.isEmpty() && !address.equals(Common.EMPTY_CONTRACT_ADDRESS)) {
             String abi = client.getABI(address).getABI();
@@ -714,16 +716,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         String contractName = "";
         if (consoleInitializer.getClient().isWASM()) {
             contractFileName = ConsoleUtils.fixedBfsParam(contractFileName, pwd);
-            if (contractFileName.startsWith(ContractCompiler.BFS_APPS_PREFIX)) {
-                contractFileName =
-                        contractFileName.substring(ContractCompiler.BFS_APPS_PREFIX.length());
-            }
             String contractAddress =
                     Base64.getUrlEncoder()
                             .withoutPadding()
-                            .encodeToString(
-                                    (ContractCompiler.BFS_APPS_PREFIX + contractFileName)
-                                            .getBytes(StandardCharsets.UTF_8));
+                            .encodeToString((contractFileName).getBytes(StandardCharsets.UTF_8));
             contractName = FilenameUtils.getBaseName(contractFileName);
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbi(
@@ -747,7 +743,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // compile ecdsa
             SolidityCompiler.Result res =
                     SolidityCompiler.compile(
-                            solFile, (client.getCryptoType() == CryptoType.SM_TYPE), true, ABI);
+                            solFile,
+                            (client.getCryptoType() == CryptoType.SM_TYPE),
+                            true,
+                            ABI,
+                            BIN,
+                            METADATA);
 
             if (logger.isDebugEnabled()) {
                 logger.debug(
