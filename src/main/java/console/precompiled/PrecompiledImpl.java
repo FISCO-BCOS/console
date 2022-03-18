@@ -681,6 +681,11 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void link(String[] params) throws Exception {
         String linkPath = ConsoleUtils.fixedBfsParam(params[1], pwd);
+        String contractAddress =
+                client.isWASM()
+                        ? ConsoleUtils.fixedBfsParam(params[2], pwd)
+                                .substring(ContractCompiler.BFS_APPS_PREFIX.length())
+                        : params[2];
         List<String> path2Level = ConsoleUtils.path2Level(linkPath);
         if (path2Level.size() != 3 || !path2Level.get(0).equals("apps")) {
             System.out.println("Link must in /apps, and not support multi-level directory.");
@@ -689,7 +694,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         String contractName = path2Level.get(1);
         String contractVersion = path2Level.get(2);
-        String contractAddress = params[2];
         if (!client.isWASM() && !AddressUtils.isValidAddress(contractAddress)) {
             System.out.println("Contract address is invalid, address: " + contractAddress);
         }
@@ -700,9 +704,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 wasmAbiAddress =
                         Base64.getUrlEncoder()
                                 .withoutPadding()
-                                .encodeToString(
-                                        (ContractCompiler.BFS_APPS_PREFIX + contractAddress)
-                                                .getBytes(StandardCharsets.UTF_8));
+                                .encodeToString((contractAddress).getBytes(StandardCharsets.UTF_8));
             }
             AbiAndBin abiAndBin =
                     ContractCompiler.loadAbi(
