@@ -21,7 +21,8 @@ contract Asset {
 
     constructor() public {
         // 构造函数中创建t_asset表
-        tf = KVTable(0x1009);
+        address kvAddr = address(0x1009);
+        tf = KVTable(kvAddr);
         // 资产管理表, key : account, field : asset_value
         // |  资产账户(主键)      |     资产金额       |
         // |-------------------- |-------------------|
