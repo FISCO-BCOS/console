@@ -53,12 +53,13 @@ public class ContractCompiler {
     private static final String ABI_SUFFIX = ".abi";
     private static final String WASM_SUFFIX = ".wasm";
 
-    public static AbiAndBin compileContract(String contractNameOrPath, boolean sm)
+    public static AbiAndBin compileContract(
+            String contractNameOrPath, boolean sm, boolean isContractParallelAnalysis)
             throws CompileContractException {
         File contractFile = new File(contractNameOrPath);
         // the contractPath
         if (contractFile.exists() && !contractFile.isDirectory()) {
-            return dynamicCompileSolFilesToJava(contractFile, sm);
+            return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
         }
         // the contractName
         String contractFileName = ConsoleUtils.removeSolSuffix(contractNameOrPath) + SOL_SUFFIX;
@@ -67,14 +68,20 @@ public class ContractCompiler {
             throw new CompileContractException(
                     "There is no " + contractFileName + " in the directory of " + SOLIDITY_PATH);
         }
-        return dynamicCompileSolFilesToJava(contractFile, sm);
+        return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
     }
 
-    public static AbiAndBin dynamicCompileSolFilesToJava(File contractFile, boolean sm)
+    public static AbiAndBin dynamicCompileSolFilesToJava(
+            File contractFile, boolean sm, boolean isContractParallelAnalysis)
             throws CompileContractException {
         try {
             return compileSolToBinAndAbi(
-                    contractFile, COMPILED_PATH, COMPILED_PATH, sm ? OnlySM : OnlyNonSM, null);
+                    contractFile,
+                    COMPILED_PATH,
+                    COMPILED_PATH,
+                    sm ? OnlySM : OnlyNonSM,
+                    null,
+                    isContractParallelAnalysis);
         } catch (IOException e) {
             throw new CompileContractException(
                     "compile " + contractFile.getName() + " failed, error info: " + e.getMessage(),
@@ -88,24 +95,54 @@ public class ContractCompiler {
             String abiDir,
             String binDir,
             int compileType,
-            String librariesOption)
+            String librariesOption,
+            boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
         if (compileType == OnlyNonSM) {
-            return compileSolToBinAndAbi(contractFile, abiDir, binDir, false, librariesOption);
+            return compileSolToBinAndAbi(
+                    contractFile,
+                    abiDir,
+                    binDir,
+                    false,
+                    librariesOption,
+                    isContractParallelAnalysis);
         } else if (compileType == OnlySM) {
-            return compileSolToBinAndAbi(contractFile, abiDir, binDir, true, librariesOption);
+            return compileSolToBinAndAbi(
+                    contractFile,
+                    abiDir,
+                    binDir,
+                    true,
+                    librariesOption,
+                    isContractParallelAnalysis);
         } else {
             AbiAndBin abiAndBin =
-                    compileSolToBinAndAbi(contractFile, abiDir, binDir, false, librariesOption);
+                    compileSolToBinAndAbi(
+                            contractFile,
+                            abiDir,
+                            binDir,
+                            false,
+                            librariesOption,
+                            isContractParallelAnalysis);
             AbiAndBin abiAndBinSM =
-                    compileSolToBinAndAbi(contractFile, abiDir, binDir, true, librariesOption);
+                    compileSolToBinAndAbi(
+                            contractFile,
+                            abiDir,
+                            binDir,
+                            true,
+                            librariesOption,
+                            isContractParallelAnalysis);
             return new AbiAndBin(abiAndBin.getAbi(), abiAndBin.getBin(), abiAndBinSM.getSmBin());
         }
     }
 
     // compile with libraries option
     public static AbiAndBin compileSolToBinAndAbi(
-            File contractFile, String abiDir, String binDir, boolean sm, String librariesOption)
+            File contractFile,
+            String abiDir,
+            String binDir,
+            boolean sm,
+            String librariesOption,
+            boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
         SolidityCompiler.CustomOption libraryOption = null;
         if (librariesOption != null && !librariesOption.equals("")) {
@@ -151,16 +188,19 @@ public class ContractCompiler {
             FileUtils.writeStringToFile(binFile, abiAndBin.getBin());
         }
 
-        EvmAnalyser.Result ret = EvmAnalyser.process(abiFilePath, binFilePath, sm);
-        if (ret.isFailed()) {
-            String error =
-                    "*** Analysis evm bytecode "
-                            + contractFile.getName()
-                            + " failed *** \n error: "
-                            + ret.getErrors();
-            logger.debug(error);
-            throw new CompileContractException(error);
+        if (isContractParallelAnalysis) {
+            EvmAnalyser.Result ret = EvmAnalyser.process(abiFilePath, binFilePath, sm);
+            if (ret.isFailed()) {
+                String error =
+                        "*** Analysis evm bytecode "
+                                + contractFile.getName()
+                                + " failed *** \n error: "
+                                + ret.getErrors();
+                logger.debug(error);
+                throw new CompileContractException(error);
+            }
         }
+
         String abi = FileUtils.readFileToString(abiFile, StandardCharsets.UTF_8);
         abiAndBin.setAbi(abi);
         checkBinaryCode(contractName, meta.bin);

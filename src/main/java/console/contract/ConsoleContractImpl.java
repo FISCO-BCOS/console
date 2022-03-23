@@ -182,16 +182,30 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     public TransactionResponse deploySolidity(
             String contractName, String contractNameOrPath, List<String> inputParams)
             throws ConsoleMessageException {
+        List<String> tempInputParams = inputParams;
         try {
+            boolean isContractParallelAnalysis = false;
+            if (!inputParams.isEmpty()) {
+                if ("-p".equals(inputParams.get(inputParams.size() - 1))
+                        || "--parallel-analysis".equals(inputParams.get(inputParams.size() - 1))) {
+                    isContractParallelAnalysis = true;
+                    tempInputParams = inputParams.subList(0, inputParams.size() - 1);
+                    logger.info(
+                            "deploy contract {} with '--parallel-analysis' or '-p'", contractName);
+                }
+            }
+
             boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
-            AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath, sm);
+            AbiAndBin abiAndBin =
+                    ContractCompiler.compileContract(
+                            contractNameOrPath, sm, isContractParallelAnalysis);
             String bin = abiAndBin.getBin();
             if (sm) {
                 bin = abiAndBin.getSmBin();
             }
             TransactionResponse response =
                     this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
-                            abiAndBin.getAbi(), bin, inputParams, null);
+                            abiAndBin.getAbi(), bin, tempInputParams, null);
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
