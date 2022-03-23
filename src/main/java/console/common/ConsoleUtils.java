@@ -295,7 +295,7 @@ public class ConsoleUtils {
         System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
         AbiAndBin abiAndBin =
                 ContractCompiler.compileSolToBinAndAbi(
-                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption);
+                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption, true);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
         File abiFile = new File(abiDir + contractName + ".abi");
         File binFile = new File(binDir + contractName + ".bin");
