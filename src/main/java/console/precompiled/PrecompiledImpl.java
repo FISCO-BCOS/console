@@ -1,42 +1,48 @@
 package console.precompiled;
 
+import console.common.Common;
 import console.common.ConsoleUtils;
-import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSService;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.FileInfo;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
-import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.KVTableService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
-import org.fisco.bcos.sdk.contract.precompiled.sysconfig.SystemConfigService;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.model.*;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
-import org.fisco.bcos.sdk.utils.AddressUtils;
-import org.fisco.bcos.sdk.utils.Numeric;
-import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
+import org.apache.commons.io.FilenameUtils;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.KVTableService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.TableCRUDService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionOperator;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
+import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.v3.model.RetCode;
+import org.fisco.bcos.sdk.v3.model.TransactionReceiptStatus;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
+import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +55,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
     private KVTableService kvTableService;
-    private CnsService cnsService;
     private BFSService bfsService;
+    private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
         this.client = client;
@@ -59,7 +65,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.kvTableService = new KVTableService(client, cryptoKeyPair);
-        this.cnsService = new CnsService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
     }
 
@@ -568,106 +573,24 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void queryCNS(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        List<CnsInfo> cnsInfos = null;
-        if (params.length == 2) {
-            // get contract name
-            cnsInfos = cnsService.selectByName(contractName);
-        }
-        if (params.length == 3) {
-            Tuple2<String, String> cnsTuple =
-                    cnsService.selectByNameAndVersion(contractName, params[2]);
-            if (cnsTuple.getValue1() != null
-                    && !cnsTuple.getValue1().equals(ConsoleUtils.EMPTY_ADDRESS)) {
-                cnsInfos = new LinkedList<>();
-                CnsInfo cnsInfo = new CnsInfo();
-                cnsInfo.setAddress(cnsTuple.getValue1());
-                cnsInfo.setVersion(params[2]);
-                cnsInfos.add(cnsInfo);
-            }
-        }
-        ConsoleUtils.singleLine();
-        if (cnsInfos == null || cnsInfos.isEmpty()) {
-            System.out.println("Empty set.");
-            ConsoleUtils.singleLine();
-            return;
-        }
-        for (CnsInfo cnsInfo : cnsInfos) {
-            System.out.println("* contract address: " + cnsInfo.getAddress());
-            System.out.println("* contract version: " + cnsInfo.getVersion());
-            ConsoleUtils.singleLine();
-        }
-    }
-
-    @Override
-    public void registerCNS(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        String contractAddress = params[2];
-        if (!AddressUtils.isValidAddress(contractAddress)) {
-            System.out.println("Contract address is invalid, address: " + contractAddress);
-        }
-        contractAddress = Numeric.prependHexPrefix(contractAddress);
-        String contractVersion = params[3];
-        String abi = "";
-        try {
-            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
-            AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbiAndBin(
-                            client.getGroup(),
-                            contractName,
-                            contractNameOrPath,
-                            contractAddress,
-                            sm,
-                            false);
-            abi = abiAndBin.getAbi();
-        } catch (CompileContractException e) {
-            logger.warn(
-                    "load abi for contract failed, contract name: {}, address: {}, e: {}",
-                    contractAddress,
-                    contractAddress,
-                    e.getMessage());
-        }
-        if (abi.equals("")) {
-            System.out.println(
-                    "Warn: \nPlease make sure the existence of the contract, abi is empty. contractName: "
-                            + contractName
-                            + ", contractAddress: "
-                            + contractAddress);
-        }
-        ConsoleUtils.printJson(
-                cnsService
-                        .registerCNS(contractName, contractVersion, contractAddress, abi)
-                        .toString());
-        System.out.println();
-    }
-
-    @Override
-    public void changeDir(String[] params, String pwd) throws Exception {
+    public void changeDir(String[] params) throws Exception {
         if (params.length == 1) {
             System.out.println("cd: change dir to /apps");
+            pwd = "/apps";
             return;
         }
-        String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
-        String path = fixedBfsParams[1];
-        if (path.equals("/")) {
-            System.out.println("cd: change dir to root /");
-            return;
-        }
-        List<FileInfo> listResult;
+        String path = ConsoleUtils.fixedBfsParam(params[1], pwd);
         Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
         String parentDir = parentAndBase.getValue1();
         String baseName = parentAndBase.getValue2();
-        listResult = bfsService.list(parentDir);
+        List<BfsInfo> listResult = bfsService.list(parentDir);
         if (!listResult.isEmpty()) {
             boolean findFlag = false;
-            for (FileInfo fileInfo : listResult) {
-                if (fileInfo.getName().equals(baseName)) {
+            for (BfsInfo bfsInfo : listResult) {
+                if (bfsInfo.getFileName().equals(baseName)) {
                     findFlag = true;
-                    if (!fileInfo.getType().equals("directory")) {
-                        throw new Exception("cd: not a directory: " + fileInfo.getName());
+                    if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                        throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
                     }
                 }
             }
@@ -677,10 +600,11 @@ public class PrecompiledImpl implements PrecompiledFace {
         } else {
             throw new Exception("cd: no such file or directory: " + params[1]);
         }
+        pwd = path;
     }
 
     @Override
-    public void makeDir(String[] params, String pwd) throws Exception {
+    public void makeDir(String[] params) throws Exception {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
         String path = fixedBfsParams[1];
         RetCode mkdir = bfsService.mkdir(path);
@@ -695,19 +619,32 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void listDir(String[] params, String pwd) throws Exception {
-        // TODO: add limit args
+    public void listDir(String[] params) throws Exception {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
 
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
-        List<FileInfo> fileInfoList = bfsService.list(listPath);
+        List<BfsInfo> fileInfoList = bfsService.list(listPath);
+        String baseName = FilenameUtils.getBaseName(listPath);
         int newLineCount = 0;
-        for (FileInfo fileInfo : fileInfoList) {
+        for (BfsInfo fileInfo : fileInfoList) {
             newLineCount++;
-            if (fileInfo.getType().equals("contract")) {
-                System.out.print("\033[32m" + fileInfo.getName() + "\033[m" + '\t');
-            } else {
-                System.out.print(fileInfo.getName() + '\t');
+            switch (fileInfo.getFileType()) {
+                case Common.BFS_TYPE_CON:
+                    System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
+                    break;
+                case Common.BFS_TYPE_DIR:
+                    System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
+                    break;
+                case Common.BFS_TYPE_LNK:
+                    System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
+                    if (fileInfoList.size() == 1 && fileInfo.getFileName().equals(baseName)) {
+                        System.out.print(" -> " + fileInfo.getExt().get(0));
+                    }
+                    System.out.print('\t');
+                    break;
+                default:
+                    System.out.println();
+                    break;
             }
             if (newLineCount % 6 == 0) {
                 System.out.println();
@@ -716,7 +653,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void tree(String[] params, String pwd) throws Exception {
+    public void tree(String[] params) throws Exception {
         String absolutePath = ConsoleUtils.fixedBfsParam(params[1], pwd);
         int limit = 3;
         try {
@@ -742,8 +679,66 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void pwd(String pwd) {
-        System.out.println(pwd);
+    public void link(String[] params) throws Exception {
+        String linkPath = ConsoleUtils.fixedBfsParam(params[1], pwd);
+        String contractAddress =
+                client.isWASM()
+                        ? ConsoleUtils.fixedBfsParam(params[2], pwd)
+                                .substring(ContractCompiler.BFS_APPS_PREFIX.length())
+                        : params[2];
+        List<String> path2Level = ConsoleUtils.path2Level(linkPath);
+        if (path2Level.size() != 3 || !path2Level.get(0).equals("apps")) {
+            System.out.println("Link must in /apps, and not support multi-level directory.");
+            System.out.println("Example: ln /apps/Name/Version 0x1234567890");
+            return;
+        }
+        String contractName = path2Level.get(1);
+        String contractVersion = path2Level.get(2);
+        if (!client.isWASM() && !AddressUtils.isValidAddress(contractAddress)) {
+            System.out.println("Contract address is invalid, address: " + contractAddress);
+        }
+        String abi = "";
+        try {
+            String wasmAbiAddress = "";
+            if (client.isWASM()) {
+                wasmAbiAddress =
+                        Base64.getUrlEncoder()
+                                .withoutPadding()
+                                .encodeToString((contractAddress).getBytes(StandardCharsets.UTF_8));
+            }
+            AbiAndBin abiAndBin =
+                    ContractCompiler.loadAbi(
+                            client.getGroup(),
+                            contractName,
+                            client.isWASM()
+                                    ? wasmAbiAddress
+                                    : Numeric.prependHexPrefix(contractAddress));
+            abi = abiAndBin.getAbi();
+        } catch (IOException | CodeGenException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error(
+                        "load abi for contract failed, contract name: {}, address: {}, e: ",
+                        contractAddress,
+                        contractAddress,
+                        e);
+            }
+        }
+        if (abi.isEmpty()) {
+            // abi still empty, get abi on chain
+            Abi remoteAbi = client.getABI(contractAddress);
+            abi = remoteAbi.getABI();
+            if (abi.isEmpty()) {
+                System.out.println(
+                        "Warn: \nPlease make sure the existence of the contract, abi is empty. contractName: "
+                                + contractName
+                                + ", contractAddress: "
+                                + contractAddress);
+            }
+        }
+
+        ConsoleUtils.printJson(
+                bfsService.link(contractName, contractVersion, contractAddress, abi).toString());
+        System.out.println();
     }
 
     private Tuple2<Integer, Integer> travelBfs(
@@ -751,7 +746,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (deep >= limit) return new Tuple2<>(0, 0);
         Integer dirCount = 0;
         Integer contractCount = 0;
-        List<FileInfo> children = bfsService.list(absolutePath);
+        List<BfsInfo> children = bfsService.list(absolutePath);
         for (int i = 0; i < children.size(); i++) {
             String thisPrefix = "";
             String nextPrefix = "";
@@ -763,14 +758,14 @@ public class PrecompiledImpl implements PrecompiledFace {
                     nextPrefix = prefix + "  ";
                     thisPrefix = prefix + "└─";
                 }
-                System.out.println(thisPrefix + children.get(i).getName());
-                if (children.get(i).getType().equals("directory")) {
+                System.out.println(thisPrefix + children.get(i).getFileName());
+                if (children.get(i).getFileType().equals(Common.BFS_TYPE_DIR)) {
                     dirCount++;
                     Tuple2<Integer, Integer> childCount =
                             travelBfs(
                                     absolutePath
                                             + (absolutePath.equals("/") ? "" : "/")
-                                            + children.get(i).getName(),
+                                            + children.get(i).getFileName(),
                                     nextPrefix,
                                     deep + 1,
                                     limit);
@@ -782,5 +777,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         return new Tuple2<>(dirCount, contractCount);
+    }
+
+    @Override
+    public String getPwd() {
+        return pwd;
     }
 }

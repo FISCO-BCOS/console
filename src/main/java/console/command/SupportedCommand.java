@@ -44,10 +44,8 @@ public class SupportedCommand {
         isWasm = wasm;
         if (wasm) {
             SupportedCommand.getCommandInfo("deploy", true, isAuthOpen).setMinParamLength(3);
-            SupportedCommand.getCommandInfo("call", true, isAuthOpen).setMinParamLength(2);
         } else {
             SupportedCommand.getCommandInfo("deploy", false, isAuthOpen).setMinParamLength(1);
-            SupportedCommand.getCommandInfo("call", false, isAuthOpen).setMinParamLength(3);
         }
     }
 
@@ -111,41 +109,9 @@ public class SupportedCommand {
                     () -> HelpInfo.callHelp(isWasm),
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleContractFace().call(params, pwd),
-                    3,
+                    2,
                     -1);
-    public static final CommandInfo DEPLOY_BY_CNS =
-            new CommandInfo(
-                    "deployByCNS",
-                    "Deploy a contract on blockchain by CNS",
-                    HelpInfo::deployByCNSHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleContractFace().deployByCNS(params),
-                    2,
-                    -1,
-                    true,
-                    false);
-    public static final CommandInfo CALL_BY_CNS =
-            new CommandInfo(
-                    "callByCNS",
-                    "Call a contract by a function and parameters by CNS",
-                    () -> HelpInfo.callByCNSHelp(),
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleContractFace().callByCNS(params),
-                    2,
-                    -1,
-                    true,
-                    false);
-    public static final CommandInfo QUERY_CNS =
-            new CommandInfo(
-                    "queryCNS",
-                    "Query CNS information by contract name and contract version",
-                    HelpInfo::queryCNSHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().queryCNS(params),
-                    1,
-                    2,
-                    true,
-                    false);
+
     public static final CommandInfo ADD_OBSERVER =
             new CommandInfo(
                     "addObserver",
@@ -532,18 +498,6 @@ public class SupportedCommand {
                     2,
                     true);
 
-    public static final CommandInfo REGISTER_CNS =
-            new CommandInfo(
-                    "registerCNS",
-                    "RegisterCNS information for the given contract",
-                    HelpInfo::registerCNSHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().registerCNS(params),
-                    3,
-                    3,
-                    true,
-                    false);
-
     public static final CommandInfo NEW_ACCOUNT =
             new CommandInfo(
                     "newAccount",
@@ -569,7 +523,7 @@ public class SupportedCommand {
                     "listAccount",
                     "List the current saved account list",
                     () -> {
-                        System.out.println("list all the accounts");
+                        System.out.println("List all the accounts");
                         System.out.println("Usage: \nlistAccount");
                     },
                     (consoleInitializer, params, pwd) ->
@@ -581,10 +535,7 @@ public class SupportedCommand {
             new CommandInfo(
                     "getGroupList",
                     "List all group list",
-                    () -> {
-                        System.out.println("list all group list");
-                        System.out.println("Usage: \nlistGroupList");
-                    },
+                    HelpInfo::getGroupListHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getGroupList(params),
                     0,
@@ -594,10 +545,7 @@ public class SupportedCommand {
             new CommandInfo(
                     "getGroupPeers",
                     "List all group peers",
-                    () -> {
-                        System.out.println("list all group peers");
-                        System.out.println("Usage: \ngetGroupPeers");
-                    },
+                    HelpInfo::getGroupPeersHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getGroupPeers(params),
                     0,
@@ -607,10 +555,7 @@ public class SupportedCommand {
             new CommandInfo(
                     "getGroupInfo",
                     "Query the current group information.",
-                    () -> {
-                        System.out.println("get the group info");
-                        System.out.println("Usage: \ngetGroupInfo");
-                    },
+                    HelpInfo::getGroupInfoHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getGroupInfo(params),
                     0,
@@ -621,7 +566,7 @@ public class SupportedCommand {
                     "getGroupInfoList",
                     "Get all groups info",
                     () -> {
-                        System.out.println("get all group info");
+                        System.out.println("Get all group info");
                         System.out.println("Usage: \ngetGroupInfoList");
                     },
                     (consoleInitializer, params, pwd) ->
@@ -633,7 +578,7 @@ public class SupportedCommand {
                     "getGroupNodeInfo",
                     "Get group node info",
                     () -> {
-                        System.out.println("get group node info");
+                        System.out.println("Get group node info");
                         System.out.println("Usage: \ngetGroupNodeInfo [nodeName]");
                     },
                     (consoleInitializer, params, pwd) ->
@@ -660,7 +605,7 @@ public class SupportedCommand {
                     "Change dir to given path.",
                     HelpInfo::changeDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().changeDir(params, pwd),
+                            consoleInitializer.getPrecompiledFace().changeDir(params),
                     0,
                     1);
     public static final CommandInfo MAKE_DIR =
@@ -669,7 +614,7 @@ public class SupportedCommand {
                     "Create dir in given path.",
                     HelpInfo::makeDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().makeDir(params, pwd),
+                            consoleInitializer.getPrecompiledFace().makeDir(params),
                     1,
                     1);
     public static final CommandInfo LIST_DIR =
@@ -678,7 +623,7 @@ public class SupportedCommand {
                     "List resources in given path.",
                     HelpInfo::listDirHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().listDir(params, pwd),
+                            consoleInitializer.getPrecompiledFace().listDir(params),
                     0,
                     1);
 
@@ -688,8 +633,18 @@ public class SupportedCommand {
                     "List contents of directories in a tree-like format.",
                     HelpInfo::treeHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().tree(params, pwd),
+                            consoleInitializer.getPrecompiledFace().tree(params),
                     1,
+                    2);
+
+    public static final CommandInfo LINK =
+            new CommandInfo(
+                    "ln",
+                    "Create a link to access contract.",
+                    () -> HelpInfo.linkHelp(isWasm),
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().link(params),
+                    2,
                     2);
 
     public static final CommandInfo PWD =
@@ -698,7 +653,7 @@ public class SupportedCommand {
                     "Show absolute path of working directory name",
                     HelpInfo::pwdHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().pwd(pwd),
+                            System.out.println(consoleInitializer.getPrecompiledFace().getPwd()),
                     0,
                     0);
 

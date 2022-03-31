@@ -8,10 +8,10 @@ import console.common.ConsoleUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.crypto.exceptions.SignatureException;
-import org.fisco.bcos.sdk.model.CryptoType;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.crypto.exceptions.SignatureException;
+import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
 import org.jline.reader.EndOfFileException;
@@ -29,7 +29,7 @@ public class Console {
 
     public static LineReader createLineReader(ConsoleInitializer consoleInitializer)
             throws IOException {
-        if (consoleInitializer.DisableAutoCompleter) {
+        if (consoleInitializer.isDisableAutoCompleter()) {
             return null;
         }
         return JlineUtils.getLineReader(consoleInitializer.getClient());
@@ -46,7 +46,7 @@ public class Console {
             consoleInitializer.init(args);
             lineReader = createLineReader(consoleInitializer);
             sc = new Scanner(System.in);
-            if (!consoleInitializer.DisableAutoCompleter) {
+            if (!consoleInitializer.isDisableAutoCompleter() && lineReader != null) {
                 KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
                 keymap.bind(new Reference("beginning-of-line"), "\033[1~");
                 keymap.bind(new Reference("end-of-line"), "\033[4~");
@@ -58,7 +58,7 @@ public class Console {
         }
 
         WelcomeInfo.welcome();
-        String pwd = "/apps";
+        String pwd = consoleInitializer.getPrecompiledFace().getPwd();
         SupportedCommand.setIsAuthOpen(
                 consoleInitializer.getClient().isAuthCheck()
                         && !consoleInitializer.getClient().isWASM());
@@ -66,12 +66,12 @@ public class Console {
 
         while (true) {
             try {
-                if (lineReader == null && !consoleInitializer.DisableAutoCompleter) {
+                if (lineReader == null && !consoleInitializer.isDisableAutoCompleter()) {
                     System.out.println("Console can not read commands.");
                     break;
                 }
                 String request;
-                if (INPUT_FLAG == 0 && !consoleInitializer.DisableAutoCompleter) {
+                if (INPUT_FLAG == 0 && !consoleInitializer.isDisableAutoCompleter()) {
                     request =
                             lineReader.readLine(
                                     "["
@@ -113,18 +113,12 @@ public class Console {
                         if (commandInfo
                                 .getCommand()
                                 .equals(SupportedCommand.CHANGE_DIR.getCommand())) {
-                            if (params.length == 1) {
-                                pwd = "/apps";
-                            } else if (!SupportedCommand.HELP
-                                    .getOptionCommand()
-                                    .contains(params[1])) {
-                                pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
-                            }
+                            pwd = consoleInitializer.getPrecompiledFace().getPwd();
                             JlineUtils.switchPwd(pwd);
                         }
                     } else {
                         String[] paramWithoutQuotation = new String[params.length];
-                        for (Integer i = 0; i < params.length; i++) {
+                        for (int i = 0; i < params.length; i++) {
                             String param = params[i];
                             paramWithoutQuotation[i] = param;
                             // Remove the quotes around the input parameters

@@ -6,19 +6,19 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.contract.auth.manager.AuthManager;
-import org.fisco.bcos.sdk.contract.auth.po.AuthType;
-import org.fisco.bcos.sdk.contract.auth.po.CommitteeInfo;
-import org.fisco.bcos.sdk.contract.auth.po.GovernorInfo;
-import org.fisco.bcos.sdk.contract.auth.po.ProposalInfo;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.model.PrecompiledRetCode;
-import org.fisco.bcos.sdk.model.RetCode;
-import org.fisco.bcos.sdk.model.TransactionReceipt;
-import org.fisco.bcos.sdk.transaction.codec.decode.ReceiptParser;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
-import org.fisco.bcos.sdk.transaction.model.exception.TransactionException;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.contract.auth.manager.AuthManager;
+import org.fisco.bcos.sdk.v3.contract.auth.po.AuthType;
+import org.fisco.bcos.sdk.v3.contract.auth.po.CommitteeInfo;
+import org.fisco.bcos.sdk.v3.contract.auth.po.GovernorInfo;
+import org.fisco.bcos.sdk.v3.contract.auth.po.ProposalInfo;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.v3.model.RetCode;
+import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.transaction.codec.decode.ReceiptParser;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,14 +26,13 @@ public class AuthImpl implements AuthFace {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthImpl.class);
     private AuthManager authManager;
-    private boolean authAvailable = false;
     private static final long WEIGHT_MAX = 10000;
     private static final int GOVERNOR_NUM_MAX = 1000;
 
-    public AuthImpl(Client client) throws ContractException {
+    public AuthImpl(Client client) {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        this.authAvailable = client.isAuthCheck() && !client.isWASM();
-        if (this.authAvailable) {
+        boolean authAvailable = client.isAuthCheck() && !client.isWASM();
+        if (authAvailable) {
             this.authManager = new AuthManager(client, cryptoKeyPair);
         } else {
             logger.info("Auth check disable, not use auth.");

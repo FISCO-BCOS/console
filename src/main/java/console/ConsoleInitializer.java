@@ -16,14 +16,14 @@ import java.io.File;
 import java.net.URL;
 import java.util.List;
 import java.util.Objects;
-import org.fisco.bcos.sdk.BcosSDK;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.config.ConfigOption;
-import org.fisco.bcos.sdk.config.exceptions.ConfigException;
-import org.fisco.bcos.sdk.crypto.CryptoSuite;
-import org.fisco.bcos.sdk.crypto.exceptions.LoadKeyStoreException;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.model.CryptoType;
+import org.fisco.bcos.sdk.v3.BcosSDK;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.config.ConfigOption;
+import org.fisco.bcos.sdk.v3.config.exceptions.ConfigException;
+import org.fisco.bcos.sdk.v3.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.v3.crypto.exceptions.LoadKeyStoreException;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.CryptoType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +41,7 @@ public class ConsoleInitializer {
     private ConsoleContractFace consoleContractFace;
     private AuthFace authFace;
     private CollaborationFace collaborationFace;
-    public static boolean DisableAutoCompleter = false;
+    private boolean disableAutoCompleter = false;
 
     public void init(String[] args) throws ConfigException {
         AccountInfo accountInfo = null;
@@ -53,87 +53,16 @@ public class ConsoleInitializer {
         }
 
         if (args.length > 1 && "-l".equals(args[1])) { // input by scanner for log
-            DisableAutoCompleter = true;
+            disableAutoCompleter = true;
         }
 
-        try {
-            String configFileName = "config.toml";
-            URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
-            if (configUrl == null) {
-                throw new ConfigException(
-                        "The configuration file "
-                                + configFileName
-                                + " doesn't exist! Please copy config-example.yaml to "
-                                + configFileName
-                                + ".");
-            }
-            String configFile = configUrl.getPath();
-            bcosSDK = BcosSDK.build(configFile);
-            ConfigOption config = bcosSDK.getConfig();
-            List<String> peers = config.getNetworkConfig().getPeers();
-            if (peers.size() == 0) {
-                System.out.println(
-                        "Init BcosSDK failed for the empty peer size of the configuration file: "
-                                + configFile);
-                System.out.println();
-                System.exit(0);
-            }
-
-            if (args.length == 3) {
-                accountInfo = loadAccount(bcosSDK, args);
-            }
-        } catch (NumberFormatException e) {
-            System.out.println("Init BcosSDK failed for invalid groupId \"" + args[0] + "\"");
-            System.out.println();
-            System.exit(0);
-        }
-        try {
-            this.client = groupID == null ? bcosSDK.getClient() : bcosSDK.getClient(groupID);
-            if (accountInfo != null) {
-                this.client
-                        .getCryptoSuite()
-                        .loadAccount(
-                                accountInfo.accountFileFormat,
-                                accountInfo.accountFile,
-                                accountInfo.password);
-            } else if (!client.getCryptoSuite()
-                    .getConfig()
-                    .getAccountConfig()
-                    .isAccountConfigured()) {
-                try {
-                    accountInfo = loadAccountRandomly(bcosSDK, client);
-                    if (accountInfo != null) {
-                        this.client
-                                .getCryptoSuite()
-                                .loadAccount(
-                                        accountInfo.accountFileFormat,
-                                        accountInfo.accountFile,
-                                        accountInfo.password);
-                    }
-                } catch (LoadKeyStoreException e) {
-                    logger.warn(
-                            "loadAccountRandomly failed, try to generate and load the random account, error info: {}",
-                            e.getMessage(),
-                            e);
-                }
-                if (accountInfo == null) {
-                    // save the keyPair
-                    client.getCryptoSuite().getCryptoKeyPair().storeKeyPairWithPemFormat();
-                }
-            }
-            this.consoleClientFace = new ConsoleClientImpl(client);
-            this.precompiledFace = new PrecompiledImpl(client);
-            this.consoleContractFace = new ConsoleContractImpl(client);
-            this.collaborationFace = new CollaborationImpl(client);
-            this.authFace = new AuthImpl(client);
-
-        } catch (Exception e) {
-            System.out.println(
-                    "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
-                            + e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-            System.exit(0);
-        }
+        accountInfo = loadConfig(args);
+        loadAccountInfo(accountInfo, groupID);
+        this.consoleClientFace = new ConsoleClientImpl(client);
+        this.precompiledFace = new PrecompiledImpl(client);
+        this.consoleContractFace = new ConsoleContractImpl(client);
+        this.collaborationFace = new CollaborationImpl(client);
+        this.authFace = new AuthImpl(client);
     }
 
     private class AccountInfo {
@@ -169,6 +98,83 @@ public class ConsoleInitializer {
 
         public void setPassword(String password) {
             this.password = password;
+        }
+    }
+
+    private AccountInfo loadConfig(String[] args) throws ConfigException {
+        try {
+            String configFileName = "config.toml";
+            URL configUrl = ConsoleInitializer.class.getClassLoader().getResource(configFileName);
+            if (configUrl == null) {
+                throw new ConfigException(
+                        "The configuration file "
+                                + configFileName
+                                + " doesn't exist! Please copy config-example.yaml to "
+                                + configFileName
+                                + ".");
+            }
+            String configFile = configUrl.getPath();
+            bcosSDK = BcosSDK.build(configFile);
+            ConfigOption config = bcosSDK.getConfig();
+            List<String> peers = config.getNetworkConfig().getPeers();
+            if (peers.isEmpty()) {
+                System.out.println(
+                        "Init BcosSDK failed for the empty peer size of the configuration file: "
+                                + configFile);
+                System.out.println();
+                System.exit(0);
+            }
+
+            if (args.length == 3) {
+                return loadAccount(bcosSDK, args);
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Init BcosSDK failed for invalid groupId \"" + args[0] + "\"");
+            System.out.println();
+            System.exit(0);
+        }
+        return null;
+    }
+
+    private void loadAccountInfo(AccountInfo accountInfo, String groupID) {
+        try {
+            this.client = groupID == null ? bcosSDK.getClient() : bcosSDK.getClient(groupID);
+            if (accountInfo != null) {
+                this.client
+                        .getCryptoSuite()
+                        .loadAccount(
+                                accountInfo.accountFileFormat,
+                                accountInfo.accountFile,
+                                accountInfo.password);
+            } else if (!client.getCryptoSuite()
+                    .getConfig()
+                    .getAccountConfig()
+                    .isAccountConfigured()) {
+                accountInfo = loadAccountRandomly(bcosSDK, client);
+                if (accountInfo != null) {
+                    this.client
+                            .getCryptoSuite()
+                            .loadAccount(
+                                    accountInfo.accountFileFormat,
+                                    accountInfo.accountFile,
+                                    accountInfo.password);
+                }
+                if (accountInfo == null) {
+                    // save the keyPair
+                    client.getCryptoSuite().getCryptoKeyPair().storeKeyPairWithPemFormat();
+                }
+            }
+        } catch (LoadKeyStoreException e) {
+            logger.warn(
+                    "loadAccountRandomly failed, try to generate and load the random account, error info: {}",
+                    e.getMessage(),
+                    e);
+        } catch (Exception e) {
+            System.out.println(
+                    "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
+                            + e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            System.exit(0);
         }
     }
 
@@ -266,7 +272,7 @@ public class ConsoleInitializer {
         }
     }
 
-    public void loadAccount(String[] params) throws Exception {
+    public void loadAccount(String[] params) {
         String accountPath = params[1];
         String accountFormat = "pem";
         if (params.length >= 3) {
@@ -364,5 +370,9 @@ public class ConsoleInitializer {
 
     public AuthFace getAuthFace() {
         return authFace;
+    }
+
+    public boolean isDisableAutoCompleter() {
+        return disableAutoCompleter;
     }
 }

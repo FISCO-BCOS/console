@@ -16,7 +16,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Stack;
+import java.util.StringTokenizer;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
@@ -25,14 +30,14 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
-import org.fisco.bcos.sdk.codec.datatypes.Array;
-import org.fisco.bcos.sdk.codec.datatypes.Bytes;
-import org.fisco.bcos.sdk.codec.datatypes.DynamicBytes;
-import org.fisco.bcos.sdk.codec.datatypes.StructType;
-import org.fisco.bcos.sdk.codec.datatypes.Type;
-import org.fisco.bcos.sdk.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.codegen.CodeGenMain;
-import org.fisco.bcos.sdk.utils.Numeric;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Array;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Bytes;
+import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicBytes;
+import org.fisco.bcos.sdk.v3.codec.datatypes.StructType;
+import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.codegen.CodeGenMain;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -169,7 +174,7 @@ public class ConsoleUtils {
                 }
                 continue;
             }
-            if (!s.matches("^[0-9a-zA-Z-_]{1,56}$")) {
+            if (!s.matches("^[0-9a-zA-Z][^\\>\\<\\*\\?\\/\\=\\+\\(\\)\\$\\\"\\']*$")) {
                 throw new Exception("path is invalid: " + absolutePath);
             }
             pathStack.push(s);
@@ -267,50 +272,6 @@ public class ConsoleUtils {
         return intParam;
     }
 
-    public static Address convertAddress(String addressStr) {
-        Address address = new Address();
-        if (!addressStr.startsWith("0x") && addressStr.length() != (Address.ValidLen - 2)) {
-            address.setValid(false);
-            address.setAddress(addressStr);
-        } else if (addressStr.length() != Address.ValidLen) {
-            address.setValid(false);
-            address.setAddress(addressStr);
-        } else {
-            address.setValid(true);
-            if (addressStr.startsWith("0x")) {
-                if (!addressStr.substring(2).matches("^[a-fA-F0-9]+$")) {
-                    address.setValid(false);
-                    address.setAddress(addressStr);
-                } else {
-                    address.setAddress(addressStr);
-                }
-            } else {
-                address.setValid(false);
-                address.setAddress(addressStr);
-            }
-        }
-        if (!address.isValid()) {
-            System.out.println("Please provide a valid address.");
-        }
-        return address;
-    }
-
-    private static void getAddress(Address address, String addressStr, int length) {
-        int len = length - addressStr.length();
-        StringBuilder builderAddress = new StringBuilder();
-        for (int i = 0; i < len; i++) {
-            builderAddress.append("0");
-        }
-        String newAddessStr;
-        if (length == Address.ValidLen) {
-            newAddessStr =
-                    "0x" + builderAddress.toString() + addressStr.substring(2, addressStr.length());
-        } else {
-            newAddessStr = "0x" + builderAddress.toString() + addressStr;
-        }
-        address.setAddress(newAddessStr);
-    }
-
     /**
      * @param javaDir
      * @param packageName
@@ -334,25 +295,26 @@ public class ConsoleUtils {
         System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
         AbiAndBin abiAndBin =
                 ContractCompiler.compileSolToBinAndAbi(
-                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption);
+                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption, true);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
+        File abiFile = new File(abiDir + contractName + ".abi");
+        File binFile = new File(binDir + contractName + ".bin");
+        String abiFilePath = abiFile.getAbsolutePath();
+        String binFilePath = binFile.getAbsolutePath();
+        FileUtils.writeStringToFile(abiFile, abiAndBin.getAbi());
+        FileUtils.writeStringToFile(binFile, abiAndBin.getBin());
 
-        FileUtils.writeStringToFile(new File(abiDir + contractName + ".abi"), abiAndBin.getAbi());
-        FileUtils.writeStringToFile(new File(binDir + contractName + ".bin"), abiAndBin.getBin());
-
+        File smBinFile = new File(binDir + "/sm/" + contractName + ".bin");
+        String smBinFilePath = smBinFile.getAbsolutePath();
         FileUtils.writeStringToFile(
                 new File(abiDir + "/sm/" + contractName + ".abi"), abiAndBin.getAbi());
-        FileUtils.writeStringToFile(
-                new File(binDir + "/sm/" + contractName + ".bin"), abiAndBin.getSmBin());
+        FileUtils.writeStringToFile(smBinFile, abiAndBin.getSmBin());
 
-        String abiFile = abiDir + contractName + ".abi";
-        String binFile = binDir + contractName + ".bin";
-        String smBinFile = binDir + "/sm/" + contractName + ".bin";
         CodeGenMain.main(
                 Arrays.asList(
-                                "-a", abiFile,
-                                "-b", binFile,
-                                "-s", smBinFile,
+                                "-a", abiFilePath,
+                                "-b", binFilePath,
+                                "-s", smBinFilePath,
                                 "-p", packageName,
                                 "-o", javaDir)
                         .toArray(new String[0]));
@@ -411,14 +373,14 @@ public class ConsoleUtils {
     }
 
     public static String[] tokenizeCommand(String command) throws Exception {
-        // example: callByCNS HelloWorld.sol set"Hello" parse [callByCNS, HelloWorld.sol,
+        // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol,
         // set"Hello"]
         List<String> tokens1 = new ArrayList<>();
         StringTokenizer stringTokenizer = new StringTokenizer(command, " ");
         while (stringTokenizer.hasMoreTokens()) {
             tokens1.add(stringTokenizer.nextToken());
         }
-        // example: callByCNS HelloWorld.sol set"Hello" parse [callByCNS, HelloWorld.sol, set,
+        // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol, set,
         // "Hello"]
         List<String> tokens2 = new ArrayList<>();
         StreamTokenizer tokenizer = new CommandTokenizer(new StringReader(command));
@@ -508,7 +470,7 @@ public class ConsoleUtils {
         return format;
     }
 
-    public static String removeSolPostfix(String name) {
+    public static String removeSolSuffix(String name) {
         return (name.endsWith(SOL_SUFFIX)
                 ? name.substring(0, name.length() - SOL_SUFFIX.length())
                 : name);
@@ -526,7 +488,7 @@ public class ConsoleUtils {
         if (solFile.exists()) {
             return solFile;
         }
-        filePath = ConsoleUtils.removeSolPostfix(filePath);
+        filePath = ConsoleUtils.removeSolSuffix(filePath);
         filePath += SOL_SUFFIX;
         /** Check that the file exists in the default directory first */
         solFile = new File(SOLIDITY_PATH + File.separator + filePath);
@@ -562,13 +524,13 @@ public class ConsoleUtils {
 
     public static String getContractName(String contractNameOrPath) throws ConsoleMessageException {
         File contractFile = ConsoleUtils.getSolFile(contractNameOrPath, true);
-        return ConsoleUtils.removeSolPostfix(contractFile.getName());
+        return ConsoleUtils.removeSolSuffix(contractFile.getName());
     }
 
     public static String getContractNameWithoutCheckExists(String contractNameOrPath)
             throws ConsoleMessageException {
         File contractFile = ConsoleUtils.getSolFile(contractNameOrPath, false);
-        return ConsoleUtils.removeSolPostfix(contractFile.getName());
+        return ConsoleUtils.removeSolSuffix(contractFile.getName());
     }
 
     public static String bytesToHex(byte[] bytes) {

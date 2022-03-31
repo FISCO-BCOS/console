@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity>=0.4.24 <0.6.11;
+pragma solidity>=0.6.10 <0.8.20;
 
 pragma experimental ABIEncoderV2;
 
@@ -10,7 +10,8 @@ contract ShaTest{
     Crypto crypto;
 
     constructor() public {
-        crypto = Crypto(0x100a);
+        address cryptoAddr = address(0x100a);
+        crypto = Crypto(cryptoAddr);
     }
 
     function getSha256(bytes memory _memory) public returns(bytes32 result)

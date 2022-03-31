@@ -1,6 +1,6 @@
 #!/bin/bash
 package_name="console.tar.gz"
-default_version="3.0.0-rc2"
+default_version="3.0.0-rc3"
 download_version="${default_version}"
 specify_console=0
 solc_suffix=""
@@ -80,17 +80,14 @@ check_params()
 
 download_console(){
     check_params
-    download_link=https://github.com/FISCO-BCOS/console/releases/download/v${download_version}/${package_name}
-    cos_download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${download_version}/${package_name}
+    git_download_link=https://github.com/FISCO-BCOS/console/releases/download/v${download_version}/${package_name}
+    download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${download_version}/${package_name}
     LOG_INFO "Downloading console ${download_version} from ${download_link}"
 
-    if [ $(curl -IL -o /dev/null -s -w %{http_code} "${cos_download_link}") == 200 ];then
-        curl -LO ${download_link} --speed-time 30 --speed-limit 102400 -m 150 || {
-            LOG_WARN "Download speed is too low, try ${cos_download_link}"
-            curl -#LO "${cos_download_link}"
-        }
+    if [ $(curl -IL -o /dev/null -s -w %{http_code} "${download_link}") == 200 ];then
+        curl -#LO "${download_link}"
     else
-        curl -#LO ${download_link}
+        curl -#LO ${git_download_link}
     fi
     if [ $? -eq 0 ];then
         LOG_INFO "Download console successfully"
