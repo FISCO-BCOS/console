@@ -1,3 +1,28 @@
+### v3.0.0-rc3
+(2022-03-31)
+
+* 新增
+1. 默认使用Solidity 0.8
+2. 支持编译合约进行Solidity并行字段冲突分析
+3. 添加`listABI`命令
+4. BFS支持软链操作
+5. 支持 call link操作，控制台支持调用所有链上部署的合约
+
+
+* 更新
+1. 适配[FISCO BCOS v3.0.0-rc3](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc3)
+2. 适配[FISCO BCOS Java SDK v3.0.0-rc3](https://github.com/FISCO-BCOS/java-sdk/releases/tag/v3.0.0-rc3)
+3. 使用BFS软链取代CNS
+
+
+* 修复
+1. 修复BFS `cd`、`pwd`命令的bug
+
+* 兼容性说明
+- 沿用2.0+版本的大部分功能, 不兼容 FISCO BCOS 2.0+ 版本。FISCO BCOS 2.0+ 版本请使用对应版本的Console
+- 不兼容[3.0.0-rc1](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc1)版本的FISCO BCOS区块链
+- 支持[3.0.0-rc3](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc3)版本和[3.0.0-rc2](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc2)版本的FISCO BCOS区块链
+
 ### v3.0.0-rc2
 (2022-02-23)
 
