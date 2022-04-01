@@ -97,7 +97,7 @@ jar {
 		copy {
 			from file('src/integration-test/resources/config-example.toml')
 			from file('src/integration-test/resources/group-generate-config.toml')
-      		from file('src/main/resources/log4j.properties')
+      		from file('src/main/resources/log4j2.xml')
 			into 'dist/conf'
 		}
 		copy {
