@@ -82,11 +82,12 @@ download_console(){
     check_params
     git_download_link=https://github.com/FISCO-BCOS/console/releases/download/v${download_version}/${package_name}
     download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${download_version}/${package_name}
-    LOG_INFO "Downloading console ${download_version} from ${download_link}"
 
     if [ $(curl -IL -o /dev/null -s -w %{http_code} "${download_link}") == 200 ];then
+        LOG_INFO "Downloading console ${download_version} from ${download_link}"
         curl -#LO "${download_link}"
     else
+        LOG_INFO "Downloading console ${download_version} from ${git_download_link}"
         curl -#LO ${git_download_link}
     fi
     if [ $? -eq 0 ];then
