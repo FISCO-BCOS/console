@@ -24,9 +24,17 @@ googleJavaFormat {
   include '**/*.java'
 }
 
+def log4j_version="2.17.1"
+List logger = [
+        "org.apache.logging.log4j:log4j-api:$log4j_version",
+        "org.apache.logging.log4j:log4j-core:$log4j_version",
+        "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version",
+        "org.apache.logging.log4j:log4j-web:$log4j_version"
+]
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
+    compile logger
     compile 'org.fisco-bcos:solcJ:0.4.25.2-SNAPSHOT'
     //compile 'org.fisco-bcos:solcJ:0.6.10.2-SNAPSHOT'
     //compile 'org.fisco-bcos:solcJ:0.5.2.2-SNAPSHTOT'
