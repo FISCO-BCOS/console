@@ -114,7 +114,8 @@ public class HelpInfo {
         System.out.println("Query the specified node information.");
         System.out.println("Usage: \ngetNodeInfo [NodeEndPoint]");
         System.out.println(
-                "* NodeEndPoint -- The requested node information, the format is IP:Port");
+                "* NodeEndPoint -- The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
     }
 
     public static void getPeersHelp() {
