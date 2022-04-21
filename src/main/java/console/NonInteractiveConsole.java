@@ -3,6 +3,7 @@ package console;
 import console.command.SupportedCommand;
 import console.command.model.CommandInfo;
 import console.common.ConsoleUtils;
+import console.contract.utils.ContractCompiler;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
@@ -49,7 +50,7 @@ public class NonInteractiveConsole {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
             return;
         }
 
@@ -92,7 +93,10 @@ public class NonInteractiveConsole {
                             paramWithoutQuotation[i] = param.substring(1, param.length() - 1);
                         }
                     }
-                    commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, null);
+                    commandInfo.callCommand(
+                            consoleInitializer,
+                            paramWithoutQuotation,
+                            ContractCompiler.BFS_APPS_PREFIX);
                 }
             } else {
                 System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
@@ -105,12 +109,12 @@ public class NonInteractiveConsole {
             ConsoleUtils.printJson(
                     "{\"code\":" + e.getErrorCode() + ", \"msg\":" + "\"" + errorMessage + "\"}");
             System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
         } catch (ContractException e) {
             ConsoleUtils.printJson(
                     "{\"code\":" + e.getErrorCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
             System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
         } catch (ClassNotFoundException e) {
             System.out.println(e.getMessage() + " does not exist.");
             System.out.println();
@@ -124,7 +128,7 @@ public class NonInteractiveConsole {
                         "The groupID is not configured in dist/conf/applicationContext.xml file.");
             } else {
                 System.out.println(e.getMessage());
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                logger.error(" message: {}, e: ", e.getMessage(), e);
             }
             System.out.println();
         } catch (InvocationTargetException e) {
@@ -139,11 +143,11 @@ public class NonInteractiveConsole {
 
             System.out.println(e.getMessage());
             System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
         } finally {
             System.exit(0);
         }
