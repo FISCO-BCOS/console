@@ -66,7 +66,7 @@ elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
-   java -Djdk.tls.namedGroups="secp256k1" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
+   java -Djdk.tls.namedGroups="SM2,secp256k1,x25519,secp256r1,secp384r1,secp521r1" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
    # Note: must put the ffi library into the -Djava.library.ffipath firstly 
    #java -Djava.library.ffipath="dyn_libs" -Djava.library.path=. -Djdk.tls.namedGroups="secp256k1" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
 fi
