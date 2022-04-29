@@ -31,8 +31,8 @@ import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.KVTableService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.TableCRUDService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
-import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
@@ -141,7 +141,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             CRUDParseUtils.parseCreateTable(sql, table);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e:", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -150,8 +150,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         try {
             RetCode result =
-                    kvTableService.createTable(
-                            table.getTableName(), table.getKey(), table.getValueFields());
+                    tableCRUDService.createTable(
+                            table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+
             // parse the result
             if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("Create '" + table.getTableName() + "' Ok.");
@@ -161,37 +162,41 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), null);
+                    table,
+                    table.getKeyFieldName(),
+                    null,
+                    sql,
+                    e.getErrorCode(),
+                    e.getMessage(),
+                    null);
         } catch (ClientException e) {
             outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), null);
-        } catch (Exception e) {
-            throw e;
+                    table,
+                    table.getKeyFieldName(),
+                    null,
+                    sql,
+                    e.getErrorCode(),
+                    e.getMessage(),
+                    null);
         }
     }
 
-    private boolean checkTableField(List<Map<String, String>> descTable, Entry entry) {
+    private boolean checkTableField(Map<String, List<String>> descTable, Entry entry) {
         if (descTable == null || descTable.size() == 0) {
             return true;
         }
-        List<String> descFieldList = new ArrayList<String>();
-        Collections.addAll(
-                descFieldList,
-                descTable.get(0).get(PrecompiledConstant.VALUE_FIELD_NAME).split(","));
-        String key = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
         // check field
         if (entry != null) {
             Set<String> fieldSet = entry.getFieldNameToValue().keySet();
             for (String field : fieldSet) {
-                if (field.equals(key)) {
-                    continue;
-                }
-                if (!descFieldList.contains(field)) {
+                if (!descTable.get(PrecompiledConstant.VALUE_FIELD_NAME).contains(field)) {
                     System.out.println(
                             "Unknown field \""
                                     + field
                                     + "\", current supported fields are "
-                                    + descFieldList.toString());
+                                    + descTable
+                                            .get(PrecompiledConstant.VALUE_FIELD_NAME)
+                                            .toString());
                     return false;
                 }
             }
@@ -201,11 +206,12 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     private void outputErrorMessageForTableCRUD(
             Table table,
+            String keyValue,
             Entry entry,
             String command,
             int code,
             String message,
-            List<Map<String, String>> descTable) {
+            Map<String, List<String>> descTable) {
         System.out.println("call " + command + " failed!");
         System.out.println("* code: " + code);
         System.out.println("* message: " + message);
@@ -243,13 +249,13 @@ public class PrecompiledImpl implements PrecompiledFace {
                             + " , current length of the table is "
                             + table.getKeyFieldName().length());
         }
-        if (table.getKey().length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
-            System.out.println("Invalid key value " + table.getKey());
+        if (keyValue.length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
+            System.out.println("Invalid key value " + keyValue);
             System.out.println(
                     "* The value of the key must be no greater than "
                             + PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH
                             + " , current length of the table is "
-                            + table.getKey().length());
+                            + keyValue.length());
         }
         if (table.getValueFields() != null) {
             for (String field : table.getValueFields()) {
@@ -268,23 +274,23 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         Map<String, String> fieldNameToValue = entry.getFieldNameToValue();
-        for (String key : fieldNameToValue.keySet()) {
-            if (key.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-                System.out.println("Invalid field name " + key);
+        for (Map.Entry<String, String> kvEntry : fieldNameToValue.entrySet()) {
+            if (kvEntry.getKey().length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
+                System.out.println("Invalid field name " + kvEntry.getKey());
                 System.out.println(
                         "* Field length must be no greater than "
                                 + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
                                 + ", current length:"
-                                + key.length());
+                                + kvEntry.getKey().length());
             }
-            String value = fieldNameToValue.get(key);
-            if (value.length() > PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
-                System.out.println("Invalid field value for " + key);
+            if (kvEntry.getValue().length()
+                    > PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
+                System.out.println("Invalid field value for " + kvEntry.getKey());
                 System.out.println(
                         "* Value of Field must be no greater than: "
                                 + PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH
                                 + ", current length is "
-                                + value.length());
+                                + kvEntry.getValue().length());
             }
         }
     }
@@ -292,19 +298,19 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void insert(String sql) throws Exception {
         Table table = new Table();
-        Entry entry = new Entry();
-        List<Map<String, String>> descTable = null;
+        Entry entry = null;
+        Map<String, List<String>> descTable = null;
+        String keyValue = "";
         try {
             String tableName = CRUDParseUtils.parseInsertedTableName(sql);
             descTable = tableCRUDService.desc(tableName);
             if (!checkTableExistence(tableName, descTable)) {
                 return;
             }
-            logger.debug(
-                    "insert, tableName: {}, descTable: {}", tableName, descTable.get(0).toString());
-            CRUDParseUtils.parseInsert(sql, table, entry, descTable.get(0));
-            String keyName = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
-            String keyValue = entry.getFieldNameToValue().get(keyName);
+            logger.debug("insert, tableName: {}, descTable: {}", tableName, descTable);
+            entry = CRUDParseUtils.parseInsert(sql, table, descTable);
+            String keyName = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
+            keyValue = entry.getKey();
             logger.debug(
                     "fieldNameToValue: {}, keyName: {}, keyValue: {}",
                     entry.getFieldNameToValue(),
@@ -313,7 +319,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (keyValue == null) {
                 throw new ConsoleMessageException("Please insert the key field '" + keyName + "'.");
             }
-            table.setKey(keyValue);
             RetCode insertResult = tableCRUDService.insert(table.getTableName(), entry);
 
             if (insertResult.getCode() >= 0) {
@@ -326,34 +331,31 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
+            logger.error(" message: {}, e:", e.getMessage(), e);
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement, error message: " + e.getMessage());
             CRUDParseUtils.invalidSymbol(sql);
-            return;
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
-                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
+                    table, keyValue, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (ClientException e) {
             outputErrorMessageForTableCRUD(
-                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (Exception e) {
-            throw e;
+                    table, keyValue, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
         }
     }
 
     @Override
     public void update(String sql) throws Exception {
         Table table = new Table();
-        Entry entry = new Entry();
+        UpdateFields updateFields = new UpdateFields();
         Condition condition = new Condition();
-        List<Map<String, String>> descTable = null;
+        String keyValue = "";
+        Map<String, List<String>> descTable = null;
         try {
-            CRUDParseUtils.parseUpdate(sql, table, entry, condition);
+            condition = CRUDParseUtils.parseUpdate(sql, table, updateFields);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
@@ -366,29 +368,29 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (!checkTableExistence(table.getTableName(), descTable)) {
                 return;
             }
-            String keyName = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
-            if (entry.getFieldNameToValue().containsKey(keyName)) {
+            String keyName = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
+            if (updateFields.getFieldNameToValue().containsKey(keyName)) {
                 System.out.println("Please don't set the key field \"" + keyName + "\".");
                 return;
             }
-            table.setKey(keyName);
-            handleKey(table, condition);
-            RetCode updateResult = tableCRUDService.update(table.getTableName(), entry, condition);
+            table.setKeyFieldName(keyName);
+            keyValue = condition.getEqValue();
+            RetCode updateResult =
+                    keyValue.isEmpty()
+                            ? tableCRUDService.update(tableName, condition, updateFields)
+                            : tableCRUDService.update(tableName, keyValue, updateFields);
             if (updateResult.getCode() >= 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
             } else {
                 System.out.println("Result of update " + tableName + " :");
                 ConsoleUtils.printJson(updateResult.toString());
             }
-
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
-                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
+                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (ClientException e) {
             outputErrorMessageForTableCRUD(
-                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (Exception e) {
-            throw e;
+                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         }
     }
 
@@ -396,9 +398,10 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void remove(String sql) throws Exception {
         Table table = new Table();
         Condition condition = new Condition();
-        List<Map<String, String>> descTable = null;
+        Map<String, List<String>> descTable = null;
+        String keyValue = "";
         try {
-            CRUDParseUtils.parseRemove(sql, table, condition);
+            condition = CRUDParseUtils.parseRemove(sql, table);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             logger.error(" message: {}, e: {}", e.getMessage(), e);
@@ -413,9 +416,12 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (!checkTableExistence(table.getTableName(), descTable)) {
                 return;
             }
-            table.setKey(descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME));
-            handleKey(table, condition);
-            RetCode removeResult = tableCRUDService.remove(table.getTableName(), condition);
+            table.setKeyFieldName(descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0));
+            keyValue = condition.getEqValue();
+            RetCode removeResult =
+                    keyValue.isEmpty()
+                            ? tableCRUDService.remove(table.getTableName(), condition)
+                            : tableCRUDService.remove(table.getTableName(), keyValue);
 
             if (removeResult.getCode() >= 0) {
                 System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
@@ -425,18 +431,16 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
+                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (ClientException e) {
             outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (Exception e) {
-            throw e;
+                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         }
     }
 
-    private boolean checkTableExistence(String tableName, List<Map<String, String>> descTable) {
+    private boolean checkTableExistence(String tableName, Map<String, List<String>> descTable) {
         if (descTable.size() == 0
-                || descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME).equals("")) {
+                || descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0).equals("")) {
             System.out.println("The table \"" + tableName + "\" doesn't exist!");
             return false;
         }
@@ -444,34 +448,28 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void select(String sql) throws Exception {
+    public void select(String sql) throws ConsoleMessageException {
         Table table = new Table();
         Condition condition = new Condition();
         List<String> selectColumns = new ArrayList<>();
-        List<Map<String, String>> descTable = null;
-        try {
-            CRUDParseUtils.parseSelect(sql, table, condition, selectColumns);
-        } catch (ConsoleMessageException e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
-        } catch (JSQLParserException | NullPointerException e) {
-            System.out.println("Could not parse SQL statement.");
-            CRUDParseUtils.invalidSymbol(sql);
-            return;
-        }
+        Map<String, List<String>> descTable = null;
+        String keyValue = "";
         try {
             descTable = tableCRUDService.desc(table.getTableName());
             if (!checkTableExistence(table.getTableName(), descTable)) {
                 return;
             }
-            String keyField = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
-            table.setKey(keyField);
-            handleKey(table, condition);
+            String keyField = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
+            table.setKeyFieldName(keyField);
+            condition = CRUDParseUtils.parseSelect(sql, table, selectColumns);
+            keyValue = condition.getEqValue();
             List<Map<String, String>> result =
-                    tableCRUDService.select(table.getTableName(), condition);
+                    keyValue.isEmpty()
+                            ? tableCRUDService.select(table.getTableName(), condition)
+                            : Collections.singletonList(
+                                    tableCRUDService.select(table.getTableName(), keyValue));
             int rows = 0;
-            if (result.size() == 0) {
+            if (result.isEmpty()) {
                 System.out.println("Empty set.");
                 return;
             }
@@ -479,15 +477,13 @@ public class PrecompiledImpl implements PrecompiledFace {
             if ("*".equals(selectColumns.get(0))) {
                 selectColumns.clear();
                 selectColumns.add(keyField);
-                String[] valueArr =
-                        descTable.get(0).get(PrecompiledConstant.VALUE_FIELD_NAME).split(",");
-                selectColumns.addAll(Arrays.asList(valueArr));
-                result.get(0).put(keyField, table.getKey());
+                selectColumns.addAll(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
+                result.get(0).put(keyField, keyValue);
                 result = getSelectedColumn(selectColumns, result);
                 rows = result.size();
             } else {
                 if (selectColumns.contains(keyField)) {
-                    result.get(0).put(keyField, table.getKey());
+                    result.get(0).put(keyField, keyValue);
                 }
                 List<Map<String, String>> selectedResult = getSelectedColumn(selectColumns, result);
                 rows = selectedResult.size();
@@ -497,14 +493,18 @@ public class PrecompiledImpl implements PrecompiledFace {
             } else {
                 System.out.println(rows + " rows in set.");
             }
+        } catch (ConsoleMessageException e) {
+            System.out.println(e.getMessage());
+            logger.error(" message: {}, e:", e.getMessage(), e);
+        } catch (JSQLParserException | NullPointerException e) {
+            System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
+                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         } catch (ClientException e) {
             outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (Exception e) {
-            throw e;
+                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         }
     }
 
@@ -524,7 +524,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             selectedResult.add(selectedRecords);
         }
-        selectedResult.stream().forEach(System.out::println);
+        selectedResult.forEach(System.out::println);
         return selectedResult;
     }
 
@@ -544,32 +544,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             filteredResult.add(filteredRecords);
         }
         return filteredResult;
-    }
-
-    private void handleKey(Table table, Condition condition) throws Exception {
-
-        String keyName = table.getKey();
-        String keyValue = "";
-        Map<ConditionOperator, String> keyMap = condition.getConditions().get(keyName);
-        if (keyMap == null) {
-            throw new ConsoleMessageException(
-                    "Please provide a equal condition for the key field '"
-                            + keyName
-                            + "' in where clause.");
-        } else {
-            Set<ConditionOperator> keySet = keyMap.keySet();
-            for (ConditionOperator enumOP : keySet) {
-                if (enumOP != ConditionOperator.eq) {
-                    throw new ConsoleMessageException(
-                            "Please provide a equal condition for the key field '"
-                                    + keyName
-                                    + "' in where clause.");
-                } else {
-                    keyValue = keyMap.get(enumOP);
-                }
-            }
-        }
-        table.setKey(keyValue);
     }
 
     @Override

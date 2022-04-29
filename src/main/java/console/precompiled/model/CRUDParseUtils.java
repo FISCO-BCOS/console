@@ -3,8 +3,10 @@ package console.precompiled.model;
 import console.exception.ConsoleMessageException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.BinaryExpression;
@@ -35,9 +37,10 @@ import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
-import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionOperator;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
 import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
+import org.fisco.bcos.sdk.v3.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +69,6 @@ public class CRUDParseUtils {
             Index index = indexes.get(0);
             String type = index.getType().toLowerCase();
             if (PRIMARY_KEY.equals(type)) {
-                table.setKey(index.getColumnsNames().get(0));
                 table.setKeyFieldName(index.getColumnsNames().get(0));
             } else {
                 throw new ConsoleMessageException(
@@ -75,26 +77,22 @@ public class CRUDParseUtils {
         }
         List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
         // parse key from ColumnDefinition
-        for (int i = 0; i < columnDefinitions.size(); i++) {
-            List<String> columnSpecStrings = columnDefinitions.get(i).getColumnSpecStrings();
-            if (columnSpecStrings == null) {
-                continue;
-            } else {
-                if (columnSpecStrings.size() == 2
-                        && "primary".equals(columnSpecStrings.get(0))
-                        && "key".equals(columnSpecStrings.get(1))) {
-                    String key = columnDefinitions.get(i).getColumnName();
-                    if (keyFlag) {
-                        if (!table.getKey().equals(key)) {
-                            throw new ConsoleMessageException(
-                                    "Please provide only one primary key for the table.");
-                        }
-                    } else {
-                        keyFlag = true;
-                        table.setKey(key);
+        for (ColumnDefinition definition : columnDefinitions) {
+            List<String> columnSpecStrings = definition.getColumnSpecStrings();
+            if (columnSpecStrings.size() == 2
+                    && "primary".equals(columnSpecStrings.get(0))
+                    && "key".equals(columnSpecStrings.get(1))) {
+                String key = definition.getColumnName();
+                if (keyFlag) {
+                    if (!table.getKeyFieldName().equals(key)) {
+                        throw new ConsoleMessageException(
+                                "Please provide only one primary key for the table.");
                     }
-                    break;
+                } else {
+                    keyFlag = true;
+                    table.setKeyFieldName(key);
                 }
+                break;
             }
         }
         if (!keyFlag) {
@@ -102,8 +100,8 @@ public class CRUDParseUtils {
         }
         // parse value field
         List<String> fieldsList = new ArrayList<>();
-        for (int i = 0; i < columnDefinitions.size(); i++) {
-            String columnName = columnDefinitions.get(i).getColumnName();
+        for (ColumnDefinition columnDefinition : columnDefinitions) {
+            String columnName = columnDefinition.getColumnName();
             if (fieldsList.contains(columnName)) {
                 throw new ConsoleMessageException(
                         "Please provide the field '" + columnName + "' only once.");
@@ -111,11 +109,13 @@ public class CRUDParseUtils {
                 fieldsList.add(columnName);
             }
         }
-        if (!fieldsList.contains(table.getKey())) {
+        if (!fieldsList.contains(table.getKeyFieldName())) {
             throw new ConsoleMessageException(
-                    "Please provide the field '" + table.getKey() + "' in column definition.");
+                    "Please provide the field '"
+                            + table.getKeyFieldName()
+                            + "' in column definition.");
         } else {
-            fieldsList.remove(table.getKey());
+            fieldsList.remove(table.getKeyFieldName());
         }
         table.setValueFields(fieldsList);
     }
@@ -132,16 +132,16 @@ public class CRUDParseUtils {
         return insert.getTable().getName();
     }
 
-    public static boolean parseInsert(
-            String sql, Table table, Entry entry, Map<String, String> tableDesc)
+    public static Entry parseInsert(String sql, Table table, Map<String, List<String>> tableDesc)
             throws JSQLParserException, ConsoleMessageException {
         Statement statement = CCJSqlParserUtil.parse(sql);
         Insert insert = (Insert) statement;
-        String valueFieldString = tableDesc.get(PrecompiledConstant.VALUE_FIELD_NAME);
-        String[] valueFields = valueFieldString.split(",");
-        String expectedValueField =
-                tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME) + ", " + valueFieldString;
-        int expectedValueNum = valueFields.length + 1;
+        List<String> valueFields = tableDesc.get(PrecompiledConstant.VALUE_FIELD_NAME);
+        String keyField = tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
+
+        String expectedValueField = keyField + "," + StringUtils.join(valueFields, ",");
+
+        int expectedValueNum = valueFields.size() + 1;
 
         if (insert.getSelect() != null) {
             throw new ConsoleMessageException("The insert select clause is not supported.");
@@ -161,6 +161,8 @@ public class CRUDParseUtils {
         for (int i = 0; i < expressions.size(); i++) {
             itemArr[i] = expressions.get(i).toString().trim();
         }
+        LinkedHashMap<String, String> kv = new LinkedHashMap<>();
+        String keyValue = "";
         if (columns != null) {
             if (columns.size() != itemArr.length) {
                 throw new ConsoleMessageException("Column count doesn't match value count.");
@@ -168,7 +170,7 @@ public class CRUDParseUtils {
             if (expectedValueNum != columns.size()) {
                 throw new ConsoleMessageException(
                         "Column count doesn't match value count, fields size: "
-                                + valueFields.length
+                                + valueFields.size()
                                 + ", provided field value size: "
                                 + columns.size()
                                 + ", expected field list: "
@@ -185,32 +187,31 @@ public class CRUDParseUtils {
                 }
             }
             for (int i = 0; i < columnNames.size(); i++) {
-                entry.getFieldNameToValue().put(columnNames.get(i), trimQuotes(itemArr[i]));
+                if (Objects.equals(columnNames.get(i), keyField)) {
+                    keyValue = trimQuotes(itemArr[i]);
+                    continue;
+                }
+                kv.put(columnNames.get(i), trimQuotes(itemArr[i]));
             }
-            return false;
         } else {
-            String keyField = tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME);
             if (expectedValueNum != itemArr.length) {
                 throw new ConsoleMessageException(
                         "Column count doesn't match value count, fields size: "
-                                + valueFields.length
+                                + valueFields.size()
                                 + ", provided field value size: "
                                 + itemArr.length
                                 + ", expected field list: "
                                 + expectedValueField);
             }
-            String[] allFields = new String[itemArr.length];
-            allFields[0] = keyField;
-            System.arraycopy(valueFields, 0, allFields, 1, valueFields.length);
-            for (int i = 0; i < itemArr.length; i++) {
-                entry.getFieldNameToValue().put(allFields[i], trimQuotes(itemArr[i]));
+            keyValue = trimQuotes(itemArr[0]);
+            for (int i = 1; i < itemArr.length; i++) {
+                kv.put(valueFields.get(i - 1), trimQuotes(itemArr[i]));
             }
-            return true;
         }
+        return new Entry(keyValue, kv);
     }
 
-    public static void parseSelect(
-            String sql, Table table, Condition condition, List<String> selectColumns)
+    public static Condition parseSelect(String sql, Table table, List<String> selectColumns)
             throws JSQLParserException, ConsoleMessageException {
         Statement statement;
         statement = CCJSqlParserUtil.parse(sql);
@@ -245,7 +246,7 @@ public class CRUDParseUtils {
             throw new ConsoleMessageException("The distinct clause is not supported.");
         }
         Expression expr = selectBody.getWhere();
-        handleExpression(condition, expr);
+        Condition condition = covertExpressionToCondition(expr, table.getKeyFieldName());
 
         // parse select item
         List<SelectItem> selectItems = selectBody.getSelectItems();
@@ -261,6 +262,7 @@ public class CRUDParseUtils {
             }
             selectColumns.add(item.toString());
         }
+        return condition;
     }
 
     private static void checkExpression(Expression expression) throws ConsoleMessageException {
@@ -285,23 +287,70 @@ public class CRUDParseUtils {
         }
     }
 
-    private static Condition handleExpression(Condition condition, Expression expr)
+    private static Condition covertExpressionToCondition(Expression expr, String keyField)
             throws ConsoleMessageException {
+        Condition condition = new Condition();
         if (expr instanceof BinaryExpression) {
-            condition = getWhereClause((BinaryExpression) (expr), condition);
+            Set<String> keySet = new HashSet<>();
+            Set<String> eqValue = new HashSet<>();
+            Set<String> unsupportedConditions = new HashSet<>();
+            expr.accept(
+                    new ExpressionVisitorAdapter() {
+                        @Override
+                        protected void visitBinaryExpression(BinaryExpression expr) {
+                            if (expr instanceof ComparisonOperator) {
+                                String key = trimQuotes(expr.getLeftExpression().toString());
+                                keySet.add(key);
+                                String operation = expr.getStringExpression();
+                                String value = trimQuotes(expr.getRightExpression().toString());
+                                switch (operation) {
+                                    case "=":
+                                        if (key.equals(keyField)) {
+                                            eqValue.add(value);
+                                        }
+                                        break;
+                                    case ">":
+                                        condition.GT(value);
+                                        break;
+                                    case ">=":
+                                        condition.GE(value);
+                                        break;
+                                    case "<":
+                                        condition.LT(value);
+                                        break;
+                                    case "<=":
+                                        condition.LE(value);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            } else {
+                                try {
+                                    checkExpression(expr);
+                                } catch (ConsoleMessageException e) {
+                                    unsupportedConditions.add(e.getMessage());
+                                }
+                            }
+                            super.visitBinaryExpression(expr);
+                        }
+                    });
+            if (keySet.size() != 1 || !keySet.contains(keyField)) {
+                throw new ConsoleMessageException(
+                        "Wrong condition! Condition is only supported in Key! The keyField is: "
+                                + keyField);
+            }
+            if (!eqValue.isEmpty() && condition.getConditions().size() > 0) {
+                throw new ConsoleMessageException(
+                        "Wrong condition! There is an equal comparison, no need to do other comparison! The conflicting condition is: "
+                                + condition.getConditions());
+            }
+            if (!unsupportedConditions.isEmpty()) {
+                throw new ConsoleMessageException(
+                        "Wrong condition! Find unsupported conditions! message: "
+                                + unsupportedConditions);
+            }
         }
         checkExpression(expr);
-        Map<String, Map<ConditionOperator, String>> conditions = condition.getConditions();
-        Set<String> keys = conditions.keySet();
-        for (String key : keys) {
-            Map<ConditionOperator, String> value = conditions.get(key);
-            ConditionOperator operation = value.keySet().iterator().next();
-            String itemValue = value.values().iterator().next();
-            String newValue = trimQuotes(itemValue);
-            value.put(operation, newValue);
-            conditions.put(key, value);
-        }
-        condition.setConditions(conditions);
         return condition;
     }
 
@@ -321,8 +370,9 @@ public class CRUDParseUtils {
         return string;
     }
 
-    public static void parseUpdate(String sql, Table table, Entry entry, Condition condition)
+    public static Condition parseUpdate(String sql, Table table, UpdateFields updateFields)
             throws JSQLParserException, ConsoleMessageException {
+        Condition condition = new Condition();
         Statement statement = CCJSqlParserUtil.parse(sql);
         Update update = (Update) statement;
 
@@ -340,7 +390,8 @@ public class CRUDParseUtils {
             values[i] = expressions.get(i).toString();
         }
         for (int i = 0; i < columns.size(); i++) {
-            entry.getFieldNameToValue()
+            updateFields
+                    .getFieldNameToValue()
                     .put(trimQuotes(columns.get(i).toString()), trimQuotes(values[i]));
         }
 
@@ -348,12 +399,14 @@ public class CRUDParseUtils {
         Expression where = update.getWhere();
         if (where != null) {
             BinaryExpression expr2 = (BinaryExpression) (where);
-            handleExpression(condition, expr2);
+            condition = covertExpressionToCondition(expr2, table.getKeyFieldName());
         }
+        return condition;
     }
 
-    public static void parseRemove(String sql, Table table, Condition condition)
+    public static Condition parseRemove(String sql, Table table)
             throws JSQLParserException, ConsoleMessageException {
+        Condition condition = new Condition();
         Statement statement = CCJSqlParserUtil.parse(sql);
         Delete delete = (Delete) statement;
 
@@ -365,68 +418,7 @@ public class CRUDParseUtils {
         Expression where = delete.getWhere();
         if (where != null) {
             BinaryExpression expr = (BinaryExpression) (where);
-            handleExpression(condition, expr);
-        }
-    }
-
-    private static Condition getWhereClause(Expression expr, Condition condition)
-            throws ConsoleMessageException {
-        Set<String> keySet = new HashSet<>();
-        Set<String> conflictKeys = new HashSet<>();
-        Set<String> unsupportedConditions = new HashSet<>();
-        expr.accept(
-                new ExpressionVisitorAdapter() {
-                    @Override
-                    protected void visitBinaryExpression(BinaryExpression expr) {
-                        if (expr instanceof ComparisonOperator) {
-                            String key = trimQuotes(expr.getLeftExpression().toString());
-                            if (keySet.contains(key)) {
-                                conflictKeys.add(key);
-                            }
-                            keySet.add(key);
-                            String operation = expr.getStringExpression();
-                            String value = trimQuotes(expr.getRightExpression().toString());
-                            switch (operation) {
-                                case "=":
-                                    condition.EQ(key, value);
-                                    break;
-                                case "!=":
-                                    condition.NE(key, value);
-                                    break;
-                                case ">":
-                                    condition.GT(key, value);
-                                    break;
-                                case ">=":
-                                    condition.GE(key, value);
-                                    break;
-                                case "<":
-                                    condition.LT(key, value);
-                                    break;
-                                case "<=":
-                                    condition.LE(key, value);
-                                    break;
-                                default:
-                                    break;
-                            }
-                        } else {
-                            try {
-                                checkExpression(expr);
-                            } catch (ConsoleMessageException e) {
-                                unsupportedConditions.add(e.getMessage());
-                            }
-                        }
-                        super.visitBinaryExpression(expr);
-                    }
-                });
-        if (!conflictKeys.isEmpty()) {
-            throw new ConsoleMessageException(
-                    "Wrong condition! There cannot be the same field in the same condition! The conflicting field is: "
-                            + conflictKeys.toString());
-        }
-        if (!unsupportedConditions.isEmpty()) {
-            throw new ConsoleMessageException(
-                    "Wrong condition! Find unsupported conditions! message: "
-                            + unsupportedConditions.toString());
+            condition = covertExpressionToCondition(expr, table.getKeyFieldName());
         }
         return condition;
     }
