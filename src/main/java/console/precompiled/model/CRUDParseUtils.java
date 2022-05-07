@@ -13,6 +13,7 @@ import net.sf.jsqlparser.expression.BinaryExpression;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
+import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NotExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
@@ -29,6 +30,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.select.Limit;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectExpressionItem;
@@ -79,6 +81,9 @@ public class CRUDParseUtils {
         // parse key from ColumnDefinition
         for (ColumnDefinition definition : columnDefinitions) {
             List<String> columnSpecStrings = definition.getColumnSpecStrings();
+            if (columnSpecStrings == null) {
+                continue;
+            }
             if (columnSpecStrings.size() == 2
                     && "primary".equals(columnSpecStrings.get(0))
                     && "key".equals(columnSpecStrings.get(1))) {
@@ -120,16 +125,17 @@ public class CRUDParseUtils {
         table.setValueFields(fieldsList);
     }
 
-    public static String parseInsertedTableName(String sql)
+    public static String parseTableNameFromSql(String sql)
             throws JSQLParserException, ConsoleMessageException {
         Statement statement = CCJSqlParserUtil.parse(sql);
-        Insert insert = (Insert) statement;
 
-        if (insert.getSelect() != null) {
-            throw new ConsoleMessageException("The insert select clause is not supported.");
-        }
         // parse table name
-        return insert.getTable().getName();
+        TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+        List<String> tableList = tablesNamesFinder.getTableList(statement);
+        if (tableList.size() != 1) {
+            throw new ConsoleMessageException("Please provide only one table name.");
+        }
+        return tableList.get(0);
     }
 
     public static Entry parseInsert(String sql, Table table, Map<String, List<String>> tableDesc)
@@ -208,7 +214,7 @@ public class CRUDParseUtils {
                 kv.put(valueFields.get(i - 1), trimQuotes(itemArr[i]));
             }
         }
-        return new Entry(keyValue, kv);
+        return new Entry(valueFields, keyValue, kv);
     }
 
     public static Condition parseSelect(String sql, Table table, List<String> selectColumns)
@@ -248,6 +254,12 @@ public class CRUDParseUtils {
         Expression expr = selectBody.getWhere();
         Condition condition = covertExpressionToCondition(expr, table.getKeyFieldName());
 
+        // parse limit
+        Limit limit = selectBody.getLimit();
+        if (limit != null) {
+            covertLimitExpressionToCondition(condition, limit);
+        }
+
         // parse select item
         List<SelectItem> selectItems = selectBody.getSelectItems();
         for (SelectItem item : selectItems) {
@@ -263,6 +275,15 @@ public class CRUDParseUtils {
             selectColumns.add(item.toString());
         }
         return condition;
+    }
+
+    private static void covertLimitExpressionToCondition(Condition condition, Limit limit) {
+        LongValue offsetLongValue = (LongValue) limit.getOffset();
+        LongValue rowCountLongValue = (LongValue) limit.getRowCount();
+        long offset = offsetLongValue == null ? 0 : offsetLongValue.getValue();
+        long rowCount = rowCountLongValue == null ? 0 : rowCountLongValue.getValue();
+        // TODO: add offset and rowCount check
+        condition.setLimit((int) offset, (int) rowCount);
     }
 
     private static void checkExpression(Expression expression) throws ConsoleMessageException {
@@ -307,6 +328,7 @@ public class CRUDParseUtils {
                                     case "=":
                                         if (key.equals(keyField)) {
                                             eqValue.add(value);
+                                            condition.EQ(value);
                                         }
                                         break;
                                     case ">":
@@ -401,6 +423,13 @@ public class CRUDParseUtils {
             BinaryExpression expr2 = (BinaryExpression) (where);
             condition = covertExpressionToCondition(expr2, table.getKeyFieldName());
         }
+
+        // parse limit
+        Limit limit = update.getLimit();
+        if (limit != null) {
+            covertLimitExpressionToCondition(condition, limit);
+        }
+
         return condition;
     }
 
@@ -419,6 +448,12 @@ public class CRUDParseUtils {
         if (where != null) {
             BinaryExpression expr = (BinaryExpression) (where);
             condition = covertExpressionToCondition(expr, table.getKeyFieldName());
+        }
+
+        // parse limit
+        Limit limit = delete.getLimit();
+        if (limit != null) {
+            covertLimitExpressionToCondition(condition, limit);
         }
         return condition;
     }
