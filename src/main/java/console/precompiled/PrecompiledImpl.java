@@ -11,9 +11,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +26,6 @@ import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
-import org.fisco.bcos.sdk.v3.contract.precompiled.crud.KVTableService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.TableCRUDService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
@@ -54,7 +51,6 @@ public class PrecompiledImpl implements PrecompiledFace {
     private ConsensusService consensusService;
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
-    private KVTableService kvTableService;
     private BFSService bfsService;
     private String pwd = "/apps";
 
@@ -64,7 +60,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.consensusService = new ConsensusService(client, cryptoKeyPair);
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
-        this.kvTableService = new KVTableService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
     }
 
@@ -126,8 +121,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (tableName.endsWith(";")) {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
-        Map<String, String> tableDesc = kvTableService.desc(tableName);
-        if (tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME).equals("")) {
+        Map<String, List<String>> tableDesc = tableCRUDService.desc(tableName);
+        if (tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME).isEmpty()) {
             System.out.println("The table \"" + tableName + "\" doesn't exist!");
             return;
         }
@@ -144,6 +139,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             logger.error(" message: {}, e:", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
+            logger.error(" message: {}, e:", e.getMessage(), e);
             System.out.println("Could not parse SQL statement.");
             CRUDParseUtils.invalidSymbol(sql);
             return;
@@ -302,9 +298,10 @@ public class PrecompiledImpl implements PrecompiledFace {
         Map<String, List<String>> descTable = null;
         String keyValue = "";
         try {
-            String tableName = CRUDParseUtils.parseInsertedTableName(sql);
+            String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
             descTable = tableCRUDService.desc(tableName);
-            if (!checkTableExistence(tableName, descTable)) {
+            if (!checkTableExistence(descTable)) {
+                System.out.println("The table \"" + tableName + "\" doesn't exist!");
                 return;
             }
             logger.debug("insert, tableName: {}, descTable: {}", tableName, descTable);
@@ -323,7 +320,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
             if (insertResult.getCode() >= 0) {
                 System.out.println("Insert OK: ");
-                System.out.println(insertResult.getCode() + " row affected.");
+                System.out.println(insertResult.getCode() + " row(s) affected.");
             } else {
                 System.out.println("Result of insert for " + table.getTableName() + ":");
                 ConsoleUtils.printJson(insertResult.toString());
@@ -352,20 +349,10 @@ public class PrecompiledImpl implements PrecompiledFace {
         String keyValue = "";
         Map<String, List<String>> descTable = null;
         try {
-            condition = CRUDParseUtils.parseUpdate(sql, table, updateFields);
-        } catch (ConsoleMessageException e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: ", e.getMessage(), e);
-            return;
-        } catch (JSQLParserException | NullPointerException e) {
-            System.out.println("Could not parse SQL statement.");
-            CRUDParseUtils.invalidSymbol(sql);
-            return;
-        }
-        try {
-            String tableName = table.getTableName();
+            String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
             descTable = tableCRUDService.desc(tableName);
-            if (!checkTableExistence(table.getTableName(), descTable)) {
+            if (!checkTableExistence(descTable)) {
+                System.out.println("The table \"" + tableName + "\" doesn't exist!");
                 return;
             }
             String keyName = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
@@ -374,6 +361,8 @@ public class PrecompiledImpl implements PrecompiledFace {
                 return;
             }
             table.setKeyFieldName(keyName);
+            condition = CRUDParseUtils.parseUpdate(sql, table, updateFields);
+
             keyValue = condition.getEqValue();
             RetCode updateResult =
                     keyValue.isEmpty()
@@ -385,6 +374,13 @@ public class PrecompiledImpl implements PrecompiledFace {
                 System.out.println("Result of update " + tableName + " :");
                 ConsoleUtils.printJson(updateResult.toString());
             }
+        } catch (ConsoleMessageException e) {
+            System.out.println(e.getMessage());
+            logger.error(" message: {}, e: ", e.getMessage(), e);
+        } catch (JSQLParserException | NullPointerException e) {
+            System.out.println("Could not parse SQL statement.");
+            logger.error(" message: {}, e: ", e.getMessage(), e);
+            CRUDParseUtils.invalidSymbol(sql);
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
                     table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
@@ -401,22 +397,14 @@ public class PrecompiledImpl implements PrecompiledFace {
         Map<String, List<String>> descTable = null;
         String keyValue = "";
         try {
-            condition = CRUDParseUtils.parseRemove(sql, table);
-        } catch (ConsoleMessageException e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
-        } catch (JSQLParserException | NullPointerException e) {
-            System.out.println("Could not parse SQL statement.");
-            CRUDParseUtils.invalidSymbol(sql);
-            return;
-        }
-        try {
-            descTable = tableCRUDService.desc(table.getTableName());
-            if (!checkTableExistence(table.getTableName(), descTable)) {
+            String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
+            descTable = tableCRUDService.desc(tableName);
+            if (!checkTableExistence(descTable)) {
+                System.out.println("The table \"" + table.getTableName() + "\" doesn't exist!");
                 return;
             }
             table.setKeyFieldName(descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0));
+            condition = CRUDParseUtils.parseRemove(sql, table);
             keyValue = condition.getEqValue();
             RetCode removeResult =
                     keyValue.isEmpty()
@@ -424,11 +412,18 @@ public class PrecompiledImpl implements PrecompiledFace {
                             : tableCRUDService.remove(table.getTableName(), keyValue);
 
             if (removeResult.getCode() >= 0) {
-                System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
+                System.out.println("Remove OK, " + removeResult.getCode() + " row(s) affected.");
             } else {
                 System.out.println("Result of Remove " + table.getTableName() + " :");
                 ConsoleUtils.printJson(removeResult.toString());
             }
+        } catch (ConsoleMessageException e) {
+            System.out.println(e.getMessage());
+            logger.error(" message: {}, e: {}", e.getMessage(), e);
+        } catch (JSQLParserException | NullPointerException e) {
+            System.out.println("Could not parse SQL statement.");
+            logger.error(" message: {}, e: ", e.getMessage(), e);
+            CRUDParseUtils.invalidSymbol(sql);
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
                     table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
@@ -438,13 +433,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
-    private boolean checkTableExistence(String tableName, Map<String, List<String>> descTable) {
-        if (descTable.size() == 0
-                || descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0).equals("")) {
-            System.out.println("The table \"" + tableName + "\" doesn't exist!");
-            return false;
-        }
-        return true;
+    private boolean checkTableExistence(Map<String, List<String>> descTable) {
+        return descTable.size() != 0
+                && !descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0).equals("");
     }
 
     @Override
@@ -455,49 +446,51 @@ public class PrecompiledImpl implements PrecompiledFace {
         Map<String, List<String>> descTable = null;
         String keyValue = "";
         try {
-            descTable = tableCRUDService.desc(table.getTableName());
-            if (!checkTableExistence(table.getTableName(), descTable)) {
+            String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
+            table.setTableName(tableName);
+            descTable = tableCRUDService.desc(tableName);
+            if (!checkTableExistence(descTable)) {
+                System.out.println("The table \"" + table.getTableName() + "\" doesn't exist!");
                 return;
             }
             String keyField = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
             table.setKeyFieldName(keyField);
             condition = CRUDParseUtils.parseSelect(sql, table, selectColumns);
             keyValue = condition.getEqValue();
-            List<Map<String, String>> result =
-                    keyValue.isEmpty()
-                            ? tableCRUDService.select(table.getTableName(), condition)
-                            : Collections.singletonList(
-                                    tableCRUDService.select(table.getTableName(), keyValue));
-            int rows = 0;
+            List<Map<String, String>> result = new ArrayList<>();
+            if (keyValue.isEmpty()) {
+                result = tableCRUDService.select(table.getTableName(), descTable, condition);
+            } else {
+                Map<String, String> select =
+                        tableCRUDService.select(table.getTableName(), descTable, keyValue);
+                if (select.isEmpty()) {
+                    System.out.println("Empty set.");
+                    return;
+                }
+                result.add(select);
+            }
+            int rows;
             if (result.isEmpty()) {
                 System.out.println("Empty set.");
                 return;
             }
-            result = filterSystemColumn(result);
             if ("*".equals(selectColumns.get(0))) {
                 selectColumns.clear();
                 selectColumns.add(keyField);
                 selectColumns.addAll(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
-                result.get(0).put(keyField, keyValue);
                 result = getSelectedColumn(selectColumns, result);
                 rows = result.size();
             } else {
-                if (selectColumns.contains(keyField)) {
-                    result.get(0).put(keyField, keyValue);
-                }
                 List<Map<String, String>> selectedResult = getSelectedColumn(selectColumns, result);
                 rows = selectedResult.size();
             }
-            if (rows == 1) {
-                System.out.println(rows + " row in set.");
-            } else {
-                System.out.println(rows + " rows in set.");
-            }
+            System.out.println(rows + " row(s) in set.");
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             logger.error(" message: {}, e:", e.getMessage(), e);
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            logger.error(" message: {}, e: ", e.getMessage(), e);
             CRUDParseUtils.invalidSymbol(sql);
         } catch (ContractException e) {
             outputErrorMessageForTableCRUD(
@@ -528,24 +521,6 @@ public class PrecompiledImpl implements PrecompiledFace {
         return selectedResult;
     }
 
-    private List<Map<String, String>> filterSystemColumn(List<Map<String, String>> result) {
-
-        List<String> filteredColumns = Arrays.asList("_id_", "_hash_", "_status_", "_num_");
-        List<Map<String, String>> filteredResult = new ArrayList<>(result.size());
-        Map<String, String> filteredRecords;
-        for (Map<String, String> records : result) {
-            filteredRecords = new LinkedHashMap<>();
-            Set<String> recordKeys = records.keySet();
-            for (String recordKey : recordKeys) {
-                if (!filteredColumns.contains(recordKey)) {
-                    filteredRecords.put(recordKey, records.get(recordKey));
-                }
-            }
-            filteredResult.add(filteredRecords);
-        }
-        return filteredResult;
-    }
-
     @Override
     public void changeDir(String[] params) throws Exception {
         if (params.length == 1) {
@@ -554,6 +529,10 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         String path = ConsoleUtils.fixedBfsParam(params[1], pwd);
+        if ("/".equals(path)) {
+            pwd = path;
+            return;
+        }
         Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
         String parentDir = parentAndBase.getValue1();
         String baseName = parentAndBase.getValue2();
@@ -569,6 +548,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                 }
             }
             if (!findFlag) {
+                logger.error("cd: no such file or directory: '{}'", path);
                 throw new Exception("cd: no such file or directory: " + baseName);
             }
         } else {
