@@ -8,6 +8,7 @@ public class Common {
     public static final String TxCountLimit = "tx_count_limit";
     public static final String TxGasLimit = "tx_gas_limit";
     public static final String ConsensusLeaderPeriod = "consensus_leader_period";
+    public static final String compatibilityVersion = "compatibility_version";
 
     public static final int InvalidReturnNumber = -100;
     public static final long InvalidLongValue = Long.MAX_VALUE;
