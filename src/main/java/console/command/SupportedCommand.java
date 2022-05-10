@@ -1314,6 +1314,67 @@ public class SupportedCommand {
                             consoleInitializer.getConsoleClientFace().getPeers(params);
                         }
                     });
+
+    public static final CommandInfo ADD_PEERS =
+            new CommandInfo(
+                    "addPeers",
+                    "Add more connected peers to the node p2p network",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.addPeersHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().addPeers(params);
+                        }
+                    },
+                    2,
+                    -1);
+
+    public static final CommandInfo QUERY_PEERS =
+            new CommandInfo(
+                    "queryPeers",
+                    "Query the configured connected node list of the p2p network",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.queryPeersHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().queryPeers(params);
+                        }
+                    },
+                    1,
+                    1);
+
+    public static final CommandInfo ERASE_PEERS =
+            new CommandInfo(
+                    "erasePeers",
+                    "Remove connected peers of the node p2p network",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.erasePeersHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getConsoleClientFace().erasePeers(params);
+                        }
+                    },
+                    2,
+                    -1);
+
     public static final CommandInfo GET_NODEIDLIST =
             new CommandInfo(
                     "getNodeIDList",
@@ -2074,6 +2135,126 @@ public class SupportedCommand {
                     },
                     1,
                     3);
+
+    public static final CommandInfo CHARGE_GAS =
+            new CommandInfo(
+                    "chargeGas",
+                    "Charge specified gas for the given account",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.chargeGasHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPrecompiledFace().chargeGas(params);
+                        }
+                    },
+                    2,
+                    2);
+
+    public static final CommandInfo DEDUCT_GAS =
+            new CommandInfo(
+                    "deductGas",
+                    "Deduct specified gas from the given account",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.deductGasHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPrecompiledFace().deductGas(params);
+                        }
+                    },
+                    2,
+                    2);
+
+    public static final CommandInfo QUERY_GAS =
+            new CommandInfo(
+                    "queryRemainGas",
+                    "Query remain gas for the given account",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.queryGasHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPrecompiledFace().queryRemainGas(params);
+                        }
+                    },
+                    1,
+                    1);
+
+    public static final CommandInfo GRANT_CHARGER =
+            new CommandInfo(
+                    "grantCharger",
+                    "Grant the charge permission for the given account",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.grantChargerHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPrecompiledFace().grantCharger(params);
+                        }
+                    },
+                    1,
+                    1);
+
+    public static final CommandInfo REVOKE_CHARGER =
+            new CommandInfo(
+                    "revokeCharger",
+                    "Revoke the charge permission from the given account",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.revokeChargerHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPrecompiledFace().revokeCharger(params);
+                        }
+                    },
+                    1,
+                    1);
+
+    public static final CommandInfo LIST_CHARGERS =
+            new CommandInfo(
+                    "listChargers",
+                    "List the accounts that have the permission to charge/deduct gas",
+                    new CommandInfo.UsageDisplay() {
+                        @Override
+                        public void printUsageInfo() {
+                            HelpInfo.listChargersHelp();
+                        }
+                    },
+                    new CommandInfo.CommandImplement() {
+                        @Override
+                        public void call(ConsoleInitializer consoleInitializer, String[] params)
+                                throws Exception {
+                            consoleInitializer.getPrecompiledFace().listChargers(params);
+                        }
+                    },
+                    0,
+                    0);
 
     public static List<String> CRUD_COMMANDS =
             new ArrayList<String>(

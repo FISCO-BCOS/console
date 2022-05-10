@@ -34,6 +34,9 @@ import org.fisco.bcos.sdk.channel.model.ChannelPrococolExceiption;
 import org.fisco.bcos.sdk.channel.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.client.Client;
 import org.fisco.bcos.sdk.codegen.CodeGenMain;
+import org.fisco.bcos.sdk.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.model.RetCode;
+import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.utils.Host;
 import org.fisco.bcos.sdk.utils.Numeric;
 import org.slf4j.Logger;
@@ -51,6 +54,14 @@ public class ConsoleUtils {
     public static final String GM_ACCOUNT_POSTFIX = "_gm";
     public static final int ADDRESS_SIZE = 160;
     public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
+
+    public static void printRetCode(RetCode retCode) {
+        if (retCode.getTransactionReceipt() != null) {
+            System.out.println(
+                    "TransactionHash: " + retCode.getTransactionReceipt().getTransactionHash());
+        }
+        System.out.println(formatJson(retCode.toString()));
+    }
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
@@ -162,6 +173,27 @@ public class ConsoleUtils {
 
     public static int proccessNonNegativeNumber(String name, String intStr) {
         return proccessNonNegativeNumber(name, intStr, 0, Integer.MAX_VALUE);
+    }
+
+    public static void printPrecompiledResponse(TransactionResponse transactionResponse) {
+        if (transactionResponse.getTransactionReceipt() != null) {
+            System.out.println(
+                    "TransactionHash:"
+                            + transactionResponse.getTransactionReceipt().getTransactionHash());
+        }
+        if (transactionResponse.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            RetCode retCode =
+                    new RetCode(
+                            transactionResponse.getReturnCode(),
+                            transactionResponse.getReturnMessage());
+            ConsoleUtils.printJson(retCode.toString());
+            return;
+        }
+        System.out.println("description: " + "transaction executed successfully");
+        ConsoleUtils.singleLine();
+        System.out.println("Return message: " + transactionResponse.getReturnMessage());
+        System.out.println("Return values: " + transactionResponse.getValues());
+        ConsoleUtils.singleLine();
     }
 
     public static int proccessNonNegativeNumber(

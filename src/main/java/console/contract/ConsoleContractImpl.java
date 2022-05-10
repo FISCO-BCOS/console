@@ -92,6 +92,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     public void printReturnObject(
             List<Object> returnObject, List<ABIObject> returnABIObject, String returnValue) {
+        printReturnObject(returnObject, returnABIObject, returnValue, "Return");
+    }
+
+    public void printReturnObject(
+            List<Object> returnObject,
+            List<ABIObject> returnABIObject,
+            String returnValue,
+            String prefix) {
         if (returnABIObject == null
                 || returnABIObject == null
                 || returnObject.size() == 0
@@ -112,9 +120,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         resultType.append(")");
         resultData.append(")");
-        System.out.println("Return value size:" + returnObject.size());
-        System.out.println("Return types: " + resultType);
-        System.out.println("Return values:" + resultData);
+        System.out.println(prefix + " value size:" + returnObject.size());
+        System.out.println(prefix + " types: " + resultType);
+        System.out.println(prefix + " values:" + resultData);
     }
 
     public void getReturnObjectOutputData(
@@ -171,6 +179,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             TransactionResponse response =
                     this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
                             abiAndBin.getAbi(), bin, inputParams);
+            System.out.println(
+                    "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
@@ -182,8 +192,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
-            System.out.println(
-                    "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
             System.out.println("contract address: " + contractAddress);
             System.out.println(
                     "currentAccount: " + client.getCryptoSuite().getCryptoKeyPair().getAddress());
@@ -453,7 +461,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                 abiAndBin.getAbi(),
                                 functionName,
                                 callParams);
-
                 ConsoleUtils.singleLine();
                 System.out.println("Return code: " + response.getReturnCode());
                 if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
@@ -497,6 +504,15 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 if (response.getTransactionReceipt().getStatus().equals("0x")
                         || response.getTransactionReceipt().getStatus().equals("0x0")) {
                     System.out.println("description: " + "transaction executed successfully");
+                }
+                if (response.getInputData() != null) {
+                    ConsoleUtils.singleLine();
+                    System.out.println("Transaction inputs:");
+                    printReturnObject(
+                            response.getInputObject(),
+                            response.getInputABIObject(),
+                            response.getInputData(),
+                            "Input");
                 }
                 ConsoleUtils.singleLine();
                 System.out.println("Receipt message: " + response.getReceiptMessages());
