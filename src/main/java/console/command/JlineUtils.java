@@ -166,6 +166,11 @@ public class JlineUtils {
                             new StringsCompleter(command),
                             new StringsCompleter(Common.ConsensusLeaderPeriod),
                             new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.compatibilityVersion),
+                            new StringsCompleterIgnoreCase()));
         }
         completers.add(
                 new ArgumentCompleter(
