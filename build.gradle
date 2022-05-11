@@ -41,7 +41,6 @@ dependencies {
     compile 'org.fisco-bcos:solcJ:0.8.11.0'
 
     // compile 'org.fisco-bcos:solcJ:0.6.10.2-SNAPSHOT'
-    compile 'org.fisco-bcos:solcJ:0.8.11.0-SNAPSHOT'
 
     compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.0.0-rc4-SNAPSHOT')
     compile ('org.fisco-bcos:evm-static-analysis:1.0.0-rc1')

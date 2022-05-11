@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -268,6 +269,28 @@ public class ConsoleUtils {
                             + maxValue
                             + ".");
             return Common.InvalidReturnNumber;
+        }
+        return intParam;
+    }
+
+    public static BigInteger processNonNegativeBigNumber(
+            String name, String intStr, BigInteger minValue, BigInteger maxValue)
+            throws ConsoleMessageException {
+        BigInteger intParam;
+        try {
+            intParam = new BigInteger(intStr);
+            if (intParam.compareTo(minValue) < 0 || intParam.compareTo(maxValue) > 0) {
+                throw new ConsoleMessageException(
+                        "Please provide \""
+                                + name
+                                + "\" by non-negative big int mode between "
+                                + minValue
+                                + " and "
+                                + maxValue
+                                + ".");
+            }
+        } catch (NumberFormatException e) {
+            throw new ConsoleMessageException("Invalid " + name + ": \"" + intStr + "\"!");
         }
         return intParam;
     }

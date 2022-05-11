@@ -16,11 +16,23 @@ public interface AuthFace {
 
     void createResetAdminProposal(String[] params) throws Exception;
 
+    void createSetConsensusWeightProposal(String[] params) throws Exception;
+
+    void createAddSealerProposal(String[] params) throws Exception;
+
+    void createAddObserverProposal(String[] params) throws Exception;
+
+    void createRemoveNodeProposal(String[] params) throws Exception;
+
+    void createSetSysConfigProposal(String[] params) throws Exception;
+
     void revokeProposal(String[] params) throws Exception;
 
     void voteProposal(String[] params) throws Exception;
 
     void getProposalInfo(String[] params) throws Exception;
+
+    void getProposalInfoList(String[] params) throws Exception;
 
     void getCommitteeInfo(String[] params) throws Exception;
 
@@ -38,5 +50,13 @@ public interface AuthFace {
 
     void checkMethodAuth(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
 
+    void getMethodAuth(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
+
     void getLatestProposal(String[] params) throws Exception;
+
+    void freezeContract(String[] params) throws Exception;
+
+    void unfreezeContract(String[] params) throws Exception;
+
+    void getContractStatus(String[] params) throws Exception;
 }
