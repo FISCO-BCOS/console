@@ -11,7 +11,7 @@ path = "main.rs"
 
 [dependencies.contract]
 path = "../../"
-package = "parallel_ok"
+package = "kv_table_test"
 default-features = false
 features = ["liquid-abi-gen"]
 

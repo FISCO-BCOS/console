@@ -1,5 +1,5 @@
 [package]
-name = "asset"
+name = "kv_table_test"
 version = "0.1.0"
 authors = ["[your_name] <you_email>"]
 edition = "2018"
@@ -19,7 +19,7 @@ liquid_abi_gen = { version = "1.0.0-rc2", git = "https://github.com/WeBankBlockc
 predicates = "1.0.5"
 
 [lib]
-name = "asset"
+name = "kv_table_test"
 crate-type = [
     # Used for normal contract Wasm blobs.
     "cdylib",
