@@ -1,47 +1,50 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity>=0.6.10 <0.8.20;
+pragma solidity >=0.6.10 <0.8.20;
 pragma experimental ABIEncoderV2;
 
-import "./KVTable.sol";
+import "./Table.sol";
 
 contract KVTableTest {
 
-    KVTable kv_table;
+    TableManager tm;
+    KVTable table;
+    string constant tableName = "t_kv_test";
+    event SetEvent(int256 count);
     constructor () public{
+        tm = TableManager(address(0x1002));
 
-        address kvAddr = address(0x1009);
-        kv_table = KVTable(kvAddr);
-        kv_table.createTable("t_kv_test", "id", "item_price,item_name");
+        // create table
+        int32 result = tm.createKVTable(tableName, "id", "item_name");
+        require(result == 0, "create table failed");
+
+        // get table address
+        address t_address = tm.openTable(tableName);
+        table = KVTable(t_address);
     }
-    function get(string memory id) public view returns (bool, string memory, string memory) {
+
+    function desc() public view returns(string memory, string memory){
+        TableInfo memory tf = table.desc();
+        return (tf.keyColumn, tf.valueColumns[0]);
+    }
+
+    function get(string memory id) public view returns (bool, string memory) {
         bool ok = false;
-        Entry memory entry;
-        (ok, entry) = kv_table.get("t_kv_test",id);
-        string memory item_price;
-        string memory item_name;
-        if (ok) {
-            item_price = entry.fields[0].value;
-            item_name = entry.fields[1].value;
-        }
-        return (ok, item_price, item_name);
+        string memory value;
+        (ok, value) = table.get(id);
+        return (ok, value);
     }
-    function set(string memory id, string memory item_price, string memory item_name)
-    public
-    returns (int256)
-    {
-        KVField memory kv1 = KVField("item_price",item_price);
-        KVField memory kv2 = KVField("item_name",item_name);
-        KVField[] memory KVFields = new KVField[](2);
-        KVFields[0] = kv1;
-        KVFields[1] = kv2;
-        Entry memory entry1 = Entry(KVFields);
 
-        // the first parameter length of set should <= 255B
-        int256 count = kv_table.set("t_kv_test", id,entry1);
-        return count;
+    function set(string memory id, string memory item_name)
+    public
+    returns (int32)
+    {
+        int32 result = table.set(id,item_name);
+        emit SetEvent(result);
+        return result;
     }
-    function createTable(string memory tableName,string memory key,string memory fields) public returns(int256){
-        int256 result = kv_table.createTable(tableName,key,fields);
+
+    function createKVTableTest(string memory _tableName,string memory keyName,string memory fieldName) public returns(int32){
+        int32 result = tm.createKVTable(_tableName, keyName, fieldName);
         return result;
     }
 }

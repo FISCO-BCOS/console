@@ -23,13 +23,13 @@ public class HelpInfo {
     }
 
     public static void freezeContractHelp() {
-        System.out.println("Freeze the contract.");
+        System.out.println("Freeze a specific contract.");
         System.out.println("Usage: \nfreezeContract contractAddress");
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
     }
 
     public static void unfreezeContractHelp() {
-        System.out.println("Unfreeze the contract.");
+        System.out.println("Unfreeze a specific contract.");
         System.out.println("Usage: \nunfreezeContract contractAddress");
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
     }
@@ -51,12 +51,6 @@ public class HelpInfo {
     public static void getContractStatusHelp() {
         System.out.println("Get the status of the contract.");
         System.out.println("Usage: \ngetContractStatus contractAddress");
-        System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
-    }
-
-    public static void listContractStatusManagerHelp() {
-        System.out.println("List the authorization of the contract.");
-        System.out.println("Usage: \nlistContractStatusManager contractAddress");
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
     }
 
@@ -609,6 +603,80 @@ public class HelpInfo {
                 "address[Required] -- The address of a specific contract, it's length should be 40 in hex.");
     }
 
+    public static void setNodeWeightProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to set a consensus node's weight.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: setConsensusNodeWeightProposal [nodeID] [weight]");
+        System.out.println(
+                "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
+        System.out.println(
+                "weight[Required] -- The weight of a specific node to set, should be larger than 0.");
+    }
+
+    public static void addSealerProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to add new consensus sealer node.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: addSealerProposal [nodeID] [weight]");
+        System.out.println(
+                "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
+        System.out.println(
+                "weight[Required] -- The weight of a specific node to set, should be larger than 0.");
+    }
+
+    public static void addObserverProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to add new consensus observer node.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: addObserverProposal [nodeID]");
+        System.out.println(
+                "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
+    }
+
+    public static void setSysConfigProposalHelp() {
+        System.out.println("Create a proposal to committee, which attempt to set system config.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: setSysConfigProposal [key] [value]");
+        System.out.println(
+                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_leader_period supported currently).");
+        System.out.println("* value -- The value of system config to be set.");
+        System.out.println(
+                "      -- The value of "
+                        + Common.TxCountLimit
+                        + " "
+                        + Common.TxCountLimitRange
+                        + "(default 1000).");
+        System.out.println(
+                "      -- the value of "
+                        + Common.TxGasLimit
+                        + " "
+                        + Common.TxGasLimitRange
+                        + "(default 3000000000).");
+        System.out.println(
+                "      -- the value of  "
+                        + Common.ConsensusLeaderPeriod
+                        + " "
+                        + Common.ConsensusLeaderPeriodRange
+                        + "(default 1).");
+    }
+
     public static void revokeProposalHelp() {
         System.out.println("Revoke a specific proposal from committee.");
         System.out.println(
@@ -635,11 +703,13 @@ public class HelpInfo {
     }
 
     public static void getProposalInfoHelp() {
-        System.out.println("Get a specific proposal info from committee.");
+        System.out.println("Get a specific proposal info or proposal info list from committee.");
         ConsoleUtils.singleLine();
-        System.out.println("Usage: getProposalInfo proposalId");
+        System.out.println("Usage: getProposalInfo [fromId] [toId]");
         System.out.println(
-                "proposalId[Required] -- The ID of a proposal, it should be larger than 0.");
+                "fromId[Required] -- The start ID of a proposal, it should be larger than 0.");
+        System.out.println(
+                "toId[Optional] -- The end ID of a proposal, it should be larger than fromId. If not set toId, then only return fromId proposal");
     }
 
     public static void getCommitteeInfoHelp() {
@@ -732,6 +802,18 @@ public class HelpInfo {
                 "account[Optional]  -- The address of a specific account. If you dont specify it, then check current account.");
         System.out.println(
                 "    [example] checkMethodAuth 0x1234567890123456789012345678901234567890 \"set(string)\" 0x1234567890123456789012345678901234567890");
+    }
+
+    public static void getMethodAuthHelp() {
+        System.out.println("Get method ACL for account in specific contract.");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: getMethodAuth contract selector");
+        System.out.println(
+                "contract[Required] -- The address of a specific contract, it's length should be 40 in hex.");
+        System.out.println(
+                "selector[Required] -- The method selector string, an interface of contract");
+        System.out.println(
+                "    [example] getMethodAuth 0x1234567890123456789012345678901234567890 \"set(string)\"");
     }
 
     public static void getLatestProposalHelp() {

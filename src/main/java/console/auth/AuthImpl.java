@@ -272,17 +272,16 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
-    public void getProposalInfo(String[] params) throws Exception {
-        try {
-            BigInteger proposalId = BigInteger.valueOf(Long.parseLong(params[1]));
-            showProposalInfo(proposalId);
-        } catch (NumberFormatException e) {
-            System.out.println("Number convert error, please check proposal id you input.");
-        }
-    }
-
-    @Override
     public void getProposalInfoList(String[] params) throws Exception {
+        if (params.length == 2) {
+            try {
+                BigInteger proposalId = BigInteger.valueOf(Long.parseLong(params[1]));
+                showProposalInfo(proposalId);
+            } catch (NumberFormatException e) {
+                System.out.println("Number convert error, please check proposal id you input.");
+            }
+            return;
+        }
         BigInteger from =
                 ConsoleUtils.processNonNegativeBigNumber(
                         "proposalFrom",

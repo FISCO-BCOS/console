@@ -77,7 +77,7 @@ public class SupportedCommand {
             new CommandInfo(
                     "switch",
                     "Switch to a specific group by name",
-                    new ArrayList<>(Arrays.asList("s")),
+                    new ArrayList<>(Collections.singletonList("s")),
                     HelpInfo::switchEndPointHelp,
                     (consoleInitializer, params, pwd) -> consoleInitializer.switchGroup(params),
                     1,
@@ -320,7 +320,7 @@ public class SupportedCommand {
                     1,
                     2);
 
-    public static final CommandInfo GET_BLOCKHEADER_BY_HASH =
+    public static final CommandInfo GET_BLOCK_HEADER_BY_HASH =
             new CommandInfo(
                     "getBlockHeaderByHash",
                     "Query information about a block header by hash",
@@ -329,7 +329,7 @@ public class SupportedCommand {
                             consoleInitializer.getConsoleClientFace().getBlockHeaderByHash(params),
                     1,
                     1);
-    public static final CommandInfo GET_BLOCKHEADER_BY_NUMBER =
+    public static final CommandInfo GET_BLOCK_HEADER_BY_NUMBER =
             new CommandInfo(
                     "getBlockHeaderByNumber",
                     "Query information about a block header by block number",
@@ -763,6 +763,73 @@ public class SupportedCommand {
                     false,
                     true);
 
+    public static final CommandInfo SET_NODE_WEIGHT_PROPOSAL =
+            new CommandInfo(
+                    "setConsensusNodeWeightProposal",
+                    "Create a proposal to committee, which attempt to set a consensus node's weight.",
+                    HelpInfo::setNodeWeightProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .createSetConsensusWeightProposal(params),
+                    2,
+                    2,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo ADD_SEALER_PROPOSAL =
+            new CommandInfo(
+                    "addSealerProposal",
+                    "Create a proposal to committee, which attempt to add new consensus sealer node.",
+                    HelpInfo::addSealerProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createAddSealerProposal(params),
+                    2,
+                    2,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo ADD_OBSERVER_PROPOSAL =
+            new CommandInfo(
+                    "addObserverProposal",
+                    "Create a proposal to committee, which attempt to add new consensus observer node.",
+                    HelpInfo::addObserverProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createAddObserverProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo REMOVE_NODE_PROPOSAL =
+            new CommandInfo(
+                    "removeNodeProposal",
+                    "Create a proposal to committee, which attempt to remove a consensus node.",
+                    HelpInfo::addObserverProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createRemoveNodeProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo SET_SYS_CONFIG_PROPOSAL =
+            new CommandInfo(
+                    "setSysConfigProposal",
+                    "Create a proposal to committee, which attempt to set system config.",
+                    HelpInfo::setSysConfigProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createSetSysConfigProposal(params),
+                    2,
+                    2,
+                    false,
+                    false,
+                    true);
+
     public static final CommandInfo REVOKE_PROPOSAL =
             new CommandInfo(
                     "revokeProposal",
@@ -792,12 +859,12 @@ public class SupportedCommand {
     public static final CommandInfo GET_PROPOSAL_INFO =
             new CommandInfo(
                     "getProposalInfo",
-                    "Get a specific proposal info from committee.",
+                    "Get a specific proposal info or proposal info list from committee.",
                     HelpInfo::getProposalInfoHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getAuthFace().getProposalInfo(params),
+                            consoleInitializer.getAuthFace().getProposalInfoList(params),
                     1,
-                    1,
+                    2,
                     false,
                     false,
                     true);
@@ -916,6 +983,21 @@ public class SupportedCommand {
                     false,
                     true);
 
+    public static final CommandInfo GET_METHOD_AUTH =
+            new CommandInfo(
+                    "getMethodAuth",
+                    "Get method ACL for account in specific contract.",
+                    HelpInfo::getMethodAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .getMethodAuth(consoleInitializer, params),
+                    2,
+                    2,
+                    false,
+                    false,
+                    true);
+
     public static final CommandInfo GET_LATEST_PROPOSAL =
             new CommandInfo(
                     "getLatestProposal",
@@ -925,6 +1007,45 @@ public class SupportedCommand {
                             consoleInitializer.getAuthFace().getLatestProposal(params),
                     0,
                     0,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo FREEZE_CONTRACT =
+            new CommandInfo(
+                    "freezeContract",
+                    "Freeze a specific contract.",
+                    HelpInfo::freezeContractHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().freezeContract(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo UNFREEZE_CONTRACT =
+            new CommandInfo(
+                    "unfreezeContract",
+                    "Unfreeze a specific contract.",
+                    HelpInfo::unfreezeContractHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().unfreezeContract(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo GET_CONTRACT_STATUS =
+            new CommandInfo(
+                    "getContractStatus",
+                    "Get the status of the contract.",
+                    HelpInfo::getContractStatusHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getContractStatus(params),
+                    1,
+                    1,
                     false,
                     false,
                     true);

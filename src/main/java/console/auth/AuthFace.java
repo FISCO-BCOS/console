@@ -30,8 +30,6 @@ public interface AuthFace {
 
     void voteProposal(String[] params) throws Exception;
 
-    void getProposalInfo(String[] params) throws Exception;
-
     void getProposalInfoList(String[] params) throws Exception;
 
     void getCommitteeInfo(String[] params) throws Exception;
