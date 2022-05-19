@@ -114,7 +114,8 @@ public class HelpInfo {
         System.out.println("Query the specified node information.");
         System.out.println("Usage: \ngetNodeInfo [NodeEndPoint]");
         System.out.println(
-                "* NodeEndPoint -- The requested node information, the format is IP:Port");
+                "* NodeEndPoint -- The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
     }
 
     public static void getPeersHelp() {
@@ -123,6 +124,32 @@ public class HelpInfo {
         System.out.println(
                 "* NodeEndPoint[Optional] -- The requested node information, the format is IP:Port, "
                         + "the list of all connected nodes can be obtained through getAvailableConnections");
+    }
+
+    public static void addPeersHelp() {
+        System.out.println("Add more connected peers to the node p2p network");
+        System.out.println("Usage: \naddPeers NodeEndPoint EndPoint0 ... EndPointN");
+        System.out.println(
+                "* NodeEndPoint -- The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
+        System.out.println("* EndPointN -- The connected endpoint");
+    }
+
+    public static void queryPeersHelp() {
+        System.out.println("Query the configured connected node list of the p2p network");
+        System.out.println("Usage: \nqueryPeers NodeEndPoint");
+        System.out.println(
+                "* NodeEndPoint -- The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
+    }
+
+    public static void erasePeersHelp() {
+        System.out.println("Remove connected peers of the node p2p network");
+        System.out.println("Usage: \nerasePeers NodeEndPoint EndPoint0 ... EndPointN");
+        System.out.println(
+                "* NodeEndPoint -- The requested node information, the format is IP:Port, "
+                        + "the list of all connected nodes can be obtained through getAvailableConnections");
+        System.out.println("* EndPointN -- The connected endpoint");
     }
 
     public static void getNodeIDListHelp() {
@@ -686,6 +713,43 @@ public class HelpInfo {
                 "* from -- (optional) The start index of the required transaction receipts (default is 0).");
         System.out.println(
                 "* count -- (optional) The count of the required transaction receipts (default fetch all the receipts), when set to -1, return all receipts of the block.");
+    }
+
+    public static void chargeGasHelp() {
+        System.out.println("Charge specified gas for the given account");
+        System.out.println("Usage:\nchargeGas accountAddress gasValue");
+        System.out.println("* accountAddress -- (required) The account that the gas is charged to");
+        System.out.println("* gasValue -- (required) The charged gas value, must be integers");
+    }
+
+    public static void deductGasHelp() {
+        System.out.println("Deduct specified gas for the given account");
+        System.out.println("Usage:\ndeductGas accountAddress gasValue");
+        System.out.println("* accountAddress -- (required) The account that the gas is deducted");
+        System.out.println("* gasValue -- (required) The deducted gas value, must be integers");
+    }
+
+    public static void queryGasHelp() {
+        System.out.println("Query gas for the given account");
+        System.out.println("Usage:\nqueryGas accountAddress");
+        System.out.println("* accountAddress -- (required) The queried account address");
+    }
+
+    public static void grantChargerHelp() {
+        System.out.println("Grant gas charge/deduct permission to the given account");
+        System.out.println("Usage:\ngrantCharger accountAddress");
+        System.out.println("* accountAddress -- (required) The granted account address");
+    }
+
+    public static void revokeChargerHelp() {
+        System.out.println("Revoke charge/deduct permission from the given account");
+        System.out.println("Usage:\nrevokeCharger accountAddress");
+        System.out.println("* accountAddress -- (required) The revoked account address");
+    }
+
+    public static void listChargersHelp() {
+        System.out.println("List the accounts that have the permission to charge/deduct gas");
+        System.out.println("Usage:\nlistChargers");
     }
 
     public static void startHelp() {

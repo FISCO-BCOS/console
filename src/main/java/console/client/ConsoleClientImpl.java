@@ -105,6 +105,45 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
+    public void queryPeers(String[] params) throws IOException {
+        if (ConsoleUtils.checkEndPoint(params[1])) {
+            System.out.println(client.queryPeers(params[1]).getQueryPeers().toString());
+        }
+    }
+
+    @Override
+    public void addPeers(String[] params) throws IOException {
+        if (ConsoleUtils.checkEndPoint(params[1])) {
+            List<String> endPoints = new ArrayList<>();
+            for (int i = 2; i < params.length; i++) {
+                if (ConsoleUtils.checkEndPoint(params[i])) {
+                    endPoints.add(params[i]);
+                } else {
+                    return;
+                }
+            }
+            System.out.println(
+                    client.addPeers(params[1], endPoints).getAddPeersStatus().toString());
+        }
+    }
+
+    @Override
+    public void erasePeers(String[] params) throws IOException {
+        if (ConsoleUtils.checkEndPoint(params[1])) {
+            List<String> endPoints = new ArrayList<>();
+            for (int i = 2; i < params.length; i++) {
+                if (ConsoleUtils.checkEndPoint(params[i])) {
+                    endPoints.add(params[i]);
+                } else {
+                    return;
+                }
+            }
+            System.out.println(
+                    client.erasePeers(params[1], endPoints).getErasePeersStatus().toString());
+        }
+    }
+
+    @Override
     public void getNodeIDList(String[] params) throws IOException {
         ConsoleUtils.printJson(client.getNodeIDList().getNodeIDList().toString());
     }
@@ -308,7 +347,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                                     receipt.getStatus(), receipt.getMessage())
                             .getMessage());
         }
-        ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(receipt));
+        ConsoleUtils.printJson(receipt.toString());
     }
 
     @Override
@@ -399,10 +438,15 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 || Common.TxGasLimit.equals(key)
                 || Common.RPBFTEpochSealerNum.equals(key)
                 || Common.RPBFTEpochBlockNum.equals(key)
-                || Common.ConsensusTimeout.equals(key)) {
+                || Common.ConsensusTimeout.equals(key)
+                || Common.EnableGasChargeMgr.equals(key)) {
             String value = client.getSystemConfigByKey(key).getSystemConfig();
             if (Common.RPBFTEpochSealerNum.equals(key) || Common.RPBFTEpochBlockNum.equals(key)) {
                 System.out.println("Note: " + key + " only takes effect when RPBFT is used!");
+            }
+            if (Common.EnableGasChargeMgr.equals("")) {
+                System.out.println("off");
+                return;
             }
             System.out.println(value);
         } else {
