@@ -61,18 +61,20 @@ mod asset {
             self.table_name.initialize(String::from("t_asset"));
             self.tm
                 .initialize(TableManager::at("/sys/table_manager".parse().unwrap()));
-            let result = self.tm.createKVTable(
+            self.tm.createKVTable(
                 self.table_name.clone(),
                 String::from("account"),
                 String::from("asset_value"),
             );
-            require(result.unwrap() == 0, "create table failed");
             self.table
                 .initialize(KvTable::at("/tables/t_asset".parse().unwrap()));
         }
 
-        pub fn select(&mut self, account: String) -> (bool, u128) {
+        pub fn select(&self, account: String) -> (bool, u128) {
             if let Some((result, value)) = (*self.table).get(account) {
+                if value.len() == 0 {
+                    return (false, Default::default());
+                }
                 return (result, u128::from_str_radix(&value, 10).ok().unwrap());
             }
             return (false, Default::default());

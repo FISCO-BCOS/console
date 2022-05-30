@@ -19,10 +19,10 @@ contract TableTest {
         columnNames[0] = "name";
         columnNames[1] = "age";
         TableInfo memory tf = TableInfo("id", columnNames);
-        int32 result = tm.createTable(TABLE_NAME, tf);
-        require(result == 0, "create table failed");
 
+        tm.createTable(TABLE_NAME, tf);
         address t_address = tm.openTable(TABLE_NAME);
+        require(t_address!=address(0x0),"");
         table = Table(t_address);
     }
 
@@ -51,8 +51,8 @@ contract TableTest {
 
     function update(string memory id, string memory name, string memory age) public returns (int32){
         UpdateField[] memory updateFields = new UpdateField[](2);
-        updateFields[0] = UpdateField(0, name);
-        updateFields[1] = UpdateField(1, age);
+        updateFields[0] = UpdateField("name", name);
+        updateFields[1] = UpdateField("age", age);
 
         int32 result = table.update(id, updateFields);
         emit UpdateResult(result);
@@ -73,7 +73,7 @@ contract TableTest {
     }
 
     function desc() public view returns(string memory, string[] memory){
-        TableInfo memory ti = table.desc();
+        TableInfo memory ti = tm.desc(TABLE_NAME);
         return (ti.keyColumn,ti.valueColumns);
     }
 }

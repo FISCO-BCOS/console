@@ -830,6 +830,21 @@ public class SupportedCommand {
                     false,
                     true);
 
+    public static final CommandInfo UPGRADE_VOTE_PROPOSAL =
+            new CommandInfo(
+                    "upgradeVoteProposal",
+                    "Create a proposal to committee, which attempt to upgrade committee vote compute logic.",
+                    HelpInfo::upgradeVoteProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .createUpgradeVoteComputerProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
     public static final CommandInfo REVOKE_PROPOSAL =
             new CommandInfo(
                     "revokeProposal",
