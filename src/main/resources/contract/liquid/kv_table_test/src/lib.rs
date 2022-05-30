@@ -13,6 +13,7 @@ pub struct TableInfo {
 
 #[liquid::interface(name = auto)]
 mod table_manager {
+    use super::*;
 
     extern "liquid" {
         fn createKVTable(
@@ -21,14 +22,13 @@ mod table_manager {
             key: String,
             value_fields: String,
         ) -> i32;
+        fn desc(&self, table_name: String) -> TableInfo;
     }
 }
 #[liquid::interface(name = auto)]
 mod kv_table {
-    use super::*;
 
     extern "liquid" {
-        fn desc(&self) -> TableInfo;
         fn get(&self, key: String) -> (bool, String);
         fn set(&mut self, key: String, value: String) -> i32;
     }
@@ -56,12 +56,11 @@ mod kv_table_test {
             self.table_name.initialize(String::from("t_kv_test"));
             self.tm
                 .initialize(TableManager::at("/sys/table_manager".parse().unwrap()));
-            let result = self.tm.createKVTable(
+            self.tm.createKVTable(
                 self.table_name.clone(),
                 String::from("id"),
                 String::from("item_name"),
             );
-            require(result.unwrap() == 0, "create table failed");
             self.table
                 .initialize(KvTable::at("/tables/t_kv_test".parse().unwrap()));
         }
@@ -82,8 +81,8 @@ mod kv_table_test {
             count
         }
 
-        pub fn desc(&self) -> (String, String) {
-            let ti = self.table.desc().unwrap();
+        pub fn desc(&self, table_name: String) -> (String, String) {
+            let ti = self.tm.desc(table_name).unwrap();
             return (ti.key_column, ti.value_columns.get(0).unwrap().clone());
         }
     }

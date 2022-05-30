@@ -14,8 +14,7 @@ contract KVTableTest {
         tm = TableManager(address(0x1002));
 
         // create table
-        int32 result = tm.createKVTable(tableName, "id", "item_name");
-        require(result == 0, "create table failed");
+        tm.createKVTable(tableName, "id", "item_name");
 
         // get table address
         address t_address = tm.openTable(tableName);
@@ -23,7 +22,7 @@ contract KVTableTest {
     }
 
     function desc() public view returns(string memory, string memory){
-        TableInfo memory tf = table.desc();
+        TableInfo memory tf = tm.desc(tableName);
         return (tf.keyColumn, tf.valueColumns[0]);
     }
 

@@ -36,8 +36,7 @@ contract Asset {
         string[] memory columnNames = new string[](1);
         columnNames[0] = "asset_value";
         TableInfo memory tf = TableInfo("account", columnNames);
-        int32 result = tm.createTable(tableName, tf);
-        require(result == 0, "create table failed");
+        tm.createTable(tableName, tf);
 
         // get table address
         address t_address = tm.openTable(tableName);

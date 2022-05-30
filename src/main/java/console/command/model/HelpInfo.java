@@ -677,6 +677,19 @@ public class HelpInfo {
                         + "(default 1).");
     }
 
+    public static void upgradeVoteProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to upgrade committee vote compute logic.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: upgradeVoteProposal [address]");
+        System.out.println(
+                "address[Required] -- The address of new vote computer contract, it's length should be 40 in hex.");
+    }
+
     public static void revokeProposalHelp() {
         System.out.println("Revoke a specific proposal from committee.");
         System.out.println(

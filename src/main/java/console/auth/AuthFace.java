@@ -26,6 +26,8 @@ public interface AuthFace {
 
     void createSetSysConfigProposal(String[] params) throws Exception;
 
+    void createUpgradeVoteComputerProposal(String[] params) throws Exception;
+
     void revokeProposal(String[] params) throws Exception;
 
     void voteProposal(String[] params) throws Exception;

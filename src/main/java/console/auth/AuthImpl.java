@@ -215,15 +215,19 @@ public class AuthImpl implements AuthFace {
     @Override
     public void createSetSysConfigProposal(String[] params) throws Exception {
         String key = params[1];
-        BigInteger value =
-                ConsoleUtils.processNonNegativeBigNumber(
-                        "sysConfigValue",
-                        params[2],
-                        BigInteger.ONE,
-                        BigInteger.valueOf(Integer.MAX_VALUE));
+        BigInteger value = new BigInteger(params[2]);
 
         BigInteger setSysConfigProposal = authManager.createSetSysConfigProposal(key, value);
         showProposalInfo(setSysConfigProposal);
+    }
+
+    @Override
+    public void createUpgradeVoteComputerProposal(String[] params) throws Exception {
+        String address = params[1];
+        checkValidAddress(address, "new vote computer address");
+        BigInteger upgradeVoteComputerProposal =
+                authManager.createUpgradeVoteComputerProposal(address);
+        showProposalInfo(upgradeVoteComputerProposal);
     }
 
     @Override

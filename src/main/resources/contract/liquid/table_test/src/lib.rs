@@ -19,7 +19,7 @@ pub struct Entry {
 
 #[derive(InOut)]
 pub struct UpdateField {
-    index: u32,
+    field_name: String,
     value: String,
 }
 
@@ -60,7 +60,6 @@ mod table {
         fn insert(&mut self, entry: Entry) -> i32;
         fn update(&mut self, key: String, update_fields: Vec<UpdateField>) -> i32;
         fn remove(&mut self, key: String) -> i32;
-        fn desc(&self) -> TableInfo;
     }
 }
 
@@ -104,13 +103,12 @@ mod table_test {
                 value_columns: column_names,
             };
 
-            let result = self.tm.createTable(self.table_name.clone(), ti);
-            require(result.unwrap() == 0, "create table failed");
+            self.tm.createTable(self.table_name.clone(), ti);
             self.table
                 .initialize(Table::at("/tables/t_test".parse().unwrap()));
         }
 
-        pub fn select(&mut self, id: String) -> (String, String) {
+        pub fn select(&self, id: String) -> (String, String) {
             let entry = self.table.select(id).unwrap();
 
             if entry.fields.len() < 1 {
@@ -139,12 +137,12 @@ mod table_test {
         pub fn update(&mut self, id: String, name: String, age: String) -> i32 {
             let mut update_fields = Vec::new();
             update_fields.push(UpdateField {
-                index: 0,
+                field_name: String::from("name"),
                 value: name,
             });
 
             update_fields.push(UpdateField {
-                index: 1,
+                field_name: String::from("age"),
                 value: age,
             });
 
