@@ -109,7 +109,7 @@ public class ConsoleInitializer {
                 throw new ConfigException(
                         "The configuration file "
                                 + configFileName
-                                + " doesn't exist! Please copy config-example.yaml to "
+                                + " doesn't exist! Please copy config-example.toml to "
                                 + configFileName
                                 + ".");
             }
