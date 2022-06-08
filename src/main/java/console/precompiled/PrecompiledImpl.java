@@ -122,10 +122,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
         Map<String, List<String>> tableDesc = tableCRUDService.desc(tableName);
-        if (tableDesc.get(PrecompiledConstant.KEY_FIELD_NAME).isEmpty()) {
-            System.out.println("The table \"" + tableName + "\" doesn't exist!");
-            return;
-        }
         ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc));
     }
 

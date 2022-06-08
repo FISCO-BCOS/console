@@ -235,7 +235,7 @@ public class AuthImpl implements AuthFace {
         try {
             BigInteger proposalId = BigInteger.valueOf(Long.parseLong(params[1]));
             TransactionReceipt receipt = authManager.revokeProposal(proposalId);
-            RetCode retCode = ReceiptParser.parseTransactionReceipt(receipt);
+            RetCode retCode = ReceiptParser.parseTransactionReceipt(receipt, null);
             if (retCode.code == 0) {
                 System.out.println("Revoke proposal success.");
             } else {
@@ -263,7 +263,7 @@ public class AuthImpl implements AuthFace {
                 }
             }
             TransactionReceipt receipt = authManager.voteProposal(proposalId, agree);
-            RetCode retCode = ReceiptParser.parseTransactionReceipt(receipt);
+            RetCode retCode = ReceiptParser.parseTransactionReceipt(receipt, null);
             if (retCode.code == 0) {
                 System.out.println("Vote proposal success.");
             } else {
