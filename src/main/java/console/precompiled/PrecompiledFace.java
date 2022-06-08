@@ -8,7 +8,6 @@ public interface PrecompiledFace {
 
     void removeNode(String[] params) throws Exception;
 
-    // SystemConfigPrecompiled
     void setSystemConfigByKey(String[] params) throws Exception;
 
     void createTable(String sql, boolean isWasm) throws Exception;

@@ -6,8 +6,10 @@ import console.common.ConsoleUtils;
 import console.contract.utils.ContractCompiler;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.utils.StringUtils;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.UserInterruptException;
 import org.slf4j.Logger;
@@ -59,7 +61,6 @@ public class NonInteractiveConsole {
         try {
             String[] command = params[0].split(" ");
             CommandInfo commandInfo = null;
-            boolean CRUDCommand = false;
             // execute the command
             if (command != null && command.length > 1) {
                 commandInfo =
@@ -67,9 +68,6 @@ public class NonInteractiveConsole {
                                 command[0],
                                 consoleInitializer.getClient().isWASM(),
                                 consoleInitializer.getClient().isAuthCheck());
-                if (SupportedCommand.CRUD_COMMANDS.contains(command[0])) {
-                    CRUDCommand = true;
-                }
             } else {
                 commandInfo =
                         SupportedCommand.getCommandInfo(
@@ -78,8 +76,8 @@ public class NonInteractiveConsole {
                                 consoleInitializer.getClient().isAuthCheck());
             }
             if (commandInfo != null) {
-                if (CRUDCommand) {
-                    String sqlCommand = params[0];
+                if (SupportedCommand.CRUD_COMMANDS.contains(command[0])) {
+                    String sqlCommand = StringUtils.join(Arrays.asList(params), " ");
                     String[] inputParamString = new String[1];
                     inputParamString[0] = sqlCommand;
                     commandInfo.callCommand(consoleInitializer, inputParamString, null);
