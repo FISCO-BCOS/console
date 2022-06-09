@@ -25,6 +25,9 @@ import net.sf.jsqlparser.expression.operators.relational.LikeExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterExpression;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.create.table.ColumnDefinition;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.Index;
@@ -123,6 +126,33 @@ public class CRUDParseUtils {
             fieldsList.remove(table.getKeyFieldName());
         }
         table.setValueFields(fieldsList);
+    }
+
+    public static Table parseAlterTable(String sql)
+            throws JSQLParserException, ConsoleMessageException {
+        Table table = new Table();
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Alter alterState = (Alter) statement;
+
+        // parse table name
+        String tableName = alterState.getTable().getName();
+        table.setTableName(tableName);
+
+        List<String> newColumns = new ArrayList<>();
+
+        List<AlterExpression> alterExpressions = alterState.getAlterExpressions();
+        for (AlterExpression alterExpression : alterExpressions) {
+            if (alterExpression.getOperation() != AlterOperation.ADD) {
+                throw new ConsoleMessageException("Alter table only support ADD COLUMN now");
+            }
+            List<AlterExpression.ColumnDataType> colDataTypeList =
+                    alterExpression.getColDataTypeList();
+            for (AlterExpression.ColumnDataType columnDataType : colDataTypeList) {
+                newColumns.add(columnDataType.getColumnName());
+            }
+        }
+        table.setValueFields(newColumns);
+        return table;
     }
 
     public static String parseTableNameFromSql(String sql)

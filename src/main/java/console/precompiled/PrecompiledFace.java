@@ -10,7 +10,9 @@ public interface PrecompiledFace {
 
     void setSystemConfigByKey(String[] params) throws Exception;
 
-    void createTable(String sql, boolean isWasm) throws Exception;
+    void createTable(String sql) throws Exception;
+
+    void alterTable(String sql) throws Exception;
 
     void insert(String sql) throws Exception;
 
