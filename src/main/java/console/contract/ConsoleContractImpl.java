@@ -56,6 +56,7 @@ import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionBaseException;
 import org.fisco.bcos.sdk.v3.utils.Hex;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
+import org.fisco.bcos.sdk.v3.utils.StringUtils;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
 import org.slf4j.Logger;
@@ -727,60 +728,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throws Exception {
         String contractFileName = params[1];
         String abiStr = "";
-        String contractName = "";
         if (consoleInitializer.getClient().isWASM()) {
-            contractFileName = ConsoleUtils.fixedBfsParam(contractFileName, pwd);
-            String contractAddress =
-                    Base64.getUrlEncoder()
-                            .withoutPadding()
-                            .encodeToString((contractFileName).getBytes(StandardCharsets.UTF_8));
-            contractName = FilenameUtils.getBaseName(contractFileName);
-            AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbi(
-                            consoleInitializer.getGroupID(), contractName, contractAddress);
-            abiStr = abiAndBin.getAbi();
+            abiStr = getWasmAbi(consoleInitializer.getGroupID(), pwd, contractFileName);
         } else {
-            if (!contractFileName.endsWith(ConsoleUtils.SOL_SUFFIX)) {
-                contractFileName =
-                        ConsoleUtils.SOLIDITY_PATH
-                                + File.separator
-                                + contractFileName
-                                + ConsoleUtils.SOL_SUFFIX;
-            }
-            File solFile = new File(contractFileName);
-            if (!solFile.exists()) {
-                System.out.println("The contract file " + contractFileName + " doesn't exist!");
-                return;
-            }
-            contractName = solFile.getName().split("\\.")[0];
-
-            // compile ecdsa
-            SolidityCompiler.Result res =
-                    SolidityCompiler.compile(
-                            solFile,
-                            (client.getCryptoType() == CryptoType.SM_TYPE),
-                            true,
-                            ABI,
-                            BIN,
-                            METADATA);
-
-            if (logger.isDebugEnabled()) {
-                logger.debug(
-                        " solidity compiler, contract: {}, result: {}, output: {}, error: {}",
-                        solFile,
-                        !res.isFailed(),
-                        res.getOutput(),
-                        res.getErrors());
-            }
-
-            if (res.isFailed()) {
-                throw new CompileSolidityException(
-                        " Compile " + solFile.getName() + " error: " + res.getErrors());
-            }
-
-            CompilationResult result = CompilationResult.parse(res.getOutput());
-            CompilationResult.ContractMetadata contractMetadata = result.getContract(contractName);
-            abiStr = contractMetadata.abi;
+            abiStr = getSolidityAbi(contractFileName);
         }
 
         // Read Content of the file
@@ -788,8 +739,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 new ABIDefinitionFactory(client.getCryptoSuite());
         ContractABIDefinition contractABIDefinition = abiDefinitionFactory.loadABI(abiStr);
         if (Objects.isNull(contractABIDefinition)) {
-            System.out.println(" Unable to load " + contractName + " abi");
-            logger.warn(" contract: {}, abi: {}", contractName, abiStr);
+            System.out.println(" Unable to load " + contractFileName + " abi");
+            logger.warn(" contract: {}, abi: {}", contractFileName, abiStr);
             return;
         }
 
@@ -811,7 +762,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         entry.getValue().getMethodSignatureAsString());
             }
         } else {
-            System.out.println(contractName + " contains no method.");
+            System.out.println(contractFileName + " contains no method.");
         }
 
         Map<String, List<ABIDefinition>> events = contractABIDefinition.getEvents();
@@ -830,5 +781,80 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         entry.getValue().get(0).getMethodSignatureAsString());
             }
         }
+    }
+
+    private String getSolidityAbi(String contractFileName) throws Exception {
+        String contractFilePath = contractFileName;
+        if (!contractFilePath.endsWith(ConsoleUtils.SOL_SUFFIX)) {
+            contractFilePath =
+                    ConsoleUtils.SOLIDITY_PATH
+                            + File.separator
+                            + contractFilePath
+                            + ConsoleUtils.SOL_SUFFIX;
+        }
+        File solFile = new File(contractFilePath);
+        if (!solFile.exists()) {
+            throw new Exception("The contract file " + contractFilePath + " doesn't exist!");
+        }
+        String contractName = solFile.getName().split("\\.")[0];
+
+        // compile ecdsa
+        SolidityCompiler.Result res =
+                SolidityCompiler.compile(
+                        solFile,
+                        (client.getCryptoType() == CryptoType.SM_TYPE),
+                        true,
+                        ABI,
+                        BIN,
+                        METADATA);
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    " solidity compiler, contract: {}, result: {}, output: {}, error: {}",
+                    solFile,
+                    !res.isFailed(),
+                    res.getOutput(),
+                    res.getErrors());
+        }
+
+        if (res.isFailed()) {
+            throw new CompileSolidityException(
+                    " Compile " + solFile.getName() + " error: " + res.getErrors());
+        }
+
+        CompilationResult result = CompilationResult.parse(res.getOutput());
+        CompilationResult.ContractMetadata contractMetadata = result.getContract(contractName);
+        return contractMetadata.abi;
+    }
+
+    private String getWasmAbi(String groupId, String pwd, String contractFileName)
+            throws Exception {
+        String abiStr;
+        if (contractFileName.endsWith(ContractCompiler.ABI_SUFFIX)) {
+            // read file
+            File abiFile = new File(contractFileName);
+            if (!abiFile.exists() || !abiFile.isFile()) {
+                throw new Exception(
+                        "The contract abi file " + contractFileName + " doesn't exist!");
+            }
+            abiStr = new String(CodeGenUtils.readBytes(abiFile));
+        } else {
+            // read contract
+            String absoluteFileName = ConsoleUtils.fixedBfsParam(contractFileName, pwd);
+            // load local abi file first
+            String contractAddress =
+                    Base64.getUrlEncoder()
+                            .withoutPadding()
+                            .encodeToString((absoluteFileName).getBytes(StandardCharsets.UTF_8));
+            String contractName = FilenameUtils.getBaseName(absoluteFileName);
+            AbiAndBin abiAndBin = ContractCompiler.loadAbi(groupId, contractName, contractAddress);
+            abiStr = abiAndBin.getAbi();
+            if (StringUtils.isEmpty(abiStr)) {
+                // still empty, read remote abi
+                Abi remoteAbi = client.getABI(contractFileName);
+                abiStr = remoteAbi.getABI();
+            }
+        }
+        return abiStr;
     }
 }
