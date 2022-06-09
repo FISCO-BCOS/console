@@ -171,7 +171,14 @@ public class SupportedCommand {
                     "create",
                     "Create table by sql",
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().createTable(params[0], isWasm));
+                            consoleInitializer.getPrecompiledFace().createTable(params[0]));
+
+    public static final CommandInfo ALTER =
+            new CommandInfo(
+                    "alter",
+                    "Alter table columns by sql",
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().alterTable(params[0]));
 
     public static final CommandInfo SELECT =
             new CommandInfo(
@@ -1077,6 +1084,7 @@ public class SupportedCommand {
             new ArrayList<>(
                     Arrays.asList(
                             CREATE.getCommand(),
+                            ALTER.getCommand(),
                             INSERT.getCommand(),
                             SELECT.getCommand(),
                             UPDATE.getCommand(),

@@ -126,7 +126,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void createTable(String sql, boolean isWasm) throws Exception {
+    public void createTable(String sql) throws Exception {
         Table table = new Table();
         try {
             CRUDParseUtils.parseCreateTable(sql, table);
@@ -141,6 +141,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         try {
+            CRUDParseUtils.parseCreateTable(sql, table);
             RetCode result =
                     tableCRUDService.createTable(
                             table.getTableName(), table.getKeyFieldName(), table.getValueFields());
@@ -173,117 +174,45 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
-    private boolean checkTableField(Map<String, List<String>> descTable, Entry entry) {
-        if (descTable == null || descTable.size() == 0) {
-            return true;
-        }
-        // check field
-        if (entry != null) {
-            Set<String> fieldSet = entry.getFieldNameToValue().keySet();
-            for (String field : fieldSet) {
-                if (!descTable.get(PrecompiledConstant.VALUE_FIELD_NAME).contains(field)) {
-                    System.out.println(
-                            "Unknown field \""
-                                    + field
-                                    + "\", current supported fields are "
-                                    + descTable
-                                            .get(PrecompiledConstant.VALUE_FIELD_NAME)
-                                            .toString());
-                    return false;
-                }
+    @Override
+    public void alterTable(String sql) throws Exception {
+        Table table = new Table();
+        try {
+            table = CRUDParseUtils.parseAlterTable(sql);
+            RetCode result =
+                    tableCRUDService.appendColumns(table.getTableName(), table.getValueFields());
+            // parse the result
+            if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+                System.out.println("Alter '" + table.getTableName() + "' Ok.");
+            } else {
+                System.out.println("Alter '" + table.getTableName() + "' failed ");
+                ConsoleUtils.printJson(result.toString());
             }
-        }
-        return true;
-    }
-
-    private void outputErrorMessageForTableCRUD(
-            Table table,
-            String keyValue,
-            Entry entry,
-            String command,
-            int code,
-            String message,
-            Map<String, List<String>> descTable) {
-        System.out.println("call " + command + " failed!");
-        System.out.println("* code: " + code);
-        System.out.println("* message: " + message);
-
-        if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
-            return;
-        }
-        if (!checkTableField(descTable, entry)) {
-            return;
-        }
-        if (table == null) {
-            return;
-        }
-        String regexTableName = "[\\da-zA-z,$,_,@]+";
-        if (!table.getTableName().matches(regexTableName)) {
-            System.out.println("Invalid table name " + table.getTableName());
-            System.out.println(
-                    "* The table name must contain only numbers, letters or [$','_','@']");
-        }
-        if (table.getTableName().length() > PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH) {
-            System.out.println("Invalid table name " + table.getTableName());
-            System.out.println(
-                    "* The length of the table name must be no greater than "
-                            + PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH
-                            + ", current length of the table is "
-                            + table.getTableName().length());
-        }
-        if (table.getKeyFieldName() != null
-                && table.getKeyFieldName().length()
-                        > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-            System.out.println("Invalid key \"" + table.getKeyFieldName() + "\"");
-            System.out.println(
-                    "* The length of the key must be no greater than "
-                            + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                            + " , current length of the table is "
-                            + table.getKeyFieldName().length());
-        }
-        if (keyValue.length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
-            System.out.println("Invalid key value " + keyValue);
-            System.out.println(
-                    "* The value of the key must be no greater than "
-                            + PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH
-                            + " , current length of the table is "
-                            + keyValue.length());
-        }
-        if (table.getValueFields() != null) {
-            for (String field : table.getValueFields()) {
-                if (field.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-                    System.out.println("Invalid field: " + field);
-
-                    System.out.println(
-                            "* Field length must be no greater than "
-                                    + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                                    + ", current length is: "
-                                    + field.length());
-                }
-            }
-        }
-        if (entry == null) {
-            return;
-        }
-        Map<String, String> fieldNameToValue = entry.getFieldNameToValue();
-        for (Map.Entry<String, String> kvEntry : fieldNameToValue.entrySet()) {
-            if (kvEntry.getKey().length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-                System.out.println("Invalid field name " + kvEntry.getKey());
-                System.out.println(
-                        "* Field length must be no greater than "
-                                + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                                + ", current length:"
-                                + kvEntry.getKey().length());
-            }
-            if (kvEntry.getValue().length()
-                    > PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
-                System.out.println("Invalid field value for " + kvEntry.getKey());
-                System.out.println(
-                        "* Value of Field must be no greater than: "
-                                + PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH
-                                + ", current length is "
-                                + kvEntry.getValue().length());
-            }
+        } catch (ConsoleMessageException e) {
+            System.out.println(e.getMessage());
+            logger.error(" message: {}, e:", e.getMessage(), e);
+        } catch (JSQLParserException | NullPointerException e) {
+            logger.error(" message: {}, e:", e.getMessage(), e);
+            System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
+        } catch (ContractException e) {
+            outputErrorMessageForTableCRUD(
+                    table,
+                    table.getKeyFieldName(),
+                    null,
+                    sql,
+                    e.getErrorCode(),
+                    e.getMessage(),
+                    null);
+        } catch (ClientException e) {
+            outputErrorMessageForTableCRUD(
+                    table,
+                    table.getKeyFieldName(),
+                    null,
+                    sql,
+                    e.getErrorCode(),
+                    e.getMessage(),
+                    null);
         }
     }
 
@@ -691,6 +620,125 @@ public class PrecompiledImpl implements PrecompiledFace {
         System.out.println();
     }
 
+    @Override
+    public String getPwd() {
+        return pwd;
+    }
+
+    private boolean checkTableField(Map<String, List<String>> descTable, Entry entry) {
+        if (descTable == null || descTable.size() == 0) {
+            return true;
+        }
+        // check field
+        if (entry != null) {
+            Set<String> fieldSet = entry.getFieldNameToValue().keySet();
+            for (String field : fieldSet) {
+                if (!descTable.get(PrecompiledConstant.VALUE_FIELD_NAME).contains(field)) {
+                    System.out.println(
+                            "Unknown field \""
+                                    + field
+                                    + "\", current supported fields are "
+                                    + descTable
+                                            .get(PrecompiledConstant.VALUE_FIELD_NAME)
+                                            .toString());
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private void outputErrorMessageForTableCRUD(
+            Table table,
+            String keyValue,
+            Entry entry,
+            String command,
+            int code,
+            String message,
+            Map<String, List<String>> descTable) {
+        System.out.println("call " + command + " failed!");
+        System.out.println("* code: " + code);
+        System.out.println("* message: " + message);
+
+        if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
+            return;
+        }
+        if (!checkTableField(descTable, entry)) {
+            return;
+        }
+        if (table == null) {
+            return;
+        }
+        String regexTableName = "[\\da-zA-z,$,_,@]+";
+        if (!table.getTableName().matches(regexTableName)) {
+            System.out.println("Invalid table name " + table.getTableName());
+            System.out.println(
+                    "* The table name must contain only numbers, letters or [$','_','@']");
+        }
+        if (table.getTableName().length() > PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH) {
+            System.out.println("Invalid table name " + table.getTableName());
+            System.out.println(
+                    "* The length of the table name must be no greater than "
+                            + PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH
+                            + ", current length of the table is "
+                            + table.getTableName().length());
+        }
+        if (table.getKeyFieldName() != null
+                && table.getKeyFieldName().length()
+                        > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
+            System.out.println("Invalid key \"" + table.getKeyFieldName() + "\"");
+            System.out.println(
+                    "* The length of the key must be no greater than "
+                            + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
+                            + " , current length of the table is "
+                            + table.getKeyFieldName().length());
+        }
+        if (keyValue.length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
+            System.out.println("Invalid key value " + keyValue);
+            System.out.println(
+                    "* The value of the key must be no greater than "
+                            + PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH
+                            + " , current length of the table is "
+                            + keyValue.length());
+        }
+        if (table.getValueFields() != null) {
+            for (String field : table.getValueFields()) {
+                if (field.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
+                    System.out.println("Invalid field: " + field);
+
+                    System.out.println(
+                            "* Field length must be no greater than "
+                                    + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
+                                    + ", current length is: "
+                                    + field.length());
+                }
+            }
+        }
+        if (entry == null) {
+            return;
+        }
+        Map<String, String> fieldNameToValue = entry.getFieldNameToValue();
+        for (Map.Entry<String, String> kvEntry : fieldNameToValue.entrySet()) {
+            if (kvEntry.getKey().length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
+                System.out.println("Invalid field name " + kvEntry.getKey());
+                System.out.println(
+                        "* Field length must be no greater than "
+                                + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
+                                + ", current length:"
+                                + kvEntry.getKey().length());
+            }
+            if (kvEntry.getValue().length()
+                    > PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
+                System.out.println("Invalid field value for " + kvEntry.getKey());
+                System.out.println(
+                        "* Value of Field must be no greater than: "
+                                + PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH
+                                + ", current length is "
+                                + kvEntry.getValue().length());
+            }
+        }
+    }
+
     private Tuple2<Integer, Integer> travelBfs(
             String absolutePath, String prefix, int deep, int limit) throws ContractException {
         if (deep >= limit) return new Tuple2<>(0, 0);
@@ -727,10 +775,5 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
         return new Tuple2<>(dirCount, contractCount);
-    }
-
-    @Override
-    public String getPwd() {
-        return pwd;
     }
 }
