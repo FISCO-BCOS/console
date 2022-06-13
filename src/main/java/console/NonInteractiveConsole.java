@@ -1,6 +1,7 @@
 package console;
 
 import console.command.SupportedCommand;
+import console.command.category.CrudCommand;
 import console.command.model.CommandInfo;
 import console.common.ConsoleUtils;
 import console.contract.utils.ContractCompiler;
@@ -76,7 +77,7 @@ public class NonInteractiveConsole {
                                 consoleInitializer.getClient().isAuthCheck());
             }
             if (commandInfo != null) {
-                if (SupportedCommand.CRUD_COMMANDS.contains(command[0])) {
+                if (CrudCommand.CRUD_COMMANDS.contains(command[0])) {
                     String sqlCommand = StringUtils.join(Arrays.asList(params), " ");
                     String[] inputParamString = new String[1];
                     inputParamString[0] = sqlCommand;

@@ -783,6 +783,60 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
     }
 
+    @Override
+    public void listDeployContractAddress(
+            ConsoleInitializer consoleInitializer, String[] params, String pwd) throws Exception {
+        boolean isWasm = consoleInitializer.getClient().isWASM();
+        String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
+        String contractName =
+                isWasm
+                        ? FilenameUtils.getBaseName(contractNameOrPath)
+                        : ConsoleUtils.getContractName(contractNameOrPath);
+        File contractFile =
+                new File(
+                        ContractCompiler.COMPILED_PATH
+                                + File.separator
+                                + consoleInitializer.getClient().getGroup()
+                                + File.separator
+                                + contractName);
+        int recordNum = 20;
+        if (params.length == 3) {
+            recordNum =
+                    ConsoleUtils.processNonNegativeNumber(
+                            "recordNum", params[2], 1, Integer.MAX_VALUE);
+            if (recordNum == Common.InvalidReturnNumber) {
+                return;
+            }
+        }
+        if (!contractFile.exists()) {
+            System.out.println("Contract \"" + contractName + "\" doesn't exist!\n");
+            return;
+        }
+        int i = 0;
+        File[] contractFileList = contractFile.listFiles();
+        if (contractFileList == null || contractFileList.length == 0) {
+            return;
+        }
+        ConsoleUtils.sortFiles(contractFileList);
+        for (File contractAddressFile : contractFileList) {
+            if (!isWasm && !ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                continue;
+            }
+            String contractAddress =
+                    isWasm
+                            ? new String(
+                                    Base64.getUrlDecoder().decode(contractAddressFile.getName()))
+                            : contractAddressFile.getName();
+            System.out.printf(
+                    "%s  %s%n",
+                    contractAddress, ConsoleUtils.getFileCreationTime(contractAddressFile));
+            i++;
+            if (i == recordNum) {
+                break;
+            }
+        }
+    }
+
     private String getSolidityAbi(String contractFileName) throws Exception {
         String contractFilePath = contractFileName;
         if (!contractFilePath.endsWith(ConsoleUtils.SOL_SUFFIX)) {

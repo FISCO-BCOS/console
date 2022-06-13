@@ -2,6 +2,9 @@ package console;
 
 import console.command.JlineUtils;
 import console.command.SupportedCommand;
+import console.command.category.BasicCommand;
+import console.command.category.BfsCommand;
+import console.command.category.CrudCommand;
 import console.command.model.CommandInfo;
 import console.command.model.WelcomeInfo;
 import console.common.ConsoleUtils;
@@ -104,15 +107,13 @@ public class Console {
                                 consoleInitializer.getClient().isWASM(),
                                 consoleInitializer.getClient().isAuthCheck());
                 if (commandInfo != null) {
-                    if (SupportedCommand.CRUD_COMMANDS.contains(params[0])) {
+                    if (CrudCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
                         inputParamString[0] = request;
                         commandInfo.callCommand(consoleInitializer, inputParamString, null);
-                    } else if (SupportedCommand.BFS_COMMANDS.contains(params[0])) {
+                    } else if (BfsCommand.BFS_COMMANDS.contains(params[0])) {
                         commandInfo.callCommand(consoleInitializer, params, pwd);
-                        if (commandInfo
-                                .getCommand()
-                                .equals(SupportedCommand.CHANGE_DIR.getCommand())) {
+                        if (commandInfo.getCommand().equals(BfsCommand.CHANGE_DIR.getCommand())) {
                             pwd = consoleInitializer.getPrecompiledFace().getPwd();
                             JlineUtils.switchPwd(pwd);
                         }
@@ -132,7 +133,7 @@ public class Console {
                         String cmd = commandInfo.getCommand();
                         commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, pwd);
 
-                        if (cmd.equals(SupportedCommand.SWITCH.getCommand())) {
+                        if (cmd.equals(BasicCommand.SWITCH.getCommand())) {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
                             SupportedCommand.setIsAuthOpen(
