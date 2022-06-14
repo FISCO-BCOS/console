@@ -166,9 +166,9 @@ public class AuthImpl implements AuthFace {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
             return;
         }
-        BigInteger setConsensusWeightProposal =
-                authManager.createSetConsensusWeightProposal(nodeId, weight, false);
-        showProposalInfo(setConsensusWeightProposal);
+        BigInteger proposalId = authManager.createSetConsensusWeightProposal(nodeId, weight, false);
+        System.out.println("Set consensus weight proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
     }
 
     @Override
@@ -184,9 +184,9 @@ public class AuthImpl implements AuthFace {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
             return;
         }
-        BigInteger setConsensusWeightProposal =
-                authManager.createSetConsensusWeightProposal(nodeId, weight, true);
-        showProposalInfo(setConsensusWeightProposal);
+        BigInteger proposalId = authManager.createSetConsensusWeightProposal(nodeId, weight, true);
+        System.out.println("Add consensus sealer proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
     }
 
     @Override
@@ -196,9 +196,10 @@ public class AuthImpl implements AuthFace {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
             return;
         }
-        BigInteger setConsensusWeightProposal =
+        BigInteger proposalId =
                 authManager.createSetConsensusWeightProposal(nodeId, BigInteger.ZERO, true);
-        showProposalInfo(setConsensusWeightProposal);
+        System.out.println("Add observer proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
     }
 
     @Override
@@ -208,8 +209,9 @@ public class AuthImpl implements AuthFace {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
             return;
         }
-        BigInteger rmNodeProposal = authManager.createRmNodeProposal(nodeId);
-        showProposalInfo(rmNodeProposal);
+        BigInteger proposalId = authManager.createRmNodeProposal(nodeId);
+        System.out.println("Remove node proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
     }
 
     @Override
@@ -217,17 +219,18 @@ public class AuthImpl implements AuthFace {
         String key = params[1];
         BigInteger value = new BigInteger(params[2]);
 
-        BigInteger setSysConfigProposal = authManager.createSetSysConfigProposal(key, value);
-        showProposalInfo(setSysConfigProposal);
+        BigInteger proposalId = authManager.createSetSysConfigProposal(key, value);
+        System.out.println("Set system config proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
     }
 
     @Override
     public void createUpgradeVoteComputerProposal(String[] params) throws Exception {
         String address = params[1];
         checkValidAddress(address, "new vote computer address");
-        BigInteger upgradeVoteComputerProposal =
-                authManager.createUpgradeVoteComputerProposal(address);
-        showProposalInfo(upgradeVoteComputerProposal);
+        BigInteger proposalId = authManager.createUpgradeVoteComputerProposal(address);
+        System.out.println("Upgrade vote computer proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
     }
 
     @Override
@@ -280,6 +283,7 @@ public class AuthImpl implements AuthFace {
         if (params.length == 2) {
             try {
                 BigInteger proposalId = BigInteger.valueOf(Long.parseLong(params[1]));
+                System.out.println("Show proposal, ID is: " + proposalId);
                 showProposalInfo(proposalId);
             } catch (NumberFormatException e) {
                 System.out.println("Number convert error, please check proposal id you input.");
@@ -299,7 +303,9 @@ public class AuthImpl implements AuthFace {
                         BigInteger.ZERO,
                         BigInteger.valueOf(Integer.MAX_VALUE));
         List<ProposalInfo> proposalInfoList = authManager.getProposalInfoList(from, to);
+        int showFrom = from.intValue();
         for (ProposalInfo proposalInfo : proposalInfoList) {
+            System.out.println("Proposal ID: " + showFrom++);
             showProposalInfo(proposalInfo);
         }
     }
