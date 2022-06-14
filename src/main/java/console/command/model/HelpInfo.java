@@ -258,21 +258,14 @@ public class HelpInfo {
         }
     }
 
-    public static void linkHelp(boolean isWasm) {
+    public static void linkHelp() {
         System.out.println("Create a link to access contract more conveniently.");
-        if (isWasm) {
-            System.out.println("Usage: \nln [path] [contractPath]");
-            System.out.println(
-                    "* path[Required] -- The BFS path of link, link must locate under '/apps', and be composed of contract name and version.");
-            System.out.println("* contractPath[Required] -- The BFS path of a contract.");
-            System.out.println("Example: \nln /apps/Name/Version /apps/test/HelloWorld");
-        } else {
-            System.out.println("Usage: \nln [path] [contractAddress]");
-            System.out.println(
-                    "* path[Required] -- The BFS path of link, link must locate under '/apps', and be composed of contract name and version.");
-            System.out.println("* contractAddress[Required] -- The address of a contract.");
-            System.out.println("Example: \nln /apps/Name/Version 0x1234567890");
-        }
+        System.out.println("Usage: \nln [path] [contractAddress]");
+        System.out.println(
+                "* path[Required] -- The BFS path of link, link must locate under '/apps', and be composed of contract name and version.");
+        System.out.println("* contractAddress[Required] -- The address of a contract.");
+        System.out.println("Example: (if in wasm)\nln /apps/Name/Version 0x1234567890");
+        System.out.println("Example: (if in evm)\nln /apps/Name/Version /apps/test/HelloWorld");
     }
 
     public static void addObserverHelp() {
