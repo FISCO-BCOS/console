@@ -217,7 +217,7 @@ public class AuthImpl implements AuthFace {
     @Override
     public void createSetSysConfigProposal(String[] params) throws Exception {
         String key = params[1];
-        BigInteger value = new BigInteger(params[2]);
+        String value = params[2];
 
         BigInteger proposalId = authManager.createSetSysConfigProposal(key, value);
         System.out.println("Set system config proposal created, ID is: " + proposalId);
