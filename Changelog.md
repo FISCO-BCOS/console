@@ -1,3 +1,12 @@
+### v2.9.1
+(2022-06-15)
+
+* 更新
+1. 升级Java SDK版本为`2.9.1`
+
+* 修复
+1. 修复`sol2java.sh`生成`Java`合约代码，编译失败的问题[#622](https://github.com/FISCO-BCOS/console/issues/622)
+
 ### v2.9.0
 (2022-05-12)
 
