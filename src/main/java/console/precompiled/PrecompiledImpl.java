@@ -19,7 +19,6 @@ import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
-import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
@@ -35,7 +34,6 @@ import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
-import org.fisco.bcos.sdk.v3.model.TransactionReceiptStatus;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
@@ -140,45 +138,24 @@ public class PrecompiledImpl implements PrecompiledFace {
             CRUDParseUtils.invalidSymbol(sql);
             return;
         }
-        try {
-            CRUDParseUtils.parseCreateTable(sql, table);
-            RetCode result =
-                    tableCRUDService.createTable(
-                            table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        CRUDParseUtils.parseCreateTable(sql, table);
+        RetCode result =
+                tableCRUDService.createTable(
+                        table.getTableName(), table.getKeyFieldName(), table.getValueFields());
 
-            // parse the result
-            if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
-                System.out.println("Create '" + table.getTableName() + "' Ok.");
-            } else {
-                System.out.println("Create '" + table.getTableName() + "' failed ");
-                ConsoleUtils.printJson(result.toString());
-            }
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table,
-                    table.getKeyFieldName(),
-                    null,
-                    sql,
-                    e.getErrorCode(),
-                    e.getMessage(),
-                    null);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table,
-                    table.getKeyFieldName(),
-                    null,
-                    sql,
-                    e.getErrorCode(),
-                    e.getMessage(),
-                    null);
+        // parse the result
+        if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println("Create '" + table.getTableName() + "' Ok.");
+        } else {
+            System.out.println("Create '" + table.getTableName() + "' failed ");
+            ConsoleUtils.printJson(result.toString());
         }
     }
 
     @Override
     public void alterTable(String sql) throws Exception {
-        Table table = new Table();
         try {
-            table = CRUDParseUtils.parseAlterTable(sql);
+            Table table = CRUDParseUtils.parseAlterTable(sql);
             RetCode result =
                     tableCRUDService.appendColumns(table.getTableName(), table.getValueFields());
             // parse the result
@@ -195,44 +172,24 @@ public class PrecompiledImpl implements PrecompiledFace {
             logger.error(" message: {}, e:", e.getMessage(), e);
             System.out.println("Could not parse SQL statement.");
             CRUDParseUtils.invalidSymbol(sql);
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table,
-                    table.getKeyFieldName(),
-                    null,
-                    sql,
-                    e.getErrorCode(),
-                    e.getMessage(),
-                    null);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table,
-                    table.getKeyFieldName(),
-                    null,
-                    sql,
-                    e.getErrorCode(),
-                    e.getMessage(),
-                    null);
         }
     }
 
     @Override
     public void insert(String sql) throws Exception {
-        Table table = new Table();
-        Entry entry = null;
-        Map<String, List<String>> descTable = null;
-        String keyValue = "";
         try {
+            Table table = new Table();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
-            descTable = tableCRUDService.desc(tableName);
+            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            table.setTableName(tableName);
             if (!checkTableExistence(descTable)) {
                 System.out.println("The table \"" + tableName + "\" doesn't exist!");
                 return;
             }
             logger.debug("insert, tableName: {}, descTable: {}", tableName, descTable);
-            entry = CRUDParseUtils.parseInsert(sql, table, descTable);
+            Entry entry = CRUDParseUtils.parseInsert(sql, table, descTable);
             String keyName = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
-            keyValue = entry.getKey();
+            String keyValue = entry.getKey();
             logger.debug(
                     "fieldNameToValue: {}, keyName: {}, keyValue: {}",
                     entry.getFieldNameToValue(),
@@ -257,25 +214,16 @@ public class PrecompiledImpl implements PrecompiledFace {
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement, error message: " + e.getMessage());
             CRUDParseUtils.invalidSymbol(sql);
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, keyValue, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, keyValue, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
         }
     }
 
     @Override
     public void update(String sql) throws Exception {
-        Table table = new Table();
-        UpdateFields updateFields = new UpdateFields();
-        Condition condition = new Condition();
-        String keyValue = "";
-        Map<String, List<String>> descTable = null;
         try {
+            Table table = new Table();
+            UpdateFields updateFields = new UpdateFields();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
-            descTable = tableCRUDService.desc(tableName);
+            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
             if (!checkTableExistence(descTable)) {
                 System.out.println("The table \"" + tableName + "\" doesn't exist!");
                 return;
@@ -286,9 +234,9 @@ public class PrecompiledImpl implements PrecompiledFace {
                 return;
             }
             table.setKeyFieldName(keyName);
-            condition = CRUDParseUtils.parseUpdate(sql, table, updateFields);
+            Condition condition = CRUDParseUtils.parseUpdate(sql, table, updateFields);
 
-            keyValue = condition.getEqValue();
+            String keyValue = condition.getEqValue();
             RetCode updateResult =
                     keyValue.isEmpty()
                             ? tableCRUDService.update(tableName, condition, updateFields)
@@ -306,31 +254,23 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println("Could not parse SQL statement.");
             logger.error(" message: {}, e: ", e.getMessage(), e);
             CRUDParseUtils.invalidSymbol(sql);
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         }
     }
 
     @Override
     public void remove(String sql) throws Exception {
-        Table table = new Table();
-        Condition condition = new Condition();
-        Map<String, List<String>> descTable = null;
-        String keyValue = "";
         try {
+            Table table = new Table();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
-            descTable = tableCRUDService.desc(tableName);
+            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            table.setTableName(tableName);
             if (!checkTableExistence(descTable)) {
                 System.out.println("The table \"" + table.getTableName() + "\" doesn't exist!");
                 return;
             }
             table.setKeyFieldName(descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0));
-            condition = CRUDParseUtils.parseRemove(sql, table);
-            keyValue = condition.getEqValue();
+            Condition condition = CRUDParseUtils.parseRemove(sql, table);
+            String keyValue = condition.getEqValue();
             RetCode removeResult =
                     keyValue.isEmpty()
                             ? tableCRUDService.remove(table.getTableName(), condition)
@@ -349,12 +289,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println("Could not parse SQL statement.");
             logger.error(" message: {}, e: ", e.getMessage(), e);
             CRUDParseUtils.invalidSymbol(sql);
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         }
     }
 
@@ -364,24 +298,21 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void select(String sql) throws ConsoleMessageException {
-        Table table = new Table();
-        Condition condition = new Condition();
-        List<String> selectColumns = new ArrayList<>();
-        Map<String, List<String>> descTable = null;
-        String keyValue = "";
+    public void select(String sql) throws ConsoleMessageException, ContractException {
         try {
+            Table table = new Table();
+            List<String> selectColumns = new ArrayList<>();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
             table.setTableName(tableName);
-            descTable = tableCRUDService.desc(tableName);
+            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
             if (!checkTableExistence(descTable)) {
                 System.out.println("The table \"" + table.getTableName() + "\" doesn't exist!");
                 return;
             }
             String keyField = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
             table.setKeyFieldName(keyField);
-            condition = CRUDParseUtils.parseSelect(sql, table, selectColumns);
-            keyValue = condition.getEqValue();
+            Condition condition = CRUDParseUtils.parseSelect(sql, table, selectColumns);
+            String keyValue = condition.getEqValue();
             List<Map<String, String>> result = new ArrayList<>();
             if (keyValue.isEmpty()) {
                 result = tableCRUDService.select(table.getTableName(), descTable, condition);
@@ -417,12 +348,6 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println("Could not parse SQL statement.");
             logger.error(" message: {}, e: ", e.getMessage(), e);
             CRUDParseUtils.invalidSymbol(sql);
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, keyValue, null, sql, e.getErrorCode(), e.getMessage(), descTable);
         }
     }
 
@@ -623,120 +548,6 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public String getPwd() {
         return pwd;
-    }
-
-    private boolean checkTableField(Map<String, List<String>> descTable, Entry entry) {
-        if (descTable == null || descTable.size() == 0) {
-            return true;
-        }
-        // check field
-        if (entry != null) {
-            Set<String> fieldSet = entry.getFieldNameToValue().keySet();
-            for (String field : fieldSet) {
-                if (!descTable.get(PrecompiledConstant.VALUE_FIELD_NAME).contains(field)) {
-                    System.out.println(
-                            "Unknown field \""
-                                    + field
-                                    + "\", current supported fields are "
-                                    + descTable
-                                            .get(PrecompiledConstant.VALUE_FIELD_NAME)
-                                            .toString());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private void outputErrorMessageForTableCRUD(
-            Table table,
-            String keyValue,
-            Entry entry,
-            String command,
-            int code,
-            String message,
-            Map<String, List<String>> descTable) {
-        System.out.println("call " + command + " failed!");
-        System.out.println("* code: " + code);
-        System.out.println("* message: " + message);
-
-        if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
-            return;
-        }
-        if (!checkTableField(descTable, entry)) {
-            return;
-        }
-        if (table == null) {
-            return;
-        }
-        String regexTableName = "[\\da-zA-z,$,_,@]+";
-        if (!table.getTableName().matches(regexTableName)) {
-            System.out.println("Invalid table name " + table.getTableName());
-            System.out.println(
-                    "* The table name must contain only numbers, letters or [$','_','@']");
-        }
-        if (table.getTableName().length() > PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH) {
-            System.out.println("Invalid table name " + table.getTableName());
-            System.out.println(
-                    "* The length of the table name must be no greater than "
-                            + PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH
-                            + ", current length of the table is "
-                            + table.getTableName().length());
-        }
-        if (table.getKeyFieldName() != null
-                && table.getKeyFieldName().length()
-                        > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-            System.out.println("Invalid key \"" + table.getKeyFieldName() + "\"");
-            System.out.println(
-                    "* The length of the key must be no greater than "
-                            + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                            + " , current length of the table is "
-                            + table.getKeyFieldName().length());
-        }
-        if (keyValue.length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
-            System.out.println("Invalid key value " + keyValue);
-            System.out.println(
-                    "* The value of the key must be no greater than "
-                            + PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH
-                            + " , current length of the table is "
-                            + keyValue.length());
-        }
-        if (table.getValueFields() != null) {
-            for (String field : table.getValueFields()) {
-                if (field.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-                    System.out.println("Invalid field: " + field);
-
-                    System.out.println(
-                            "* Field length must be no greater than "
-                                    + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                                    + ", current length is: "
-                                    + field.length());
-                }
-            }
-        }
-        if (entry == null) {
-            return;
-        }
-        Map<String, String> fieldNameToValue = entry.getFieldNameToValue();
-        for (Map.Entry<String, String> kvEntry : fieldNameToValue.entrySet()) {
-            if (kvEntry.getKey().length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-                System.out.println("Invalid field name " + kvEntry.getKey());
-                System.out.println(
-                        "* Field length must be no greater than "
-                                + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                                + ", current length:"
-                                + kvEntry.getKey().length());
-            }
-            if (kvEntry.getValue().length()
-                    > PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
-                System.out.println("Invalid field value for " + kvEntry.getKey());
-                System.out.println(
-                        "* Value of Field must be no greater than: "
-                                + PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH
-                                + ", current length is "
-                                + kvEntry.getValue().length());
-            }
-        }
     }
 
     private Tuple2<Integer, Integer> travelBfs(
