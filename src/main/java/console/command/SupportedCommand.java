@@ -91,7 +91,8 @@ public class SupportedCommand {
     }
 
     public static CommandInfo getCommandInfo(String command, boolean isWasm, boolean isAuthOpen) {
-        if (Objects.equals(command, HELP.getCommand())) return HELP;
+        if (Objects.equals(command, HELP.getCommand()) || HELP.getOptionCommand().contains(command))
+            return HELP;
         Function<CommandInfo, Boolean> commandInfoFilter =
                 (CommandInfo info) ->
                         !(isWasm && !info.isWasmSupport()
