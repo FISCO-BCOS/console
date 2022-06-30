@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity>=0.6.10 <0.8.20;
+pragma solidity >=0.6.10 <0.8.20;
 pragma experimental ABIEncoderV2;
 
 import "./Table.sol";
@@ -17,6 +17,7 @@ contract Asset {
         string indexed to_account,
         uint256 indexed amount
     );
+
     KVTable kvTable;
     TableManager tm;
     string constant tableName = "t_asset";
@@ -33,15 +34,11 @@ contract Asset {
         //
 
         // create table
-        string[] memory columnNames = new string[](1);
-        columnNames[0] = "asset_value";
-        TableInfo memory tf = TableInfo("account", columnNames);
-        tm.createTable(tableName, tf);
+        tm.createKVTable(tableName, "account", "asset_value");
 
         // get table address
         address t_address = tm.openTable(tableName);
         kvTable = KVTable(t_address);
-
     }
 
     /*
@@ -94,11 +91,11 @@ contract Asset {
                 ret_code = 0;
             } else {
                 // 失败? 无权限或者其他错误
-                ret_code = -2;
+                ret_code = - 2;
             }
         } else {
             // 账户已存在
-            ret_code = -1;
+            ret_code = - 1;
         }
 
         emit RegisterEvent(ret_code, account, asset_value);
@@ -134,28 +131,28 @@ contract Asset {
         (ret, from_asset_value) = select(from_account);
         if (ret != true) {
             // 转移账户不存在
-            emit TransferEvent(-1, from_account, to_account, amount);
-            return -1;
+            emit TransferEvent(- 1, from_account, to_account, amount);
+            return - 1;
         }
 
         // 接受账户是否存在?
         (ret, to_asset_value) = select(to_account);
         if (ret != true) {
             // 接收资产的账户不存在
-            emit TransferEvent(-2, from_account, to_account, amount);
-            return -2;
+            emit TransferEvent(- 2, from_account, to_account, amount);
+            return - 2;
         }
 
         if (from_asset_value < amount) {
             // 转移资产的账户金额不足
-            emit TransferEvent(-3, from_account, to_account, amount);
-            return -3;
+            emit TransferEvent(- 3, from_account, to_account, amount);
+            return - 3;
         }
 
         if (to_asset_value + amount < to_asset_value) {
             // 接收账户金额溢出
-            emit TransferEvent(-4, from_account, to_account, amount);
-            return -4;
+            emit TransferEvent(- 4, from_account, to_account, amount);
+            return - 4;
         }
 
         string memory f_new_value_str = uint2str(from_asset_value - amount);
@@ -164,8 +161,8 @@ contract Asset {
         int32 count = kvTable.set(from_account, f_new_value_str);
         if (count != 1) {
             // 失败? 无权限或者其他错误?
-            emit TransferEvent(-5, from_account, to_account, amount);
-            return -5;
+            emit TransferEvent(- 5, from_account, to_account, amount);
+            return - 5;
         }
 
         string memory to_new_value_str = uint2str(to_asset_value + amount);
@@ -186,16 +183,19 @@ contract Asset {
         if (_i == 0) {
             return "0";
         }
-        uint256 j = _i;
-        uint256 len;
+        uint j = _i;
+        uint len;
         while (j != 0) {
             len++;
             j /= 10;
         }
         bytes memory bstr = new bytes(len);
-        uint256 k = len - 1;
+        uint k = len;
         while (_i != 0) {
-            bstr[k--] = bytes1(uint8(48 + (_i % 10)));
+            k = k-1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
             _i /= 10;
         }
         return string(bstr);
@@ -239,7 +239,7 @@ contract Asset {
             }
         }
         if (_b > 0) {
-            mint *= 10**_b;
+            mint *= 10 ** _b;
         }
         return mint;
     }
