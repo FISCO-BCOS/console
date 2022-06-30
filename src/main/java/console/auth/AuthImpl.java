@@ -294,13 +294,13 @@ public class AuthImpl implements AuthFace {
                 ConsoleUtils.processNonNegativeBigNumber(
                         "proposalFrom",
                         params[1],
-                        BigInteger.ZERO,
+                        BigInteger.ONE,
                         BigInteger.valueOf(Integer.MAX_VALUE));
         BigInteger to =
                 ConsoleUtils.processNonNegativeBigNumber(
                         "proposalTo",
                         params[2],
-                        BigInteger.ZERO,
+                        BigInteger.ONE,
                         BigInteger.valueOf(Integer.MAX_VALUE));
         List<ProposalInfo> proposalInfoList = authManager.getProposalInfoList(from, to);
         int showFrom = from.intValue();
