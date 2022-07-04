@@ -1,3 +1,33 @@
+## v3.0.0-rc4
+(2022-7-1)
+
+请阅读Java SDK v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/sdk/java_sdk/index.html)
+
+### 新增
+
+* 新增Table CRUD的命令：`select`,`update`,`insert`,`remove`,`alter`
+* 新增共识节点变更提案、系统配置变更提案、升级计算逻辑提案等的命令
+* 新增冻结、解冻合约功能命令
+* 获取提案命令支持批量获取
+
+### 更新
+
+* 升级`fisco-bcos-java-sdk`到`3.0.0-rc4`
+* 升级`evm-static-analysis`到`1.0.0-rc2`
+
+### 修复
+
+* 修复非交互式控制台的调用问题
+* 重构命令代码，将所有命令抽象成`BasicCategoryCommand`，实际分类可参考`./src/main/java/console/command/category`
+
+### 兼容性说明
+
+- 不兼容 FISCO BCOS 2.0+ 版本
+- 兼容java-sdk v3.x的历史版本
+- 支持[3.0.0-rc4](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc4)版本
+
 ### v3.0.0-rc3
 (2022-03-31)
 
