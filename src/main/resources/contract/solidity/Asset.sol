@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity>=0.6.10 <0.8.20;
+pragma solidity >=0.6.10 <0.8.20;
 pragma experimental ABIEncoderV2;
 
-import "./KVTable.sol";
+import "./Table.sol";
 
 contract Asset {
     // event
@@ -17,20 +17,28 @@ contract Asset {
         string indexed to_account,
         uint256 indexed amount
     );
-    KVTable tf;
+
+    KVTable kvTable;
+    TableManager tm;
+    string constant tableName = "t_asset";
 
     constructor() public {
         // 构造函数中创建t_asset表
-        address kvAddr = address(0x1009);
-        tf = KVTable(kvAddr);
+        tm = TableManager(address(0x1002));
+
         // 资产管理表, key : account, field : asset_value
         // |  资产账户(主键)      |     资产金额       |
         // |-------------------- |-------------------|
         // |        account      |    asset_value    |
         // |---------------------|-------------------|
         //
-        // 创建表
-        tf.createTable("t_asset", "account", "asset_value");
+
+        // create table
+        tm.createKVTable(tableName, "account", "asset_value");
+
+        // get table address
+        address t_address = tm.openTable(tableName);
+        kvTable = KVTable(t_address);
     }
 
     /*
@@ -44,14 +52,12 @@ contract Asset {
     */
     function select(string memory account) public view returns (bool, uint256) {
         // 查询
-        Entry memory entry;
         bool result;
-        (result, entry) = tf.get("t_asset", account);
+        string memory value;
+        (result, value) = kvTable.get(account);
         uint256 asset_value = 0;
-        if (entry.fields.length == 0) {
-            return (false, 0);
-        }
-        asset_value = safeParseInt(entry.fields[0].value);
+
+        asset_value = safeParseInt(value);
         return (result, asset_value);
     }
 
@@ -75,24 +81,21 @@ contract Asset {
         // 查询账号是否存在
         (ret, temp_asset_value) = select(account);
         if (ret != true) {
+            // 不存在，创建
             string memory asset_value_str = uint2str(asset_value);
-            KVField memory kv1 = KVField("asset_value", asset_value_str);
-            KVField[] memory KVFields = new KVField[](1);
-            KVFields[0] = kv1;
-            Entry memory entry = Entry(KVFields);
 
             // 插入
-            int256 count = tf.set("t_asset", account, entry);
+            int32 count = kvTable.set(account, asset_value_str);
             if (count == 1) {
                 // 成功
                 ret_code = 0;
             } else {
                 // 失败? 无权限或者其他错误
-                ret_code = -2;
+                ret_code = - 2;
             }
         } else {
             // 账户已存在
-            ret_code = -1;
+            ret_code = - 1;
         }
 
         emit RegisterEvent(ret_code, account, asset_value);
@@ -128,52 +131,44 @@ contract Asset {
         (ret, from_asset_value) = select(from_account);
         if (ret != true) {
             // 转移账户不存在
-            emit TransferEvent(-1, from_account, to_account, amount);
-            return -1;
+            emit TransferEvent(- 1, from_account, to_account, amount);
+            return - 1;
         }
 
         // 接受账户是否存在?
         (ret, to_asset_value) = select(to_account);
         if (ret != true) {
             // 接收资产的账户不存在
-            emit TransferEvent(-2, from_account, to_account, amount);
-            return -2;
+            emit TransferEvent(- 2, from_account, to_account, amount);
+            return - 2;
         }
 
         if (from_asset_value < amount) {
             // 转移资产的账户金额不足
-            emit TransferEvent(-3, from_account, to_account, amount);
-            return -3;
+            emit TransferEvent(- 3, from_account, to_account, amount);
+            return - 3;
         }
 
         if (to_asset_value + amount < to_asset_value) {
             // 接收账户金额溢出
-            emit TransferEvent(-4, from_account, to_account, amount);
-            return -4;
+            emit TransferEvent(- 4, from_account, to_account, amount);
+            return - 4;
         }
 
         string memory f_new_value_str = uint2str(from_asset_value - amount);
-        KVField memory kv1 = KVField("asset_value", f_new_value_str);
-        KVField[] memory KVFields1 = new KVField[](1);
-        KVFields1[0] = kv1;
-        Entry memory entry1 = Entry(KVFields1);
 
         // 更新转账账户
-        int256 count = tf.set("t_asset", from_account, entry1);
+        int32 count = kvTable.set(from_account, f_new_value_str);
         if (count != 1) {
             // 失败? 无权限或者其他错误?
-            emit TransferEvent(-5, from_account, to_account, amount);
-            return -5;
+            emit TransferEvent(- 5, from_account, to_account, amount);
+            return - 5;
         }
 
         string memory to_new_value_str = uint2str(to_asset_value + amount);
-        kv1 = KVField("asset_value", to_new_value_str);
-        KVFields1 = new KVField[](1);
-        KVFields1[0] = kv1;
-        entry1 = Entry(KVFields1);
 
         // 更新接收账户
-        tf.set("t_asset", to_account, entry1);
+        kvTable.set(to_account, to_new_value_str);
 
         emit TransferEvent(0, from_account, to_account, amount);
 
@@ -188,16 +183,19 @@ contract Asset {
         if (_i == 0) {
             return "0";
         }
-        uint256 j = _i;
-        uint256 len;
+        uint j = _i;
+        uint len;
         while (j != 0) {
             len++;
             j /= 10;
         }
         bytes memory bstr = new bytes(len);
-        uint256 k = len - 1;
+        uint k = len;
         while (_i != 0) {
-            bstr[k--] = bytes1(uint8(48 + (_i % 10)));
+            k = k-1;
+            uint8 temp = (48 + uint8(_i - _i / 10 * 10));
+            bytes1 b1 = bytes1(temp);
+            bstr[k] = b1;
             _i /= 10;
         }
         return string(bstr);
@@ -241,7 +239,7 @@ contract Asset {
             }
         }
         if (_b > 0) {
-            mint *= 10**_b;
+            mint *= 10 ** _b;
         }
         return mint;
     }

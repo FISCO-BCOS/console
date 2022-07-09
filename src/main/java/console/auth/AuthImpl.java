@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple3;
 import org.fisco.bcos.sdk.v3.contract.auth.manager.AuthManager;
 import org.fisco.bcos.sdk.v3.contract.auth.po.AuthType;
 import org.fisco.bcos.sdk.v3.contract.auth.po.CommitteeInfo;
@@ -153,11 +154,91 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
+    public void createSetConsensusWeightProposal(String[] params) throws Exception {
+        String nodeId = params[1];
+        BigInteger weight =
+                ConsoleUtils.processNonNegativeBigNumber(
+                        "consensusWeight",
+                        params[2],
+                        BigInteger.ONE,
+                        BigInteger.valueOf(Integer.MAX_VALUE));
+        if (nodeId.length() != 128) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
+            return;
+        }
+        BigInteger proposalId = authManager.createSetConsensusWeightProposal(nodeId, weight, false);
+        System.out.println("Set consensus weight proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
+    }
+
+    @Override
+    public void createAddSealerProposal(String[] params) throws Exception {
+        String nodeId = params[1];
+        BigInteger weight =
+                ConsoleUtils.processNonNegativeBigNumber(
+                        "consensusWeight",
+                        params[2],
+                        BigInteger.ONE,
+                        BigInteger.valueOf(Integer.MAX_VALUE));
+        if (nodeId.length() != 128) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
+            return;
+        }
+        BigInteger proposalId = authManager.createSetConsensusWeightProposal(nodeId, weight, true);
+        System.out.println("Add consensus sealer proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
+    }
+
+    @Override
+    public void createAddObserverProposal(String[] params) throws Exception {
+        String nodeId = params[1];
+        if (nodeId.length() != 128) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
+            return;
+        }
+        BigInteger proposalId =
+                authManager.createSetConsensusWeightProposal(nodeId, BigInteger.ZERO, true);
+        System.out.println("Add observer proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
+    }
+
+    @Override
+    public void createRemoveNodeProposal(String[] params) throws Exception {
+        String nodeId = params[1];
+        if (nodeId.length() != 128) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
+            return;
+        }
+        BigInteger proposalId = authManager.createRmNodeProposal(nodeId);
+        System.out.println("Remove node proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
+    }
+
+    @Override
+    public void createSetSysConfigProposal(String[] params) throws Exception {
+        String key = params[1];
+        String value = params[2];
+
+        BigInteger proposalId = authManager.createSetSysConfigProposal(key, value);
+        System.out.println("Set system config proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
+    }
+
+    @Override
+    public void createUpgradeVoteComputerProposal(String[] params) throws Exception {
+        String address = params[1];
+        checkValidAddress(address, "new vote computer address");
+        BigInteger proposalId = authManager.createUpgradeVoteComputerProposal(address);
+        System.out.println("Upgrade vote computer proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
+    }
+
+    @Override
     public void revokeProposal(String[] params) throws Exception {
         try {
             BigInteger proposalId = BigInteger.valueOf(Long.parseLong(params[1]));
             TransactionReceipt receipt = authManager.revokeProposal(proposalId);
-            RetCode retCode = ReceiptParser.parseTransactionReceipt(receipt);
+            RetCode retCode = ReceiptParser.parseTransactionReceipt(receipt, null);
             if (retCode.code == 0) {
                 System.out.println("Revoke proposal success.");
             } else {
@@ -185,7 +266,7 @@ public class AuthImpl implements AuthFace {
                 }
             }
             TransactionReceipt receipt = authManager.voteProposal(proposalId, agree);
-            RetCode retCode = ReceiptParser.parseTransactionReceipt(receipt);
+            RetCode retCode = ReceiptParser.parseTransactionReceipt(receipt, null);
             if (retCode.code == 0) {
                 System.out.println("Vote proposal success.");
             } else {
@@ -198,12 +279,34 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
-    public void getProposalInfo(String[] params) throws Exception {
-        try {
-            BigInteger proposalId = BigInteger.valueOf(Long.parseLong(params[1]));
-            showProposalInfo(proposalId);
-        } catch (NumberFormatException e) {
-            System.out.println("Number convert error, please check proposal id you input.");
+    public void getProposalInfoList(String[] params) throws Exception {
+        if (params.length == 2) {
+            try {
+                BigInteger proposalId = BigInteger.valueOf(Long.parseLong(params[1]));
+                System.out.println("Show proposal, ID is: " + proposalId);
+                showProposalInfo(proposalId);
+            } catch (NumberFormatException e) {
+                System.out.println("Number convert error, please check proposal id you input.");
+            }
+            return;
+        }
+        BigInteger from =
+                ConsoleUtils.processNonNegativeBigNumber(
+                        "proposalFrom",
+                        params[1],
+                        BigInteger.ONE,
+                        BigInteger.valueOf(Integer.MAX_VALUE));
+        BigInteger to =
+                ConsoleUtils.processNonNegativeBigNumber(
+                        "proposalTo",
+                        params[2],
+                        BigInteger.ONE,
+                        BigInteger.valueOf(Integer.MAX_VALUE));
+        List<ProposalInfo> proposalInfoList = authManager.getProposalInfoList(from, to);
+        int showFrom = from.intValue();
+        for (ProposalInfo proposalInfo : proposalInfoList) {
+            System.out.println("Proposal ID: " + showFrom++);
+            showProposalInfo(proposalInfo);
         }
     }
 
@@ -213,6 +316,10 @@ public class AuthImpl implements AuthFace {
             System.out.println("Proposal not found in committee, please check id: " + proposalId);
             return;
         }
+        showProposalInfo(proposalInfo);
+    }
+
+    private void showProposalInfo(ProposalInfo proposalInfo) {
         ConsoleUtils.singleLine();
         System.out.println("Proposer: " + proposalInfo.getProposer());
         System.out.println("Proposal Type   : " + proposalInfo.getProposalTypeString());
@@ -322,7 +429,7 @@ public class AuthImpl implements AuthFace {
         byte[] hash = consoleInitializer.getClient().getCryptoSuite().hash(funcStr.getBytes());
         byte[] func = Arrays.copyOfRange(hash, 0, 4);
         String type = params[3];
-        BigInteger setResult;
+        RetCode setResult;
         try {
             checkValidAddress(address, "contractAddress");
             if (type.equals("white_list")) {
@@ -333,15 +440,7 @@ public class AuthImpl implements AuthFace {
                 System.out.println("Error authType, auth type is white_list or black_list.");
                 return;
             }
-            RetCode precompiledResponse =
-                    PrecompiledRetCode.getPrecompiledResponse(setResult.intValue(), "Success");
-            ConsoleUtils.printJson(
-                    "{\"code\":"
-                            + precompiledResponse.getCode()
-                            + ", \"msg\":"
-                            + "\""
-                            + precompiledResponse.getMessage()
-                            + "\"}");
+            ConsoleUtils.printJson(setResult.toString());
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -359,16 +458,8 @@ public class AuthImpl implements AuthFace {
         try {
             checkValidAddress(contract, "contractAddress");
             checkValidAddress(account, "accountAddress");
-            BigInteger openResult = authManager.setMethodAuth(contract, func, account, true);
-            RetCode precompiledResponse =
-                    PrecompiledRetCode.getPrecompiledResponse(openResult.intValue(), "Success");
-            ConsoleUtils.printJson(
-                    "{\"code\":"
-                            + precompiledResponse.getCode()
-                            + ", \"msg\":"
-                            + "\""
-                            + precompiledResponse.getMessage()
-                            + "\"}");
+            RetCode openResult = authManager.setMethodAuth(contract, func, account, true);
+            ConsoleUtils.printJson(openResult.toString());
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -386,16 +477,8 @@ public class AuthImpl implements AuthFace {
         try {
             checkValidAddress(contract, "contractAddress");
             checkValidAddress(account, "accountAddress");
-            BigInteger closeResult = authManager.setMethodAuth(contract, func, account, false);
-            RetCode precompiledResponse =
-                    PrecompiledRetCode.getPrecompiledResponse(closeResult.intValue(), "Success");
-            ConsoleUtils.printJson(
-                    "{\"code\":"
-                            + precompiledResponse.getCode()
-                            + ", \"msg\":"
-                            + "\""
-                            + precompiledResponse.getMessage()
-                            + "\"}");
+            RetCode closeResult = authManager.setMethodAuth(contract, func, account, false);
+            ConsoleUtils.printJson(closeResult.toString());
         } catch (TransactionException e) {
             System.out.println("Error: " + e.getMessage());
         }
@@ -441,6 +524,32 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
+    public void getMethodAuth(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
+        String contract = params[1];
+        String funcStr = params[2];
+        byte[] hash = consoleInitializer.getClient().getCryptoSuite().hash(funcStr.getBytes());
+        byte[] func = Arrays.copyOfRange(hash, 0, 4);
+        checkValidAddress(contract, "contractAddress");
+        Tuple3<AuthType, List<String>, List<String>> methodAuth =
+                authManager.getMethodAuth(contract, func);
+        ConsoleUtils.singleLine();
+        System.out.println("Contract address: " + contract);
+        System.out.println("Contract method : " + funcStr);
+        System.out.println("Method auth type: " + methodAuth.getValue1().toString());
+        ConsoleUtils.singleLine();
+        System.out.println("Access address:");
+        for (String s : methodAuth.getValue2()) {
+            System.out.println(s);
+        }
+        ConsoleUtils.singleLine();
+        System.out.println("Block address :");
+        for (String s : methodAuth.getValue3()) {
+            System.out.println(s);
+        }
+    }
+
+    @Override
     public void getLatestProposal(String[] params) throws Exception {
         BigInteger proposalId = this.authManager.proposalCount();
         if (proposalId.equals(BigInteger.ZERO)) {
@@ -451,6 +560,30 @@ public class AuthImpl implements AuthFace {
         if (proposalId.compareTo(BigInteger.ZERO) > 0) {
             showProposalInfo(proposalId);
         }
+    }
+
+    @Override
+    public void freezeContract(String[] params) throws Exception {
+        String contract = params[1];
+        checkValidAddress(contract, "contractAddress");
+        RetCode result = authManager.setContractStatus(contract, true);
+        ConsoleUtils.printJson(result.toString());
+    }
+
+    @Override
+    public void unfreezeContract(String[] params) throws Exception {
+        String contract = params[1];
+        checkValidAddress(contract, "contractAddress");
+        RetCode result = authManager.setContractStatus(contract, false);
+        ConsoleUtils.printJson(result.toString());
+    }
+
+    @Override
+    public void getContractStatus(String[] params) throws Exception {
+        String contract = params[1];
+        checkValidAddress(contract, "contractAddress");
+        Boolean isAvailable = authManager.contractAvailable(contract);
+        System.out.println(isAvailable ? "Available" : "Freeze");
     }
 
     void checkValidAddress(String address, String valueName) throws TransactionException {

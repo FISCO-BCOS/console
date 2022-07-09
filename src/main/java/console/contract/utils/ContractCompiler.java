@@ -48,10 +48,10 @@ public class ContractCompiler {
     public static final String BFS_APPS_PREFIX = "/apps";
     public static final String BFS_APPS_FULL_PREFIX = "/apps/";
     public static final String SOL_SUFFIX = ".sol";
-    private static final String SM_SUFFIX = ".sm";
-    private static final String BIN_SUFFIX = ".bin";
-    private static final String ABI_SUFFIX = ".abi";
-    private static final String WASM_SUFFIX = ".wasm";
+    public static final String SM_SUFFIX = ".sm";
+    public static final String BIN_SUFFIX = ".bin";
+    public static final String ABI_SUFFIX = ".abi";
+    public static final String WASM_SUFFIX = ".wasm";
 
     public static AbiAndBin compileContract(
             String contractNameOrPath, boolean sm, boolean isContractParallelAnalysis)
@@ -340,11 +340,13 @@ public class ContractCompiler {
         }
         String abiContent = new String(CodeGenUtils.readBytes(abiPath));
         String binContent = new String(CodeGenUtils.readBytes(binPath));
-        logger.trace(
-                "loadAbiAndBin load abi and bin, contract: {}, abiPath: {}, binPath: {}",
-                contractAddress,
-                abiPath,
-                binPath);
+        if (logger.isTraceEnabled()) {
+            logger.trace(
+                    "loadAbiAndBin load abi and bin, contract: {}, abiPath: {}, binPath: {}",
+                    contractAddress,
+                    abiPath,
+                    binPath);
+        }
 
         return new AbiAndBin(abiContent, sm ? "" : binContent, sm ? binContent : "");
     }

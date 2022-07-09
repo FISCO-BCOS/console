@@ -1,7 +1,7 @@
 package console.collaboration;
 
-import static org.fisco.bcos.sdk.v3.client.protocol.model.Transaction.LIQUID_CREATE;
-import static org.fisco.bcos.sdk.v3.client.protocol.model.Transaction.LIQUID_SCALE_CODEC;
+import static org.fisco.bcos.sdk.v3.client.protocol.model.TransactionAttribute.LIQUID_CREATE;
+import static org.fisco.bcos.sdk.v3.client.protocol.model.TransactionAttribute.LIQUID_SCALE_CODEC;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

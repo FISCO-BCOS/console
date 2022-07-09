@@ -221,10 +221,9 @@ public class CommandInfo {
 
     public void printDescInfo() {
         if (optionCommand != null) {
-            System.out.printf(
-                    "* %-40s  %s\n", command + "(" + optionCommand.toString() + ")", desc);
+            System.out.printf("* %-40s  %s%n", command + "(" + optionCommand + ")", desc);
         } else {
-            System.out.printf("* %-40s  %s\n", command, desc);
+            System.out.printf("* %-40s  %s%n", command, desc);
         }
     }
 
