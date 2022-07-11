@@ -746,6 +746,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
         Map<ByteBuffer, ABIDefinition> methodIDToFunctions =
                 contractABIDefinition.getMethodIDToFunctions();
+        ABIDefinition constructorABIDefinition = contractABIDefinition.getConstructor();
+        if (constructorABIDefinition != null) {
+            constructorABIDefinition.setName("constructor");
+            methodIDToFunctions.put(
+                    ByteBuffer.wrap("constructor".getBytes()), constructorABIDefinition);
+        }
 
         if (!methodIDToFunctions.isEmpty()) {
             System.out.println("Method list: ");
