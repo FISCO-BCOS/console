@@ -2,7 +2,7 @@ package console.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
-import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.v3.client.Client;
 
 public interface ConsoleClientFace {
     void updateClient(Client client);
@@ -41,7 +41,7 @@ public interface ConsoleClientFace {
 
     void getPendingTxSize(String[] params) throws IOException;
 
-    void getCode(String[] params) throws IOException;
+    void getCode(String[] params, boolean isWasm, String pwd) throws IOException;
 
     void getTotalTransactionCount(String[] params) throws IOException;
 

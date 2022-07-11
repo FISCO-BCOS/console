@@ -3,7 +3,6 @@ package console.command.model;
 import console.command.SupportedCommand;
 import console.common.Common;
 import console.common.ConsoleUtils;
-import org.fisco.bcos.sdk.model.PrecompiledConstant;
 
 public class HelpInfo {
     public static void promptHelp(String command) {
@@ -24,13 +23,13 @@ public class HelpInfo {
     }
 
     public static void freezeContractHelp() {
-        System.out.println("Freeze the contract.");
+        System.out.println("Freeze a specific contract.");
         System.out.println("Usage: \nfreezeContract contractAddress");
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
     }
 
     public static void unfreezeContractHelp() {
-        System.out.println("Unfreeze the contract.");
+        System.out.println("Unfreeze a specific contract.");
         System.out.println("Usage: \nunfreezeContract contractAddress");
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
     }
@@ -52,12 +51,6 @@ public class HelpInfo {
     public static void getContractStatusHelp() {
         System.out.println("Get the status of the contract.");
         System.out.println("Usage: \ngetContractStatus contractAddress");
-        System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
-    }
-
-    public static void listContractStatusManagerHelp() {
-        System.out.println("List the authorization of the contract.");
-        System.out.println("Usage: \nlistContractStatusManager contractAddress");
         System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
     }
 
@@ -106,11 +99,6 @@ public class HelpInfo {
         System.out.println("Usage: \ngetSyncStatus");
     }
 
-    public static void getNodeVersionHelp() {
-        System.out.println("Query the current node version.");
-        System.out.println("Usage: \ngetNodeVersion");
-    }
-
     public static void getGroupInfoHelp() {
         System.out.println("Query the current group information.");
         System.out.println("Usage: \ngetGroupInfo");
@@ -124,30 +112,14 @@ public class HelpInfo {
                         + "the list of all connected nodes can be obtained through getAvailableConnections");
     }
 
-    public static void getNodeIDListHelp() {
-        System.out.println("Query nodeId list for all connected nodes.");
-        System.out.println("Usage: \ngetNodeIDList");
-    }
-
     public static void getGroupPeersHelp() {
-        System.out.println("Query nodeId list for sealer and observer nodes.");
-        System.out.println("Usage: \ngetGroupPeers [NodeEndPoint]");
-        System.out.println(
-                "* NodeEndPoint[Optional] -- The requested node information, the format is IP:Port, "
-                        + "the list of all connected nodes can be obtained through getAvailableConnections");
+        System.out.println("Query all group peers");
+        System.out.println("Usage: \ngetGroupPeers");
     }
 
     public static void getGroupListHelp() {
-        System.out.println("Query group list.");
-        System.out.println("Usage: \ngetGroupList [NodeEndPoint]");
-        System.out.println(
-                "* NodeEndPoint[Optional] -- The requested node information, the format is IP:Port, "
-                        + "the list of all connected nodes can be obtained through getAvailableConnections");
-    }
-
-    public static void quitHelp() {
-        System.out.println("Quit console.");
-        System.out.println("Usage: \nquit or exit");
+        System.out.println("List all group list");
+        System.out.println("Usage: \nlistGroupList");
     }
 
     public static void getBlockByHashHelp() {
@@ -199,17 +171,6 @@ public class HelpInfo {
         System.out.println("* transactionHash -- 32 Bytes - The hash of a transaction.");
     }
 
-    public static void getTransactionByBlockHashAndIndexHelp() {
-        System.out.println(
-                "Query information about a transaction by block hash and transaction index position.");
-        System.out.println("Usage: \ngetTransactionByBlockHashAndIndex blockHash index");
-        System.out.println("* blockHash -- 32 Bytes - The hash of a block.");
-        System.out.println(
-                "* index -- Integer of a transaction index, "
-                        + Common.NonNegativeIntegerRange
-                        + ".");
-    }
-
     public static void getTransactionByHashWithProofHelp() {
         System.out.println(
                 "Query information about the transaction and proof by transaction hash.");
@@ -224,29 +185,10 @@ public class HelpInfo {
         System.out.println("* transactionHash -- 32 Bytes - The hash of a transaction.");
     }
 
-    public static void getTransactionByBlockNumberAndIndexHelp() {
-        System.out.println(
-                "Query information about a transaction by block number and transaction index position.");
-        System.out.println("Usage: \ngetTransactionByBlockNumberAndIndex blockNumber index");
-        System.out.println(
-                "* blockNumber -- Integer of a block number, "
-                        + Common.NonNegativeIntegerRange
-                        + ".");
-        System.out.println(
-                "* index -- Integer of a transaction index, "
-                        + Common.NonNegativeIntegerRange
-                        + ".");
-    }
-
     public static void getTransactionReceiptHelp() {
         System.out.println("Query the receipt of a transaction by transaction hash.");
         System.out.println("Usage: \ngetTransactionReceipt transactionHash");
         System.out.println("* transactionHash -- 32 Bytes - The hash of a transaction.");
-    }
-
-    public static void getPendingTransactionsHelp() {
-        System.out.println("Query pending transactions.");
-        System.out.println("Usage: \ngetPendingTransactions");
     }
 
     public static void getPendingTxSizeHelp() {
@@ -269,11 +211,14 @@ public class HelpInfo {
         if (!isWasm) {
             System.out.println(
                     "Deploy a " + "\033[32m" + "Solidity" + "\033[m" + " contract on blockchain.");
-            System.out.println("Usage: \ndeploy contractNameOrPath parameters...");
+            System.out.println(
+                    "Usage: \ndeploy contractNameOrPath parameters... [--parallel-analysis/-p]");
             System.out.println(
                     "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
+            System.out.println(
+                    "* --parallel-analysis/-p[Optional] -- parallel conflict analysis with the contract, default: no.");
         } else {
             System.out.println(
                     "Deploy a " + "\033[32m" + "Liquid" + "\033[m" + " contract on blockchain.");
@@ -286,6 +231,8 @@ public class HelpInfo {
                     "* path -- The path of BFS where the contract will be located at, such as '/apps/liquid/YouContract/'.");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
+            System.out.println(
+                    "* --parallel-analysis/-p[Optional] -- parallel conflict analysis with the contract, default: no.");
         }
     }
 
@@ -294,57 +241,31 @@ public class HelpInfo {
         if (!isWasm) {
             System.out.println(
                     "Usage: \ncall contractNameOrPath contractAddress function parameters");
+            System.out.println("\ncall link function parameters");
             System.out.println(
                     "* contractNameOrPath -- The name of a contract or the path of a contract, when set to \"latest\", the contract address is the latest contract address (Default load contract from the \"contracts/solidity\" path when using contractName).");
             System.out.println("* contractAddress -- 20 Bytes - The address of a contract.");
+            System.out.println(
+                    "* link -- The path of BFS where the contract link located at, such as '/apps/Hello/latest'.");
             System.out.println("* function -- The function of a contract.");
             System.out.println("* parameters -- The parameters(split by a space) of a function.");
         } else {
             System.out.println("Usage: \ncall path function parameters");
             System.out.println(
-                    "* path -- The path of BFS where the contract will be located at, such as '/apps/liquid/YouContract/'.");
+                    "* path -- The path of BFS where the contract located at, such as '/apps/liquid/YourContract'.");
             System.out.println("* function -- The function of a contract.");
             System.out.println("* parameters -- The parameters(split by a space) of a function.");
         }
     }
 
-    public static void deployByCNSHelp() {
-        System.out.println("Deploy a contract on blockchain by CNS.");
-        System.out.println("Usage: \ndeployByCNS contractNameOrPath contractVersion");
+    public static void linkHelp() {
+        System.out.println("Create a link to access contract more conveniently.");
+        System.out.println("Usage: \nln [path] [contractAddress]");
         System.out.println(
-                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
-        System.out.println(
-                "* contractVersion -- The version of a contract. The maximum length of the version hex string is "
-                        + PrecompiledConstant.CNS_MAX_VERSION_LENGTH
-                        + ".");
-    }
-
-    public static void callByCNSHelp() {
-        System.out.println("Call a contract by a function and paramters by CNS.");
-        System.out.println(
-                "Usage: \ncallByCNS contractNameOrPath:contractVersion function parameters");
-        System.out.println(
-                "* contractNameOrPath:contractVersion -- The name(or path) and version of a contract.");
-        System.out.println("* function -- The function of a contract.");
-        System.out.println("* parameters -- The parameters(splited by a space) of a function.");
-    }
-
-    public static void queryCNSHelp() {
-        System.out.println("Query CNS information by contract name and contract version.");
-        System.out.println("Usage: \nqueryCNS contractNameOrPath [contractVersion]");
-        System.out.println(
-                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
-        System.out.println("* contractVersion -- (optional) The version of a contract. ");
-    }
-
-    public static void registerCNSHelp() {
-        System.out.println("Register CNS information by contract name and contract version.");
-        System.out.println(
-                "Usage: \nregisterCNS contractNameOrPath contractAddress contractVersion");
-        System.out.println(
-                "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
+                "* path[Required] -- The BFS path of link, link must locate under '/apps', and be composed of contract name and version.");
         System.out.println("* contractAddress[Required] -- The address of a contract.");
-        System.out.println("* contractVersion[Required] -- The version of a contract.");
+        System.out.println("Example: (if in wasm)\nln /apps/Name/Version 0x1234567890");
+        System.out.println("Example: (if in evm)\nln /apps/Name/Version /apps/test/HelloWorld");
     }
 
     public static void addObserverHelp() {
@@ -404,7 +325,7 @@ public class HelpInfo {
         System.out.println(
                 "      -- the value of tx_gas_limit "
                         + Common.TxGasLimitRange
-                        + "(default 300000000).");
+                        + "(default 3000000000).");
         System.out.println(
                 "      -- the value of  "
                         + Common.ConsensusLeaderPeriod
@@ -428,25 +349,6 @@ public class HelpInfo {
                 "* groupId[Optional] -- the group that should be "
                         + operator
                         + ", default is the current group.");
-    }
-
-    public static void generateGroupHelp() {
-        System.out.println("Usage:\ngenerateGroup endPoint groupId timestamp sealerList");
-        System.out.println(
-                "* endPoint(required) -- The IP:Port information of the node need to generate a new group");
-        System.out.println("* groupId(required) -- The groupId of the generated group");
-        System.out.println("* timestamp(required) -- The timestamp of the group genesis block");
-        System.out.println(
-                "* sealerList(required) -- The initial nodeID of the sealer list for the generated group. Different sealer NodeIDs are separated by spaces\n");
-    }
-
-    public static void generateGroupFromFileHelp() {
-        System.out.println("Usage: \ngenerateGroupFromFile groupConfigFilePath groupId");
-        System.out.println(
-                "* groupConfigFilePath(required) -- The configuration file path of the generated group. "
-                        + "For specific configuration options, please refer to group-generate-config.toml in the conf directory");
-        System.out.println(
-                "* groupId(Optional) -- The groupId of the generated group, default is the current group.");
     }
 
     public static void showDescHelp() {
@@ -694,6 +596,93 @@ public class HelpInfo {
                 "address[Required] -- The address of a specific contract, it's length should be 40 in hex.");
     }
 
+    public static void setNodeWeightProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to set a consensus node's weight.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: setConsensusNodeWeightProposal [nodeID] [weight]");
+        System.out.println(
+                "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
+        System.out.println(
+                "weight[Required] -- The weight of a specific node to set, should be larger than 0.");
+    }
+
+    public static void addSealerProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to add new consensus sealer node.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: addSealerProposal [nodeID] [weight]");
+        System.out.println(
+                "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
+        System.out.println(
+                "weight[Required] -- The weight of a specific node to set, should be larger than 0.");
+    }
+
+    public static void addObserverProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to add new consensus observer node.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: addObserverProposal [nodeID]");
+        System.out.println(
+                "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
+    }
+
+    public static void setSysConfigProposalHelp() {
+        System.out.println("Create a proposal to committee, which attempt to set system config.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: setSysConfigProposal [key] [value]");
+        System.out.println(
+                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_leader_period supported currently).");
+        System.out.println("* value -- The value of system config to be set.");
+        System.out.println(
+                "      -- The value of "
+                        + Common.TxCountLimit
+                        + " "
+                        + Common.TxCountLimitRange
+                        + "(default 1000).");
+        System.out.println(
+                "      -- the value of "
+                        + Common.TxGasLimit
+                        + " "
+                        + Common.TxGasLimitRange
+                        + "(default 3000000000).");
+        System.out.println(
+                "      -- the value of  "
+                        + Common.ConsensusLeaderPeriod
+                        + " "
+                        + Common.ConsensusLeaderPeriodRange
+                        + "(default 1).");
+    }
+
+    public static void upgradeVoteProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to upgrade committee vote compute logic.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: upgradeVoteProposal [address]");
+        System.out.println(
+                "address[Required] -- The address of new vote computer contract, it's length should be 40 in hex.");
+    }
+
     public static void revokeProposalHelp() {
         System.out.println("Revoke a specific proposal from committee.");
         System.out.println(
@@ -720,11 +709,13 @@ public class HelpInfo {
     }
 
     public static void getProposalInfoHelp() {
-        System.out.println("Get a specific proposal info from committee.");
+        System.out.println("Get a specific proposal info or proposal info list from committee.");
         ConsoleUtils.singleLine();
-        System.out.println("Usage: getProposalInfo proposalId");
+        System.out.println("Usage: getProposalInfo [fromId] [toId]");
         System.out.println(
-                "proposalId[Required] -- The ID of a proposal, it should be larger than 0.");
+                "fromId[Required] -- The start ID of a proposal, it should be larger than 0.");
+        System.out.println(
+                "toId[Optional] -- The end ID of a proposal, it should be larger than fromId. If not set toId, then only return fromId proposal");
     }
 
     public static void getCommitteeInfoHelp() {
@@ -817,6 +808,18 @@ public class HelpInfo {
                 "account[Optional]  -- The address of a specific account. If you dont specify it, then check current account.");
         System.out.println(
                 "    [example] checkMethodAuth 0x1234567890123456789012345678901234567890 \"set(string)\" 0x1234567890123456789012345678901234567890");
+    }
+
+    public static void getMethodAuthHelp() {
+        System.out.println("Get method ACL for account in specific contract.");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: getMethodAuth contract selector");
+        System.out.println(
+                "contract[Required] -- The address of a specific contract, it's length should be 40 in hex.");
+        System.out.println(
+                "selector[Required] -- The method selector string, an interface of contract");
+        System.out.println(
+                "    [example] getMethodAuth 0x1234567890123456789012345678901234567890 \"set(string)\"");
     }
 
     public static void getLatestProposalHelp() {

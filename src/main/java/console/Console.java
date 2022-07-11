@@ -2,16 +2,19 @@ package console;
 
 import console.command.JlineUtils;
 import console.command.SupportedCommand;
+import console.command.category.BasicCommand;
+import console.command.category.BfsCommand;
+import console.command.category.CrudCommand;
 import console.command.model.CommandInfo;
 import console.command.model.WelcomeInfo;
 import console.common.ConsoleUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.crypto.exceptions.SignatureException;
-import org.fisco.bcos.sdk.model.CryptoType;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.crypto.exceptions.SignatureException;
+import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
 import org.jline.reader.EndOfFileException;
@@ -29,7 +32,7 @@ public class Console {
 
     public static LineReader createLineReader(ConsoleInitializer consoleInitializer)
             throws IOException {
-        if (consoleInitializer.DisableAutoCompleter) {
+        if (consoleInitializer.isDisableAutoCompleter()) {
             return null;
         }
         return JlineUtils.getLineReader(consoleInitializer.getClient());
@@ -46,7 +49,7 @@ public class Console {
             consoleInitializer.init(args);
             lineReader = createLineReader(consoleInitializer);
             sc = new Scanner(System.in);
-            if (!consoleInitializer.DisableAutoCompleter) {
+            if (!consoleInitializer.isDisableAutoCompleter() && lineReader != null) {
                 KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
                 keymap.bind(new Reference("beginning-of-line"), "\033[1~");
                 keymap.bind(new Reference("end-of-line"), "\033[4~");
@@ -58,18 +61,20 @@ public class Console {
         }
 
         WelcomeInfo.welcome();
-        String pwd = "/apps";
-        SupportedCommand.setIsAuthOpen(consoleInitializer.getClient().isAuthCheck());
+        String pwd = consoleInitializer.getPrecompiledFace().getPwd();
+        SupportedCommand.setIsAuthOpen(
+                consoleInitializer.getClient().isAuthCheck()
+                        && !consoleInitializer.getClient().isWASM());
         SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
         while (true) {
             try {
-                if (lineReader == null && !consoleInitializer.DisableAutoCompleter) {
+                if (lineReader == null && !consoleInitializer.isDisableAutoCompleter()) {
                     System.out.println("Console can not read commands.");
                     break;
                 }
                 String request;
-                if (INPUT_FLAG == 0 && !consoleInitializer.DisableAutoCompleter) {
+                if (INPUT_FLAG == 0 && !consoleInitializer.isDisableAutoCompleter()) {
                     request =
                             lineReader.readLine(
                                     "["
@@ -102,25 +107,19 @@ public class Console {
                                 consoleInitializer.getClient().isWASM(),
                                 consoleInitializer.getClient().isAuthCheck());
                 if (commandInfo != null) {
-                    if (SupportedCommand.CRUD_COMMANDS.contains(params[0])) {
+                    if (CrudCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
                         inputParamString[0] = request;
                         commandInfo.callCommand(consoleInitializer, inputParamString, null);
-                    } else if (SupportedCommand.BFS_COMMANDS.contains(params[0])) {
+                    } else if (BfsCommand.BFS_COMMANDS.contains(params[0])) {
                         commandInfo.callCommand(consoleInitializer, params, pwd);
-                        if (commandInfo
-                                .getCommand()
-                                .equals(SupportedCommand.CHANGE_DIR.getCommand())) {
-                            if (params.length == 1) {
-                                pwd = "/apps";
-                            } else {
-                                pwd = ConsoleUtils.fixedBfsParams(params, pwd)[1];
-                            }
+                        if (commandInfo.getCommand().equals(BfsCommand.CHANGE_DIR.getCommand())) {
+                            pwd = consoleInitializer.getPrecompiledFace().getPwd();
                             JlineUtils.switchPwd(pwd);
                         }
                     } else {
                         String[] paramWithoutQuotation = new String[params.length];
-                        for (Integer i = 0; i < params.length; i++) {
+                        for (int i = 0; i < params.length; i++) {
                             String param = params[i];
                             paramWithoutQuotation[i] = param;
                             // Remove the quotes around the input parameters
@@ -134,11 +133,12 @@ public class Console {
                         String cmd = commandInfo.getCommand();
                         commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, pwd);
 
-                        if (cmd.equals(SupportedCommand.SWITCH.getCommand())) {
+                        if (cmd.equals(BasicCommand.SWITCH.getCommand())) {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
                             SupportedCommand.setIsAuthOpen(
-                                    consoleInitializer.getClient().isAuthCheck());
+                                    consoleInitializer.getClient().isAuthCheck()
+                                            && !consoleInitializer.getClient().isWASM());
                             SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
                         }
                     }

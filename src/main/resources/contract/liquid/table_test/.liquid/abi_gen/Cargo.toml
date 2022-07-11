@@ -1,0 +1,28 @@
+[package]
+name = "abi-gen"
+version = "1.0.0-rc2"
+authors = ["vita-dounai <lichenxi.webank@gmail.com>"]
+edition = "2018"
+publish = false
+
+[[bin]]
+name = "abi-gen"
+path = "main.rs"
+
+[dependencies.contract]
+path = "../../"
+package = "table_test"
+default-features = false
+features = ["liquid-abi-gen"]
+
+[dependencies.liquid_lang]
+git = "https://github.com/WeBankBlockchain/liquid"
+tag = "v1.0.0-rc2"
+package = "liquid_lang"
+default-features = false
+features = ["contract-abi-gen"]
+
+[dependencies]
+serde = "1.0"
+serde_json = "1.0"
+hermit-abi = "<0.1.20"

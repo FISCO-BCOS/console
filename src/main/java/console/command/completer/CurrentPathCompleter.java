@@ -1,11 +1,12 @@
 package console.command.completer;
 
+import console.common.Common;
 import console.common.ConsoleUtils;
 import java.util.List;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSService;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.FileInfo;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -33,9 +34,9 @@ public class CurrentPathCompleter extends StringsCompleterIgnoreCase {
         this.pwd = absolutePath;
     }
 
-    protected String getDisplay(Terminal terminal, FileInfo fileInfo) {
-        String name = fileInfo.getName();
-        if (fileInfo.getType().equals("directory")) {
+    protected String getDisplay(Terminal terminal, BfsInfo fileInfo) {
+        String name = fileInfo.getFileName();
+        if (fileInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
             AttributedStringBuilder sb = new AttributedStringBuilder();
             sb.styled(AttributedStyle.BOLD.foreground(AttributedStyle.RED), name);
             sb.append("/");
@@ -62,14 +63,14 @@ public class CurrentPathCompleter extends StringsCompleterIgnoreCase {
                 fixedPath = ConsoleUtils.fixedBfsParam(curBuf, pwd);
             }
 
-            List<FileInfo> listResult = bfsService.list(fixedPath);
-            for (FileInfo fileInfo : listResult) {
-                String relativePath = curBuf + fileInfo.getName();
-                if (fileInfo.getType().equals("directory")) {
+            List<BfsInfo> listResult = bfsService.list(fixedPath);
+            for (BfsInfo bfsInfo : listResult) {
+                String relativePath = curBuf + bfsInfo.getFileName();
+                if (bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
                     candidates.add(
                             new Candidate(
                                     AttributedString.stripAnsi(relativePath + "/"),
-                                    getDisplay(reader.getTerminal(), fileInfo),
+                                    getDisplay(reader.getTerminal(), bfsInfo),
                                     null,
                                     null,
                                     null,
@@ -79,7 +80,7 @@ public class CurrentPathCompleter extends StringsCompleterIgnoreCase {
                     candidates.add(
                             new Candidate(
                                     AttributedString.stripAnsi(relativePath),
-                                    getDisplay(reader.getTerminal(), fileInfo),
+                                    getDisplay(reader.getTerminal(), bfsInfo),
                                     null,
                                     null,
                                     null,

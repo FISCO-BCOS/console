@@ -2,7 +2,6 @@ package console.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import console.client.model.TotalTransactionCountResult;
-import console.common.Address;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.ConsoleContractImpl;
@@ -13,19 +12,20 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.client.protocol.model.JsonTransactionResponse;
-import org.fisco.bcos.sdk.client.protocol.response.BcosBlock;
-import org.fisco.bcos.sdk.client.protocol.response.BcosGroupNodeInfo;
-import org.fisco.bcos.sdk.client.protocol.response.SystemConfig;
-import org.fisco.bcos.sdk.client.protocol.response.TotalTransactionCount;
-import org.fisco.bcos.sdk.config.ConfigOption;
-import org.fisco.bcos.sdk.crypto.CryptoSuite;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.model.CryptoType;
-import org.fisco.bcos.sdk.model.TransactionReceipt;
-import org.fisco.bcos.sdk.utils.Numeric;
-import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.client.protocol.model.JsonTransactionResponse;
+import org.fisco.bcos.sdk.v3.client.protocol.response.BcosBlock;
+import org.fisco.bcos.sdk.v3.client.protocol.response.BcosGroupNodeInfo;
+import org.fisco.bcos.sdk.v3.client.protocol.response.SystemConfig;
+import org.fisco.bcos.sdk.v3.client.protocol.response.TotalTransactionCount;
+import org.fisco.bcos.sdk.v3.config.ConfigOption;
+import org.fisco.bcos.sdk.v3.crypto.CryptoSuite;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
+import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -198,10 +198,17 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getTransactionReceipt(String[] params) throws Exception {
         String transactionHash = params[1];
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
+        TransactionReceipt receipt = null;
+        try {
+            receipt =
+                    client.getTransactionReceipt(nodeName, transactionHash, false)
+                            .getTransactionReceipt();
+        } catch (ClientException e) {
+            System.out.println(
+                    "This transaction hash doesn't exist, errorMsg:" + e.getErrorMessage());
+            return;
+        }
 
-        TransactionReceipt receipt =
-                client.getTransactionReceipt(nodeName, transactionHash, false)
-                        .getTransactionReceipt();
         if (Objects.isNull(receipt) || Objects.isNull(receipt.getTransactionHash())) {
             System.out.println("This transaction hash doesn't exist.");
             return;
@@ -227,11 +234,17 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getTransactionReceiptByHashWithProof(String[] params) throws Exception {
         String transactionHash = params[1];
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
-
-        String transactionReceiptWithProof =
-                client.getTransactionReceipt(nodeName, transactionHash, true)
-                        .getResult()
-                        .toString();
+        String transactionReceiptWithProof;
+        try {
+            transactionReceiptWithProof =
+                    client.getTransactionReceipt(nodeName, transactionHash, true)
+                            .getResult()
+                            .toString();
+        } catch (ClientException e) {
+            System.out.println(
+                    "This transaction hash doesn't exist, errorMsg:" + e.getErrorMessage());
+            return;
+        }
 
         if (Objects.isNull(transactionReceiptWithProof) || "".equals(transactionReceiptWithProof)) {
             System.out.println("This transaction hash doesn't exist.");
@@ -247,15 +260,23 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
-    public void getCode(String[] params) throws IOException {
+    public void getCode(String[] params, boolean isWasm, String pwd) throws IOException {
         String address = params[1];
-        Address convertAddr = ConsoleUtils.convertAddress(address);
-        if (!convertAddr.isValid()) {
-            return;
+        if (!isWasm) {
+            if (!ConsoleUtils.isValidAddress(address)) {
+                System.out.println("This address is invalid.");
+                return;
+            }
+        } else {
+            try {
+                address = ConsoleUtils.fixedBfsParam(address, pwd).substring("/apps".length());
+            } catch (Exception e) {
+                System.out.println("Path is error: " + address);
+                return;
+            }
         }
-        address = convertAddr.getAddress();
         String code = client.getCode(nodeName, address).getCode();
-        if ("0x".equals(code)) {
+        if ("0x".equals(code) || code.isEmpty()) {
             System.out.println("This address doesn't exist.");
             return;
         }
