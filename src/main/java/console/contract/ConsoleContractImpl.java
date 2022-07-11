@@ -736,6 +736,11 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
         Map<String, ABIDefinition> methodIDToFunctions =
                 contractABIDefinition.getMethodIDToFunctions();
+        ABIDefinition constructor = contractABIDefinition.getConstructor();
+        if (constructor != null) {
+            constructor.setName("constructor");
+            methodIDToFunctions.put("constructor", constructor);
+        }
 
         if (!methodIDToFunctions.isEmpty()) {
             System.out.println("Method list: ");
