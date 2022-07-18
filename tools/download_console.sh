@@ -4,7 +4,7 @@ default_version="3.0.0-rc4"
 download_version="${default_version}"
 specify_console=0
 solc_suffix=""
-supported_solc_versions=(0.4 0.5 0.6)
+supported_solc_versions=(0.4 0.5 0.6 0.8)
 
 LOG_WARN()
 {
@@ -22,7 +22,7 @@ help() {
     echo "
 Usage:
     -c <console version>   Specify the downloaded console version, download the latest version of the console by default 
-    -v <solc version>      Download the console with specific solc version, default is 0.4, 0.5 and 0.6 are supported
+    -v <solc version>      Download the console with specific solc version, default is 0.8, 0.4, 0.5 and 0.6 are supported
     -h Help
 e.g
     $0 -v 0.6
@@ -40,7 +40,7 @@ while getopts "v:c:h" option;do
             exit 1;
         fi
         package_name="console-${solc_suffix}.tar.gz"
-        if [ "${solc_suffix}" == "0.4" ]; then package_name="console.tar.gz";fi
+        if [ "${solc_suffix}" == "0.8" ]; then package_name="console.tar.gz";fi
     ;;
     c) specify_console=1
         download_version="${OPTARG//[vV]/}"
