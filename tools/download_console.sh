@@ -62,20 +62,6 @@ check_params()
         LOG_WARN "Illegal version \"${version}\", please specify a legal version number, latest version is ${default_version}"
         exit 1;
     fi
-    if [ -z "${solc_suffix}" ];then
-        return
-    fi
-    # specify solc version only support after console 1.1.0
-    if [ "${major_version}" -lt 1 ];then
-         LOG_WARN "The specified solc version is only supported after console 1.1.0 (with -v option), current specified version is \"${version}\""
-         LOG_WARN "Please specified console with version no smaller than 1.1.0 when specify -v option"
-         exit 1
-    fi
-    if [ "${middle_version}" -lt 1 ];then
-        LOG_WARN "The specified solc version is only supported after console 1.1.0 (with -v option), urrent specified version is \"${version}\""
-        LOG_WARN "Please specified console with version no smaller than 1.1.0 when specify -v option"
-        exit 1
-    fi
 }
 
 download_console(){
