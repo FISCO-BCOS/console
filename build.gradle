@@ -42,7 +42,7 @@ dependencies {
 
     // compile 'org.fisco-bcos:solcJ:0.6.10.2-SNAPSHOT'
 
-    compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.0.0-07200-SNAPSHOT')
+    compile ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.0.0-SNAPSHOT')
     compile ('org.fisco-bcos:evm-static-analysis:1.0.0-rc3-SNAPSHOT')
     compile ('io.netty:netty-common:4.1.70.Final')
     compile ('commons-cli:commons-cli:1.3.1')
