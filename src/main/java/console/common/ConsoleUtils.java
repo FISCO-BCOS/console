@@ -785,6 +785,7 @@ public class ConsoleUtils {
             String smBinFile = cmd.getOptionValue(SM_BIN_OPTION);
             CodeGenMain.main(
                     Arrays.asList(
+                                    "-v", "V3",
                                     "-a", abiFile,
                                     "-b", binFile,
                                     "-s", smBinFile,
