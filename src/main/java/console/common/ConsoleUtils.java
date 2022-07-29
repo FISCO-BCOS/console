@@ -31,13 +31,13 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
+import org.fisco.bcos.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.v3.codec.datatypes.Array;
 import org.fisco.bcos.sdk.v3.codec.datatypes.Bytes;
 import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicBytes;
 import org.fisco.bcos.sdk.v3.codec.datatypes.StructType;
 import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.v3.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -335,6 +335,7 @@ public class ConsoleUtils {
 
         CodeGenMain.main(
                 Arrays.asList(
+                                "-v", "V3",
                                 "-a", abiFilePath,
                                 "-b", binFilePath,
                                 "-s", smBinFilePath,
