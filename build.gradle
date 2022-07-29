@@ -50,7 +50,8 @@ dependencies {
     compile('io.bretty:console-table-builder:1.2')
     compile('com.github.jsqlparser:jsqlparser:2.0')
     compile('org.fisco-bcos.code-generator:bcos-code-generator:1.0.0-SNAPSHOT') {
-        transitive = false
+        exclude group: "org.fisco-bcos.java-sdk"
+        exclude group: "org.slf4j"
     }
     testCompile('com.github.stefanbirkner:system-rules:1.18.0')
     testCompile('junit:junit:4.1')
