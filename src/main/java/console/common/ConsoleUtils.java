@@ -335,6 +335,7 @@ public class ConsoleUtils {
 
         CodeGenMain.main(
                 Arrays.asList(
+                                "-v", "V3",
                                 "-a", abiFilePath,
                                 "-b", binFilePath,
                                 "-s", smBinFilePath,
