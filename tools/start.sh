@@ -29,10 +29,9 @@ function LOG_INFO()
 
 function Usage() {
     LOG_INFO "Usage:start the console"
-    LOG_INFO "./start.sh"
-    LOG_INFO "./start.sh endPoint"
-    LOG_INFO "./start.sh endPoint -pem pemName"
-    LOG_INFO "./start.sh endPoint -p12 p12Name"
+    LOG_INFO "./start.sh groupID"
+    LOG_INFO "./start.sh groupID -pem pemName"
+    LOG_INFO "./start.sh groupID -p12 p12Name"
     LOG_INFO "print console version:"
     LOG_INFO "./start.sh --version or -v"
 }
@@ -66,7 +65,8 @@ elif [ "${1}" == "-v" ] || [ "${1}" == "--version" ];then
     java -cp "apps/*:conf/:lib/*:classes/" console.common.ConsoleVersion
 else
    check_java
-   java -Djdk.tls.namedGroups="secp256k1" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
-   # Note: must put the ffi library into the -Djava.library.ffipath firstly 
-   #java -Djava.library.ffipath="dyn_libs" -Djava.library.path=. -Djdk.tls.namedGroups="secp256k1" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
+   java -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
+   # java -Dorg.fisco.bcos.jni.disableSsl="true" -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
+   # Note: must put the ffi library into the -Djava.library.ffipath firstly
+   #java -Djava.library.ffipath="dyn_libs" -Djava.library.path=. -cp "apps/*:conf/:lib/*:classes/:accounts/" console.Console $@
 fi

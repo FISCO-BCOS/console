@@ -2,16 +2,19 @@ package console;
 
 import console.command.JlineUtils;
 import console.command.SupportedCommand;
+import console.command.category.BasicCommand;
+import console.command.category.BfsCommand;
+import console.command.category.CrudCommand;
 import console.command.model.CommandInfo;
 import console.command.model.WelcomeInfo;
 import console.common.ConsoleUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Scanner;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.crypto.exceptions.SignatureException;
-import org.fisco.bcos.sdk.model.CryptoType;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.crypto.exceptions.SignatureException;
+import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.jline.keymap.KeyMap;
 import org.jline.reader.Binding;
 import org.jline.reader.EndOfFileException;
@@ -29,7 +32,7 @@ public class Console {
 
     public static LineReader createLineReader(ConsoleInitializer consoleInitializer)
             throws IOException {
-        if (consoleInitializer.DisableAutoCompleter) {
+        if (consoleInitializer.isDisableAutoCompleter()) {
             return null;
         }
         return JlineUtils.getLineReader(consoleInitializer.getClient());
@@ -46,7 +49,7 @@ public class Console {
             consoleInitializer.init(args);
             lineReader = createLineReader(consoleInitializer);
             sc = new Scanner(System.in);
-            if (!consoleInitializer.DisableAutoCompleter) {
+            if (!consoleInitializer.isDisableAutoCompleter() && lineReader != null) {
                 KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
                 keymap.bind(new Reference("beginning-of-line"), "\033[1~");
                 keymap.bind(new Reference("end-of-line"), "\033[4~");
@@ -58,33 +61,38 @@ public class Console {
         }
 
         WelcomeInfo.welcome();
-        String pwd = "/";
+        String pwd = consoleInitializer.getPrecompiledFace().getPwd();
+        SupportedCommand.setIsAuthOpen(
+                consoleInitializer.getClient().isAuthCheck()
+                        && !consoleInitializer.getClient().isWASM());
+        SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
         while (true) {
             try {
-                if (lineReader == null && !consoleInitializer.DisableAutoCompleter) {
+                if (lineReader == null && !consoleInitializer.isDisableAutoCompleter()) {
                     System.out.println("Console can not read commands.");
                     break;
                 }
-                String request = "";
-                if (INPUT_FLAG == 0 && !consoleInitializer.DisableAutoCompleter) {
-                    String endPoint = consoleInitializer.getClient().getConnection().getUri();
+                String request;
+                if (INPUT_FLAG == 0 && !consoleInitializer.isDisableAutoCompleter()) {
                     request =
                             lineReader.readLine(
                                     "["
                                             + consoleInitializer.getGroupID()
-                                            + "@"
-                                            + endPoint
                                             + "]: "
-                                            + pwd
+                                            + ConsoleUtils.prettyPwd(pwd)
                                             + "> ");
                 } else {
                     System.out.print(
-                            "[group:" + consoleInitializer.getGroupID() + "]: " + pwd + "> ");
+                            "[group:"
+                                    + consoleInitializer.getGroupID()
+                                    + "]: "
+                                    + ConsoleUtils.prettyPwd(pwd)
+                                    + "> ");
                     sc = new Scanner(System.in);
                     request = sc.nextLine();
                 }
-                String[] params = null;
+                String[] params;
                 params = ConsoleUtils.tokenizeCommand(request);
                 if (params.length < 1) {
                     continue;
@@ -93,36 +101,25 @@ public class Console {
                     continue;
                 }
                 // execute the command
-                CommandInfo commandInfo = SupportedCommand.getCommandInfo(params[0]);
+                CommandInfo commandInfo =
+                        SupportedCommand.getCommandInfo(
+                                params[0],
+                                consoleInitializer.getClient().isWASM(),
+                                consoleInitializer.getClient().isAuthCheck());
                 if (commandInfo != null) {
-                    if (SupportedCommand.CRUD_COMMANDS.contains(params[0])) {
+                    if (CrudCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
                         inputParamString[0] = request;
-                        commandInfo.callCommand(consoleInitializer, inputParamString);
-                    } else if (SupportedCommand.BFS_COMMANDS.contains(params[0])) {
-                        String[] bfsParams = new String[params.length];
-                        for (int i = 1; i < params.length; i++) {
-                            String param = params[i];
-                            if (param.equals(".")) {
-                                bfsParams[i] = pwd;
-                            } else if (param.startsWith(".") && !param.startsWith("..")) {
-                                bfsParams[i] = pwd + param.substring(1);
-                            } else {
-                                bfsParams[i] = param;
-                            }
-                        }
-                        params[0] = pwd;
-                        commandInfo.callCommand(consoleInitializer, params);
-                        if (commandInfo
-                                        .getCommand()
-                                        .equals(SupportedCommand.CHANGE_DIR.getCommand())
-                                && !params[1].equals(".")
-                                && !params[1].equals("..")) {
-                            pwd = params[1];
+                        commandInfo.callCommand(consoleInitializer, inputParamString, null);
+                    } else if (BfsCommand.BFS_COMMANDS.contains(params[0])) {
+                        commandInfo.callCommand(consoleInitializer, params, pwd);
+                        if (commandInfo.getCommand().equals(BfsCommand.CHANGE_DIR.getCommand())) {
+                            pwd = consoleInitializer.getPrecompiledFace().getPwd();
+                            JlineUtils.switchPwd(pwd);
                         }
                     } else {
                         String[] paramWithoutQuotation = new String[params.length];
-                        for (Integer i = 0; i < params.length; i++) {
+                        for (int i = 0; i < params.length; i++) {
                             String param = params[i];
                             paramWithoutQuotation[i] = param;
                             // Remove the quotes around the input parameters
@@ -132,10 +129,17 @@ public class Console {
                                 paramWithoutQuotation[i] = param.substring(1, param.length() - 1);
                             }
                         }
-                        commandInfo.callCommand(consoleInitializer, paramWithoutQuotation);
-                        if (commandInfo.getCommand().equals(SupportedCommand.SWITCH.getCommand())) {
+
+                        String cmd = commandInfo.getCommand();
+                        commandInfo.callCommand(consoleInitializer, paramWithoutQuotation, pwd);
+
+                        if (cmd.equals(BasicCommand.SWITCH.getCommand())) {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
+                            SupportedCommand.setIsAuthOpen(
+                                    consoleInitializer.getClient().isAuthCheck()
+                                            && !consoleInitializer.getClient().isWASM());
+                            SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
                         }
                     }
                 } else {
@@ -154,7 +158,7 @@ public class Console {
                                 + errorMessage
                                 + "\"}");
                 System.out.println();
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                logger.error("ClientException, e: ", e);
             } catch (ContractException e) {
                 ConsoleUtils.printJson(
                         "{\"code\":"
@@ -164,7 +168,7 @@ public class Console {
                                 + e.getMessage()
                                 + "\"}");
                 System.out.println();
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                logger.error("ContractException, e: ", e);
             } catch (SignatureException e) {
                 System.out.println("\nSignatureException for " + e.getMessage());
                 if (consoleInitializer.getClient().getCryptoType() == CryptoType.SM_TYPE) {
@@ -188,7 +192,7 @@ public class Console {
                             "The groupID is not configured in dist/conf/applicationContext.xml file.");
                 } else {
                     System.out.println(e.getMessage());
-                    logger.error(" message: {}, e: {}", e.getMessage(), e);
+                    logger.error("IOException, e:", e);
                 }
                 System.out.println();
             } catch (InvocationTargetException e) {
@@ -200,11 +204,12 @@ public class Console {
                 break;
             } catch (EndOfFileException e) {
                 consoleInitializer.stop();
+                logger.error("EndOfFileException, e:", e);
                 break;
             } catch (Exception e) {
                 System.out.println(e.getMessage());
                 System.out.println();
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                logger.error("Exception, e:", e);
             }
         }
     }

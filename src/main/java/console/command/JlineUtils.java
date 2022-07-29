@@ -1,10 +1,15 @@
 package console.command;
 
+import console.command.category.AccountOpCommand;
+import console.command.category.BfsCommand;
+import console.command.category.ContractOpCommand;
+import console.command.category.StatusQueryCommand;
 import console.command.completer.AccountCompleter;
 import console.command.completer.AccountFileFormatCompleter;
 import console.command.completer.ConsoleFilesCompleter;
 import console.command.completer.ContractAddressCompleter;
 import console.command.completer.ContractMethodCompleter;
+import console.command.completer.CurrentPathCompleter;
 import console.command.completer.StringsCompleterIgnoreCase;
 import console.common.Common;
 import console.contract.utils.ContractCompiler;
@@ -13,7 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.v3.client.Client;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -33,6 +38,7 @@ public class JlineUtils {
     private static ContractAddressCompleter contractAddressCompleter = null;
     private static ContractMethodCompleter contractMethodCompleter = null;
     private static AccountCompleter accountCompleter = null;
+    private static CurrentPathCompleter currentPathCompleter = null;
 
     public static LineReader getLineReader() throws IOException {
         return createLineReader(new ArrayList<Completer>());
@@ -50,14 +56,20 @@ public class JlineUtils {
         }
     }
 
+    public static void switchPwd(String pwd) {
+        currentPathCompleter.setPwd(pwd);
+    }
+
     public static LineReader getLineReader(Client client) throws IOException {
 
-        List<Completer> completers = new ArrayList<Completer>();
+        List<Completer> completers = new ArrayList<>();
 
-        List<String> commands = SupportedCommand.getAllCommand();
+        List<String> commands =
+                SupportedCommand.getAllCommand(client.isWASM(), client.isAuthCheck());
         contractAddressCompleter = new ContractAddressCompleter(client);
         contractMethodCompleter = new ContractMethodCompleter(client);
         accountCompleter = new AccountCompleter(client);
+        currentPathCompleter = new CurrentPathCompleter(client);
 
         for (String command : commands) {
             completers.add(
@@ -65,44 +77,75 @@ public class JlineUtils {
                             new StringsCompleterIgnoreCase(command),
                             new StringsCompleterIgnoreCase()));
         }
+        if (!client.isWASM()) {
+            // solidity
+            commands =
+                    Arrays.asList(
+                            ContractOpCommand.DEPLOY.getCommand(),
+                            ContractOpCommand.LIST_DEPLOY_CONTRACT_ADDRESS.getCommand(),
+                            ContractOpCommand.LIST_ABI.getCommand());
+
+            for (String command : commands) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                                new StringsCompleterIgnoreCase()));
+            }
+            // contract address and method completer
+            commands = Arrays.asList(ContractOpCommand.CALL.getCommand());
+            for (String command : commands) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                                contractAddressCompleter,
+                                contractMethodCompleter,
+                                new StringsCompleterIgnoreCase()));
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new CurrentPathCompleter(client),
+                                contractMethodCompleter,
+                                new StringsCompleterIgnoreCase()));
+            }
+            // completer for link
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(BfsCommand.LINK.getCommand()),
+                            new CurrentPathCompleter(client),
+                            contractAddressCompleter));
+        } else {
+            // liquid
+            commands = Arrays.asList(ContractOpCommand.DEPLOY.getCommand());
+
+            for (String command : commands) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new ConsoleFilesCompleter(
+                                        new File(ContractCompiler.LIQUID_PATH), true),
+                                new ConsoleFilesCompleter(
+                                        new File(ContractCompiler.LIQUID_PATH), true),
+                                currentPathCompleter,
+                                new StringsCompleterIgnoreCase()));
+            }
+            // contract address and method completer
+            commands = Arrays.asList(ContractOpCommand.CALL.getCommand());
+            for (String command : commands) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                currentPathCompleter,
+                                contractMethodCompleter,
+                                new StringsCompleterIgnoreCase()));
+            }
+        }
+
         commands =
                 Arrays.asList(
-                        SupportedCommand.DEPLOY.getCommand(),
-                        SupportedCommand.DEPLOY_BY_CNS.getCommand(),
-                        SupportedCommand.CALL_BY_CNS.getCommand(),
-                        SupportedCommand.QUERY_CNS.getCommand(),
-                        SupportedCommand.LIST_DEPLOY_CONTRACT_ADDRESS.getCommand(),
-                        SupportedCommand.LIST_ABI.getCommand());
-
-        for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                            new StringsCompleterIgnoreCase()));
-        }
-        // contract address and method completer
-        commands = Arrays.asList(SupportedCommand.CALL.getCommand());
-        for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                            contractAddressCompleter,
-                            contractMethodCompleter,
-                            new StringsCompleterIgnoreCase()));
-        }
-
-        commands = Arrays.asList(SupportedCommand.GET_TRANSACTION_RECEIPT.getCommand());
-        for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command), new StringsCompleter("0x")));
-        }
-        commands =
-                Arrays.asList(
-                        SupportedCommand.SET_SYSTEMCONFIGBYKEY.getCommand(),
-                        SupportedCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand());
+                        StatusQueryCommand.SET_SYSTEM_CONFIG_BY_KEY.getCommand(),
+                        StatusQueryCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand());
 
         for (String command : commands) {
             completers.add(
@@ -110,6 +153,7 @@ public class JlineUtils {
                             new StringsCompleter(command),
                             new StringsCompleter(Common.TxCountLimit),
                             new StringsCompleterIgnoreCase()));
+
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
@@ -118,32 +162,34 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.ConsensusTimeout),
+                            new StringsCompleter(Common.ConsensusLeaderPeriod),
                             new StringsCompleterIgnoreCase()));
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.ConsensusLeaderPeriod),
+                            new StringsCompleter(Common.compatibilityVersion),
                             new StringsCompleterIgnoreCase()));
         }
-
-        // completer for REGISTER_CNS
         completers.add(
                 new ArgumentCompleter(
-                        new StringsCompleter(SupportedCommand.REGISTER_CNS.getCommand()),
-                        new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
-                        contractAddressCompleter));
-
-        completers.add(
-                new ArgumentCompleter(
-                        new StringsCompleter(SupportedCommand.LOAD_ACCOUNT.getCommand()),
+                        new StringsCompleter(AccountOpCommand.LOAD_ACCOUNT.getCommand()),
                         new AccountCompleter(client),
                         new AccountFileFormatCompleter()));
 
         completers.add(
                 new ArgumentCompleter(
-                        new StringsCompleterIgnoreCase(SupportedCommand.NEW_ACCOUNT.getCommand()),
+                        new StringsCompleterIgnoreCase(AccountOpCommand.NEW_ACCOUNT.getCommand()),
                         new AccountFileFormatCompleter()));
+
+        commands = BfsCommand.BFS_COMMANDS;
+
+        for (String command : commands) {
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            currentPathCompleter,
+                            new StringsCompleterIgnoreCase()));
+        }
         return createLineReader(completers);
     }
 

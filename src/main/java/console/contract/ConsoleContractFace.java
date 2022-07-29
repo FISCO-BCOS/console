@@ -1,17 +1,17 @@
 package console.contract;
 
-import console.exception.ConsoleMessageException;
+import console.ConsoleInitializer;
 
 public interface ConsoleContractFace {
-    void deploy(String[] params) throws ConsoleMessageException;
+    void deploy(String[] params, String pwd) throws Exception;
 
-    void call(String[] params) throws Exception;
-
-    void deployByCNS(String[] params) throws ConsoleMessageException;
-
-    void callByCNS(String[] params) throws Exception;
+    void call(String[] params, String pwd) throws Exception;
 
     void getDeployLog(String[] params) throws Exception;
 
-    void listAbi(String[] params) throws Exception;
+    void listAbi(ConsoleInitializer consoleInitializer, String[] params, String pwd)
+            throws Exception;
+
+    void listDeployContractAddress(
+            ConsoleInitializer consoleInitializer, String[] params, String pwd) throws Exception;
 }

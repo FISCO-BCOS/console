@@ -1,10 +1,10 @@
 #!/bin/bash
 package_name="console.tar.gz"
-default_version="2.7.2"
+default_version="3.0.0-rc4"
 download_version="${default_version}"
 specify_console=0
 solc_suffix=""
-supported_solc_versions=(0.4 0.5 0.6)
+supported_solc_versions=(0.4 0.5 0.6 0.8)
 
 LOG_WARN()
 {
@@ -22,7 +22,7 @@ help() {
     echo "
 Usage:
     -c <console version>   Specify the downloaded console version, download the latest version of the console by default 
-    -v <solc version>      Download the console with specific solc version, default is 0.4, 0.5 and 0.6 are supported
+    -v <solc version>      Download the console with specific solc version, default is 0.8, 0.4, 0.5 and 0.6 are supported
     -h Help
 e.g
     $0 -v 0.6
@@ -40,7 +40,7 @@ while getopts "v:c:h" option;do
             exit 1;
         fi
         package_name="console-${solc_suffix}.tar.gz"
-        if [ "${solc_suffix}" == "0.4" ]; then package_name="console.tar.gz";fi
+        if [ "${solc_suffix}" == "0.8" ]; then package_name="console.tar.gz";fi
     ;;
     c) specify_console=1
         download_version="${OPTARG//[vV]/}"
@@ -54,6 +54,7 @@ done
 # check params
 check_params()
 {
+    local version=${download_version}
     local major_version=$(echo ${version} | awk -F'.' '{print $1}')
     local middle_version=$(echo ${version} | awk -F'.' '{print $2}')
     local minor_version=$(echo ${version} | awk -F'.' '{print $3}')
@@ -61,44 +62,19 @@ check_params()
         LOG_WARN "Illegal version \"${version}\", please specify a legal version number, latest version is ${default_version}"
         exit 1;
     fi
-    if [ -z "${solc_suffix}" ];then
-        return
-    fi
-    # specify solc version only support after console 1.1.0
-    if [ "${major_version}" -lt 1 ];then
-         LOG_WARN "The specified solc version is only supported after console 1.1.0 (with -v option), current specified version is \"${version}\""
-         LOG_WARN "Please specified console with version no smaller than 1.1.0 when specify -v option"
-         exit 1
-    fi
-    if [ "${middle_version}" -lt 1 ];then
-        LOG_WARN "The specified solc version is only supported after console 1.1.0 (with -v option), urrent specified version is \"${version}\""
-        LOG_WARN "Please specified console with version no smaller than 1.1.0 when specify -v option"
-        exit 1
-    fi
 }
 
 download_console(){
-	if [ $specify_console -eq 0 ];then
-        version=$(curl -s https://api.github.com/repos/FISCO-BCOS/console/releases | grep "tag_name" | sort -V | tail -n 1 | cut -d \" -f 4 | sed "s/^[vV]//")
-	else
-        version="${download_version}"
-    fi
-    if [ -z "${version}" ];then
-        echo "Failed to get latest version number via github api, download default version: ${default_version}"
-        version="${default_version}"
-    fi
     check_params
-    download_link=https://github.com/FISCO-BCOS/console/releases/download/v${version}/${package_name}
-    cos_download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${version}/${package_name}
-    LOG_INFO "Downloading console ${version} from ${download_link}"
+    git_download_link=https://github.com/FISCO-BCOS/console/releases/download/v${download_version}/${package_name}
+    download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${download_version}/${package_name}
 
-    if [ $(curl -IL -o /dev/null -s -w %{http_code} "${cos_download_link}") == 200 ];then
-        curl -LO ${download_link} --speed-time 30 --speed-limit 102400 -m 150 || {
-            LOG_WARN "Download speed is too low, try ${cos_download_link}"
-            curl -#LO "${cos_download_link}"
-        }
+    if [ $(curl -IL -o /dev/null -s -w %{http_code} "${download_link}") == 200 ];then
+        LOG_INFO "Downloading console ${download_version} from ${download_link}"
+        curl -#LO "${download_link}"
     else
-        curl -#LO ${download_link}
+        LOG_INFO "Downloading console ${download_version} from ${git_download_link}"
+        curl -#LO ${git_download_link}
     fi
     if [ $? -eq 0 ];then
         LOG_INFO "Download console successfully"

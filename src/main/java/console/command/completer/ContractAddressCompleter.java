@@ -4,7 +4,7 @@ import console.common.ConsoleUtils;
 import console.contract.utils.ContractCompiler;
 import java.io.File;
 import java.util.List;
-import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.v3.client.Client;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -29,13 +29,12 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
             String buffer = reader.getBuffer().toString().trim();
             String[] ss = buffer.split(" ");
             if (ss.length >= 2) {
-                String contractName =
-                        ConsoleUtils.getContractName(ConsoleUtils.resolveContractPath(ss[1]));
+                String contractName = ConsoleUtils.getContractName(ConsoleUtils.resolvePath(ss[1]));
                 File contractDir =
                         new File(
                                 ContractCompiler.COMPILED_PATH
                                         + File.separator
-                                        + client.getGroupId()
+                                        + client.getGroup()
                                         + File.separator
                                         + contractName);
                 if (!contractDir.exists()) {

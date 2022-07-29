@@ -1,7 +1,8 @@
 package console.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.IOException;
-import org.fisco.bcos.sdk.client.Client;
+import org.fisco.bcos.sdk.v3.client.Client;
 
 public interface ConsoleClientFace {
     void updateClient(Client client);
@@ -16,7 +17,7 @@ public interface ConsoleClientFace {
 
     void getSyncStatus(String[] params) throws IOException;
 
-    void getNodeInfo(String[] params) throws IOException;
+    void getConsensusStatus(String[] params) throws IOException;
 
     void getPeers(String[] params) throws IOException;
 
@@ -25,6 +26,8 @@ public interface ConsoleClientFace {
     void getBlockByNumber(String[] params) throws IOException;
 
     void getBlockHeaderByHash(String[] params) throws IOException;
+
+    void getBlockHashByNumber(String[] params) throws IOException;
 
     void getBlockHeaderByNumber(String[] params) throws IOException;
 
@@ -38,7 +41,7 @@ public interface ConsoleClientFace {
 
     void getPendingTxSize(String[] params) throws IOException;
 
-    void getCode(String[] params) throws IOException;
+    void getCode(String[] params, boolean isWasm, String pwd) throws IOException;
 
     void getTotalTransactionCount(String[] params) throws IOException;
 
@@ -47,4 +50,20 @@ public interface ConsoleClientFace {
     void newAccount(String[] params);
 
     void listAccount(String[] params);
+
+    void getGroupPeers(String[] params);
+
+    void getGroupList(String[] params);
+
+    void getGroupInfo(String[] params) throws IOException;
+
+    void getGroupInfoList(String[] params) throws JsonProcessingException;
+
+    void getGroupNodeInfo(String[] params) throws JsonProcessingException;
+
+    void setNodeName(String[] params) throws IOException;
+
+    void clearNodeName();
+
+    void getNodeName();
 }

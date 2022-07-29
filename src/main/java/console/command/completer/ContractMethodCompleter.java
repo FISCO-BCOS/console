@@ -3,9 +3,9 @@ package console.command.completer;
 import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import java.util.List;
-import org.fisco.bcos.sdk.abi.wrapper.ABIDefinition;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.codegen.CodeGenUtils;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
+import org.fisco.bcos.sdk.v3.codegen.CodeGenUtils;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -33,12 +33,13 @@ public class ContractMethodCompleter extends StringsCompleterIgnoreCase {
             String contractAddress = ss[2];
             try {
                 AbiAndBin abiAndBin =
-                        ContractCompiler.loadAbiAndBin(
-                                client.getGroupId(), contractNameOrPath, contractAddress);
+                        ContractCompiler.loadAbi(
+                                client.getGroup(), contractNameOrPath, contractAddress, true);
                 List<ABIDefinition> abiDefinitions =
                         CodeGenUtils.loadContractAbiDefinition(abiAndBin.getAbi());
                 for (ABIDefinition definition : abiDefinitions) {
                     String functionName = definition.getName();
+                    if (functionName == null) continue;
                     candidates.add(
                             new Candidate(
                                     AttributedString.stripAnsi(functionName),

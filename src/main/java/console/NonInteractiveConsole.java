@@ -1,12 +1,16 @@
 package console;
 
 import console.command.SupportedCommand;
+import console.command.category.CrudCommand;
 import console.command.model.CommandInfo;
 import console.common.ConsoleUtils;
+import console.contract.utils.ContractCompiler;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
+import java.util.Arrays;
+import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.utils.StringUtils;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.UserInterruptException;
 import org.slf4j.Logger;
@@ -49,28 +53,35 @@ public class NonInteractiveConsole {
             }
         } catch (Exception e) {
             System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
             return;
         }
+
+        SupportedCommand.isWasm = consoleInitializer.getClient().isWASM();
+        SupportedCommand.isAuthOpen = consoleInitializer.getClient().isAuthCheck();
         try {
             String[] command = params[0].split(" ");
             CommandInfo commandInfo = null;
-            boolean CRUDCommand = false;
             // execute the command
             if (command != null && command.length > 1) {
-                commandInfo = SupportedCommand.getCommandInfo(command[0]);
-                if (SupportedCommand.CRUD_COMMANDS.contains(command[0])) {
-                    CRUDCommand = true;
-                }
+                commandInfo =
+                        SupportedCommand.getCommandInfo(
+                                command[0],
+                                consoleInitializer.getClient().isWASM(),
+                                consoleInitializer.getClient().isAuthCheck());
             } else {
-                commandInfo = SupportedCommand.getCommandInfo(params[0]);
+                commandInfo =
+                        SupportedCommand.getCommandInfo(
+                                params[0],
+                                consoleInitializer.getClient().isWASM(),
+                                consoleInitializer.getClient().isAuthCheck());
             }
             if (commandInfo != null) {
-                if (CRUDCommand) {
-                    String sqlCommand = params[0];
+                if (CrudCommand.CRUD_COMMANDS.contains(command[0])) {
+                    String sqlCommand = StringUtils.join(Arrays.asList(params), " ");
                     String[] inputParamString = new String[1];
                     inputParamString[0] = sqlCommand;
-                    commandInfo.callCommand(consoleInitializer, inputParamString);
+                    commandInfo.callCommand(consoleInitializer, inputParamString, null);
                 } else {
                     String[] paramWithoutQuotation = new String[params.length];
                     for (Integer i = 0; i < params.length; i++) {
@@ -81,7 +92,10 @@ public class NonInteractiveConsole {
                             paramWithoutQuotation[i] = param.substring(1, param.length() - 1);
                         }
                     }
-                    commandInfo.callCommand(consoleInitializer, paramWithoutQuotation);
+                    commandInfo.callCommand(
+                            consoleInitializer,
+                            paramWithoutQuotation,
+                            ContractCompiler.BFS_APPS_PREFIX);
                 }
             } else {
                 System.out.println("Undefined command: \"" + params[0] + "\". Try \"help\".\n");
@@ -94,12 +108,12 @@ public class NonInteractiveConsole {
             ConsoleUtils.printJson(
                     "{\"code\":" + e.getErrorCode() + ", \"msg\":" + "\"" + errorMessage + "\"}");
             System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
         } catch (ContractException e) {
             ConsoleUtils.printJson(
                     "{\"code\":" + e.getErrorCode() + ", \"msg\":" + "\"" + e.getMessage() + "\"}");
             System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
         } catch (ClassNotFoundException e) {
             System.out.println(e.getMessage() + " does not exist.");
             System.out.println();
@@ -113,7 +127,7 @@ public class NonInteractiveConsole {
                         "The groupID is not configured in dist/conf/applicationContext.xml file.");
             } else {
                 System.out.println(e.getMessage());
-                logger.error(" message: {}, e: {}", e.getMessage(), e);
+                logger.error(" message: {}, e: ", e.getMessage(), e);
             }
             System.out.println();
         } catch (InvocationTargetException e) {
@@ -128,11 +142,11 @@ public class NonInteractiveConsole {
 
             System.out.println(e.getMessage());
             System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.out.println();
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e: ", e.getMessage(), e);
         } finally {
             System.exit(0);
         }

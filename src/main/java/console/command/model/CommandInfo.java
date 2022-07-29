@@ -25,7 +25,8 @@ public class CommandInfo {
 
     @FunctionalInterface
     public interface CommandImplement {
-        void call(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
+        void call(ConsoleInitializer consoleInitializer, String[] params, String pwd)
+                throws Exception;
     }
 
     private final String command;
@@ -35,6 +36,8 @@ public class CommandInfo {
     private final CommandImplement commandImplement;
     private int minParamLength = -1;
     private int maxParamLength = -1;
+    private boolean isWasmSupport = true;
+    private boolean needAuthOpen = false;
     String minSupportVersion = null;
     boolean supportNonInteractive = true;
 
@@ -103,9 +106,33 @@ public class CommandInfo {
             CommandImplement commandImplement,
             int minParamLength,
             int maxParamLength,
-            String minSupportVersion) {
+            boolean supportNonInteractive,
+            boolean isWasmSupport) {
         this(command, desc, usageDisplay, commandImplement, minParamLength, maxParamLength);
-        this.minSupportVersion = minSupportVersion;
+        this.supportNonInteractive = supportNonInteractive;
+        this.isWasmSupport = isWasmSupport;
+    }
+
+    public CommandInfo(
+            String command,
+            String desc,
+            UsageDisplay usageDisplay,
+            CommandImplement commandImplement,
+            int minParamLength,
+            int maxParamLength,
+            boolean supportNonInteractive,
+            boolean isWasmSupport,
+            boolean needAuthOpen) {
+        this(
+                command,
+                desc,
+                usageDisplay,
+                commandImplement,
+                minParamLength,
+                maxParamLength,
+                supportNonInteractive,
+                isWasmSupport);
+        this.needAuthOpen = needAuthOpen;
     }
 
     public CommandInfo(
@@ -160,6 +187,14 @@ public class CommandInfo {
         this.supportNonInteractive = supportNonInteractive;
     }
 
+    public boolean isWasmSupport() {
+        return isWasmSupport;
+    }
+
+    public boolean isNeedAuthOpen() {
+        return needAuthOpen;
+    }
+
     public boolean isSupportNonInteractive() {
         return supportNonInteractive;
     }
@@ -186,10 +221,9 @@ public class CommandInfo {
 
     public void printDescInfo() {
         if (optionCommand != null) {
-            System.out.printf(
-                    "* %-40s  %s\n", command + "(" + optionCommand.toString() + ")", desc);
+            System.out.printf("* %-40s  %s%n", command + "(" + optionCommand + ")", desc);
         } else {
-            System.out.printf("* %-40s  %s\n", command, desc);
+            System.out.printf("* %-40s  %s%n", command, desc);
         }
     }
 
@@ -240,28 +274,48 @@ public class CommandInfo {
         return minSupportVersion;
     }
 
-    public void callCommand(ConsoleInitializer consoleInitializer, String[] params)
+    public void callCommand(ConsoleInitializer consoleInitializer, String[] params, String pwd)
             throws Exception {
         // print help info
-        if (params.length >= 2) {
-            if (SupportedCommand.HELP.getOptionCommand().contains(params[1])) {
-                HelpInfo.printHelp(command);
-                return;
-            }
+        if (params.length >= 2 && SupportedCommand.HELP.getOptionCommand().contains(params[1])) {
+            HelpInfo.printHelp(
+                    command,
+                    consoleInitializer.getClient().isWASM(),
+                    consoleInitializer.getClient().isAuthCheck());
+            return;
         }
+
         if (maxParamLength != -1 && (params.length - 1) > maxParamLength) {
+            System.out.printf(
+                    "Expected at most %d arguments but found %d%n",
+                    maxParamLength, params.length - 1);
             HelpInfo.promptHelp(command);
             return;
         }
+
         if (minParamLength != -1 && (params.length - 1) < minParamLength) {
-            HelpInfo.printHelp(command);
+            System.out.printf(
+                    "Expected at least %d arguments but found %d%n",
+                    minParamLength, params.length - 1);
+            HelpInfo.printHelp(
+                    command,
+                    consoleInitializer.getClient().isWASM(),
+                    consoleInitializer.getClient().isAuthCheck());
             return;
         }
         // check version
         if (minSupportVersion != null) {
             return;
         }
-        commandImplement.call(consoleInitializer, params);
+        commandImplement.call(consoleInitializer, params, pwd);
         System.out.println();
+    }
+
+    public void setMaxParamLength(int maxParamLength) {
+        this.maxParamLength = maxParamLength;
+    }
+
+    public void setMinParamLength(int minParamLength) {
+        this.minParamLength = minParamLength;
     }
 }

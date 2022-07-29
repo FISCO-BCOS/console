@@ -3,7 +3,6 @@ package console;
 import console.client.ConsoleClientFace;
 import console.contract.ConsoleContractFace;
 import console.precompiled.PrecompiledFace;
-import console.precompiled.permission.PermissionFace;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 

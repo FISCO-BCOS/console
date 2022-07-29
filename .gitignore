@@ -7,7 +7,6 @@
 *.war
 *.ear
 *.bin
-*.abi
 
 ### Gradle template
 .gradle
@@ -42,3 +41,4 @@ build.gradle.bak
 .project
 .settings/**
 .classpath
+bin/**

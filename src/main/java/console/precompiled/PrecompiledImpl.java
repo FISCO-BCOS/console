@@ -1,47 +1,46 @@
 package console.precompiled;
 
+import console.common.Common;
 import console.common.ConsoleUtils;
-import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.Base64;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
-import org.fisco.bcos.sdk.abi.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.client.exceptions.ClientException;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.BFSService;
-import org.fisco.bcos.sdk.contract.precompiled.bfs.FileInfo;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsInfo;
-import org.fisco.bcos.sdk.contract.precompiled.cns.CnsService;
-import org.fisco.bcos.sdk.contract.precompiled.consensus.ConsensusService;
-import org.fisco.bcos.sdk.contract.precompiled.contractmgr.ContractLifeCycleService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.TableCRUDService;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.Condition;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.ConditionOperator;
-import org.fisco.bcos.sdk.contract.precompiled.crud.common.Entry;
-import org.fisco.bcos.sdk.contract.precompiled.sysconfig.SystemConfigService;
-import org.fisco.bcos.sdk.crypto.keypair.CryptoKeyPair;
-import org.fisco.bcos.sdk.model.PrecompiledConstant;
-import org.fisco.bcos.sdk.model.PrecompiledRetCode;
-import org.fisco.bcos.sdk.model.RetCode;
-import org.fisco.bcos.sdk.model.TransactionReceiptStatus;
-import org.fisco.bcos.sdk.transaction.model.exception.ContractException;
-import org.fisco.bcos.sdk.utils.ObjectMapperFactory;
+import org.apache.commons.io.FilenameUtils;
+import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.TableCRUDService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
+import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
+import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.v3.model.RetCode;
+import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
+import org.fisco.bcos.sdk.v3.utils.Numeric;
+import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: REMOVE THIS
 public class PrecompiledImpl implements PrecompiledFace {
 
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
@@ -50,9 +49,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     private ConsensusService consensusService;
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
-    private ContractLifeCycleService contractLifeCycleService;
-    private CnsService cnsService;
     private BFSService bfsService;
+    private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
         this.client = client;
@@ -60,15 +58,13 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.consensusService = new ConsensusService(client, cryptoKeyPair);
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
-        this.contractLifeCycleService = new ContractLifeCycleService(client, cryptoKeyPair);
-        this.cnsService = new CnsService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
     }
 
     @Override
     public void addSealer(String[] params) throws Exception {
         String nodeId = params[1];
-        int weight = ConsoleUtils.proccessNonNegativeNumber("consensusWeight", params[2]);
+        int weight = ConsoleUtils.processNonNegativeNumber("consensusWeight", params[2]);
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
@@ -100,7 +96,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void setConsensusNodeWeight(String[] params) throws Exception {
         String nodeId = params[1];
-        int weight = ConsoleUtils.proccessNonNegativeNumber("consensusWeight", params[2]);
+        int weight = ConsoleUtils.processNonNegativeNumber("consensusWeight", params[2]);
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
@@ -123,58 +119,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (tableName.endsWith(";")) {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
-        try {
-            List<Map<String, String>> tableDesc = tableCRUDService.desc(tableName);
-            if (!checkTableExistence(tableName, tableDesc)) {
-                return;
-            }
-            String tableInfo = ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc);
-            ConsoleUtils.printJson(tableInfo);
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    @Override
-    public void freezeContract(String[] params) throws Exception {
-        String address = params[1];
-        ConsoleUtils.printJson(contractLifeCycleService.freeze(address).toString());
-    }
-
-    @Override
-    public void unfreezeContract(String[] params) throws Exception {
-        String address = params[1];
-        ConsoleUtils.printJson(contractLifeCycleService.unfreeze(address).toString());
-    }
-
-    @Override
-    public void grantContractStatusManager(String[] params) throws Exception {
-        String contractAddr = params[1];
-        String userAddr = params[2];
-        ConsoleUtils.printJson(
-                contractLifeCycleService.grantManager(contractAddr, userAddr).toString());
-    }
-
-    @Override
-    public void revokeContractStatusManager(String[] params) throws Exception {
-        String contractAddr = params[1];
-        String userAddr = params[2];
-        ConsoleUtils.printJson(
-                contractLifeCycleService.revokeManager(contractAddr, userAddr).toString());
-    }
-
-    @Override
-    public void getContractStatus(String[] params) throws Exception {
-        String address = params[1];
-        ConsoleUtils.printJson(contractLifeCycleService.getContractStatus(address));
-    }
-
-    @Override
-    public void listContractStatusManager(String[] params) throws Exception {
-        String address = params[1];
-        ConsoleUtils.printJson(
-                ObjectMapperFactory.getObjectMapper()
-                        .writeValueAsString(contractLifeCycleService.listManager(address)));
+        Map<String, List<String>> tableDesc = tableCRUDService.desc(tableName);
+        ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc));
     }
 
     @Override
@@ -184,170 +130,66 @@ public class PrecompiledImpl implements PrecompiledFace {
             CRUDParseUtils.parseCreateTable(sql, table);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}, e:", e.getMessage(), e);
             return;
         } catch (JSQLParserException | NullPointerException e) {
+            logger.error(" message: {}, e:", e.getMessage(), e);
             System.out.println("Could not parse SQL statement.");
             CRUDParseUtils.invalidSymbol(sql);
             return;
         }
+        CRUDParseUtils.parseCreateTable(sql, table);
+        RetCode result =
+                tableCRUDService.createTable(
+                        table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+
+        // parse the result
+        if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println("Create '" + table.getTableName() + "' Ok.");
+        } else {
+            System.out.println("Create '" + table.getTableName() + "' failed ");
+            ConsoleUtils.printJson(result.toString());
+        }
+    }
+
+    @Override
+    public void alterTable(String sql) throws Exception {
         try {
+            Table table = CRUDParseUtils.parseAlterTable(sql);
             RetCode result =
-                    tableCRUDService.createTable(
-                            table.getTableName(), table.getKey(), table.getValueFields());
+                    tableCRUDService.appendColumns(table.getTableName(), table.getValueFields());
             // parse the result
             if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
-                System.out.println("Create '" + table.getTableName() + "' Ok.");
+                System.out.println("Alter '" + table.getTableName() + "' Ok.");
             } else {
-                System.out.println("Create '" + table.getTableName() + "' failed ");
+                System.out.println("Alter '" + table.getTableName() + "' failed ");
                 ConsoleUtils.printJson(result.toString());
             }
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), null);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), null);
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    private boolean checkTableField(List<Map<String, String>> descTable, Entry entry) {
-        if (descTable == null || descTable.size() == 0) {
-            return true;
-        }
-        List<String> descFieldList = new ArrayList<String>();
-        Collections.addAll(
-                descFieldList,
-                descTable.get(0).get(PrecompiledConstant.VALUE_FIELD_NAME).split(","));
-        String key = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
-        // check field
-        if (entry != null) {
-            Set<String> fieldSet = entry.getFieldNameToValue().keySet();
-            for (String field : fieldSet) {
-                if (field.equals(key)) {
-                    continue;
-                }
-                if (!descFieldList.contains(field)) {
-                    System.out.println(
-                            "Unknown field \""
-                                    + field
-                                    + "\", current supported fields are "
-                                    + descFieldList.toString());
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private void outputErrorMessageForTableCRUD(
-            Table table,
-            Entry entry,
-            String command,
-            int code,
-            String message,
-            List<Map<String, String>> descTable) {
-        System.out.println("call " + command + " failed!");
-        System.out.println("* code: " + code);
-        System.out.println("* message: " + message);
-
-        if (code != TransactionReceiptStatus.PrecompiledError.getCode()) {
-            return;
-        }
-        if (!checkTableField(descTable, entry)) {
-            return;
-        }
-        if (table == null) {
-            return;
-        }
-        String regexTableName = "[\\da-zA-z,$,_,@]+";
-        if (!table.getTableName().matches(regexTableName)) {
-            System.out.println("Invalid table name " + table.getTableName());
-            System.out.println(
-                    "* The table name must contain only numbers, letters or [$','_','@']");
-        }
-        if (table.getTableName().length() > PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH) {
-            System.out.println("Invalid table name " + table.getTableName());
-            System.out.println(
-                    "* The length of the table name must be no greater than "
-                            + PrecompiledConstant.USER_TABLE_NAME_MAX_LENGTH
-                            + ", current length of the table is "
-                            + table.getTableName().length());
-        }
-        if (table.getKeyFieldName() != null
-                && table.getKeyFieldName().length()
-                        > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-            System.out.println("Invalid key \"" + table.getKeyFieldName() + "\"");
-            System.out.println(
-                    "* The length of the key must be no greater than "
-                            + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                            + " , current length of the table is "
-                            + table.getKeyFieldName().length());
-        }
-        if (table.getKey().length() > PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH) {
-            System.out.println("Invalid key value " + table.getKey());
-            System.out.println(
-                    "* The value of the key must be no greater than "
-                            + PrecompiledConstant.TABLE_KEY_VALUE_MAX_LENGTH
-                            + " , current length of the table is "
-                            + table.getKey().length());
-        }
-        if (table.getValueFields() != null) {
-            for (String field : table.getValueFields()) {
-                if (field.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-                    System.out.println("Invalid field: " + field);
-
-                    System.out.println(
-                            "* Field length must be no greater than "
-                                    + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                                    + ", current length is: "
-                                    + field.length());
-                }
-            }
-        }
-        if (entry == null) {
-            return;
-        }
-        Map<String, String> fieldNameToValue = entry.getFieldNameToValue();
-        for (String key : fieldNameToValue.keySet()) {
-            if (key.length() > PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH) {
-                System.out.println("Invalid field name " + key);
-                System.out.println(
-                        "* Field length must be no greater than "
-                                + PrecompiledConstant.TABLE_FIELD_NAME_MAX_LENGTH
-                                + ", current length:"
-                                + key.length());
-            }
-            String value = fieldNameToValue.get(key);
-            if (value.length() > PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH) {
-                System.out.println("Invalid field value for " + key);
-                System.out.println(
-                        "* Value of Field must be no greater than: "
-                                + PrecompiledConstant.USER_TABLE_FIELD_VALUE_MAX_LENGTH
-                                + ", current length is "
-                                + value.length());
-            }
+        } catch (ConsoleMessageException e) {
+            System.out.println(e.getMessage());
+            logger.error(" message: {}, e:", e.getMessage(), e);
+        } catch (JSQLParserException | NullPointerException e) {
+            logger.error(" message: {}, e:", e.getMessage(), e);
+            System.out.println("Could not parse SQL statement.");
+            CRUDParseUtils.invalidSymbol(sql);
         }
     }
 
     @Override
     public void insert(String sql) throws Exception {
-        Table table = new Table();
-        Entry entry = new Entry();
-        List<Map<String, String>> descTable = null;
         try {
-            String tableName = CRUDParseUtils.parseInsertedTableName(sql);
-            descTable = tableCRUDService.desc(tableName);
-            if (!checkTableExistence(tableName, descTable)) {
+            Table table = new Table();
+            String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
+            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            table.setTableName(tableName);
+            if (!checkTableExistence(descTable)) {
+                System.out.println("The table \"" + tableName + "\" doesn't exist!");
                 return;
             }
-            logger.debug(
-                    "insert, tableName: {}, descTable: {}", tableName, descTable.get(0).toString());
-            CRUDParseUtils.parseInsert(sql, table, entry, descTable.get(0));
-            String keyName = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
-            String keyValue = entry.getFieldNameToValue().get(keyName);
+            logger.debug("insert, tableName: {}, descTable: {}", tableName, descTable);
+            Entry entry = CRUDParseUtils.parseInsert(sql, table, descTable);
+            String keyName = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
+            String keyValue = entry.getKey();
             logger.debug(
                     "fieldNameToValue: {}, keyName: {}, keyValue: {}",
                     entry.getFieldNameToValue(),
@@ -356,12 +198,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             if (keyValue == null) {
                 throw new ConsoleMessageException("Please insert the key field '" + keyName + "'.");
             }
-            table.setKey(keyValue);
             RetCode insertResult = tableCRUDService.insert(table.getTableName(), entry);
 
             if (insertResult.getCode() >= 0) {
                 System.out.println("Insert OK: ");
-                System.out.println(insertResult.getCode() + " row affected.");
+                System.out.println(insertResult.getCode() + " row(s) affected.");
             } else {
                 System.out.println("Result of insert for " + table.getTableName() + ":");
                 ConsoleUtils.printJson(insertResult.toString());
@@ -369,181 +210,144 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
+            logger.error(" message: {}, e:", e.getMessage(), e);
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement, error message: " + e.getMessage());
             CRUDParseUtils.invalidSymbol(sql);
-            return;
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (Exception e) {
-            throw e;
         }
     }
 
     @Override
     public void update(String sql) throws Exception {
-        Table table = new Table();
-        Entry entry = new Entry();
-        Condition condition = new Condition();
-        List<Map<String, String>> descTable = null;
         try {
-            CRUDParseUtils.parseUpdate(sql, table, entry, condition);
-        } catch (ConsoleMessageException e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
-        } catch (JSQLParserException | NullPointerException e) {
-            System.out.println("Could not parse SQL statement.");
-            CRUDParseUtils.invalidSymbol(sql);
-            return;
-        }
-        try {
-            String tableName = table.getTableName();
-            descTable = tableCRUDService.desc(tableName);
-            if (!checkTableExistence(table.getTableName(), descTable)) {
+            Table table = new Table();
+            UpdateFields updateFields = new UpdateFields();
+            String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
+            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            if (!checkTableExistence(descTable)) {
+                System.out.println("The table \"" + tableName + "\" doesn't exist!");
                 return;
             }
-            String keyName = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
-            if (entry.getFieldNameToValue().containsKey(keyName)) {
+            String keyName = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
+            if (updateFields.getFieldNameToValue().containsKey(keyName)) {
                 System.out.println("Please don't set the key field \"" + keyName + "\".");
                 return;
             }
-            table.setKey(keyName);
-            handleKey(table, condition);
-            RetCode updateResult = tableCRUDService.update(table.getTableName(), entry, condition);
+            table.setKeyFieldName(keyName);
+            Condition condition = CRUDParseUtils.parseUpdate(sql, table, updateFields);
+
+            String keyValue = condition.getEqValue();
+            RetCode updateResult =
+                    keyValue.isEmpty()
+                            ? tableCRUDService.update(tableName, condition, updateFields)
+                            : tableCRUDService.update(tableName, keyValue, updateFields);
             if (updateResult.getCode() >= 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
             } else {
                 System.out.println("Result of update " + tableName + " :");
                 ConsoleUtils.printJson(updateResult.toString());
             }
-
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, entry, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (Exception e) {
-            throw e;
+        } catch (ConsoleMessageException e) {
+            System.out.println(e.getMessage());
+            logger.error(" message: {}, e: ", e.getMessage(), e);
+        } catch (JSQLParserException | NullPointerException e) {
+            System.out.println("Could not parse SQL statement.");
+            logger.error(" message: {}, e: ", e.getMessage(), e);
+            CRUDParseUtils.invalidSymbol(sql);
         }
     }
 
     @Override
     public void remove(String sql) throws Exception {
-        Table table = new Table();
-        Condition condition = new Condition();
-        List<Map<String, String>> descTable = null;
         try {
-            CRUDParseUtils.parseRemove(sql, table, condition);
-        } catch (ConsoleMessageException e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
-        } catch (JSQLParserException | NullPointerException e) {
-            System.out.println("Could not parse SQL statement.");
-            CRUDParseUtils.invalidSymbol(sql);
-            return;
-        }
-        try {
-            descTable = tableCRUDService.desc(table.getTableName());
-            if (!checkTableExistence(table.getTableName(), descTable)) {
+            Table table = new Table();
+            String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
+            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            table.setTableName(tableName);
+            if (!checkTableExistence(descTable)) {
+                System.out.println("The table \"" + table.getTableName() + "\" doesn't exist!");
                 return;
             }
-            table.setKey(descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME));
-            handleKey(table, condition);
-            RetCode removeResult = tableCRUDService.remove(table.getTableName(), condition);
+            table.setKeyFieldName(descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0));
+            Condition condition = CRUDParseUtils.parseRemove(sql, table);
+            String keyValue = condition.getEqValue();
+            RetCode removeResult =
+                    keyValue.isEmpty()
+                            ? tableCRUDService.remove(table.getTableName(), condition)
+                            : tableCRUDService.remove(table.getTableName(), keyValue);
 
             if (removeResult.getCode() >= 0) {
-                System.out.println("Remove OK, " + removeResult.getCode() + " row affected.");
+                System.out.println("Remove OK, " + removeResult.getCode() + " row(s) affected.");
             } else {
                 System.out.println("Result of Remove " + table.getTableName() + " :");
                 ConsoleUtils.printJson(removeResult.toString());
             }
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (Exception e) {
-            throw e;
-        }
-    }
-
-    private boolean checkTableExistence(String tableName, List<Map<String, String>> descTable) {
-        if (descTable.size() == 0
-                || descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME).equals("")) {
-            System.out.println("The table \"" + tableName + "\" doesn't exist!");
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public void select(String sql) throws Exception {
-        Table table = new Table();
-        Condition condition = new Condition();
-        List<String> selectColumns = new ArrayList<>();
-        List<Map<String, String>> descTable = null;
-        try {
-            CRUDParseUtils.parseSelect(sql, table, condition, selectColumns);
         } catch (ConsoleMessageException e) {
             System.out.println(e.getMessage());
             logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
         } catch (JSQLParserException | NullPointerException e) {
             System.out.println("Could not parse SQL statement.");
+            logger.error(" message: {}, e: ", e.getMessage(), e);
             CRUDParseUtils.invalidSymbol(sql);
-            return;
         }
+    }
+
+    private boolean checkTableExistence(Map<String, List<String>> descTable) {
+        return descTable.size() != 0
+                && !descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0).equals("");
+    }
+
+    @Override
+    public void select(String sql) throws ConsoleMessageException, ContractException {
         try {
-            descTable = tableCRUDService.desc(table.getTableName());
-            if (!checkTableExistence(table.getTableName(), descTable)) {
+            Table table = new Table();
+            List<String> selectColumns = new ArrayList<>();
+            String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
+            table.setTableName(tableName);
+            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            if (!checkTableExistence(descTable)) {
+                System.out.println("The table \"" + table.getTableName() + "\" doesn't exist!");
                 return;
             }
-            String keyField = descTable.get(0).get(PrecompiledConstant.KEY_FIELD_NAME);
-            table.setKey(keyField);
-            handleKey(table, condition);
-            List<Map<String, String>> result =
-                    tableCRUDService.select(table.getTableName(), condition);
-            int rows = 0;
-            if (result.size() == 0) {
+            String keyField = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
+            table.setKeyFieldName(keyField);
+            Condition condition = CRUDParseUtils.parseSelect(sql, table, selectColumns);
+            String keyValue = condition.getEqValue();
+            List<Map<String, String>> result = new ArrayList<>();
+            if (keyValue.isEmpty()) {
+                result = tableCRUDService.select(table.getTableName(), descTable, condition);
+            } else {
+                Map<String, String> select =
+                        tableCRUDService.select(table.getTableName(), descTable, keyValue);
+                if (select.isEmpty()) {
+                    System.out.println("Empty set.");
+                    return;
+                }
+                result.add(select);
+            }
+            int rows;
+            if (result.isEmpty()) {
                 System.out.println("Empty set.");
                 return;
             }
-            result = filterSystemColumn(result);
             if ("*".equals(selectColumns.get(0))) {
                 selectColumns.clear();
                 selectColumns.add(keyField);
-                String[] valueArr =
-                        descTable.get(0).get(PrecompiledConstant.VALUE_FIELD_NAME).split(",");
-                selectColumns.addAll(Arrays.asList(valueArr));
+                selectColumns.addAll(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
                 result = getSelectedColumn(selectColumns, result);
                 rows = result.size();
             } else {
                 List<Map<String, String>> selectedResult = getSelectedColumn(selectColumns, result);
                 rows = selectedResult.size();
             }
-            if (rows == 1) {
-                System.out.println(rows + " row in set.");
-            } else {
-                System.out.println(rows + " rows in set.");
-            }
-        } catch (ContractException e) {
-            outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (ClientException e) {
-            outputErrorMessageForTableCRUD(
-                    table, null, sql, e.getErrorCode(), e.getMessage(), descTable);
-        } catch (Exception e) {
-            throw e;
+            System.out.println(rows + " row(s) in set.");
+        } catch (ConsoleMessageException e) {
+            System.out.println(e.getMessage());
+            logger.error(" message: {}, e:", e.getMessage(), e);
+        } catch (JSQLParserException | NullPointerException e) {
+            System.out.println("Could not parse SQL statement.");
+            logger.error(" message: {}, e: ", e.getMessage(), e);
+            CRUDParseUtils.invalidSymbol(sql);
         }
     }
 
@@ -563,170 +367,224 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             selectedResult.add(selectedRecords);
         }
-        selectedResult.stream().forEach(System.out::println);
+        selectedResult.forEach(System.out::println);
         return selectedResult;
-    }
-
-    private List<Map<String, String>> filterSystemColumn(List<Map<String, String>> result) {
-
-        List<String> filteredColumns = Arrays.asList("_id_", "_hash_", "_status_", "_num_");
-        List<Map<String, String>> filteredResult = new ArrayList<>(result.size());
-        Map<String, String> filteredRecords;
-        for (Map<String, String> records : result) {
-            filteredRecords = new LinkedHashMap<>();
-            Set<String> recordKeys = records.keySet();
-            for (String recordKey : recordKeys) {
-                if (!filteredColumns.contains(recordKey)) {
-                    filteredRecords.put(recordKey, records.get(recordKey));
-                }
-            }
-            filteredResult.add(filteredRecords);
-        }
-        return filteredResult;
-    }
-
-    private void handleKey(Table table, Condition condition) throws Exception {
-
-        String keyName = table.getKey();
-        String keyValue = "";
-        Map<ConditionOperator, String> keyMap = condition.getConditions().get(keyName);
-        if (keyMap == null) {
-            throw new ConsoleMessageException(
-                    "Please provide a equal condition for the key field '"
-                            + keyName
-                            + "' in where clause.");
-        } else {
-            Set<ConditionOperator> keySet = keyMap.keySet();
-            for (ConditionOperator enumOP : keySet) {
-                if (enumOP != ConditionOperator.eq) {
-                    throw new ConsoleMessageException(
-                            "Please provide a equal condition for the key field '"
-                                    + keyName
-                                    + "' in where clause.");
-                } else {
-                    keyValue = keyMap.get(enumOP);
-                }
-            }
-        }
-        table.setKey(keyValue);
-    }
-
-    @Override
-    public void queryCNS(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        List<CnsInfo> cnsInfos = null;
-        if (params.length == 2) {
-            // get contract name
-            cnsInfos = cnsService.selectByName(contractName);
-        }
-        if (params.length == 3) {
-            Tuple2<String, String> cnsTuple =
-                    cnsService.selectByNameAndVersion(contractName, params[2]);
-            if (cnsTuple.getValue1() != null
-                    && cnsTuple.getValue2() != null
-                    && !cnsTuple.getValue2().equals("")) {
-                cnsInfos = new LinkedList<>();
-                CnsInfo cnsInfo = new CnsInfo();
-                cnsInfo.setAddress(cnsTuple.getValue1());
-                cnsInfo.setVersion(params[2]);
-                cnsInfos.add(cnsInfo);
-            }
-        }
-        ConsoleUtils.singleLine();
-        if (cnsInfos == null || cnsInfos.isEmpty()) {
-            System.out.println("Empty set.");
-            ConsoleUtils.singleLine();
-            return;
-        }
-        for (CnsInfo cnsInfo : cnsInfos) {
-            System.out.println("* contract address: " + cnsInfo.getAddress());
-            System.out.println("* contract version: " + cnsInfo.getVersion());
-            ConsoleUtils.singleLine();
-        }
-    }
-
-    @Override
-    public void registerCNS(String[] params) throws Exception {
-        String contractNameOrPath = ConsoleUtils.resolveContractPath(params[1]);
-        String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-        String contractAddress = params[2];
-        String contractVersion = params[3];
-        String abi = "";
-        try {
-            AbiAndBin abiAndBin =
-                    ContractCompiler.loadAbiAndBin(
-                            client.getGroupId(),
-                            contractName,
-                            contractNameOrPath,
-                            contractAddress,
-                            false);
-            abi = abiAndBin.getAbi();
-        } catch (CompileContractException e) {
-            logger.warn(
-                    "load abi for contract failed, contract name: {}, address: {}, e: {}",
-                    contractAddress,
-                    contractAddress,
-                    e.getMessage());
-        }
-        if (abi.equals("")) {
-            System.out.println(
-                    "Warn: \nPlease make sure the existence of the contract, contractName: "
-                            + contractName
-                            + ", contractAddress: "
-                            + contractAddress
-                            + "!");
-        }
-        ConsoleUtils.printJson(
-                cnsService
-                        .registerCNS(contractName, contractVersion, contractAddress, abi)
-                        .toString());
-        System.out.println();
     }
 
     @Override
     public void changeDir(String[] params) throws Exception {
-        FileInfo listResult;
-        if (params[1].equals("..")) {
-            String parentPath = params[0].substring(0, params[0].lastIndexOf('/') + 1);
-            listResult = bfsService.list(parentPath);
+        if (params.length == 1) {
+            System.out.println("cd: change dir to /apps");
+            pwd = "/apps";
+            return;
+        }
+        String path = ConsoleUtils.fixedBfsParam(params[1], pwd);
+        if ("/".equals(path)) {
+            pwd = path;
+            return;
+        }
+        Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
+        String parentDir = parentAndBase.getValue1();
+        String baseName = parentAndBase.getValue2();
+        List<BfsInfo> listResult = bfsService.list(parentDir);
+        if (!listResult.isEmpty()) {
+            boolean findFlag = false;
+            for (BfsInfo bfsInfo : listResult) {
+                if (bfsInfo.getFileName().equals(baseName)) {
+                    findFlag = true;
+                    if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                        throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
+                    }
+                }
+            }
+            if (!findFlag) {
+                logger.error("cd: no such file or directory: '{}'", path);
+                throw new Exception("cd: no such file or directory: " + baseName);
+            }
         } else {
-            listResult = bfsService.list(params[1]);
+            throw new Exception("cd: no such file or directory: " + params[1]);
         }
-        if (!listResult.getType().equals("directory")) {
-            System.out.println("cd: not a directory: " + listResult.getName());
-        }
+        pwd = path;
     }
 
     @Override
     public void makeDir(String[] params) throws Exception {
-        RetCode mkdir = bfsService.mkdir(params[1]);
+        String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
+        String path = fixedBfsParams[1];
+        RetCode mkdir = bfsService.mkdir(path);
+        logger.info("mkdir: make new dir {}", path);
+        if (mkdir.getCode() == PrecompiledRetCode.CODE_FILE_INVALID_PATH.getCode()) {
+            if (!path.startsWith("/apps/") && !path.startsWith("/tables/")) {
+                System.out.println("Only permitted to mkdir in '/apps/' and '/tables/'");
+                return;
+            }
+        }
         System.out.println(mkdir.getMessage());
     }
 
     @Override
     public void listDir(String[] params) throws Exception {
-        FileInfo listResult;
-        if (params.length == 1) {
-            listResult = bfsService.list(params[0]);
-        } else {
-            listResult = bfsService.list(params[1]);
-        }
-        if (listResult.getType().equals("directory") && listResult.getSubdirectories() != null) {
-            for (FileInfo subdirectory : listResult.getSubdirectories()) {
-                System.out.print(subdirectory.getName() + '\t');
+        String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
+
+        String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
+        List<BfsInfo> fileInfoList = bfsService.list(listPath);
+        String baseName = FilenameUtils.getBaseName(listPath);
+        int newLineCount = 0;
+        for (BfsInfo fileInfo : fileInfoList) {
+            newLineCount++;
+            switch (fileInfo.getFileType()) {
+                case Common.BFS_TYPE_CON:
+                    System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
+                    break;
+                case Common.BFS_TYPE_DIR:
+                    System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
+                    break;
+                case Common.BFS_TYPE_LNK:
+                    System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
+                    if (fileInfoList.size() == 1 && fileInfo.getFileName().equals(baseName)) {
+                        System.out.print(" -> " + fileInfo.getExt().get(0));
+                    }
+                    System.out.print('\t');
+                    break;
+                default:
+                    System.out.println();
+                    break;
             }
-            System.out.println();
-        } else {
-            System.out.println("name: " + listResult.getName() + " type: " + listResult.getType());
+            if (newLineCount % 6 == 0) {
+                System.out.println();
+            }
         }
     }
 
     @Override
-    public void deployWasm(String[] params) throws Exception {}
+    public void tree(String[] params) throws Exception {
+        String absolutePath = ConsoleUtils.fixedBfsParam(params[1], pwd);
+        int limit = 3;
+        try {
+            if (params.length > 2) {
+                limit = Integer.parseInt(params[2]);
+                if (limit <= 0 || limit > 5) {
+                    System.out.println("Limit should be in range (0,5]");
+                    return;
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("NumberFormatException: Please check the number you input.");
+            return;
+        }
+        System.out.println(absolutePath);
+        Tuple2<Integer, Integer> treeCount = travelBfs(absolutePath, "", 0, limit);
+        System.out.println(
+                "\n"
+                        + treeCount.getValue1()
+                        + " directory, "
+                        + treeCount.getValue2()
+                        + " contracts.");
+    }
 
     @Override
-    public void pwd(String[] params) throws Exception {
-        System.out.println(params[0]);
+    public void link(String[] params) throws Exception {
+        String linkPath = ConsoleUtils.fixedBfsParam(params[1], pwd);
+        String contractAddress =
+                client.isWASM()
+                        ? ConsoleUtils.fixedBfsParam(params[2], pwd)
+                                .substring(ContractCompiler.BFS_APPS_PREFIX.length())
+                        : params[2];
+        List<String> path2Level = ConsoleUtils.path2Level(linkPath);
+        if (path2Level.size() != 3 || !path2Level.get(0).equals("apps")) {
+            System.out.println("Link must in /apps, and not support multi-level directory.");
+            System.out.println("Example: ln /apps/Name/Version 0x1234567890");
+            return;
+        }
+        String contractName = path2Level.get(1);
+        String contractVersion = path2Level.get(2);
+        if (!client.isWASM() && !AddressUtils.isValidAddress(contractAddress)) {
+            System.out.println("Contract address is invalid, address: " + contractAddress);
+        }
+        String abi = "";
+        try {
+            String wasmAbiAddress = "";
+            if (client.isWASM()) {
+                wasmAbiAddress =
+                        Base64.getUrlEncoder()
+                                .withoutPadding()
+                                .encodeToString((contractAddress).getBytes(StandardCharsets.UTF_8));
+            }
+            AbiAndBin abiAndBin =
+                    ContractCompiler.loadAbi(
+                            client.getGroup(),
+                            contractName,
+                            client.isWASM()
+                                    ? wasmAbiAddress
+                                    : Numeric.prependHexPrefix(contractAddress));
+            abi = abiAndBin.getAbi();
+        } catch (IOException | CodeGenException e) {
+            if (logger.isErrorEnabled()) {
+                logger.error(
+                        "load abi for contract failed, contract name: {}, address: {}, e: ",
+                        contractAddress,
+                        contractAddress,
+                        e);
+            }
+        }
+        if (abi.isEmpty()) {
+            // abi still empty, get abi on chain
+            Abi remoteAbi = client.getABI(contractAddress);
+            abi = remoteAbi.getABI();
+            if (abi.isEmpty()) {
+                System.out.println(
+                        "Warn: \nPlease make sure the existence of the contract, abi is empty. contractName: "
+                                + contractName
+                                + ", contractAddress: "
+                                + contractAddress);
+            }
+        }
+
+        ConsoleUtils.printJson(
+                bfsService.link(contractName, contractVersion, contractAddress, abi).toString());
+        System.out.println();
+    }
+
+    @Override
+    public String getPwd() {
+        return pwd;
+    }
+
+    private Tuple2<Integer, Integer> travelBfs(
+            String absolutePath, String prefix, int deep, int limit) throws ContractException {
+        if (deep >= limit) return new Tuple2<>(0, 0);
+        Integer dirCount = 0;
+        Integer contractCount = 0;
+        List<BfsInfo> children = bfsService.list(absolutePath);
+        for (int i = 0; i < children.size(); i++) {
+            String thisPrefix = "";
+            String nextPrefix = "";
+            if (deep >= 0) {
+                if ((i + 1) < children.size()) {
+                    nextPrefix = prefix + "│ ";
+                    thisPrefix = prefix + "├─";
+                } else {
+                    nextPrefix = prefix + "  ";
+                    thisPrefix = prefix + "└─";
+                }
+                System.out.println(thisPrefix + children.get(i).getFileName());
+                if (children.get(i).getFileType().equals(Common.BFS_TYPE_DIR)) {
+                    dirCount++;
+                    Tuple2<Integer, Integer> childCount =
+                            travelBfs(
+                                    absolutePath
+                                            + (absolutePath.equals("/") ? "" : "/")
+                                            + children.get(i).getFileName(),
+                                    nextPrefix,
+                                    deep + 1,
+                                    limit);
+                    dirCount += childCount.getValue1();
+                    contractCount += childCount.getValue2();
+                } else {
+                    contractCount++;
+                }
+            }
+        }
+        return new Tuple2<>(dirCount, contractCount);
     }
 }

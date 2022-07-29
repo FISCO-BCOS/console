@@ -1,3 +1,95 @@
+## v3.0.0-rc4
+(2022-7-1)
+
+请阅读Java SDK v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/sdk/java_sdk/index.html)
+
+### 新增
+
+* 新增Table CRUD的命令：`select`,`update`,`insert`,`remove`,`alter`
+* 新增共识节点变更提案、系统配置变更提案、升级计算逻辑提案等的命令
+* 新增冻结、解冻合约功能命令
+* 获取提案命令支持批量获取
+
+### 更新
+
+* 升级`fisco-bcos-java-sdk`到`3.0.0-rc4`
+* 升级`evm-static-analysis`到`1.0.0-rc2`
+
+### 修复
+
+* 修复非交互式控制台的调用问题
+* 重构命令代码，将所有命令抽象成`BasicCategoryCommand`，实际分类可参考`./src/main/java/console/command/category`
+
+### 兼容性说明
+
+- 不兼容 FISCO BCOS 2.0+ 版本
+- 兼容java-sdk v3.x的历史版本
+- 支持[3.0.0-rc4](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc4)版本
+
+### v3.0.0-rc3
+(2022-03-31)
+
+* 新增
+1. 默认使用Solidity 0.8
+2. 支持编译合约进行Solidity并行字段冲突分析
+3. 添加`listABI`命令
+4. BFS支持软链操作
+5. 支持 call link操作，控制台支持调用所有链上部署的合约
+
+
+* 更新
+1. 适配[FISCO BCOS v3.0.0-rc3](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc3)
+2. 适配[FISCO BCOS Java SDK v3.0.0-rc3](https://github.com/FISCO-BCOS/java-sdk/releases/tag/v3.0.0-rc3)
+3. 使用BFS软链取代CNS
+
+
+* 修复
+1. 修复BFS `cd`、`pwd`命令的bug
+
+* 兼容性说明
+- 沿用2.0+版本的大部分功能, 不兼容 FISCO BCOS 2.0+ 版本。FISCO BCOS 2.0+ 版本请使用对应版本的Console
+- 不兼容[3.0.0-rc1](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc1)版本的FISCO BCOS区块链
+- 支持[3.0.0-rc3](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc3)版本和[3.0.0-rc2](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc2)版本的FISCO BCOS区块链
+
+### v3.0.0-rc2
+(2022-02-23)
+
+* 更新
+1. 适配[FISCO BCOS v3.0.0-rc2](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc2)
+2. 适配[FISCO BCOS Java SDK v3.0.0-rc2](https://github.com/FISCO-BCOS/java-sdk/releases/tag/v3.0.0-rc2)
+3. 更新log4j2依赖到2.17.1版本
+
+
+* 修复
+1. 修复权限初始化失败的问题
+2. 修复BFS和KVTable相关的部分命令补全的问题
+
+* 兼容性说明
+- 沿用2.0+版本的大部分功能, 不兼容 FISCO BCOS 2.0+ 版本。FISCO BCOS 2.0+ 版本请使用对应版本的Console
+- 不兼容[3.0.0-rc1](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc1)版本的FISCO BCOS区块链
+- 仅支持[3.0.0-rc2](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc2)版本的FISCO BCOS区块链
+
+### v3.0.0-rc1
+(2021-12-10)
+
+* 更新
+1. 适配[FISCO BCOS v3.0.0-rc1](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc1)
+2. 适配[FISCO BCOS Java SDK v3.0.0-rc1](https://github.com/FISCO-BCOS/java-sdk/releases/tag/v3.0.0-rc1)
+
+
+* 新增
+1. 新增BFS、权限管理相关命令
+2. 支持WBC-Liquid合约，包含部署和调用WBC-Liquid合约
+3. 新增WBC-Liquid编译后的WASM和ABI文件转换成Java合约文件的脚本
+
+
+* 兼容性说明
+- 沿用2.0+版本的大部分功能, 不兼容 FISCO BCOS 2.0+ 版本。FISCO BCOS 2.0+ 版本请使用对应版本的Console
+- 仅支持[3.0.0-rc1](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0-rc1)版本的FISCO BCOS区块链
+
+
 ### v2.8.0
 (2021-07-28)
 
