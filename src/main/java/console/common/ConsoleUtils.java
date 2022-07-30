@@ -30,10 +30,10 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
+import org.fisco.bcos.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.channel.model.ChannelPrococolExceiption;
 import org.fisco.bcos.sdk.channel.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
@@ -311,6 +311,7 @@ public class ConsoleUtils {
         String smBinFile = binDir + "/sm/" + contractName + ".bin";
         CodeGenMain.main(
                 Arrays.asList(
+                                "-v", "V2",
                                 "-a", abiFile,
                                 "-b", binFile,
                                 "-s", smBinFile,
