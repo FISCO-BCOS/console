@@ -858,15 +858,27 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         String contractName = solFile.getName().split("\\.")[0];
 
+        List<SolidityCompiler.Option> options = new ArrayList<>();
+        options.add(ABI);
+        options.add(BIN);
+        options.add(METADATA);
+
+        if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
+                        ConsoleUtils.COMPILE_WITH_BASE_PATH)
+                >= 0) {
+            SolidityCompiler.Option basePath =
+                    new SolidityCompiler.CustomOption(
+                            "base-path", solFile.getParentFile().getCanonicalPath());
+            options.add(basePath);
+        }
+
         // compile ecdsa
         SolidityCompiler.Result res =
                 SolidityCompiler.compile(
                         solFile,
                         (client.getCryptoType() == CryptoType.SM_TYPE),
                         true,
-                        ABI,
-                        BIN,
-                        METADATA);
+                        options.toArray(new SolidityCompiler.Option[0]));
 
         if (logger.isDebugEnabled()) {
             logger.debug(

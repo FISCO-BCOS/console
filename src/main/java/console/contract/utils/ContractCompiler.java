@@ -24,6 +24,8 @@ import console.contract.model.AbiAndBin;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.codegen.v3.exceptions.CodeGenException;
@@ -144,20 +146,32 @@ public class ContractCompiler {
             String librariesOption,
             boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
-        SolidityCompiler.CustomOption libraryOption = null;
+        SolidityCompiler.Option libraryOption = null;
         if (librariesOption != null && !librariesOption.equals("")) {
             libraryOption = new SolidityCompiler.CustomOption("libraries", librariesOption);
         }
 
         String contractName = contractFile.getName().split("\\.")[0];
-        SolidityCompiler.Result res = null;
-        if (libraryOption == null) {
-            res = SolidityCompiler.compile(contractFile, sm, true, ABI, BIN, METADATA);
-        } else {
-            res =
-                    SolidityCompiler.compile(
-                            contractFile, sm, true, ABI, BIN, METADATA, libraryOption);
+        List<SolidityCompiler.Option> options = new ArrayList<>();
+        options.add(ABI);
+        options.add(BIN);
+        options.add(METADATA);
+
+        if (libraryOption != null) {
+            options.add(libraryOption);
         }
+
+        if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
+                        ConsoleUtils.COMPILE_WITH_BASE_PATH)
+                >= 0) {
+            SolidityCompiler.Option basePath =
+                    new SolidityCompiler.CustomOption(
+                            "base-path", contractFile.getParentFile().getCanonicalPath());
+            options.add(basePath);
+        }
+        SolidityCompiler.Result res =
+                SolidityCompiler.compile(
+                        contractFile, sm, true, options.toArray(new SolidityCompiler.Option[0]));
 
         logger.debug(
                 " solidity compiler result, sm: {}, success: {}, output: {}, error: {}",
