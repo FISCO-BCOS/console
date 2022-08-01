@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
@@ -152,10 +153,8 @@ public class ContractCompiler {
         }
 
         String contractName = contractFile.getName().split("\\.")[0];
-        List<SolidityCompiler.Option> options = new ArrayList<>();
-        options.add(ABI);
-        options.add(BIN);
-        options.add(METADATA);
+        List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
+        List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
 
         if (libraryOption != null) {
             options.add(libraryOption);
