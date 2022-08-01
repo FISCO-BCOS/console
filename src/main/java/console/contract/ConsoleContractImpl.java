@@ -858,10 +858,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         String contractName = solFile.getName().split("\\.")[0];
 
-        List<SolidityCompiler.Option> options = new ArrayList<>();
-        options.add(ABI);
-        options.add(BIN);
-        options.add(METADATA);
+        List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
+        List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
 
         if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
                         ConsoleUtils.COMPILE_WITH_BASE_PATH)
