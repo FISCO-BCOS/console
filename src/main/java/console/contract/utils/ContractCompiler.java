@@ -237,43 +237,24 @@ public class ContractCompiler {
     public static void saveAbiAndBin(
             String groupId, AbiAndBin abiAndBin, String contractName, String contractAddress)
             throws IOException {
+        File saveDir =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + groupId
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress);
+        if (saveDir.exists()) {
+            FileUtils.deleteQuietly(saveDir);
+        }
         File abiPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + ABI_SUFFIX);
+                new File(saveDir.getAbsolutePath() + File.separator + contractName + ABI_SUFFIX);
         File binPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + BIN_SUFFIX);
+                new File(saveDir.getAbsolutePath() + File.separator + contractName + BIN_SUFFIX);
         File smBinPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + SM_SUFFIX
-                                + BIN_SUFFIX);
+                new File(saveDir.getAbsolutePath() + contractName + SM_SUFFIX + BIN_SUFFIX);
 
         if (Objects.nonNull(abiAndBin.getAbi()) && !abiAndBin.getAbi().isEmpty()) {
             FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());
