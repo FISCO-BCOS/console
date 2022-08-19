@@ -57,7 +57,7 @@ public class ConsoleUtils {
     public static final int ADDRESS_SIZE = 160;
     public static final int ADDRESS_LENGTH_IN_HEX = ADDRESS_SIZE >> 2;
     public static final String EMPTY_ADDRESS = "0x0000000000000000000000000000000000000000";
-    public static final String COMPILE_WITH_BASE_PATH = "0.6";
+    public static final String COMPILE_WITH_BASE_PATH = "0.8";
 
     public static void printJson(String jsonStr) {
         System.out.println(formatJson(jsonStr));
