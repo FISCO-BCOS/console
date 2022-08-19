@@ -163,6 +163,9 @@ public class ContractCompiler {
         if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
                         ConsoleUtils.COMPILE_WITH_BASE_PATH)
                 >= 0) {
+            logger.debug(
+                    "compileSolToBinAndAbi, basePath: {}",
+                    contractFile.getParentFile().getCanonicalPath());
             SolidityCompiler.Option basePath =
                     new SolidityCompiler.CustomOption(
                             "base-path", contractFile.getParentFile().getCanonicalPath());
