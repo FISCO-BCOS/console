@@ -108,7 +108,7 @@ mod asset {
         pub fn transfer(&mut self, from: String, to: String, value: u128) -> i16 {
             let mut ret_code: i16 = 0;
             let (ok, from_value) = self.select(from.clone());
-            if ok == true.into() {
+            if ok != true.into() {
                 ret_code = -1;
                 self.env().emit(TransferEvent {
                     ret_code,
