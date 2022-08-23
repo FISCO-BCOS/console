@@ -1,6 +1,7 @@
 [cryptoMaterial]
 
-certPath = "conf"                           # The certification path  
+certPath = "conf"                           # The certification path
+disableSsl = "false"                        # Communication with nodes without SSL
 useSMCrypto = "false"                       # RPC SM crypto type
 
 # The following configurations take the certPath by default if commented

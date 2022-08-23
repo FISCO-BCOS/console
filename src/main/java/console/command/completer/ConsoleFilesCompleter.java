@@ -36,6 +36,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
     public ConsoleFilesCompleter(File contractFile, boolean isWasm) {
         this(contractFile);
         this.isWasm = isWasm;
+        this.solidityCompleter = !isWasm;
     }
 
     public ConsoleFilesCompleter(Path contractPath) {
@@ -70,10 +71,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
         assert commandLine != null;
         assert candidates != null;
         String buffer = commandLine.word().substring(0, commandLine.wordCursor());
-        if (solidityCompleter) {
-            complete(buffer, reader, commandLine, candidates, true);
-        }
-        complete(buffer, reader, commandLine, candidates, false);
+        complete(buffer, reader, commandLine, candidates, solidityCompleter);
     }
 
     public void complete(
@@ -109,11 +107,11 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                 current = getUserDir();
             }
         }
-        try {
+        try (DirectoryStream<Path> directoryStream =
+                Files.newDirectoryStream(current, this::accept)) {
             if (!Files.exists(current)) {
                 return;
             }
-            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(current, this::accept);
             directoryStream.forEach(
                     p -> {
                         if (!Files.exists(p)) {
@@ -137,9 +135,6 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                                 return;
                             }
                         }
-                        if (solidityCompleter && completeSol && !isWasm) {
-                            value = value.substring(0, value.length() - SOL_STR.length());
-                        }
                         if (Files.isDirectory(p)) {
                             candidates.add(
                                     new Candidate(
@@ -158,6 +153,9 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                                             null,
                                             false));
                         } else {
+                            if (solidityCompleter && completeSol) {
+                                value = value.substring(0, value.length() - SOL_STR.length());
+                            }
                             candidates.add(
                                     new Candidate(
                                             value,
