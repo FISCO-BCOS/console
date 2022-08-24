@@ -46,7 +46,7 @@ dependencies {
     compile('org.jline:jline:3.12.0')
     compile('io.bretty:console-table-builder:1.2')
     compile('com.github.jsqlparser:jsqlparser:2.0')
-    compile('org.fisco-bcos.code-generator:bcos-code-generator:1.0.0-SNAPSHOT') {
+    compile('org.fisco-bcos.code-generator:bcos-code-generator:1.0.0') {
         exclude group: "org.fisco-bcos.java-sdk"
         exclude group: "org.slf4j"
     }
