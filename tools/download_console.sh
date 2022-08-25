@@ -52,7 +52,7 @@ while getopts "v:c:hs:" option;do
         ;;
     s)  solc_suffix="${OPTARG//[vV]/}"
         if ! echo "${only_solc_versions[*]}" | grep -i "${solc_suffix}" &>/dev/null; then
-            LOG_WARN "${solc_suffix} is not supported. Please set one of ${only_solc_versions[*]}"
+            LOG_WARN "Download solcJ ${solc_suffix} is not supported. Please set one of ${only_solc_versions[*]}"
             exit 1;
         fi
         only_solc_flag="true"
@@ -139,9 +139,9 @@ download_solcJ(){
 }
 
 parse_params "$@"
-if [ -z ${only_solc_flag} ];then
+if [ -z "${only_solc_flag}" ];then
   download_console
 fi
-if [ -n ${solcj_name} ];then
+if [ -n "${solcj_name}" ];then
   download_solcJ
 fi
