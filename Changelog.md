@@ -1,3 +1,33 @@
+## v3.0.0
+(2022-8-23)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+* 使用重构后的ABI Code Generator工具 `bcos-code-generator` ：https://github.com/FISCO-BCOS/code-generator
+* 新增 disableSSL 配置选项，支持与节点无SSL通信
+
+### 更新
+
+* 升级`fisco-bcos-java-sdk`到`3.0.0`版本，请阅读Java SDK v3.x+文档：[Java SDK v3.x+文档](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/sdk/java_sdk/index.html)
+* 升级`evm-static-analysis`到`1.0.0-rc3`
+* 升级`Log4j`等外部依赖到较新版本
+
+### 修复
+
+* 修复控制台合约路径补全问题
+* 修复控制台不更新本地ABI缓存的问题
+* 在Solidity 0.8.11以上支持`base-path`功能
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0)版本
+- 不兼容 FISCO BCOS 2.0+ 版本
+- 不兼容 FISCO BCOS 3.0-rc+ 版本
+
 ## v3.0.0-rc4
 (2022-7-1)
 
