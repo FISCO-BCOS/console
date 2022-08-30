@@ -24,10 +24,13 @@ import console.contract.model.AbiAndBin;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
-import org.fisco.bcos.sdk.v3.codegen.CodeGenUtils;
-import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
+import org.fisco.bcos.codegen.v3.exceptions.CodeGenException;
+import org.fisco.bcos.codegen.v3.utils.CodeGenUtils;
 import org.fisco.evm.analysis.EvmAnalyser;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
@@ -144,20 +147,33 @@ public class ContractCompiler {
             String librariesOption,
             boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
-        SolidityCompiler.CustomOption libraryOption = null;
+        SolidityCompiler.Option libraryOption = null;
         if (librariesOption != null && !librariesOption.equals("")) {
             libraryOption = new SolidityCompiler.CustomOption("libraries", librariesOption);
         }
 
         String contractName = contractFile.getName().split("\\.")[0];
-        SolidityCompiler.Result res = null;
-        if (libraryOption == null) {
-            res = SolidityCompiler.compile(contractFile, sm, true, ABI, BIN, METADATA);
-        } else {
-            res =
-                    SolidityCompiler.compile(
-                            contractFile, sm, true, ABI, BIN, METADATA, libraryOption);
+        List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
+        List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
+
+        if (libraryOption != null) {
+            options.add(libraryOption);
         }
+
+        if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
+                        ConsoleUtils.COMPILE_WITH_BASE_PATH)
+                >= 0) {
+            logger.debug(
+                    "compileSolToBinAndAbi, basePath: {}",
+                    contractFile.getParentFile().getCanonicalPath());
+            SolidityCompiler.Option basePath =
+                    new SolidityCompiler.CustomOption(
+                            "base-path", contractFile.getParentFile().getCanonicalPath());
+            options.add(basePath);
+        }
+        SolidityCompiler.Result res =
+                SolidityCompiler.compile(
+                        contractFile, sm, true, options.toArray(new SolidityCompiler.Option[0]));
 
         logger.debug(
                 " solidity compiler result, sm: {}, success: {}, output: {}, error: {}",
@@ -224,43 +240,24 @@ public class ContractCompiler {
     public static void saveAbiAndBin(
             String groupId, AbiAndBin abiAndBin, String contractName, String contractAddress)
             throws IOException {
+        File saveDir =
+                new File(
+                        COMPILED_PATH
+                                + File.separator
+                                + groupId
+                                + File.separator
+                                + contractName
+                                + File.separator
+                                + contractAddress);
+        if (saveDir.exists()) {
+            FileUtils.deleteQuietly(saveDir);
+        }
         File abiPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + ABI_SUFFIX);
+                new File(saveDir.getAbsolutePath() + File.separator + contractName + ABI_SUFFIX);
         File binPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + BIN_SUFFIX);
+                new File(saveDir.getAbsolutePath() + File.separator + contractName + BIN_SUFFIX);
         File smBinPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + SM_SUFFIX
-                                + BIN_SUFFIX);
+                new File(saveDir.getAbsolutePath() + contractName + SM_SUFFIX + BIN_SUFFIX);
 
         if (Objects.nonNull(abiAndBin.getAbi()) && !abiAndBin.getAbi().isEmpty()) {
             FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());

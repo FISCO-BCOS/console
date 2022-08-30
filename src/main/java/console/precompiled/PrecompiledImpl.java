@@ -21,7 +21,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
@@ -518,7 +517,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                                     ? wasmAbiAddress
                                     : Numeric.prependHexPrefix(contractAddress));
             abi = abiAndBin.getAbi();
-        } catch (IOException | CodeGenException e) {
+        } catch (IOException e) {
             if (logger.isErrorEnabled()) {
                 logger.error(
                         "load abi for contract failed, contract name: {}, address: {}, e: ",

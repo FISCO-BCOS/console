@@ -32,6 +32,8 @@ import java.util.Map;
 import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.fisco.bcos.codegen.v3.exceptions.CodeGenException;
+import org.fisco.bcos.codegen.v3.utils.CodeGenUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
@@ -42,8 +44,6 @@ import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinitionFactory;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ABIObject;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ContractABIDefinition;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
-import org.fisco.bcos.sdk.v3.codegen.CodeGenUtils;
-import org.fisco.bcos.sdk.v3.codegen.exceptions.CodeGenException;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
@@ -858,15 +858,25 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         String contractName = solFile.getName().split("\\.")[0];
 
+        List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
+        List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
+
+        if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
+                        ConsoleUtils.COMPILE_WITH_BASE_PATH)
+                >= 0) {
+            SolidityCompiler.Option basePath =
+                    new SolidityCompiler.CustomOption(
+                            "base-path", solFile.getParentFile().getCanonicalPath());
+            options.add(basePath);
+        }
+
         // compile ecdsa
         SolidityCompiler.Result res =
                 SolidityCompiler.compile(
                         solFile,
                         (client.getCryptoType() == CryptoType.SM_TYPE),
                         true,
-                        ABI,
-                        BIN,
-                        METADATA);
+                        options.toArray(new SolidityCompiler.Option[0]));
 
         if (logger.isDebugEnabled()) {
             logger.debug(
