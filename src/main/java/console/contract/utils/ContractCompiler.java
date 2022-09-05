@@ -55,6 +55,27 @@ public class ContractCompiler {
     public static final String BIN_SUFFIX = ".bin";
     public static final String ABI_SUFFIX = ".abi";
     public static final String WASM_SUFFIX = ".wasm";
+    public static String solcJVersion;
+
+    static {
+        if (solcJVersion == null) {
+            try {
+                String runGetVersionOutput = SolidityCompiler.runGetVersionOutput(false);
+                solcJVersion =
+                        runGetVersionOutput.substring(
+                                runGetVersionOutput.indexOf("Version: ") + "Version: ".length(),
+                                runGetVersionOutput.lastIndexOf("+commit"));
+                if (!solcJVersion.matches("^([0-9]\\d|[0-9])(\\.([0-9]\\d|\\d)){2}$")) {
+                    solcJVersion = org.fisco.solc.compiler.Version.version;
+                }
+            } catch (Exception e) {
+                logger.info(
+                        "Load solcJ version error, use default version string, version:{}",
+                        org.fisco.solc.compiler.Version.version);
+                solcJVersion = org.fisco.solc.compiler.Version.version;
+            }
+        }
+    }
 
     public static AbiAndBin compileContract(
             String contractNameOrPath, boolean sm, boolean isContractParallelAnalysis)
@@ -160,16 +181,17 @@ public class ContractCompiler {
             options.add(libraryOption);
         }
 
-        if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
-                        ConsoleUtils.COMPILE_WITH_BASE_PATH)
-                >= 0) {
+        if (solcJVersion.compareToIgnoreCase(ConsoleUtils.COMPILE_WITH_BASE_PATH) >= 0) {
             logger.debug(
-                    "compileSolToBinAndAbi, basePath: {}",
+                    "compileSolToBinAndAbi, solc version:{} ,basePath: {}",
+                    solcJVersion,
                     contractFile.getParentFile().getCanonicalPath());
             SolidityCompiler.Option basePath =
                     new SolidityCompiler.CustomOption(
                             "base-path", contractFile.getParentFile().getCanonicalPath());
             options.add(basePath);
+        } else {
+            logger.debug("compileSolToBinAndAbi, solc version:{}", solcJVersion);
         }
         SolidityCompiler.Result res =
                 SolidityCompiler.compile(
