@@ -855,13 +855,20 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
         List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
 
-        if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
-                        ConsoleUtils.COMPILE_WITH_BASE_PATH)
+        if (ContractCompiler.solcJVersion.compareToIgnoreCase(ConsoleUtils.COMPILE_WITH_BASE_PATH)
                 >= 0) {
+            logger.debug(
+                    "compileSolToBinAndAbi, solc version:{} ,basePath: {}",
+                    ContractCompiler.solcJVersion,
+                    solFile.getParentFile().getCanonicalPath());
             SolidityCompiler.Option basePath =
                     new SolidityCompiler.CustomOption(
                             "base-path", solFile.getParentFile().getCanonicalPath());
             options.add(basePath);
+        } else {
+            logger.debug(
+                    "compileSolToBinAndAbi, solc version:{}",
+                    org.fisco.solc.compiler.Version.version);
         }
 
         // compile ecdsa
