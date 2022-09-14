@@ -1,6 +1,14 @@
 package console.precompiled;
 
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.*;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.BFS_PRECOMPILED_ADDRESS;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.BFS_PRECOMPILED_NAME;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.COMMITTEE_MANAGER_ADDRESS;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.CONSENSUS_PRECOMPILED_ADDRESS;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.CONSENSUS_PRECOMPILED_NAME;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.SYS_CONFIG_PRECOMPILED_ADDRESS;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.SYS_CONFIG_PRECOMPILED_NAME;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.TABLE_MANAGER_PRECOMPILED_ADDRESS;
+import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.TABLE_MANAGER_PRECOMPILED_NAME;
 
 import console.common.Common;
 import console.common.ConsoleUtils;
@@ -53,15 +61,15 @@ public class PrecompiledImpl implements PrecompiledFace {
     private TableCRUDService tableCRUDService;
     private BFSService bfsService;
     private String pwd = "/apps";
-    public static Map<String, String> BFS_SYS_ADDRESS = new HashMap<>();
+    public static Map<String, String> bfsSysAddress = new HashMap<>();
 
     static {
-        BFS_SYS_ADDRESS.put(BFS_PRECOMPILED_NAME, BFS_PRECOMPILED_ADDRESS);
-        BFS_SYS_ADDRESS.put(CONSENSUS_PRECOMPILED_NAME, CONSENSUS_PRECOMPILED_ADDRESS);
-        BFS_SYS_ADDRESS.put(SYS_CONFIG_PRECOMPILED_NAME, SYS_CONFIG_PRECOMPILED_ADDRESS);
-        BFS_SYS_ADDRESS.put(TABLE_MANAGER_PRECOMPILED_NAME, TABLE_MANAGER_PRECOMPILED_ADDRESS);
-        BFS_SYS_ADDRESS.put("/sys/auth", COMMITTEE_MANAGER_ADDRESS);
-        BFS_SYS_ADDRESS.put("/sys/crypto_tools", "000000000000000000000000000000000000100a");
+        bfsSysAddress.put(BFS_PRECOMPILED_NAME, BFS_PRECOMPILED_ADDRESS);
+        bfsSysAddress.put(CONSENSUS_PRECOMPILED_NAME, CONSENSUS_PRECOMPILED_ADDRESS);
+        bfsSysAddress.put(SYS_CONFIG_PRECOMPILED_NAME, SYS_CONFIG_PRECOMPILED_ADDRESS);
+        bfsSysAddress.put(TABLE_MANAGER_PRECOMPILED_NAME, TABLE_MANAGER_PRECOMPILED_ADDRESS);
+        bfsSysAddress.put("/sys/auth", COMMITTEE_MANAGER_ADDRESS);
+        bfsSysAddress.put("/sys/crypto_tools", "000000000000000000000000000000000000100a");
     }
 
     public PrecompiledImpl(Client client) {
@@ -440,12 +448,14 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
         if (listPath.startsWith(ContractCompiler.BFS_SYS_PREFIX)
-                && BFS_SYS_ADDRESS.containsKey(listPath)) {
+                && bfsSysAddress.containsKey(listPath)) {
             // /sys/ bfsInfo
             System.out.println(
                     listPath
                             + ": built-in contract, you can use it's address in contract to call interfaces.");
-            System.out.println(listPath + " -> " + BFS_SYS_ADDRESS.get(listPath));
+            if (!client.isWASM()) {
+                System.out.println(listPath + " -> " + bfsSysAddress.get(listPath));
+            }
             return;
         }
         List<BfsInfo> fileInfoList;
