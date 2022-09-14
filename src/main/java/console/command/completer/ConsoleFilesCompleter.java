@@ -93,19 +93,11 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                     current = getUserHome().getParent().resolve(curBuf.substring(1));
                 }
             } else {
-                if (completeSol) {
-                    current = contractPath.resolve(curBuf);
-                } else {
-                    current = getUserDir().resolve(curBuf);
-                }
+                current = contractPath.resolve(curBuf);
             }
         } else {
             curBuf = "";
-            if (completeSol) {
-                current = contractPath;
-            } else {
-                current = getUserDir();
-            }
+            current = contractPath;
         }
         try (DirectoryStream<Path> directoryStream =
                 Files.newDirectoryStream(current, this::accept)) {
