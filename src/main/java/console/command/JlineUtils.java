@@ -91,6 +91,13 @@ public class JlineUtils {
                                 new StringsCompleter(command),
                                 new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
                                 new StringsCompleterIgnoreCase()));
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new StringsCompleter("-l"),
+                                currentPathCompleter,
+                                new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                                new StringsCompleterIgnoreCase()));
             }
             // contract address and method completer
             commands = Arrays.asList(ContractOpCommand.CALL.getCommand());
@@ -125,6 +132,13 @@ public class JlineUtils {
                                 new StringsCompleter(command),
                                 new ConsoleFilesCompleter(
                                         new File(ContractCompiler.LIQUID_PATH), true),
+                                currentPathCompleter,
+                                new StringsCompleterIgnoreCase()));
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new StringsCompleter("-l"),
+                                currentPathCompleter,
                                 new ConsoleFilesCompleter(
                                         new File(ContractCompiler.LIQUID_PATH), true),
                                 currentPathCompleter,

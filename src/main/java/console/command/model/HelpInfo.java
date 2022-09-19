@@ -218,6 +218,8 @@ public class HelpInfo {
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
             System.out.println(
+                    "* -l[Optional] -- deploy with link, link BFS path after deploy contract success.");
+            System.out.println(
                     "* --parallel-analysis/-p[Optional] -- parallel conflict analysis with the contract, default: no.");
         } else {
             System.out.println(
@@ -231,8 +233,6 @@ public class HelpInfo {
                     "* path -- The path of BFS where the contract will be located at, such as '/apps/liquid/YouContract/'.");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
-            System.out.println(
-                    "* --parallel-analysis/-p[Optional] -- parallel conflict analysis with the contract, default: no.");
         }
     }
 
@@ -415,14 +415,13 @@ public class HelpInfo {
 
     public static void listAbiHelp(boolean isWasm) {
         System.out.println("List functions and events info of the contract.");
-        System.out.println("Usage: listAbi [contractPath/contractName]");
+        System.out.println("Usage: listAbi [contractPath/contractName/contractAddress]");
         if (isWasm) {
-            System.out.println(
-                    "contractPath[Required] -- The BFS path of Liquid contract, this contract should be deployed in this console.");
+            System.out.println("contractAddress[Required] -- The BFS path of Liquid contract.");
             return;
         }
         System.out.println(
-                "contractPath/contractName[Required] -- The name or the path of a contract, if a name is specified, the contract should in the default directory \"contracts/solidity\"");
+                "contractPath/Name/Address[Required] -- The name or address or the path of a contract, if a name is specified, the contract should in the default directory \"contracts/solidity\"");
     }
 
     public static void changeDirHelp() {

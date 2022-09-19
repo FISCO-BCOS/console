@@ -46,7 +46,7 @@ public class ContractOpCommand extends BasicCategoryCommand {
 
     public static void setIsWasm(boolean wasm) {
         isWasm = wasm;
-        DEPLOY.setMinParamLength(wasm ? 3 : 1);
+        DEPLOY.setMinParamLength(wasm ? 2 : 1);
     }
 
     public static final CommandInfo DEPLOY =
