@@ -5,6 +5,7 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 
 import console.ConsoleInitializer;
+import console.command.category.ContractOpCommand;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.common.StatusCodeLink;
@@ -48,6 +49,7 @@ import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
+import org.fisco.bcos.sdk.v3.model.RetCode;
 import org.fisco.bcos.sdk.v3.transaction.manager.AssembleTransactionProcessorInterface;
 import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessorFactory;
 import org.fisco.bcos.sdk.v3.transaction.model.dto.CallResponse;
@@ -81,21 +83,68 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void deploy(String[] params, String pwd) throws Exception {
+        List<String> paramsList = new ArrayList<>(Arrays.asList(params));
+        String linkPath = null;
+        String address = null;
+        String abiString = null;
+        if (paramsList.contains("-l")) {
+            int index = paramsList.indexOf("-l");
+            // unique -l
+            if (paramsList.lastIndexOf("-l") != index) {
+                throw new Exception("option '-l' should be unique in one deploy!");
+            }
+            // -l follows param
+            if (index == paramsList.size() - 1) {
+                throw new Exception("option '-l' should follows path param");
+            }
+            if (paramsList.size() <= ContractOpCommand.DEPLOY.getMinParamLength() + 2) {
+                throw new Exception(
+                        "Expected at least "
+                                + ContractOpCommand.DEPLOY.getMinParamLength()
+                                + " without link arguments, but found "
+                                + (paramsList.size() - 3));
+            }
+            // get path
+            linkPath = ConsoleUtils.fixedBfsParam(paramsList.get(index + 1), pwd);
+            paramsList.remove(index);
+            paramsList.remove(index);
+            if (logger.isTraceEnabled()) {
+                logger.trace(
+                        "deploy with link, link path:{}, params:{}",
+                        linkPath,
+                        StringUtils.joinAll(",", params));
+            }
+            System.out.println("deploy contract with link, link path: " + linkPath);
+        }
         if (!client.isWASM()) {
-            String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
+            // solidity
+            String contractNameOrPath = ConsoleUtils.resolvePath(paramsList.get(1));
             String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-            if (contractName.endsWith(".wasm")) {
+            if (contractName.endsWith(ContractCompiler.WASM_SUFFIX)) {
                 throw new Exception("Error: you should not treat a WASM file as Solidity!");
             }
-            List<String> inputParams = Arrays.asList(params).subList(2, params.length);
-            deploySolidity(contractName, contractNameOrPath, inputParams);
+            List<String> inputParams = paramsList.subList(2, paramsList.size());
+            TransactionResponse transactionResponse =
+                    deploySolidity(contractName, contractNameOrPath, inputParams);
+            address = transactionResponse.getContractAddress();
+            abiString = ContractCompiler.loadAbi(client.getGroup(), contractName, address).getAbi();
         } else {
-            String binPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(params[1]));
-            if (binPath.endsWith(".sol")) {
+            // liquid
+            String wasmSuffix =
+                    client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE
+                            ? "_gm" + ContractCompiler.WASM_SUFFIX
+                            : ContractCompiler.WASM_SUFFIX;
+            String liquidDir = paramsList.get(1);
+            // test/test.wasm test/test_gm.wasm
+            String wasmBinPath = liquidDir + File.separator + liquidDir + wasmSuffix;
+            // test/test.abi
+            String abi = liquidDir + File.separator + liquidDir + ContractCompiler.ABI_SUFFIX;
+            String binPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(wasmBinPath));
+            if (binPath.endsWith(ContractCompiler.SOL_SUFFIX)) {
                 throw new Exception("Error: you should not treat a Solidity file as WASM!");
             }
-            String abiPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(params[2]));
-            String path = params[3];
+            String abiPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(abi));
+            String path = paramsList.get(2);
             try {
                 path = ConsoleUtils.fixedBfsParam(path, pwd);
                 if (path.startsWith(ContractCompiler.BFS_APPS_FULL_PREFIX)) {
@@ -106,9 +155,34 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("Please use 'deploy -h' to check deploy arguments.");
                 return;
             }
-            List<String> inputParams = Arrays.asList(params).subList(4, params.length);
-            deployWasm(binPath, abiPath, path, inputParams);
+            List<String> inputParams = paramsList.subList(3, paramsList.size());
+            TransactionResponse transactionResponse =
+                    deployWasm(binPath, abiPath, path, inputParams);
+            address = transactionResponse.getContractAddress();
+            abiString = FileUtils.readFileToString(new File(abiPath));
         }
+        if (linkPath != null && address != null && abiString != null) {
+            deployLink(linkPath, address, abiString);
+        }
+    }
+
+    private void deployLink(String linkPath, String address, String abiString) throws Exception {
+        List<String> levels = ConsoleUtils.path2Level(linkPath);
+        RetCode retCode;
+        if (levels.size() != 3 || !levels.get(0).equals("apps")) {
+            retCode = PrecompiledRetCode.CODE_FILE_INVALID_PATH;
+        } else {
+            String name = levels.get(1);
+            String version = levels.get(2);
+            retCode = bfsService.link(name, version, address, abiString);
+        }
+        if (retCode.getCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println("link contract " + address + " to path " + linkPath + " failed!");
+            System.out.println("return message: " + retCode.getMessage());
+            System.out.println("return code:" + retCode.getCode());
+            return;
+        }
+        System.out.println("link path: " + linkPath);
     }
 
     public void printReturnObject(
@@ -727,11 +801,13 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     public void listAbi(ConsoleInitializer consoleInitializer, String[] params, String pwd)
             throws Exception {
         String contractFileName = params[1];
-        String abiStr = "";
-        if (consoleInitializer.getClient().isWASM()) {
-            abiStr = getWasmAbi(consoleInitializer.getGroupID(), pwd, contractFileName);
-        } else {
-            abiStr = getSolidityAbi(contractFileName);
+        String abiStr = client.getABI(contractFileName).getABI();
+        if (abiStr.isEmpty()) {
+            if (consoleInitializer.getClient().isWASM()) {
+                abiStr = getWasmAbi(consoleInitializer.getGroupID(), pwd, contractFileName);
+            } else {
+                abiStr = getSolidityAbi(contractFileName);
+            }
         }
 
         // Read Content of the file

@@ -4,7 +4,9 @@ import java.io.File;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.jline.builtins.Completers;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
@@ -20,17 +22,18 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
     private static final Logger logger = LoggerFactory.getLogger(ConsoleFilesCompleter.class);
 
     public final String SOL_STR = ".sol";
-    public final String WASM_STR = ".wasm";
-    public final String ABI_STR = ".abi";
-    public final String TABLE_SOL = "Table.sol";
-    public final String KV_TABLE_SOL = "KVTable.sol";
+    private static final Set<String> EXCLUDE_SOL = new HashSet<>();
     private Path contractPath;
     private boolean solidityCompleter = true;
     private boolean isWasm = false;
 
+    static {
+        EXCLUDE_SOL.add("Table.sol");
+        EXCLUDE_SOL.add("Crypto.sol");
+    }
+
     public ConsoleFilesCompleter(File contractFile) {
-        super(new File("." + File.separator));
-        contractPath = contractFile.toPath();
+        this(contractFile.toPath());
     }
 
     public ConsoleFilesCompleter(File contractFile, boolean isWasm) {
@@ -68,18 +71,11 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
     @Override
     public void complete(
             LineReader reader, ParsedLine commandLine, final List<Candidate> candidates) {
-        assert commandLine != null;
-        assert candidates != null;
         String buffer = commandLine.word().substring(0, commandLine.wordCursor());
-        complete(buffer, reader, commandLine, candidates, solidityCompleter);
+        complete(buffer, reader, candidates);
     }
 
-    public void complete(
-            String buffer,
-            LineReader reader,
-            ParsedLine commandLine,
-            final List<Candidate> candidates,
-            boolean completeSol) {
+    public void complete(String buffer, LineReader reader, final List<Candidate> candidates) {
         Path current;
         String curBuf;
         String sep = getUserDir().getFileSystem().getSeparator();
@@ -106,61 +102,69 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
             }
             directoryStream.forEach(
                     p -> {
-                        if (!Files.exists(p)) {
-                            return;
-                        }
-                        String value = curBuf + p.getFileName().toString();
-                        // filter not sol file and Table.sol and KVTable.sol
-                        if (TABLE_SOL.equals(value) || KV_TABLE_SOL.equals(value)) {
-                            return;
-                        }
-                        if (isWasm) {
-                            if (!Files.isDirectory(p)
-                                    && !value.endsWith(WASM_STR)
-                                    && !value.endsWith(ABI_STR)) {
-                                return;
-                            }
-                        } else {
-                            if (solidityCompleter
-                                    && !Files.isDirectory(p)
-                                    && !value.endsWith(SOL_STR)) {
-                                return;
-                            }
-                        }
-                        if (Files.isDirectory(p)) {
-                            candidates.add(
-                                    new Candidate(
-                                            value
-                                                    + (reader.isSet(
-                                                                    LineReader.Option
-                                                                            .AUTO_PARAM_SLASH)
-                                                            ? sep
-                                                            : ""),
-                                            getDisplay(reader.getTerminal(), p),
-                                            null,
-                                            null,
-                                            reader.isSet(LineReader.Option.AUTO_REMOVE_SLASH)
-                                                    ? sep
-                                                    : null,
-                                            null,
-                                            false));
-                        } else {
-                            if (solidityCompleter && completeSol) {
-                                value = value.substring(0, value.length() - SOL_STR.length());
-                            }
-                            candidates.add(
-                                    new Candidate(
-                                            value,
-                                            getDisplay(reader.getTerminal(), p),
-                                            null,
-                                            null,
-                                            null,
-                                            null,
-                                            true));
-                        }
+                        if (isWasm) filterDisplayLiquid(reader, candidates, curBuf, p);
+                        else filterDisplaySolidity(reader, candidates, curBuf, p);
                     });
         } catch (Exception e) {
             logger.error(" message: {}, e: {}", e.getMessage(), e);
         }
+    }
+
+    private void filterDisplaySolidity(
+            LineReader reader, List<Candidate> candidates, String curBuf, Path p) {
+        if (!Files.exists(p)) {
+            return;
+        }
+        String value = curBuf + p.getFileName().toString();
+        // filter sol interface file
+        if (EXCLUDE_SOL.contains(value)) {
+            return;
+        }
+
+        if (solidityCompleter && !Files.isDirectory(p) && !value.endsWith(SOL_STR)) {
+            return;
+        }
+
+        if (Files.isDirectory(p)) {
+            candidates.add(
+                    new Candidate(
+                            value
+                                    + (reader.isSet(LineReader.Option.AUTO_PARAM_SLASH)
+                                            ? File.separator
+                                            : ""),
+                            getDisplay(reader.getTerminal(), p),
+                            null,
+                            null,
+                            reader.isSet(LineReader.Option.AUTO_REMOVE_SLASH)
+                                    ? File.separator
+                                    : null,
+                            null,
+                            false));
+        } else {
+            value = value.substring(0, value.length() - SOL_STR.length());
+            candidates.add(
+                    new Candidate(
+                            value,
+                            getDisplay(reader.getTerminal(), p),
+                            null,
+                            null,
+                            null,
+                            null,
+                            true));
+        }
+    }
+
+    private void filterDisplayLiquid(
+            LineReader reader, List<Candidate> candidates, String curBuf, Path p) {
+        if (!Files.exists(p)) {
+            return;
+        }
+        String value = curBuf + p.getFileName().toString();
+        if (!Files.isDirectory(p)) {
+            return;
+        }
+        candidates.add(
+                new Candidate(
+                        value, getDisplay(reader.getTerminal(), p), null, null, null, null, false));
     }
 }
