@@ -531,7 +531,7 @@ public class PrecompiledImpl implements PrecompiledFace {
                         : params[2];
         List<String> path2Level = ConsoleUtils.path2Level(linkPath);
         if (path2Level.size() != 3 || !path2Level.get(0).equals("apps")) {
-            System.out.println("Link must in /apps, and not support multi-level directory.");
+            System.out.println("Link must locate in /apps, and only support 3-level directory.");
             System.out.println("Example: ln /apps/Name/Version 0x1234567890");
             return;
         }

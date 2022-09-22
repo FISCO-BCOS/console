@@ -89,14 +89,16 @@ public class JlineUtils {
                 completers.add(
                         new ArgumentCompleter(
                                 new StringsCompleter(command),
-                                new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                                new ConsoleFilesCompleter(
+                                        new File(ContractCompiler.SOLIDITY_PATH), false),
                                 new StringsCompleterIgnoreCase()));
                 completers.add(
                         new ArgumentCompleter(
                                 new StringsCompleter(command),
                                 new StringsCompleter("-l"),
                                 currentPathCompleter,
-                                new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                                new ConsoleFilesCompleter(
+                                        new File(ContractCompiler.SOLIDITY_PATH), false),
                                 new StringsCompleterIgnoreCase()));
             }
             // contract address and method completer

@@ -106,6 +106,13 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             // get path
             linkPath = ConsoleUtils.fixedBfsParam(paramsList.get(index + 1), pwd);
+            List<String> levels = ConsoleUtils.path2Level(linkPath);
+            if (levels.size() != 3 || !levels.get(0).equals("apps")) {
+                System.out.println(
+                        "Link must locate in /apps, and only support 3-level directory.");
+                System.out.println("Example: ln /apps/Name/Version 0x1234567890");
+                return;
+            }
             paramsList.remove(index);
             paramsList.remove(index);
             if (logger.isTraceEnabled()) {
@@ -136,13 +143,15 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             : ContractCompiler.WASM_SUFFIX;
             String liquidDir = paramsList.get(1);
             // test/test.wasm test/test_gm.wasm
-            String wasmBinPath = liquidDir + File.separator + liquidDir + wasmSuffix;
+            String wasmBinPath =
+                    liquidDir + File.separator + FilenameUtils.getBaseName(liquidDir) + wasmSuffix;
             // test/test.abi
-            String abi = liquidDir + File.separator + liquidDir + ContractCompiler.ABI_SUFFIX;
+            String abi =
+                    liquidDir
+                            + File.separator
+                            + FilenameUtils.getBaseName(liquidDir)
+                            + ContractCompiler.ABI_SUFFIX;
             String binPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(wasmBinPath));
-            if (binPath.endsWith(ContractCompiler.SOL_SUFFIX)) {
-                throw new Exception("Error: you should not treat a Solidity file as WASM!");
-            }
             String abiPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(abi));
             String path = paramsList.get(2);
             try {
@@ -168,7 +177,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     private void deployLink(String linkPath, String address, String abiString) throws Exception {
         List<String> levels = ConsoleUtils.path2Level(linkPath);
-        RetCode retCode;
+        final RetCode retCode;
         if (levels.size() != 3 || !levels.get(0).equals("apps")) {
             retCode = PrecompiledRetCode.CODE_FILE_INVALID_PATH;
         } else {
