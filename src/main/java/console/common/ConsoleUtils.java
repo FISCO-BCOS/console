@@ -515,9 +515,15 @@ public class ConsoleUtils {
         }
         filePath = ConsoleUtils.removeSolSuffix(filePath);
         filePath += SOL_SUFFIX;
-        /** Check that the file exists in the default directory first */
+        // check again path file exist: contracts/solidity/Asset + .sol
+        solFile = new File(filePath);
+        if (solFile.exists()) {
+            return solFile;
+        }
+
+        // Check that the file exists in the default directory first
         solFile = new File(SOLIDITY_PATH + File.separator + filePath);
-        /** file not exist */
+        // file not exist
         if (!solFile.exists() && checkExist) {
             throw new ConsoleMessageException(solFileNameOrPath + " does not exist ");
         }
@@ -531,9 +537,9 @@ public class ConsoleUtils {
         if (liquidFile.exists()) {
             return liquidFile.getAbsolutePath();
         }
-        /** Check that the file exists in the default directory first */
+        // Check that the file exists in the default directory first
         liquidFile = new File(LIQUID_PATH + File.separator + liquidFileNameOrPath);
-        /** file not exist */
+        // file not exist
         if (!liquidFile.exists()) {
             throw new ConsoleMessageException(liquidFileNameOrPath + " does not exist ");
         }

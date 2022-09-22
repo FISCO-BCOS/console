@@ -72,10 +72,17 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
     public void complete(
             LineReader reader, ParsedLine commandLine, final List<Candidate> candidates) {
         String buffer = commandLine.word().substring(0, commandLine.wordCursor());
-        complete(buffer, reader, candidates);
+        // complete contract path
+        complete(buffer, reader, candidates, true);
+        // complete userDir
+        complete(buffer, reader, candidates, false);
     }
 
-    public void complete(String buffer, LineReader reader, final List<Candidate> candidates) {
+    public void complete(
+            String buffer,
+            LineReader reader,
+            final List<Candidate> candidates,
+            boolean completeSol) {
         Path current;
         String curBuf;
         String sep = getUserDir().getFileSystem().getSeparator();
@@ -89,12 +96,13 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                     current = getUserHome().getParent().resolve(curBuf.substring(1));
                 }
             } else {
-                current = contractPath.resolve(curBuf);
+                current = completeSol ? contractPath.resolve(curBuf) : getUserDir().resolve(curBuf);
             }
         } else {
             curBuf = "";
-            current = contractPath;
+            current = completeSol ? contractPath : getUserDir();
         }
+
         try (DirectoryStream<Path> directoryStream =
                 Files.newDirectoryStream(current, this::accept)) {
             if (!Files.exists(current)) {
@@ -165,6 +173,15 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
         }
         candidates.add(
                 new Candidate(
-                        value, getDisplay(reader.getTerminal(), p), null, null, null, null, false));
+                        value
+                                + (reader.isSet(LineReader.Option.AUTO_PARAM_SLASH)
+                                        ? File.separator
+                                        : ""),
+                        getDisplay(reader.getTerminal(), p),
+                        null,
+                        null,
+                        reader.isSet(LineReader.Option.AUTO_REMOVE_SLASH) ? File.separator : null,
+                        null,
+                        false));
     }
 }
