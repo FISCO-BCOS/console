@@ -86,9 +86,16 @@ public class ContractCompiler {
         if (contractFile.exists() && !contractFile.isDirectory()) {
             return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
         }
+
+        // try again with .sol suffix
+        contractFile = new File(contractNameOrPath + SOL_SUFFIX);
+        if (contractFile.exists() && !contractFile.isDirectory()) {
+            return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
+        }
+
         // the contractName
         String contractFileName = ConsoleUtils.removeSolSuffix(contractNameOrPath) + SOL_SUFFIX;
-        contractFile = new File(SOLIDITY_PATH + "/" + contractFileName);
+        contractFile = new File(SOLIDITY_PATH + File.separator + contractFileName);
         if (!contractFile.exists()) {
             throw new CompileContractException(
                     "There is no " + contractFileName + " in the directory of " + SOLIDITY_PATH);
