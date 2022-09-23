@@ -14,6 +14,7 @@ import org.jline.reader.ParsedLine;
 import org.jline.terminal.Terminal;
 import org.jline.utils.AttributedStringBuilder;
 import org.jline.utils.AttributedStyle;
+import org.jline.utils.StyleResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,7 +49,8 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
     }
 
     @Override
-    protected String getDisplay(Terminal terminal, Path p) {
+    protected String getDisplay(
+            Terminal terminal, Path p, StyleResolver resolver, String separator) {
         String name = p.getFileName().toString();
         // do not display .sol
         if (name.endsWith(SOL_STR)) {
@@ -57,7 +59,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
         if (Files.isDirectory(p)) {
             AttributedStringBuilder sb = new AttributedStringBuilder();
             sb.styled(AttributedStyle.BOLD.foreground(AttributedStyle.RED), name);
-            sb.append("/");
+            sb.append(separator);
             name = sb.toAnsi(terminal);
         } else if (Files.isSymbolicLink(p)) {
             AttributedStringBuilder sb = new AttributedStringBuilder();
@@ -140,7 +142,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                                     + (reader.isSet(LineReader.Option.AUTO_PARAM_SLASH)
                                             ? File.separator
                                             : ""),
-                            getDisplay(reader.getTerminal(), p),
+                            getDisplay(reader.getTerminal(), p, null, File.separator),
                             null,
                             null,
                             reader.isSet(LineReader.Option.AUTO_REMOVE_SLASH)
@@ -153,7 +155,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
             candidates.add(
                     new Candidate(
                             value,
-                            getDisplay(reader.getTerminal(), p),
+                            getDisplay(reader.getTerminal(), p, null, File.separator),
                             null,
                             null,
                             null,
@@ -177,7 +179,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
                                 + (reader.isSet(LineReader.Option.AUTO_PARAM_SLASH)
                                         ? File.separator
                                         : ""),
-                        getDisplay(reader.getTerminal(), p),
+                        getDisplay(reader.getTerminal(), p, null, File.separator),
                         null,
                         null,
                         reader.isSet(LineReader.Option.AUTO_REMOVE_SLASH) ? File.separator : null,
