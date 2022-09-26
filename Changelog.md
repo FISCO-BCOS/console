@@ -22,7 +22,7 @@
 
 ### 兼容性说明
 
-- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0)版本
+- 支持[FISCO BCOS 3.0.1版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.1)
 - 不兼容 FISCO BCOS 2.0+ 版本
 - 不兼容 FISCO BCOS 3.0-rc+ 版本
 
