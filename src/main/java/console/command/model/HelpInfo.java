@@ -218,7 +218,8 @@ public class HelpInfo {
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
             System.out.println(
-                    "* -l[Optional] -- deploy with link, link BFS path after deploy contract success.");
+                    "* -l[Optional] -- deploy with link, link BFS path after deploy contract success, \n"
+                            + "                  link must locate under '/apps', and be composed of contract name and version ");
             System.out.println(
                     "* --parallel-analysis/-p[Optional] -- parallel conflict analysis with the contract, default: no.");
         } else {
@@ -231,6 +232,9 @@ public class HelpInfo {
                     "* abi -- The path of ABI file after contract being compiled via cargo-liquid.");
             System.out.println(
                     "* path -- The path of BFS where the contract will be located at, such as '/apps/liquid/YouContract/'.");
+            System.out.println(
+                    "* -l[Optional] -- deploy with link, link BFS path after deploy contract success, \n"
+                            + "                  link must locate under '/apps', and be composed of contract name and version ");
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
         }
@@ -264,8 +268,8 @@ public class HelpInfo {
         System.out.println(
                 "* path[Required] -- The BFS path of link, link must locate under '/apps', and be composed of contract name and version.");
         System.out.println("* contractAddress[Required] -- The address of a contract.");
-        System.out.println("Example: (if in wasm)\nln /apps/Name/Version 0x1234567890");
         System.out.println("Example: (if in evm)\nln /apps/Name/Version /apps/test/HelloWorld");
+        System.out.println("Example: (if in wasm)\nln /apps/Name/Version 0x1234567890");
     }
 
     public static void addObserverHelp() {
