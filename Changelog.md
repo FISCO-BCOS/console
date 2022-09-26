@@ -1,3 +1,31 @@
+## v3.0.1
+(2022-9-26)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+* 新增 `deploy` 命令的 '-l' 选项，支持部署成功后在指定文件下建立软链接
+* listAbi支持通过合约地址参数列出ABI
+
+### 更新
+
+* 升级`fisco-bcos-java-sdk`到`3.0.1`版本，请阅读Java SDK v3.x+文档：[Java SDK v3.x+文档](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/sdk/java_sdk/index.html)
+* 部署Liquid合约只需要输入合约所在文件夹即可
+
+### 修复
+
+* 修复控制台部署时合约路径补全问题
+* 修复控制台部署Liquid时文件路径找不到的问题
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0)版本
+- 不兼容 FISCO BCOS 2.0+ 版本
+- 不兼容 FISCO BCOS 3.0-rc+ 版本
+
 ## v3.0.0
 (2022-8-23)
 
