@@ -163,9 +163,35 @@ public class AuthOpCommand extends BasicCategoryCommand {
             new CommandInfo(
                     "removeNodeProposal",
                     "Create a proposal to committee, which attempt to remove a consensus node.",
-                    HelpInfo::addObserverProposalHelp,
+                    HelpInfo::removeNodeProposalHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().createRemoveNodeProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo FREEZE_ACCOUNT_PROPOSAL =
+            new CommandInfo(
+                    "freezeAccountProposal",
+                    "Create a proposal to committee, which attempt to freeze account.",
+                    HelpInfo::freezeAccountProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createFreezeAccountProposal(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo UNFREEZE_ACCOUNT_PROPOSAL =
+            new CommandInfo(
+                    "unfreezeAccountProposal",
+                    "Create a proposal to committee, which attempt to unfreeze account.",
+                    HelpInfo::unfreezeAccountProposalHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().createUnfreezeAccountProposal(params),
                     1,
                     1,
                     false,
@@ -414,6 +440,19 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     HelpInfo::getContractStatusHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().getContractStatus(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo GET_ACCOUNT_STATUS =
+            new CommandInfo(
+                    "getAccountStatus",
+                    "Get the status of the account.",
+                    HelpInfo::getAccountStatusHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getAccountStatus(params),
                     1,
                     1,
                     false,
