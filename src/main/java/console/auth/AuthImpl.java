@@ -9,6 +9,7 @@ import java.util.Objects;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple3;
 import org.fisco.bcos.sdk.v3.contract.auth.manager.AuthManager;
+import org.fisco.bcos.sdk.v3.contract.auth.po.AccessStatus;
 import org.fisco.bcos.sdk.v3.contract.auth.po.AuthType;
 import org.fisco.bcos.sdk.v3.contract.auth.po.CommitteeInfo;
 import org.fisco.bcos.sdk.v3.contract.auth.po.GovernorInfo;
@@ -20,6 +21,7 @@ import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
 import org.fisco.bcos.sdk.v3.transaction.codec.decode.ReceiptParser;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionException;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,6 +213,30 @@ public class AuthImpl implements AuthFace {
         }
         BigInteger proposalId = authManager.createRmNodeProposal(nodeId);
         System.out.println("Remove node proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
+    }
+
+    @Override
+    public void createFreezeAccountProposal(String[] params) throws Exception {
+        String account = params[1];
+        if (!AddressUtils.isValidAddress(account)) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
+            return;
+        }
+        BigInteger proposalId = authManager.createSetAccountProposal(account, AccessStatus.Freeze);
+        System.out.println("Freeze account proposal created, ID is: " + proposalId);
+        showProposalInfo(proposalId);
+    }
+
+    @Override
+    public void createUnfreezeAccountProposal(String[] params) throws Exception {
+        String account = params[1];
+        if (!AddressUtils.isValidAddress(account)) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
+            return;
+        }
+        BigInteger proposalId = authManager.createSetAccountProposal(account, AccessStatus.Normal);
+        System.out.println("Unfreeze account proposal created, ID is: " + proposalId);
         showProposalInfo(proposalId);
     }
 
@@ -584,6 +610,14 @@ public class AuthImpl implements AuthFace {
         checkValidAddress(contract, "contractAddress");
         Boolean isAvailable = authManager.contractAvailable(contract);
         System.out.println(isAvailable ? "Available" : "Freeze");
+    }
+
+    @Override
+    public void getAccountStatus(String[] params) throws Exception {
+        String account = params[1];
+        checkValidAddress(account, "accountAddress");
+        Boolean isNormal = authManager.accountAvailable(account);
+        System.out.println("Account " + account + " status: " + (isNormal ? "Normal" : "Abnormal"));
     }
 
     void checkValidAddress(String address, String valueName) throws TransactionException {
