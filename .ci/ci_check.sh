@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+default_tag=v3.0.1
 LOG_INFO() {
     local content=${1}
     echo -e "\033[32m ${content}\033[0m"
@@ -10,15 +11,22 @@ download_build_chain()
 {
   tag=$(curl -sS "https://gitee.com/api/v5/repos/FISCO-BCOS/FISCO-BCOS/tags" | grep -oe "\"name\":\"v[2-9]*\.[0-9]*\.[0-9]*\"" | cut -d \" -f 4 | sort -V | tail -n 1)
   LOG_INFO "--- current tag: $tag"
-  curl -LO "https://github.com/FISCO-BCOS/FISCO-BCOS/releases/download/${tag}/build_chain.sh" && chmod u+x build_chain.sh
+  if [[ -z ${tag} ]]; then
+    LOG_INFO "tag is empty, use default tag: ${default_tag}"
+    tag="${default_tag}"
+  fi
+  curl -#LO "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/FISCO-BCOS/releases/${tag}/build_chain.sh" && chmod u+x build_chain.sh
 }
 
 prepare_environment()
 {
   ## prepare resources for integration test
-  mkdir -p src/test/resources/
-  mkdir -p conf
-  cp -r nodes/127.0.0.1/sdk/* conf
+  pwd
+  ls -a
+  mkdir -p "./src/integration-test/resources/conf"
+  cp -r nodes/127.0.0.1/sdk/* ./src/integration-test/resources/conf
+  cp ./src/integration-test/resources/config-example.toml ./src/integration-test/resources/config.toml
+  cp -r ./src/main/resources/contract ./contracts
 }
 
 build_node()
@@ -57,8 +65,8 @@ bash gradlew integrationTest --info
 
 #cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
 #LOG_INFO "------ download_build_chain---------"
-#download_build_chain
+download_build_chain
 #LOG_INFO "------ check_standard_node---------"
-#check_standard_node
+check_standard_node
 #LOG_INFO "------ check_basic---------"
-#check_basic
+check_basic

@@ -45,7 +45,7 @@ dependencies {
     compile('commons-cli:commons-cli:1.5.0')
     compile('org.jline:jline:3.21.0')
     compile('io.bretty:console-table-builder:1.2')
-    compile('com.github.jsqlparser:jsqlparser:4.5')
+    compile('com.github.jsqlparser:jsqlparser:2.0')
     compile('org.fisco-bcos.code-generator:bcos-code-generator:1.0.0') {
         exclude group: "org.fisco-bcos.java-sdk"
         exclude group: "org.slf4j"
@@ -75,7 +75,6 @@ sourceSets {
             compileClasspath += main.output + test.output
             runtimeClasspath += main.output + test.output
             srcDir file('src/integration-test/java')
-            srcDir file('sdk-demo/src/main')
         }
         resources.srcDir file('src/integration-test/resources')
     }

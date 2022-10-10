@@ -12,11 +12,15 @@ public class TestBase {
     protected static PrecompiledFace precompiledFace;
     protected static ConsoleContractFace consoleContractFace;
     protected static ConsoleInitializer consoleInitializer;
+    protected static boolean isWasm;
+    protected static boolean isAuthCheck;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
         consoleInitializer = new ConsoleInitializer();
         consoleInitializer.init(new String[0]);
+        isWasm = consoleInitializer.getClient().isWASM();
+        isAuthCheck = consoleInitializer.getClient().isAuthCheck();
         consoleClientFace = consoleInitializer.getConsoleClientFace();
         precompiledFace = consoleInitializer.getPrecompiledFace();
         consoleContractFace = consoleInitializer.getConsoleContractFace();

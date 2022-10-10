@@ -1,6 +1,6 @@
 package console;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import console.command.model.WelcomeInfo;
 import org.junit.Rule;
@@ -14,6 +14,6 @@ public class WelcomeInfoTest extends TestBase {
     @Test
     public void welcome() {
         WelcomeInfo.welcome();
-        assertTrue(!"".equals(log.getLog()));
+        assertFalse(log.getLog().isEmpty());
     }
 }

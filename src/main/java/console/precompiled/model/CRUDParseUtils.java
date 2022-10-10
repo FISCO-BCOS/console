@@ -2,6 +2,9 @@ package console.precompiled.model;
 
 import console.exception.ConsoleMessageException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -83,7 +86,7 @@ public class CRUDParseUtils {
         List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
         // parse key from ColumnDefinition
         for (ColumnDefinition definition : columnDefinitions) {
-            List<String> columnSpecStrings = definition.getColumnSpecs();
+            List<String> columnSpecStrings = definition.getColumnSpecStrings();
             if (columnSpecStrings == null) {
                 continue;
             }
@@ -166,6 +169,16 @@ public class CRUDParseUtils {
             throw new ConsoleMessageException("Please provide only one table name.");
         }
         return tableList.get(0);
+    }
+
+    public static void main(String[] args) throws JSQLParserException, ConsoleMessageException {
+        String sql = "insert into t_demo (name, item_id, item_name) values (fruit, 1, apple1)";
+        Map<String, List<String>> desc = new HashMap<>();
+        desc.put(PrecompiledConstant.KEY_FIELD_NAME, Collections.singletonList("name"));
+        desc.put(PrecompiledConstant.VALUE_FIELD_NAME, Arrays.asList("item_id", "item_name"));
+        Table table = new Table();
+        Entry entry = parseInsert(sql, table, desc);
+        System.out.println(entry);
     }
 
     public static Entry parseInsert(String sql, Table table, Map<String, List<String>> tableDesc)
@@ -429,8 +442,8 @@ public class CRUDParseUtils {
         Update update = (Update) statement;
 
         // parse table name
-        net.sf.jsqlparser.schema.Table tables = update.getTable();
-        String tableName = tables.getName();
+        List<net.sf.jsqlparser.schema.Table> tables = update.getTables();
+        String tableName = tables.get(0).getName();
         table.setTableName(tableName);
 
         // parse columns
