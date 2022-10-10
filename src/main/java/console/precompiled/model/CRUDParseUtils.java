@@ -83,7 +83,7 @@ public class CRUDParseUtils {
         List<ColumnDefinition> columnDefinitions = createTable.getColumnDefinitions();
         // parse key from ColumnDefinition
         for (ColumnDefinition definition : columnDefinitions) {
-            List<String> columnSpecStrings = definition.getColumnSpecs();
+            List<String> columnSpecStrings = definition.getColumnSpecStrings();
             if (columnSpecStrings == null) {
                 continue;
             }
@@ -429,8 +429,8 @@ public class CRUDParseUtils {
         Update update = (Update) statement;
 
         // parse table name
-        net.sf.jsqlparser.schema.Table tables = update.getTable();
-        String tableName = tables.getName();
+        List<net.sf.jsqlparser.schema.Table> tables = update.getTables();
+        String tableName = tables.get(0).getName();
         table.setTableName(tableName);
 
         // parse columns
