@@ -30,7 +30,7 @@ jobs:
         run: ./gradlew.bat build
       - name: run integration testing
         if: runner.os != 'Windows'
-        run: /bin/bash .ci/ci_check.sh
+        run: /bin/bash -x .ci/ci_check.sh
 
   build-centos:
     name: build-centos
@@ -46,8 +46,8 @@ jobs:
         with:
           fetch-depth: 5
       - name: install CentOS dependencies
-        run: yum install -y epel-release centos-release-scl which git openssl-devel openssl java java-devel
+        run: yum install -y epel-release centos-release-scl which git openssl-devel openssl java java-devel wget
       - name: run integration testing
-        run: /bin/bash .ci/ci_check.sh
+        run: /bin/bash -x .ci/ci_check.sh
       - name: upload coverage
         run: curl -LO https://codecov.io/bash && /bin/bash ./bash
