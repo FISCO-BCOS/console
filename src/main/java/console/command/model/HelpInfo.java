@@ -300,12 +300,20 @@ public class HelpInfo {
 
     public static void freezeAccountHelp() {
         System.out.println("Freeze account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
         System.out.println("Usage: \nfreezeAccount account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
     public static void unfreezeAccountHelp() {
         System.out.println("Unfreeze account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
         System.out.println("Usage: \nunfreezeAccount account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
@@ -653,28 +661,6 @@ public class HelpInfo {
         System.out.println("Usage: removeNodeProposal [nodeID]");
         System.out.println(
                 "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
-    }
-
-    public static void freezeAccountProposalHelp() {
-        System.out.println("Create a proposal to committee, which attempt to freeze account.");
-        System.out.println(
-                "\033[32m"
-                        + "[Note]: this command is only available for governors of committee."
-                        + "\033[m");
-        ConsoleUtils.singleLine();
-        System.out.println("Usage: \nfreezeAccountProposal accountAddress");
-        System.out.println("* accountAddress: 20 Bytes - The address of a account.");
-    }
-
-    public static void unfreezeAccountProposalHelp() {
-        System.out.println("Create a proposal to committee, which attempt to unfreeze account.");
-        System.out.println(
-                "\033[32m"
-                        + "[Note]: this command is only available for governors of committee."
-                        + "\033[m");
-        ConsoleUtils.singleLine();
-        System.out.println("Usage: \nunfreezeAccountProposal accountAddress");
-        System.out.println("* accountAddress: 20 Bytes - The address of a account.");
     }
 
     public static void setSysConfigProposalHelp() {

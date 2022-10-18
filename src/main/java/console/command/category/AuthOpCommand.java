@@ -172,32 +172,6 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     false,
                     true);
 
-    public static final CommandInfo FREEZE_ACCOUNT_PROPOSAL =
-            new CommandInfo(
-                    "freezeAccountProposal",
-                    "Create a proposal to committee, which attempt to freeze account.",
-                    HelpInfo::freezeAccountProposalHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getAuthFace().createFreezeAccountProposal(params),
-                    1,
-                    1,
-                    false,
-                    false,
-                    true);
-
-    public static final CommandInfo UNFREEZE_ACCOUNT_PROPOSAL =
-            new CommandInfo(
-                    "unfreezeAccountProposal",
-                    "Create a proposal to committee, which attempt to unfreeze account.",
-                    HelpInfo::unfreezeAccountProposalHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getAuthFace().createUnfreezeAccountProposal(params),
-                    1,
-                    1,
-                    false,
-                    false,
-                    true);
-
     public static final CommandInfo SET_SYS_CONFIG_PROPOSAL =
             new CommandInfo(
                     "setSysConfigProposal",
@@ -440,6 +414,32 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     HelpInfo::getContractStatusHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().getContractStatus(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo FREEZE_ACCOUNT =
+            new CommandInfo(
+                    "freezeAccount",
+                    "Freeze a specific contract.",
+                    HelpInfo::freezeAccountHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().freezeAccount(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo UNFREEZE_ACCOUNT =
+            new CommandInfo(
+                    "unfreezeAccount",
+                    "Unfreeze a specific account.",
+                    HelpInfo::unfreezeAccountHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().unfreezeAccount(params),
                     1,
                     1,
                     false,
