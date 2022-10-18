@@ -217,30 +217,6 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
-    public void createFreezeAccountProposal(String[] params) throws Exception {
-        String account = params[1];
-        if (!AddressUtils.isValidAddress(account)) {
-            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
-            return;
-        }
-        BigInteger proposalId = authManager.createSetAccountProposal(account, AccessStatus.Freeze);
-        System.out.println("Freeze account proposal created, ID is: " + proposalId);
-        showProposalInfo(proposalId);
-    }
-
-    @Override
-    public void createUnfreezeAccountProposal(String[] params) throws Exception {
-        String account = params[1];
-        if (!AddressUtils.isValidAddress(account)) {
-            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
-            return;
-        }
-        BigInteger proposalId = authManager.createSetAccountProposal(account, AccessStatus.Normal);
-        System.out.println("Unfreeze account proposal created, ID is: " + proposalId);
-        showProposalInfo(proposalId);
-    }
-
-    @Override
     public void createSetSysConfigProposal(String[] params) throws Exception {
         String key = params[1];
         String value = params[2];
@@ -610,6 +586,28 @@ public class AuthImpl implements AuthFace {
         checkValidAddress(contract, "contractAddress");
         Boolean isAvailable = authManager.contractAvailable(contract);
         System.out.println(isAvailable ? "Available" : "Freeze");
+    }
+
+    @Override
+    public void freezeAccount(String[] params) throws Exception {
+        String account = params[1];
+        if (!AddressUtils.isValidAddress(account)) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
+            return;
+        }
+        RetCode retCode = authManager.setAccountStatus(account, AccessStatus.Freeze);
+        ConsoleUtils.printJson(retCode.toString());
+    }
+
+    @Override
+    public void unfreezeAccount(String[] params) throws Exception {
+        String account = params[1];
+        if (!AddressUtils.isValidAddress(account)) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
+            return;
+        }
+        RetCode retCode = authManager.setAccountStatus(account, AccessStatus.Normal);
+        ConsoleUtils.printJson(retCode.toString());
     }
 
     @Override
