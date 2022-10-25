@@ -1,6 +1,7 @@
 package console.command;
 
 import console.command.category.AccountOpCommand;
+import console.command.category.AuthOpCommand;
 import console.command.category.BfsCommand;
 import console.command.category.ContractOpCommand;
 import console.command.category.StatusQueryCommand;
@@ -161,7 +162,8 @@ public class JlineUtils {
         commands =
                 Arrays.asList(
                         StatusQueryCommand.SET_SYSTEM_CONFIG_BY_KEY.getCommand(),
-                        StatusQueryCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand());
+                        StatusQueryCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand(),
+                        AuthOpCommand.SET_SYS_CONFIG_PROPOSAL.getCommand());
 
         for (String command : commands) {
             completers.add(

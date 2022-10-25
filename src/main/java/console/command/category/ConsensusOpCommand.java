@@ -1,5 +1,7 @@
 package console.command.category;
 
+import static console.command.category.StatusQueryCommand.SET_SYSTEM_CONFIG_BY_KEY;
+
 import console.command.model.BasicCategoryCommand;
 import console.command.model.CommandInfo;
 import console.command.model.CommandType;
@@ -37,7 +39,11 @@ public class ConsensusOpCommand extends BasicCategoryCommand {
                                 !(isWasm && !commandToCommandInfo.get(key).isWasmSupport()
                                         || (!isAuthOpen
                                                 && commandToCommandInfo.get(key).isNeedAuthOpen())))
-                .filter(key -> !isAuthOpen || !CONSENSUS_COMMANDS.contains(key))
+                .filter(
+                        key ->
+                                !isAuthOpen
+                                        || !CONSENSUS_COMMANDS.contains(key)
+                                        || !key.equals(SET_SYSTEM_CONFIG_BY_KEY.getCommand()))
                 .collect(Collectors.toList());
     }
 

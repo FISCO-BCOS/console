@@ -3,6 +3,7 @@ package console;
 import console.client.ConsoleClientFace;
 import console.contract.ConsoleContractFace;
 import console.precompiled.PrecompiledFace;
+import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -14,6 +15,7 @@ public class TestBase {
     protected static ConsoleInitializer consoleInitializer;
     protected static boolean isWasm;
     protected static boolean isAuthCheck;
+    protected static EnumNodeVersion chainVersion;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -24,6 +26,8 @@ public class TestBase {
         consoleClientFace = consoleInitializer.getConsoleClientFace();
         precompiledFace = consoleInitializer.getPrecompiledFace();
         consoleContractFace = consoleInitializer.getConsoleContractFace();
+        long compatibilityVersion = consoleInitializer.getClient().getGroupInfo().getResult().getNodeList().get(0).getProtocol().getCompatibilityVersion();
+        chainVersion = EnumNodeVersion.valueOf((int) compatibilityVersion);
     }
 
     @AfterClass
