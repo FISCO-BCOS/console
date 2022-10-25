@@ -1,5 +1,6 @@
 package console;
 
+import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,9 +21,11 @@ public class PrecompiledTest extends TestBase {
         Assert.assertTrue(log.getLog().contains("Ok"));
         log.clearLog();
 
-        precompiledFace.listDir(new String[]{"", "/tables"});
-        Assert.assertTrue(log.getLog().contains(tableName));
-        log.clearLog();
+        if (chainVersion.compareTo(EnumNodeVersion.BCOS_3_1_0) >= 0) {
+            precompiledFace.listDir(new String[]{"", "/tables"});
+            Assert.assertTrue(log.getLog().contains(tableName));
+            log.clearLog();
+        }
 
         String insertSql = "insert into " + tableName + " (name, item_id, item_name) values (fruit, 1, apple1)";
         precompiledFace.insert(insertSql);

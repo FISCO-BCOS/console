@@ -1,15 +1,5 @@
 package console.precompiled;
 
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.BFS_PRECOMPILED_ADDRESS;
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.BFS_PRECOMPILED_NAME;
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.COMMITTEE_MANAGER_ADDRESS;
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.CONSENSUS_PRECOMPILED_ADDRESS;
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.CONSENSUS_PRECOMPILED_NAME;
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.SYS_CONFIG_PRECOMPILED_ADDRESS;
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.SYS_CONFIG_PRECOMPILED_NAME;
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.TABLE_MANAGER_PRECOMPILED_ADDRESS;
-import static org.fisco.bcos.sdk.v3.contract.precompiled.model.PrecompiledAddress.TABLE_MANAGER_PRECOMPILED_NAME;
-
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.model.AbiAndBin;
@@ -22,10 +12,10 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.io.FilenameUtils;
@@ -61,16 +51,6 @@ public class PrecompiledImpl implements PrecompiledFace {
     private TableCRUDService tableCRUDService;
     private BFSService bfsService;
     private String pwd = "/apps";
-    public static Map<String, String> bfsSysAddress = new HashMap<>();
-
-    static {
-        bfsSysAddress.put(BFS_PRECOMPILED_NAME, BFS_PRECOMPILED_ADDRESS);
-        bfsSysAddress.put(CONSENSUS_PRECOMPILED_NAME, CONSENSUS_PRECOMPILED_ADDRESS);
-        bfsSysAddress.put(SYS_CONFIG_PRECOMPILED_NAME, SYS_CONFIG_PRECOMPILED_ADDRESS);
-        bfsSysAddress.put(TABLE_MANAGER_PRECOMPILED_NAME, TABLE_MANAGER_PRECOMPILED_ADDRESS);
-        bfsSysAddress.put("/sys/auth", COMMITTEE_MANAGER_ADDRESS);
-        bfsSysAddress.put("/sys/crypto_tools", "000000000000000000000000000000000000100a");
-    }
 
     public PrecompiledImpl(Client client) {
         this.client = client;
@@ -447,51 +427,67 @@ public class PrecompiledImpl implements PrecompiledFace {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
 
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
-        if (listPath.startsWith(ContractCompiler.BFS_SYS_PREFIX)
-                && bfsSysAddress.containsKey(listPath)) {
-            // /sys/ bfsInfo
-            System.out.println(
-                    listPath
-                            + ": built-in contract, you can use it's address in contract to call interfaces.");
-            if (!client.isWASM()) {
-                System.out.println(listPath + " -> " + bfsSysAddress.get(listPath));
-            }
-            return;
-        }
-        List<BfsInfo> fileInfoList;
         try {
-            fileInfoList = bfsService.list(listPath);
+            BigInteger fileLeft;
+            BigInteger offset = BigInteger.ZERO;
+            do {
+                Tuple2<BigInteger, List<BfsInfo>> fileInfoList =
+                        bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
+                fileLeft = fileInfoList.getValue1();
+                String baseName = FilenameUtils.getBaseName(listPath);
+                int newLineCount = 0;
+                for (BfsInfo fileInfo : fileInfoList.getValue2()) {
+                    newLineCount++;
+                    switch (fileInfo.getFileType()) {
+                        case Common.BFS_TYPE_CON:
+                            System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
+                            break;
+                        case Common.BFS_TYPE_DIR:
+                            System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
+                            break;
+                        case Common.BFS_TYPE_LNK:
+                            System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
+                            if (fileInfoList.getValue2().size() == 1
+                                    && fileInfo.getFileName().equals(baseName)) {
+                                System.out.print(" -> " + fileInfo.getExt().get(0));
+                                System.out.println();
+                                if (listPath.startsWith(ContractCompiler.BFS_SYS_PREFIX)) {
+                                    // /sys/ bfsInfo
+                                    System.out.println(
+                                            listPath
+                                                    + ": built-in contract, you can use it's address in contract to call interfaces.");
+                                }
+                            }
+                            System.out.print('\t');
+                            break;
+                        default:
+                            System.out.println();
+                            break;
+                    }
+                    if (newLineCount % 6 == 0) {
+                        System.out.println();
+                    }
+                }
+                if (fileLeft.compareTo(BigInteger.ZERO) > 0) {
+                    offset = offset.add(Common.LS_DEFAULT_COUNT);
+                    System.out.println();
+                    ConsoleUtils.singleLine();
+                    System.out.print(
+                            "----------------------- "
+                                    + fileLeft
+                                    + " File(s) left, continue to scan? (Y/N)-----------------------");
+                    Scanner sc = new Scanner(System.in);
+                    String nextString = sc.nextLine().toLowerCase().replace("\n", "");
+                    if (!"y".equals(nextString)) {
+                        break;
+                    }
+                }
+            } while (fileLeft.compareTo(BigInteger.ZERO) > 0);
         } catch (ContractException e) {
             RetCode precompiledResponse =
                     PrecompiledRetCode.getPrecompiledResponse(e.getErrorCode(), e.getMessage());
             throw new ContractException(
                     precompiledResponse.getMessage(), precompiledResponse.getCode());
-        }
-        String baseName = FilenameUtils.getBaseName(listPath);
-        int newLineCount = 0;
-        for (BfsInfo fileInfo : fileInfoList) {
-            newLineCount++;
-            switch (fileInfo.getFileType()) {
-                case Common.BFS_TYPE_CON:
-                    System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
-                    break;
-                case Common.BFS_TYPE_DIR:
-                    System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
-                    break;
-                case Common.BFS_TYPE_LNK:
-                    System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
-                    if (fileInfoList.size() == 1 && fileInfo.getFileName().equals(baseName)) {
-                        System.out.print(" -> " + fileInfo.getExt().get(0));
-                    }
-                    System.out.print('\t');
-                    break;
-                default:
-                    System.out.println();
-                    break;
-            }
-            if (newLineCount % 6 == 0) {
-                System.out.println();
-            }
         }
     }
 
@@ -529,14 +525,12 @@ public class PrecompiledImpl implements PrecompiledFace {
                         ? ConsoleUtils.fixedBfsParam(params[2], pwd)
                                 .substring(ContractCompiler.BFS_APPS_PREFIX.length())
                         : params[2];
-        List<String> path2Level = ConsoleUtils.path2Level(linkPath);
-        if (path2Level.size() != 3 || !path2Level.get(0).equals("apps")) {
-            System.out.println("Link must locate in /apps, and only support 3-level directory.");
-            System.out.println("Example: ln /apps/Name/Version 0x1234567890");
+        if (!linkPath.startsWith(ContractCompiler.BFS_APPS_PREFIX)) {
+            System.out.println("Link must locate in /apps.");
+            System.out.println("Example: ln /apps/Name 0x1234567890");
             return;
         }
-        String contractName = path2Level.get(1);
-        String contractVersion = path2Level.get(2);
+        String contractName = FilenameUtils.getBaseName(linkPath);
         if (!client.isWASM() && !AddressUtils.isValidAddress(contractAddress)) {
             System.out.println("Contract address is invalid, address: " + contractAddress);
         }
@@ -580,7 +574,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         ConsoleUtils.printJson(
-                bfsService.link(contractName, contractVersion, contractAddress, abi).toString());
+                bfsService
+                        .link(
+                                linkPath.substring(ContractCompiler.BFS_APPS_PREFIX.length()),
+                                contractAddress,
+                                abi)
+                        .toString());
         System.out.println();
     }
 
