@@ -31,6 +31,7 @@ import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
@@ -430,8 +431,14 @@ public class PrecompiledImpl implements PrecompiledFace {
         BigInteger fileLeft = BigInteger.ZERO;
         BigInteger offset = BigInteger.ZERO;
         do {
-            Tuple2<BigInteger, List<BfsInfo>> fileInfoList =
-                    bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
+            Tuple2<BigInteger, List<BfsInfo>> fileInfoList;
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+                fileInfoList = bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
+            } else {
+                fileInfoList = new Tuple2<>(BigInteger.ZERO, bfsService.list(listPath));
+            }
             fileLeft = fileInfoList.getValue1();
             String baseName = FilenameUtils.getBaseName(listPath);
             int newLineCount = 0;
@@ -525,16 +532,17 @@ public class PrecompiledImpl implements PrecompiledFace {
                         ? ConsoleUtils.fixedBfsParam(params[2], pwd)
                                 .substring(ContractCompiler.BFS_APPS_PREFIX.length())
                         : params[2];
-        if (!linkPath.startsWith(ContractCompiler.BFS_APPS_PREFIX)) {
-            System.out.println("Link must locate in /apps.");
-            System.out.println("Example: ln /apps/Name 0x1234567890");
-            return;
-        }
-        String contractName = FilenameUtils.getBaseName(linkPath);
         if (!client.isWASM() && !AddressUtils.isValidAddress(contractAddress)) {
             System.out.println("Contract address is invalid, address: " + contractAddress);
         }
+        if (!linkPath.startsWith(ContractCompiler.BFS_APPS_PREFIX)) {
+            System.out.println("Link must locate in /apps.");
+            System.out.println("Example: ln /apps/Name 0x1234567890abcd");
+            return;
+        }
         String abi = "";
+        String contractName = FilenameUtils.getBaseName(linkPath);
+        // get ABI
         try {
             String wasmAbiAddress = "";
             if (client.isWASM()) {
@@ -573,13 +581,26 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
 
-        ConsoleUtils.printJson(
-                bfsService
-                        .link(
-                                linkPath.substring(ContractCompiler.BFS_APPS_PREFIX.length()),
-                                contractAddress,
-                                abi)
-                        .toString());
+        RetCode retCode;
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            retCode =
+                    bfsService.link(
+                            linkPath.substring(ContractCompiler.BFS_APPS_PREFIX.length()),
+                            contractAddress,
+                            abi);
+        } else {
+            List<String> levels = ConsoleUtils.path2Level(linkPath);
+            if (levels.size() != 3) {
+                retCode = PrecompiledRetCode.CODE_FILE_INVALID_PATH;
+            } else {
+                String name = levels.get(1);
+                String version = levels.get(2);
+                retCode = bfsService.link(name, version, contractAddress, abi);
+            }
+        }
+        ConsoleUtils.printJson(retCode.toString());
         System.out.println();
     }
 

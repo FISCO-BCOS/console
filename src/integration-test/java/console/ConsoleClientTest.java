@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.Random;
 
 import console.client.model.TotalTransactionCountResult;
@@ -104,8 +105,34 @@ public class ConsoleClientTest extends TestBase {
             transactionHash = split[0].split(": ")[1];
             contractAddress = split[1].split(": ")[1];
             log.clearLog();
+
+            String[] sendTxParams = {"", "HelloWorld", contractAddress, "set", "testHelloWorld"};
+            consoleContractFace.call(sendTxParams, "/apps");
+            Assert.assertTrue(log.getLog().contains("transaction status: 0"));
+            log.clearLog();
+
+            String[] callParams = {"", "HelloWorld", contractAddress, "get"};
+            consoleContractFace.call(callParams, "/apps");
+            Assert.assertTrue(log.getLog().contains("testHelloWorld"));
+            log.clearLog();
+
+            String version = String.valueOf(Math.abs(new Random().nextInt()));
+            String[] deployWithLinkParams = {"", "contracts/solidity/HelloWorld.sol", "-l", "hello/" + version};
+            consoleContractFace.deploy(deployWithLinkParams, "/apps");
+            Assert.assertTrue(log.getLog().contains("/apps/hello/" + version));
+            log.clearLog();
+
+            String[] sendTxWithLinkParams = {"", "/apps/hello/" + version, "set", "testLink"};
+            consoleContractFace.call(sendTxWithLinkParams, "/apps");
+            Assert.assertTrue(log.getLog().contains("transaction status: 0"));
+            log.clearLog();
+
+            String[] callWithLinkParams = {"", "/apps/hello/" + version, "get"};
+            consoleContractFace.call(callWithLinkParams, "/apps");
+            Assert.assertTrue(log.getLog().contains("testLink"));
+            log.clearLog();
         } else {
-            String[] deployParams = {"", "contracts/liquid/hello_world", "hello" + new Random().nextInt()};
+            String[] deployParams = {"", "contracts/liquid/hello_world", "hello" + Math.abs(new Random().nextInt())};
             consoleContractFace.deploy(deployParams, "/apps");
             String[] split = log.getLog().split("\n");
             transactionHash = split[0].split(": ")[1];
@@ -175,6 +202,10 @@ public class ConsoleClientTest extends TestBase {
         String[] addressParams = {"", contractAddress};
         consoleClientFace.getCode(addressParams, isWasm, "/apps");
         Assert.assertTrue(log.getLog().startsWith("0x"));
+        log.clearLog();
+
+        consoleContractFace.listAbi(consoleInitializer, addressParams, "/apps");
+        Assert.assertTrue(log.getLog().startsWith("Method list:"));
         log.clearLog();
 
         String[] configParams = {"", "tx_gas_limit"};
