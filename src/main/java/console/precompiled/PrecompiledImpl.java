@@ -427,65 +427,65 @@ public class PrecompiledImpl implements PrecompiledFace {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
 
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
-        try {
-            BigInteger fileLeft;
-            BigInteger offset = BigInteger.ZERO;
-            do {
-                Tuple2<BigInteger, List<BfsInfo>> fileInfoList =
-                        bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
-                fileLeft = fileInfoList.getValue1();
-                String baseName = FilenameUtils.getBaseName(listPath);
-                int newLineCount = 0;
-                for (BfsInfo fileInfo : fileInfoList.getValue2()) {
-                    newLineCount++;
-                    switch (fileInfo.getFileType()) {
-                        case Common.BFS_TYPE_CON:
-                            System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
-                            break;
-                        case Common.BFS_TYPE_DIR:
-                            System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
-                            break;
-                        case Common.BFS_TYPE_LNK:
-                            System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
-                            if (fileInfoList.getValue2().size() == 1
-                                    && fileInfo.getFileName().equals(baseName)) {
-                                System.out.print(" -> " + fileInfo.getExt().get(0));
-                                System.out.println();
-                                if (listPath.startsWith(ContractCompiler.BFS_SYS_PREFIX)) {
-                                    // /sys/ bfsInfo
-                                    System.out.println(
-                                            listPath
-                                                    + ": built-in contract, you can use it's address in contract to call interfaces.");
-                                }
-                            }
-                            System.out.print('\t');
-                            break;
-                        default:
-                            System.out.println();
-                            break;
-                    }
-                    if (newLineCount % 6 == 0) {
-                        System.out.println();
-                    }
-                }
-                if (fileLeft.compareTo(BigInteger.ZERO) > 0) {
-                    offset = offset.add(Common.LS_DEFAULT_COUNT);
-                    System.out.println();
-                    ConsoleUtils.singleLine();
-                    System.out.print(
-                            "----------------------- "
-                                    + fileLeft
-                                    + " File(s) left, continue to scan? (Y/N)-----------------------");
-                    Scanner sc = new Scanner(System.in);
-                    String nextString = sc.nextLine().toLowerCase().replace("\n", "");
-                    if (!"y".equals(nextString)) {
+        BigInteger fileLeft = BigInteger.ZERO;
+        BigInteger offset = BigInteger.ZERO;
+        do {
+            Tuple2<BigInteger, List<BfsInfo>> fileInfoList =
+                    bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
+            fileLeft = fileInfoList.getValue1();
+            String baseName = FilenameUtils.getBaseName(listPath);
+            int newLineCount = 0;
+            for (BfsInfo fileInfo : fileInfoList.getValue2()) {
+                newLineCount++;
+                switch (fileInfo.getFileType()) {
+                    case Common.BFS_TYPE_CON:
+                        System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
                         break;
-                    }
+                    case Common.BFS_TYPE_DIR:
+                        System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
+                        break;
+                    case Common.BFS_TYPE_LNK:
+                        System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
+                        if (fileInfoList.getValue2().size() == 1
+                                && fileInfo.getFileName().equals(baseName)) {
+                            System.out.print(" -> " + fileInfo.getExt().get(0));
+                            System.out.println();
+                            if (listPath.startsWith(ContractCompiler.BFS_SYS_PREFIX)) {
+                                // /sys/ bfsInfo
+                                System.out.println(
+                                        listPath
+                                                + ": built-in contract, you can use it's address in contract to call interfaces.");
+                            }
+                        }
+                        System.out.print('\t');
+                        break;
+                    default:
+                        System.out.println();
+                        break;
                 }
-            } while (fileLeft.compareTo(BigInteger.ZERO) > 0);
-        } catch (ContractException e) {
+                if (newLineCount % 6 == 0) {
+                    System.out.println();
+                }
+            }
+            if (fileLeft.compareTo(BigInteger.ZERO) > 0) {
+                offset = offset.add(Common.LS_DEFAULT_COUNT);
+                System.out.println();
+                ConsoleUtils.singleLine();
+                System.out.print(
+                        "----------------------- "
+                                + fileLeft
+                                + " File(s) left, continue to scan? (Y/N)-----------------------");
+                Scanner sc = new Scanner(System.in);
+                String nextString = sc.nextLine().toLowerCase().replace("\n", "");
+                if (!"y".equals(nextString)) {
+                    break;
+                }
+            }
+        } while (fileLeft.compareTo(BigInteger.ZERO) > 0);
+
+        if (fileLeft.compareTo(BigInteger.ZERO) < 0) {
             RetCode precompiledResponse =
-                    PrecompiledRetCode.getPrecompiledResponse(e.getErrorCode(), e.getMessage());
+                    PrecompiledRetCode.getPrecompiledResponse(fileLeft.intValue(), "");
             throw new ContractException(
                     precompiledResponse.getMessage(), precompiledResponse.getCode());
         }
