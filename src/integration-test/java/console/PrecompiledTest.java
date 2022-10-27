@@ -1,6 +1,5 @@
 package console;
 
-import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,11 +20,9 @@ public class PrecompiledTest extends TestBase {
         Assert.assertTrue(log.getLog().contains("Ok"));
         log.clearLog();
 
-        if (chainVersion.compareTo(EnumNodeVersion.BCOS_3_1_0) >= 0) {
-            precompiledFace.listDir(new String[]{"", "/tables"});
-            Assert.assertTrue(log.getLog().contains(tableName));
-            log.clearLog();
-        }
+        precompiledFace.listDir(new String[]{"", "/tables"});
+        Assert.assertTrue(log.getLog().contains(tableName));
+        log.clearLog();
 
         String insertSql = "insert into " + tableName + " (name, item_id, item_name) values (fruit, 1, apple1)";
         precompiledFace.insert(insertSql);
@@ -81,6 +78,73 @@ public class PrecompiledTest extends TestBase {
 
         precompiledFace.desc(new String[]{"", tableName});
         Assert.assertTrue(log.getLog().contains(newField));
+        log.clearLog();
+    }
+
+    @Test
+    public void bfsTest() throws Exception {
+        String contractAddress;
+        String[] deployParams = {"", "contracts/solidity/HelloWorld.sol"};
+        consoleContractFace.deploy(deployParams, "/apps");
+        String[] split = log.getLog().split("\n");
+        contractAddress = split[1].split(": ")[1];
+        log.clearLog();
+
+        String[] sendTxParams = {"", "HelloWorld", contractAddress, "set", "testHelloWorld"};
+        consoleContractFace.call(sendTxParams, "/apps");
+        Assert.assertTrue(log.getLog().contains("transaction status: 0"));
+        log.clearLog();
+
+        String[] callParams = {"", "HelloWorld", contractAddress, "get"};
+        consoleContractFace.call(callParams, "/apps");
+        Assert.assertTrue(log.getLog().contains("testHelloWorld"));
+        log.clearLog();
+
+        String version = String.valueOf(Math.abs(new Random().nextInt()));
+        String[] deployWithLinkParams = {"", "contracts/solidity/HelloWorld.sol", "-l", "hello/" + version};
+        consoleContractFace.deploy(deployWithLinkParams, "/apps");
+        Assert.assertTrue(log.getLog().contains("/apps/hello/" + version));
+        log.clearLog();
+
+        String[] sendTxWithLinkParams = {"", "/apps/hello/" + version, "set", "testLink"};
+        consoleContractFace.call(sendTxWithLinkParams, "/apps");
+        Assert.assertTrue(log.getLog().contains("transaction status: 0"));
+        log.clearLog();
+
+        String[] callWithLinkParams = {"", "/apps/hello/" + version, "get"};
+        consoleContractFace.call(callWithLinkParams, "/apps");
+        Assert.assertTrue(log.getLog().contains("testLink"));
+        log.clearLog();
+
+        String[] lsParams = {"", "/apps"};
+        precompiledFace.listDir(lsParams);
+        Assert.assertTrue(log.getLog().contains("hello"));
+        log.clearLog();
+
+        String[] cdParams = {"", "/apps/hello"};
+        precompiledFace.changeDir(cdParams);
+        Assert.assertEquals("/apps/hello", precompiledFace.getPwd());
+        precompiledFace.changeDir(lsParams);
+        log.clearLog();
+
+
+        String newDir = String.valueOf(Math.abs(new Random().nextInt()));
+        String[] mkdirParams = {"", "/apps/hello" + newDir};
+        precompiledFace.makeDir(mkdirParams);
+        log.clearLog();
+        precompiledFace.listDir(lsParams);
+        Assert.assertTrue(log.getLog().contains("hello" + newDir));
+        log.clearLog();
+    }
+
+    @Test
+    public void authTest() throws Exception {
+        if (!isAuthCheck){
+            return;
+        }
+        String[] emptyParams = {};
+        authFace.getCommitteeInfo(emptyParams);
+        Assert.assertTrue(log.getLog().contains("Governor Address"));
         log.clearLog();
     }
 }

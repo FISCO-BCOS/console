@@ -1,5 +1,6 @@
 package console;
 
+import console.auth.AuthFace;
 import console.client.ConsoleClientFace;
 import console.contract.ConsoleContractFace;
 import console.precompiled.PrecompiledFace;
@@ -16,6 +17,7 @@ public class TestBase {
     protected static boolean isWasm;
     protected static boolean isAuthCheck;
     protected static EnumNodeVersion chainVersion;
+    protected static AuthFace authFace;
 
     @BeforeClass
     public static void setUpBeforeClass() throws Exception {
@@ -23,6 +25,7 @@ public class TestBase {
         consoleInitializer.init(new String[0]);
         isWasm = consoleInitializer.getClient().isWASM();
         isAuthCheck = consoleInitializer.getClient().isAuthCheck();
+        authFace = consoleInitializer.getAuthFace();
         consoleClientFace = consoleInitializer.getConsoleClientFace();
         precompiledFace = consoleInitializer.getPrecompiledFace();
         consoleContractFace = consoleInitializer.getConsoleContractFace();

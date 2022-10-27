@@ -48,6 +48,7 @@ import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
 import org.fisco.bcos.sdk.v3.transaction.manager.AssembleTransactionProcessorInterface;
@@ -176,14 +177,24 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     private void deployLink(String linkPath, String address, String abiString) throws Exception {
-        List<String> levels = ConsoleUtils.path2Level(linkPath);
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
         final RetCode retCode;
-        if (levels.size() != 3 || !levels.get(0).equals("apps")) {
-            retCode = PrecompiledRetCode.CODE_FILE_INVALID_PATH;
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            retCode =
+                    bfsService.link(
+                            linkPath.substring(ContractCompiler.BFS_APPS_PREFIX.length()),
+                            address,
+                            abiString);
         } else {
-            String name = levels.get(1);
-            String version = levels.get(2);
-            retCode = bfsService.link(name, version, address, abiString);
+            List<String> levels = ConsoleUtils.path2Level(linkPath);
+            if (levels.size() != 3 || !levels.get(0).equals("apps")) {
+                retCode = PrecompiledRetCode.CODE_FILE_INVALID_PATH;
+            } else {
+                String name = levels.get(1);
+                String version = levels.get(2);
+                retCode = bfsService.link(name, version, address, abiString);
+            }
         }
         if (retCode.getCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
             System.out.println("link contract " + address + " to path " + linkPath + " failed!");
