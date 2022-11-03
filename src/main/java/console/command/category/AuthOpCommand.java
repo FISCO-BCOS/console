@@ -446,6 +446,19 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     false,
                     true);
 
+    public static final CommandInfo ABOLISH_ACCOUNT =
+            new CommandInfo(
+                    "abolishAccount",
+                    "Abolish a specific account.",
+                    HelpInfo::abolishAccountHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().abolishAccount(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
     public static final CommandInfo GET_ACCOUNT_STATUS =
             new CommandInfo(
                     "getAccountStatus",

@@ -611,6 +611,17 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
+    public void abolishAccount(String[] params) throws Exception {
+        String account = params[1];
+        if (!AddressUtils.isValidAddress(account)) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
+            return;
+        }
+        RetCode retCode = authManager.setAccountStatus(account, AccessStatus.Abolish);
+        ConsoleUtils.printJson(retCode.toString());
+    }
+
+    @Override
     public void getAccountStatus(String[] params) throws Exception {
         String account = params[1];
         checkValidAddress(account, "accountAddress");

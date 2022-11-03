@@ -64,5 +64,7 @@ public interface AuthFace {
 
     void unfreezeAccount(String[] params) throws Exception;
 
+    void abolishAccount(String[] params) throws Exception;
+
     void getAccountStatus(String[] params) throws Exception;
 }
