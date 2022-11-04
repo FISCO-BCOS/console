@@ -316,6 +316,16 @@ public class HelpInfo {
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
+    public static void abolishAccountHelp() {
+        System.out.println("Abolish account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        System.out.println("Usage: \nabolishAccount account");
+        System.out.println("* account -- 20 Bytes - The address of a account.");
+    }
+
     public static void getAccountStatusHelp() {
         System.out.println("Account status.");
         System.out.println("Usage: \ngetAccountStatus account");

@@ -310,7 +310,8 @@ public class ConsoleUtils {
             File solFile,
             String abiDir,
             String binDir,
-            String librariesOption)
+            String librariesOption,
+            boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
 
         String contractName = solFile.getName().split("\\.")[0];
@@ -319,7 +320,12 @@ public class ConsoleUtils {
         System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
         AbiAndBin abiAndBin =
                 ContractCompiler.compileSolToBinAndAbi(
-                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption, true);
+                        solFile,
+                        abiDir,
+                        binDir,
+                        ContractCompiler.All,
+                        librariesOption,
+                        isContractParallelAnalysis);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
         File abiFile = new File(abiDir + contractName + ".abi");
         File binFile = new File(binDir + contractName + ".bin");
@@ -348,7 +354,12 @@ public class ConsoleUtils {
     }
 
     public static void compileAllSolToJava(
-            String javaDir, String packageName, File solFileList, String abiDir, String binDir)
+            String javaDir,
+            String packageName,
+            File solFileList,
+            String abiDir,
+            String binDir,
+            boolean isContractParallelAnalysis)
             throws IOException {
         File[] solFiles = solFileList.listFiles();
         if (solFiles.length == 0) {
@@ -364,7 +375,14 @@ public class ConsoleUtils {
                 continue;
             }
             try {
-                compileSolToJava(javaDir, packageName, solFile, abiDir, binDir, null);
+                compileSolToJava(
+                        javaDir,
+                        packageName,
+                        solFile,
+                        abiDir,
+                        binDir,
+                        null,
+                        isContractParallelAnalysis);
             } catch (Exception e) {
                 System.out.println(
                         "ERROR:convert solidity to java for "
@@ -689,6 +707,8 @@ public class ConsoleUtils {
         String SM_BIN_OPTION = "sm-bin";
         String ABI_OPTION = "abi";
 
+        String NO_ANALYSIS_OPTION = "no-analysis";
+
         if (mode.equals("solidity")) {
             Option solidityFilePathOption =
                     new Option(
@@ -709,6 +729,15 @@ public class ConsoleUtils {
                             "[Optional] Set library address information built into the solidity contract\n eg:\n --libraries lib1:lib1_address lib2:lib2_address\n");
             libraryOption.setRequired(false);
             options.addOption(libraryOption);
+
+            // no evm static analysis
+            Option noAnalysisOption =
+                    new Option(
+                            "n",
+                            NO_ANALYSIS_OPTION,
+                            false,
+                            "[Optional] NOT use evm static parallel-able analysis. It will not active DAG analysis, but will speedup compile speed.");
+            options.addOption(noAnalysisOption);
         } else if (mode.equals("liquid")) {
             Option liquidBinPathOption =
                     new Option(
@@ -766,6 +795,7 @@ public class ConsoleUtils {
         if (mode.equals("solidity")) {
             String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
             String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
+            boolean useDagAnalysis = !cmd.hasOption(NO_ANALYSIS_OPTION);
             String fullJavaDir = new File(javaDir).getAbsolutePath();
             File sol = new File(solPathOrDir);
             if (!sol.exists()) {
@@ -775,9 +805,16 @@ public class ConsoleUtils {
             try {
                 if (sol.isFile()) { // input file
                     compileSolToJava(
-                            fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, librariesOption);
+                            fullJavaDir,
+                            pkgName,
+                            sol,
+                            ABI_PATH,
+                            BIN_PATH,
+                            librariesOption,
+                            useDagAnalysis);
                 } else { // input dir
-                    compileAllSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
+                    compileAllSolToJava(
+                            fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, useDagAnalysis);
                 }
             } catch (IOException | CompileContractException e) {
                 System.out.print(e.getMessage());
