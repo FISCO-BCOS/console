@@ -482,8 +482,14 @@ public class ConsoleUtils {
                         else return 1;
                     }
 
+                    @Override
                     public boolean equals(Object obj) {
                         return true;
+                    }
+
+                    @Override
+                    public int hashCode() {
+                        return super.hashCode();
                     }
                 });
     }
@@ -504,6 +510,7 @@ public class ConsoleUtils {
             attr = Files.readAttributes(path, BasicFileAttributes.class);
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
         Instant instant = attr.creationTime().toInstant();
         String format =

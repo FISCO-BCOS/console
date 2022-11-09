@@ -529,11 +529,11 @@ public class CollaborationImpl implements CollaborationFace {
 
     private byte[] readBytes(File file) throws IOException {
         byte[] bytes = new byte[(int) file.length()];
-        FileInputStream fileInputStream = new FileInputStream(file);
-        if (fileInputStream.read(bytes) != bytes.length) {
-            throw new IOException("incomplete reading of file: " + file);
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            if (fileInputStream.read(bytes) != bytes.length) {
+                throw new IOException("incomplete reading of file: " + file);
+            }
         }
-        fileInputStream.close();
         return bytes;
     }
 }
