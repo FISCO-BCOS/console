@@ -335,11 +335,11 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     private byte[] readBytes(File file) throws IOException {
         byte[] bytes = new byte[(int) file.length()];
-        FileInputStream fileInputStream = new FileInputStream(file);
-        if (fileInputStream.read(bytes) != bytes.length) {
-            throw new IOException("incomplete reading of file: " + file.toString());
+        try (FileInputStream fileInputStream = new FileInputStream(file)) {
+            if (fileInputStream.read(bytes) != bytes.length) {
+                throw new IOException("incomplete reading of file: " + file.toString());
+            }
         }
-        fileInputStream.close();
         return bytes;
     }
 
@@ -398,8 +398,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         BufferedReader reader = null;
         try {
             File logFile = new File(Common.ContractLogFileName);
-            if (!logFile.exists()) {
-                logFile.createNewFile();
+            if (!logFile.exists() && !logFile.createNewFile()) {
+                System.out.println("Failed to create log file: " + Common.ContractLogFileName);
+                return;
             }
             reader = new BufferedReader(new FileReader(Common.ContractLogFileName));
             String line;
@@ -411,8 +412,18 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (textList.size() >= Common.LogMaxCount) {
                 i = textList.size() - Common.LogMaxCount + 1;
                 if (logFile.exists()) {
-                    logFile.delete();
-                    logFile.createNewFile();
+
+                    if (!logFile.delete()) {
+                        System.out.println(
+                                "Failed to delete log file: " + Common.ContractLogFileName);
+                        return;
+                    }
+
+                    if (!logFile.createNewFile()) {
+                        System.out.println(
+                                "Failed to create log file: " + Common.ContractLogFileName);
+                        return;
+                    }
                 }
                 PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true));
                 for (; i < textList.size(); i++) {
@@ -446,8 +457,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         + contractAddress;
         try {
             File logFile = new File(Common.ContractLogFileName);
-            if (!logFile.exists()) {
-                logFile.createNewFile();
+            if (!logFile.exists() && !logFile.createNewFile()) {
+                System.out.println("Failed to create file " + Common.ContractLogFileName);
             }
             PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true));
             pw.println(log);
@@ -483,8 +494,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
         }
         File logFile = new File(Common.ContractLogFileName);
-        if (!logFile.exists()) {
-            logFile.createNewFile();
+        if (!logFile.exists() && !logFile.createNewFile()) {
+            System.out.println("Failed to create file " + Common.ContractLogFileName);
+            return;
         }
         BufferedReader reader = new BufferedReader(new FileReader(Common.ContractLogFileName));
         String line;
