@@ -54,6 +54,9 @@ dependencies {
         exclude group: "org.fisco-bcos.java-sdk"
         exclude group: "org.slf4j"
     }
+    compile ('com.fasterxml.jackson.core:jackson-databind:2.14.0'){
+        force true
+    }
     testCompile('com.github.stefanbirkner:system-rules:1.19.0')
     testCompile('junit:junit:4.13.2')
 }
