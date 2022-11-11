@@ -311,6 +311,7 @@ public class ConsoleUtils {
             String abiDir,
             String binDir,
             String librariesOption,
+            String specifyContract,
             boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
 
@@ -325,6 +326,7 @@ public class ConsoleUtils {
                         binDir,
                         ContractCompiler.All,
                         librariesOption,
+                        specifyContract,
                         isContractParallelAnalysis);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
         File abiFile = new File(abiDir + contractName + ".abi");
@@ -381,6 +383,7 @@ public class ConsoleUtils {
                         solFile,
                         abiDir,
                         binDir,
+                        null,
                         null,
                         isContractParallelAnalysis);
             } catch (Exception e) {
@@ -804,6 +807,13 @@ public class ConsoleUtils {
             String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
             boolean useDagAnalysis = !cmd.hasOption(NO_ANALYSIS_OPTION);
             String fullJavaDir = new File(javaDir).getAbsolutePath();
+            String specifyContract = null;
+            if (solPathOrDir.contains(":")
+                    && solPathOrDir.indexOf(':') == solPathOrDir.lastIndexOf(':')) {
+                String[] strings = solPathOrDir.split(":");
+                solPathOrDir = strings[0];
+                specifyContract = strings[1];
+            }
             File sol = new File(solPathOrDir);
             if (!sol.exists()) {
                 System.out.println(sol.getAbsoluteFile() + " not exist ");
@@ -818,6 +828,7 @@ public class ConsoleUtils {
                             ABI_PATH,
                             BIN_PATH,
                             librariesOption,
+                            specifyContract,
                             useDagAnalysis);
                 } else { // input dir
                     compileAllSolToJava(

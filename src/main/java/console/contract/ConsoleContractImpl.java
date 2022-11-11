@@ -127,9 +127,15 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         if (!client.isWASM()) {
             // solidity
             String contractNameOrPath = ConsoleUtils.resolvePath(paramsList.get(1));
-            String contractName = ConsoleUtils.getContractName(contractNameOrPath);
-            if (contractName.endsWith(ContractCompiler.WASM_SUFFIX)) {
-                throw new Exception("Error: you should not treat a WASM file as Solidity!");
+            // have and only have one
+            String contractName;
+            if (contractNameOrPath.contains(":")
+                    && contractNameOrPath.indexOf(':') == contractNameOrPath.lastIndexOf(':')) {
+                String[] strings = contractNameOrPath.split(":");
+                contractNameOrPath = strings[0];
+                contractName = strings[1];
+            } else {
+                contractName = ConsoleUtils.getContractName(contractNameOrPath);
             }
             List<String> inputParams = paramsList.subList(2, paramsList.size());
             TransactionResponse transactionResponse =
@@ -171,7 +177,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             address = transactionResponse.getContractAddress();
             abiString = FileUtils.readFileToString(new File(abiPath));
         }
-        if (linkPath != null && address != null && abiString != null) {
+        if (linkPath != null && !StringUtils.isEmpty(address) && abiString != null) {
             deployLink(linkPath, address, abiString);
         }
     }
@@ -293,7 +299,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
             AbiAndBin abiAndBin =
                     ContractCompiler.compileContract(
-                            contractNameOrPath, sm, isContractParallelAnalysis);
+                            contractNameOrPath, contractName, sm, isContractParallelAnalysis);
             String bin = abiAndBin.getBin();
             if (sm) {
                 bin = abiAndBin.getSmBin();
