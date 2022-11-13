@@ -31,6 +31,7 @@ import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.codegen.v3.exceptions.CodeGenException;
 import org.fisco.bcos.codegen.v3.utils.CodeGenUtils;
+import org.fisco.bcos.sdk.v3.utils.StringUtils;
 import org.fisco.evm.analysis.EvmAnalyser;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
@@ -79,20 +80,28 @@ public class ContractCompiler {
     }
 
     public static AbiAndBin compileContract(
-            String contractNameOrPath, boolean sm, boolean isContractParallelAnalysis)
+            String contractNameOrPath,
+            String specifyContractName,
+            boolean sm,
+            boolean isContractParallelAnalysis)
             throws CompileContractException {
+        // if absolute path
         File contractFile = new File(contractNameOrPath);
         // the contractPath
         if (contractFile.exists() && !contractFile.isDirectory()) {
-            return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
+            return dynamicCompileSolFilesToJava(
+                    contractFile, specifyContractName, sm, isContractParallelAnalysis);
         }
 
+        // if absolute path without sol
         // try again with .sol suffix
         contractFile = new File(contractNameOrPath + SOL_SUFFIX);
         if (contractFile.exists() && !contractFile.isDirectory()) {
-            return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
+            return dynamicCompileSolFilesToJava(
+                    contractFile, specifyContractName, sm, isContractParallelAnalysis);
         }
 
+        // if relative path in contracts/
         // the contractName
         String contractFileName = ConsoleUtils.removeSolSuffix(contractNameOrPath) + SOL_SUFFIX;
         contractFile = new File(SOLIDITY_PATH + File.separator + contractFileName);
@@ -100,11 +109,15 @@ public class ContractCompiler {
             throw new CompileContractException(
                     "There is no " + contractFileName + " in the directory of " + SOLIDITY_PATH);
         }
-        return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
+        return dynamicCompileSolFilesToJava(
+                contractFile, specifyContractName, sm, isContractParallelAnalysis);
     }
 
     public static AbiAndBin dynamicCompileSolFilesToJava(
-            File contractFile, boolean sm, boolean isContractParallelAnalysis)
+            File contractFile,
+            String specifyContractName,
+            boolean sm,
+            boolean isContractParallelAnalysis)
             throws CompileContractException {
         try {
             return compileSolToBinAndAbi(
@@ -113,6 +126,7 @@ public class ContractCompiler {
                     COMPILED_PATH,
                     sm ? OnlySM : OnlyNonSM,
                     null,
+                    specifyContractName,
                     isContractParallelAnalysis);
         } catch (IOException e) {
             throw new CompileContractException(
@@ -128,6 +142,7 @@ public class ContractCompiler {
             String binDir,
             int compileType,
             String librariesOption,
+            String specifyContractName,
             boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
         if (compileType == OnlyNonSM) {
@@ -137,6 +152,7 @@ public class ContractCompiler {
                     binDir,
                     false,
                     librariesOption,
+                    specifyContractName,
                     isContractParallelAnalysis);
         } else if (compileType == OnlySM) {
             return compileSolToBinAndAbi(
@@ -145,6 +161,7 @@ public class ContractCompiler {
                     binDir,
                     true,
                     librariesOption,
+                    specifyContractName,
                     isContractParallelAnalysis);
         } else {
             AbiAndBin abiAndBin =
@@ -154,6 +171,7 @@ public class ContractCompiler {
                             binDir,
                             false,
                             librariesOption,
+                            specifyContractName,
                             isContractParallelAnalysis);
             AbiAndBin abiAndBinSM =
                     compileSolToBinAndAbi(
@@ -162,6 +180,7 @@ public class ContractCompiler {
                             binDir,
                             true,
                             librariesOption,
+                            specifyContractName,
                             isContractParallelAnalysis);
             return new AbiAndBin(abiAndBin.getAbi(), abiAndBin.getBin(), abiAndBinSM.getSmBin());
         }
@@ -174,6 +193,7 @@ public class ContractCompiler {
             String binDir,
             boolean sm,
             String librariesOption,
+            String specifyContractName,
             boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
         SolidityCompiler.Option libraryOption = null;
@@ -182,6 +202,9 @@ public class ContractCompiler {
         }
 
         String contractName = contractFile.getName().split("\\.")[0];
+        if (!StringUtils.isEmpty(specifyContractName)) {
+            contractName = specifyContractName;
+        }
         List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
         List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
 
