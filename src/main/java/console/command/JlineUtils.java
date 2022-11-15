@@ -160,9 +160,10 @@ public class JlineUtils {
         }
 
         commands =
-                Arrays.asList(
-                        StatusQueryCommand.SET_SYSTEM_CONFIG_BY_KEY.getCommand(),
-                        StatusQueryCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand());
+                new ArrayList<>(
+                        Arrays.asList(
+                                StatusQueryCommand.SET_SYSTEM_CONFIG_BY_KEY.getCommand(),
+                                StatusQueryCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand()));
         if (client.isAuthCheck()) {
             commands.add(AuthOpCommand.SET_SYS_CONFIG_PROPOSAL.getCommand());
         }
