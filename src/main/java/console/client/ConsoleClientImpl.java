@@ -162,6 +162,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 client.getBlockHashByNumber(BigInteger.valueOf(blockNumber)).getBlockHashByNumber();
         if (blockHashByNumber.equals(EMPTY_HASH_HEX)) {
             System.out.println("BlockHash is empty, please check block number exists.");
+            return;
         }
         System.out.println(
                 client.getBlockHashByNumber(BigInteger.valueOf(blockNumber))
@@ -359,15 +360,15 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void listAccount(String[] params) {
         List<String> accountList = listAccount(this.client);
-        if (accountList.size() == 0) {
+        if (accountList.isEmpty()) {
             System.out.println("Empty set");
             return;
         }
         String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
         System.out.println(currentAccount + "(current account) <=");
-        for (int i = 0; i < accountList.size(); i++) {
-            if (!accountList.get(i).equals(currentAccount)) {
-                System.out.println(accountList.get(i));
+        for (String s : accountList) {
+            if (!s.equals(currentAccount)) {
+                System.out.println(s);
             }
         }
     }
