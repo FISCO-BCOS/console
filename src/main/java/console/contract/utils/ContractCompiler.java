@@ -197,7 +197,7 @@ public class ContractCompiler {
             boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
         SolidityCompiler.Option libraryOption = null;
-        if (librariesOption != null && !librariesOption.equals("")) {
+        if (librariesOption != null && !librariesOption.isEmpty()) {
             libraryOption = new SolidityCompiler.CustomOption("libraries", librariesOption);
         }
 
@@ -234,7 +234,7 @@ public class ContractCompiler {
                 !res.isFailed(),
                 res.getOutput(),
                 res.getErrors());
-        if (res.isFailed() || "".equals(res.getOutput())) {
+        if (res.isFailed() || res.getOutput().isEmpty()) {
             throw new CompileContractException(" Compile error: " + res.getErrors());
         }
 

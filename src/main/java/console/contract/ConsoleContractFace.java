@@ -12,6 +12,6 @@ public interface ConsoleContractFace {
     void listAbi(ConsoleInitializer consoleInitializer, String[] params, String pwd)
             throws Exception;
 
-    void listDeployContractAddress(
-            ConsoleInitializer consoleInitializer, String[] params, String pwd) throws Exception;
+    void listDeployContractAddress(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception;
 }

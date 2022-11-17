@@ -401,16 +401,24 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     private synchronized void writeLog(String contractName, String contractAddress) {
         contractName = ConsoleUtils.removeSolSuffix(contractName);
-        BufferedReader reader = null;
+
+        File logFile = new File(Common.ContractLogFileName);
         try {
-            File logFile = new File(Common.ContractLogFileName);
             if (!logFile.exists() && !logFile.createNewFile()) {
                 System.out.println("Failed to create log file: " + Common.ContractLogFileName);
                 return;
             }
-            reader = new BufferedReader(new FileReader(Common.ContractLogFileName));
+        } catch (IOException e) {
+            System.out.println("Failed to create log file: " + Common.ContractLogFileName);
+            logger.error("create file exception", e);
+            return;
+        }
+        try (BufferedReader reader =
+                        new BufferedReader(new FileReader(Common.ContractLogFileName));
+                PrintWriter pw =
+                        new PrintWriter(new FileWriter(Common.ContractLogFileName, true)); ) {
             String line;
-            List<String> textList = new ArrayList<String>();
+            List<String> textList = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
                 textList.add(line);
             }
@@ -431,22 +439,15 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         return;
                     }
                 }
-                PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true));
                 for (; i < textList.size(); i++) {
                     pw.println(textList.get(i));
                 }
                 pw.flush();
-                pw.close();
             }
         } catch (IOException e) {
             System.out.println("Read deploylog.txt failed.");
+            logger.error("Read deploylog.txt failed.", e);
             return;
-        } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                System.out.println("Close deploylog.txt failed.");
-            }
         }
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -461,22 +462,19 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         + contractName
                         + "  "
                         + contractAddress;
-        try {
-            File logFile = new File(Common.ContractLogFileName);
+        try (PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true))) {
             if (!logFile.exists() && !logFile.createNewFile()) {
                 System.out.println("Failed to create file " + Common.ContractLogFileName);
             }
-            PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true));
             pw.println(log);
             pw.flush();
-            pw.close();
         } catch (IOException e) {
             System.out.println(e.getMessage());
             logger.error(" message: {}, e: {}", e.getMessage(), e);
-            return;
         }
     }
 
+    @Override
     public void getDeployLog(String[] params) throws Exception {
         String queryRecordNumber = "";
         int recordNumber = Common.QueryLogCount;
@@ -528,10 +526,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 stringBuilder.append(textList.get(i));
                 stringBuilder.append(ls);
             }
-            if ("".equals(stringBuilder.toString())) {
+            if (stringBuilder.toString().isEmpty()) {
                 System.out.println("Empty set.");
             } else {
-                System.out.println(stringBuilder.toString());
+                System.out.println(stringBuilder);
             }
         } catch (Exception e) {
             logger.error(" load {} failed, e: {}", Common.ContractLogFileName, e);
@@ -786,7 +784,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         System.out.println("Return message: " + response.getReturnMessage());
         ConsoleUtils.printReturnResults(response.getResults());
         ConsoleUtils.singleLine();
-        if (response.getEvents() != null && !response.getEvents().equals("")) {
+        if (response.getEvents() != null && !response.getEvents().isEmpty()) {
             System.out.println("Event logs");
             System.out.println("Event: " + response.getEvents());
         }
@@ -898,8 +896,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     @Override
-    public void listDeployContractAddress(
-            ConsoleInitializer consoleInitializer, String[] params, String pwd) throws Exception {
+    public void listDeployContractAddress(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
         boolean isWasm = consoleInitializer.getClient().isWASM();
         String contractNameOrPath = ConsoleUtils.resolvePath(params[1]);
         String contractName =

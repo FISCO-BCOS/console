@@ -295,7 +295,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     private boolean checkTableExistence(Map<String, List<String>> descTable) {
         return descTable.size() != 0
-                && !descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0).equals("");
+                && !descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0).isEmpty();
     }
 
     @Override
@@ -612,8 +612,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     private Tuple2<Integer, Integer> travelBfs(
             String absolutePath, String prefix, int deep, int limit) throws ContractException {
         if (deep >= limit) return new Tuple2<>(0, 0);
-        Integer dirCount = 0;
-        Integer contractCount = 0;
+        int dirCount = 0;
+        int contractCount = 0;
         List<BfsInfo> children = bfsService.list(absolutePath);
         for (int i = 0; i < children.size(); i++) {
             String thisPrefix = "";

@@ -63,7 +63,7 @@ public class ConsoleUtils {
     }
 
     public static String formatJson(String jsonStr) {
-        if (null == jsonStr || "".equals(jsonStr)) return "";
+        if (null == jsonStr || jsonStr.isEmpty()) return "";
         jsonStr = jsonStr.replace("\\n", "");
         StringBuilder sb = new StringBuilder();
         char last = '\0';
@@ -414,6 +414,7 @@ public class ConsoleUtils {
             quoteChar('"');
         }
 
+        @Override
         public void parseNumbers() {}
     }
 
