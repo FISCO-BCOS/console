@@ -19,7 +19,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -421,14 +420,14 @@ public class ConsoleUtils {
     public static String[] tokenizeCommand(String command) throws Exception {
         // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol,
         // set"Hello"]
-        List<String> tokens1 = new ArrayList<>();
+        List<String> commandWords1 = new ArrayList<>();
         StringTokenizer stringTokenizer = new StringTokenizer(command, " ");
         while (stringTokenizer.hasMoreTokens()) {
-            tokens1.add(stringTokenizer.nextToken());
+            commandWords1.add(stringTokenizer.nextToken());
         }
         // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol, set,
         // "Hello"]
-        List<String> tokens2 = new ArrayList<>();
+        List<String> commandWords2 = new ArrayList<>();
         StreamTokenizer tokenizer = new CommandTokenizer(new StringReader(command));
         int token = tokenizer.nextToken();
         while (token != StreamTokenizer.TT_EOF) {
@@ -437,17 +436,17 @@ public class ConsoleUtils {
                     // Ignore \n character.
                     break;
                 case StreamTokenizer.TT_WORD:
-                    tokens2.add(tokenizer.sval);
+                    commandWords2.add(tokenizer.sval);
                     break;
                 case '\'':
                     // If the tailing ' is missing, it will add a tailing ' to it.
                     // E.g. 'abc -> 'abc'
-                    tokens2.add(String.format("'%s'", tokenizer.sval));
+                    commandWords2.add(String.format("'%s'", tokenizer.sval));
                     break;
                 case '"':
                     // If the tailing " is missing, it will add a tailing ' to it.
                     // E.g. "abc -> "abc"
-                    tokens2.add(String.format("\"%s\"", tokenizer.sval));
+                    commandWords2.add(String.format("\"%s\"", tokenizer.sval));
                     break;
                 default:
                     // Ignore all other unknown characters.
@@ -455,9 +454,9 @@ public class ConsoleUtils {
             }
             token = tokenizer.nextToken();
         }
-        return tokens1.size() <= tokens2.size()
-                ? tokens1.toArray(new String[tokens1.size()])
-                : tokens2.toArray(new String[tokens2.size()]);
+        return commandWords1.size() <= commandWords2.size()
+                ? commandWords1.toArray(new String[0])
+                : commandWords2.toArray(new String[0]);
     }
 
     public static void singleLine() {
@@ -476,24 +475,11 @@ public class ConsoleUtils {
         }
         Arrays.sort(
                 files,
-                new Comparator<File>() {
-                    @Override
-                    public int compare(File o1, File o2) {
-                        long diff = o1.lastModified() - o2.lastModified();
-                        if (diff > 0) return -1;
-                        else if (diff == 0) return 0;
-                        else return 1;
-                    }
-
-                    @Override
-                    public boolean equals(Object obj) {
-                        return true;
-                    }
-
-                    @Override
-                    public int hashCode() {
-                        return super.hashCode();
-                    }
+                (f1, f2) -> {
+                    long diff = f1.lastModified() - f2.lastModified();
+                    if (diff > 0) return -1;
+                    else if (diff == 0) return 0;
+                    else return 1;
                 });
     }
 
@@ -516,11 +502,9 @@ public class ConsoleUtils {
             return null;
         }
         Instant instant = attr.creationTime().toInstant();
-        String format =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                        .withZone(ZoneId.systemDefault())
-                        .format(instant);
-        return format;
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault())
+                .format(instant);
     }
 
     public static String removeSolSuffix(String name) {

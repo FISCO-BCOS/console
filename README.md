@@ -72,4 +72,4 @@ FISCO BCOS开源社区是国内活跃的开源社区，社区长期为机构和�
 
 ![license](https://img.shields.io/badge/license-Apache%20v2-blue.svg)
 
-Web3SDK的开源协议为[Apache License 2.0](http://www.apache.org/licenses/). 详情参考[LICENSE](LICENSE)。
+FISCO-BCOS/Console的开源协议为[Apache License 2.0](http://www.apache.org/licenses/). 详情参考[LICENSE](LICENSE)。
