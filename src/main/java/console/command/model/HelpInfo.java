@@ -225,11 +225,9 @@ public class HelpInfo {
         } else {
             System.out.println(
                     "Deploy a " + "\033[32m" + "Liquid" + "\033[m" + " contract on blockchain.");
-            System.out.println("Usage: \ndeploy bin abi path parameters...");
+            System.out.println("Usage: \ndeploy liquidTarget path parameters...");
             System.out.println(
-                    "* bin -- The path of binary file after contract being compiled via cargo-liquid.");
-            System.out.println(
-                    "* abi -- The path of ABI file after contract being compiled via cargo-liquid.");
+                    "* liquidTarget -- The path of DIRECTORY, which MUST contains binary file and ABI file after contract being compiled via cargo-liquid.");
             System.out.println(
                     "* path -- The path of BFS where the contract will be located at, such as '/apps/liquid/YouContract/'.");
             System.out.println(
@@ -266,10 +264,10 @@ public class HelpInfo {
         System.out.println("Create a link to access contract more conveniently.");
         System.out.println("Usage: \nln [path] [contractAddress]");
         System.out.println(
-                "* path[Required] -- The BFS path of link, link must locate under '/apps', and be composed of contract name and version.");
+                "* path[Required] -- The BFS path of link, link must locate under '/apps'.");
         System.out.println("* contractAddress[Required] -- The address of a contract.");
-        System.out.println("Example: (if in evm)\nln /apps/Name/Version /apps/test/HelloWorld");
-        System.out.println("Example: (if in wasm)\nln /apps/Name/Version 0x1234567890");
+        System.out.println("Example: (if in evm)\nln /apps/Name/Version 0x1234567890");
+        System.out.println("Example: (if in wasm)\nln /apps/Name/Version /apps/test/HelloWorld");
     }
 
     public static void addObserverHelp() {
@@ -300,13 +298,31 @@ public class HelpInfo {
 
     public static void freezeAccountHelp() {
         System.out.println("Freeze account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
         System.out.println("Usage: \nfreezeAccount account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
     public static void unfreezeAccountHelp() {
         System.out.println("Unfreeze account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
         System.out.println("Usage: \nunfreezeAccount account");
+        System.out.println("* account -- 20 Bytes - The address of a account.");
+    }
+
+    public static void abolishAccountHelp() {
+        System.out.println("Abolish account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        System.out.println("Usage: \nabolishAccount account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
@@ -638,6 +654,19 @@ public class HelpInfo {
                         + "\033[m");
         ConsoleUtils.singleLine();
         System.out.println("Usage: addObserverProposal [nodeID]");
+        System.out.println(
+                "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
+    }
+
+    public static void removeNodeProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to remove a consensus node.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: removeNodeProposal [nodeID]");
         System.out.println(
                 "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
     }
