@@ -19,7 +19,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -310,7 +309,9 @@ public class ConsoleUtils {
             File solFile,
             String abiDir,
             String binDir,
-            String librariesOption)
+            String librariesOption,
+            String specifyContract,
+            boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
 
         String contractName = solFile.getName().split("\\.")[0];
@@ -319,7 +320,13 @@ public class ConsoleUtils {
         System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
         AbiAndBin abiAndBin =
                 ContractCompiler.compileSolToBinAndAbi(
-                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption, true);
+                        solFile,
+                        abiDir,
+                        binDir,
+                        ContractCompiler.All,
+                        librariesOption,
+                        specifyContract,
+                        isContractParallelAnalysis);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
         File abiFile = new File(abiDir + contractName + ".abi");
         File binFile = new File(binDir + contractName + ".bin");
@@ -348,7 +355,12 @@ public class ConsoleUtils {
     }
 
     public static void compileAllSolToJava(
-            String javaDir, String packageName, File solFileList, String abiDir, String binDir)
+            String javaDir,
+            String packageName,
+            File solFileList,
+            String abiDir,
+            String binDir,
+            boolean isContractParallelAnalysis)
             throws IOException {
         File[] solFiles = solFileList.listFiles();
         if (solFiles.length == 0) {
@@ -364,7 +376,15 @@ public class ConsoleUtils {
                 continue;
             }
             try {
-                compileSolToJava(javaDir, packageName, solFile, abiDir, binDir, null);
+                compileSolToJava(
+                        javaDir,
+                        packageName,
+                        solFile,
+                        abiDir,
+                        binDir,
+                        null,
+                        null,
+                        isContractParallelAnalysis);
             } catch (Exception e) {
                 System.out.println(
                         "ERROR:convert solidity to java for "
@@ -400,14 +420,14 @@ public class ConsoleUtils {
     public static String[] tokenizeCommand(String command) throws Exception {
         // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol,
         // set"Hello"]
-        List<String> tokens1 = new ArrayList<>();
+        List<String> commandWords1 = new ArrayList<>();
         StringTokenizer stringTokenizer = new StringTokenizer(command, " ");
         while (stringTokenizer.hasMoreTokens()) {
-            tokens1.add(stringTokenizer.nextToken());
+            commandWords1.add(stringTokenizer.nextToken());
         }
         // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol, set,
         // "Hello"]
-        List<String> tokens2 = new ArrayList<>();
+        List<String> commandWords2 = new ArrayList<>();
         StreamTokenizer tokenizer = new CommandTokenizer(new StringReader(command));
         int token = tokenizer.nextToken();
         while (token != StreamTokenizer.TT_EOF) {
@@ -416,17 +436,17 @@ public class ConsoleUtils {
                     // Ignore \n character.
                     break;
                 case StreamTokenizer.TT_WORD:
-                    tokens2.add(tokenizer.sval);
+                    commandWords2.add(tokenizer.sval);
                     break;
                 case '\'':
                     // If the tailing ' is missing, it will add a tailing ' to it.
                     // E.g. 'abc -> 'abc'
-                    tokens2.add(String.format("'%s'", tokenizer.sval));
+                    commandWords2.add(String.format("'%s'", tokenizer.sval));
                     break;
                 case '"':
                     // If the tailing " is missing, it will add a tailing ' to it.
                     // E.g. "abc -> "abc"
-                    tokens2.add(String.format("\"%s\"", tokenizer.sval));
+                    commandWords2.add(String.format("\"%s\"", tokenizer.sval));
                     break;
                 default:
                     // Ignore all other unknown characters.
@@ -434,9 +454,9 @@ public class ConsoleUtils {
             }
             token = tokenizer.nextToken();
         }
-        return tokens1.size() <= tokens2.size()
-                ? tokens1.toArray(new String[tokens1.size()])
-                : tokens2.toArray(new String[tokens2.size()]);
+        return commandWords1.size() <= commandWords2.size()
+                ? commandWords1.toArray(new String[0])
+                : commandWords2.toArray(new String[0]);
     }
 
     public static void singleLine() {
@@ -455,18 +475,11 @@ public class ConsoleUtils {
         }
         Arrays.sort(
                 files,
-                new Comparator<File>() {
-                    @Override
-                    public int compare(File o1, File o2) {
-                        long diff = o1.lastModified() - o2.lastModified();
-                        if (diff > 0) return -1;
-                        else if (diff == 0) return 0;
-                        else return 1;
-                    }
-
-                    public boolean equals(Object obj) {
-                        return true;
-                    }
+                (f1, f2) -> {
+                    long diff = f1.lastModified() - f2.lastModified();
+                    if (diff > 0) return -1;
+                    else if (diff == 0) return 0;
+                    else return 1;
                 });
     }
 
@@ -486,13 +499,12 @@ public class ConsoleUtils {
             attr = Files.readAttributes(path, BasicFileAttributes.class);
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
         Instant instant = attr.creationTime().toInstant();
-        String format =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                        .withZone(ZoneId.systemDefault())
-                        .format(instant);
-        return format;
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault())
+                .format(instant);
     }
 
     public static String removeSolSuffix(String name) {
@@ -689,6 +701,8 @@ public class ConsoleUtils {
         String SM_BIN_OPTION = "sm-bin";
         String ABI_OPTION = "abi";
 
+        String NO_ANALYSIS_OPTION = "no-analysis";
+
         if (mode.equals("solidity")) {
             Option solidityFilePathOption =
                     new Option(
@@ -709,6 +723,15 @@ public class ConsoleUtils {
                             "[Optional] Set library address information built into the solidity contract\n eg:\n --libraries lib1:lib1_address lib2:lib2_address\n");
             libraryOption.setRequired(false);
             options.addOption(libraryOption);
+
+            // no evm static analysis
+            Option noAnalysisOption =
+                    new Option(
+                            "n",
+                            NO_ANALYSIS_OPTION,
+                            false,
+                            "[Optional] NOT use evm static parallel-able analysis. It will not active DAG analysis, but will speedup compile speed.");
+            options.addOption(noAnalysisOption);
         } else if (mode.equals("liquid")) {
             Option liquidBinPathOption =
                     new Option(
@@ -766,7 +789,15 @@ public class ConsoleUtils {
         if (mode.equals("solidity")) {
             String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
             String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
+            boolean useDagAnalysis = !cmd.hasOption(NO_ANALYSIS_OPTION);
             String fullJavaDir = new File(javaDir).getAbsolutePath();
+            String specifyContract = null;
+            if (solPathOrDir.contains(":")
+                    && solPathOrDir.indexOf(':') == solPathOrDir.lastIndexOf(':')) {
+                String[] strings = solPathOrDir.split(":");
+                solPathOrDir = strings[0];
+                specifyContract = strings[1];
+            }
             File sol = new File(solPathOrDir);
             if (!sol.exists()) {
                 System.out.println(sol.getAbsoluteFile() + " not exist ");
@@ -775,9 +806,17 @@ public class ConsoleUtils {
             try {
                 if (sol.isFile()) { // input file
                     compileSolToJava(
-                            fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, librariesOption);
+                            fullJavaDir,
+                            pkgName,
+                            sol,
+                            ABI_PATH,
+                            BIN_PATH,
+                            librariesOption,
+                            specifyContract,
+                            useDagAnalysis);
                 } else { // input dir
-                    compileAllSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
+                    compileAllSolToJava(
+                            fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, useDagAnalysis);
                 }
             } catch (IOException | CompileContractException e) {
                 System.out.print(e.getMessage());

@@ -69,7 +69,7 @@ public class Console {
 
         while (true) {
             try {
-                if (lineReader == null && !consoleInitializer.isDisableAutoCompleter()) {
+                if (lineReader == null || !consoleInitializer.isDisableAutoCompleter()) {
                     System.out.println("Console can not read commands.");
                     break;
                 }

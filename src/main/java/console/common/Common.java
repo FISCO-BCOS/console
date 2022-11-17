@@ -1,5 +1,7 @@
 package console.common;
 
+import java.math.BigInteger;
+
 public class Common {
 
     public static final String ContractLogFileName = "deploylog.txt";
@@ -32,4 +34,5 @@ public class Common {
     public static final String BFS_TYPE_DIR = "directory";
     public static final String BFS_TYPE_CON = "contract";
     public static final String BFS_TYPE_LNK = "link";
+    public static final BigInteger LS_DEFAULT_COUNT = BigInteger.valueOf(500);
 }

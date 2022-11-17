@@ -163,7 +163,7 @@ public class AuthOpCommand extends BasicCategoryCommand {
             new CommandInfo(
                     "removeNodeProposal",
                     "Create a proposal to committee, which attempt to remove a consensus node.",
-                    HelpInfo::addObserverProposalHelp,
+                    HelpInfo::removeNodeProposalHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().createRemoveNodeProposal(params),
                     1,
@@ -414,6 +414,58 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     HelpInfo::getContractStatusHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getAuthFace().getContractStatus(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo FREEZE_ACCOUNT =
+            new CommandInfo(
+                    "freezeAccount",
+                    "Freeze a specific contract.",
+                    HelpInfo::freezeAccountHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().freezeAccount(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo UNFREEZE_ACCOUNT =
+            new CommandInfo(
+                    "unfreezeAccount",
+                    "Unfreeze a specific account.",
+                    HelpInfo::unfreezeAccountHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().unfreezeAccount(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo ABOLISH_ACCOUNT =
+            new CommandInfo(
+                    "abolishAccount",
+                    "Abolish a specific account.",
+                    HelpInfo::abolishAccountHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().abolishAccount(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
+    public static final CommandInfo GET_ACCOUNT_STATUS =
+            new CommandInfo(
+                    "getAccountStatus",
+                    "Get the status of the account.",
+                    HelpInfo::getAccountStatusHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().getAccountStatus(params),
                     1,
                     1,
                     false,
