@@ -266,8 +266,8 @@ public class HelpInfo {
         System.out.println(
                 "* path[Required] -- The BFS path of link, link must locate under '/apps'.");
         System.out.println("* contractAddress[Required] -- The address of a contract.");
-        System.out.println("Example: (if in evm)\nln /apps/Name/Version 0x1234567890");
-        System.out.println("Example: (if in wasm)\nln /apps/Name/Version /apps/test/HelloWorld");
+        System.out.println("Example: (if in evm)\nln /apps/Name 0x1234567890");
+        System.out.println("Example: (if in wasm)\nln /apps/Name /apps/test/HelloWorld");
     }
 
     public static void addObserverHelp() {
@@ -375,26 +375,6 @@ public class HelpInfo {
         System.out.println("Description table information.");
         System.out.println("Usage: \ndesc tableName");
         System.out.println("* tableName -- The name of the table.");
-    }
-
-    public static void promptNoFunc(String contractName, String funcName, int lenParams) {
-        if (lenParams <= 1) {
-            System.out.println(
-                    "The method "
-                            + funcName
-                            + " with "
-                            + lenParams
-                            + " parameter"
-                            + " is undefined of the contract.");
-        } else {
-            System.out.println(
-                    "The method "
-                            + funcName
-                            + " with "
-                            + lenParams
-                            + " parameters"
-                            + " is undefined of the contract.");
-        }
     }
 
     public static void loadAccountHelp() {

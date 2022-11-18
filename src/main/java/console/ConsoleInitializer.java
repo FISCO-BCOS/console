@@ -65,7 +65,7 @@ public class ConsoleInitializer {
         this.authFace = new AuthImpl(client);
     }
 
-    private class AccountInfo {
+    private static class AccountInfo {
         private String accountFileFormat;
         private String accountFile;
         private String password;

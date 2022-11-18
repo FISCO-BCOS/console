@@ -113,7 +113,7 @@ public class ContractOpCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer
                                     .getConsoleContractFace()
-                                    .listDeployContractAddress(consoleInitializer, params, pwd),
+                                    .listDeployContractAddress(consoleInitializer, params),
                     1,
                     2,
                     true);

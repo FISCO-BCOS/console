@@ -28,8 +28,6 @@ public class Console {
 
     private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
-    public static int INPUT_FLAG = 0;
-
     public static LineReader createLineReader(ConsoleInitializer consoleInitializer)
             throws IOException {
         if (consoleInitializer.isDisableAutoCompleter()) {
@@ -42,13 +40,12 @@ public class Console {
     public static void main(String[] args) {
 
         LineReader lineReader = null;
-        Scanner sc = null;
+        Scanner sc;
         ConsoleInitializer consoleInitializer = null;
         try {
             consoleInitializer = new ConsoleInitializer();
             consoleInitializer.init(args);
             lineReader = createLineReader(consoleInitializer);
-            sc = new Scanner(System.in);
             if (!consoleInitializer.isDisableAutoCompleter() && lineReader != null) {
                 KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
                 keymap.bind(new Reference("beginning-of-line"), "\033[1~");
@@ -69,12 +66,12 @@ public class Console {
 
         while (true) {
             try {
-                if (lineReader == null || !consoleInitializer.isDisableAutoCompleter()) {
+                if (lineReader == null) {
                     System.out.println("Console can not read commands.");
                     break;
                 }
                 String request;
-                if (INPUT_FLAG == 0 && !consoleInitializer.isDisableAutoCompleter()) {
+                if (!consoleInitializer.isDisableAutoCompleter()) {
                     request =
                             lineReader.readLine(
                                     "["
@@ -97,7 +94,7 @@ public class Console {
                 if (params.length < 1) {
                     continue;
                 }
-                if ("".equals(params[0].trim())) {
+                if (params[0].trim().isEmpty()) {
                     continue;
                 }
                 // execute the command

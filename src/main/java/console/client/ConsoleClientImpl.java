@@ -224,7 +224,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         String transactionWithProof =
                 client.getTransaction(nodeName, transactionHash, true).getResult().toString();
 
-        if (Objects.isNull(transactionWithProof) || "".equals(transactionWithProof)) {
+        if (Objects.isNull(transactionWithProof) || transactionWithProof.isEmpty()) {
             System.out.println("This transaction hash doesn't exist.");
             return;
         }
@@ -247,7 +247,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return;
         }
 
-        if (Objects.isNull(transactionReceiptWithProof) || "".equals(transactionReceiptWithProof)) {
+        if (Objects.isNull(transactionReceiptWithProof) || transactionReceiptWithProof.isEmpty()) {
             System.out.println("This transaction hash doesn't exist.");
             return;
         }
