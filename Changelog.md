@@ -1,3 +1,32 @@
+## v3.1.0
+(2022-11-21)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增账户权限管理命令： `freezeAccount`、 `unfreezeAccount`、 `abolishAccount`
+- 新增支持FISCO BCOS 3.1.0 新的BFS list分页接口、link接口，连接3.1.0以下版本时将会使用旧接口。
+- 新增支持部署Solidity合约文件内指定的合约类，使用姿势为 'deploy A:B'
+- 新增支持 contract2java.sh 脚本编译Solidity合约文件内指定的合约类
+- 新增支持 contract2java.sh --no-analysis选项，可选不启用Solidity并行静态分析
+
+### 更新
+
+- 更新更新 `fisco-bcos-java-sdk` 到3.1.0
+- 更新 `jackson-databind` 到2.14.0
+
+### 修复
+
+- 修复CRUD因为更新包导致的解析SQL使用错误
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+
 ## v3.0.1
 (2022-9-26)
 
