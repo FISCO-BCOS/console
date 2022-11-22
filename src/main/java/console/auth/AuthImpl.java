@@ -581,6 +581,14 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
+    public void abolishContract(String[] params) throws Exception {
+        String contract = params[1];
+        checkValidAddress(contract, "contractAddress");
+        RetCode result = authManager.setContractStatus(contract, AccessStatus.Abolish);
+        ConsoleUtils.printJson(result.toString());
+    }
+
+    @Override
     public void getContractStatus(String[] params) throws Exception {
         String contract = params[1];
         checkValidAddress(contract, "contractAddress");

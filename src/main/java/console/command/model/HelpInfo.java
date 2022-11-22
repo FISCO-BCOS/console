@@ -34,6 +34,12 @@ public class HelpInfo {
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
     }
 
+    public static void abolishContractHelp() {
+        System.out.println("Abolish a specific contract.");
+        System.out.println("Usage: \nabolishContract contractAddress");
+        System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
+    }
+
     public static void grantContractStatusManagerHelp() {
         System.out.println("Grant contract authorization to the user.");
         System.out.println("Usage: \ngrantContractStatusManager contractAddress userAddress");

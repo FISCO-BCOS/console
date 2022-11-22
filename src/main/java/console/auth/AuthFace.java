@@ -58,6 +58,8 @@ public interface AuthFace {
 
     void unfreezeContract(String[] params) throws Exception;
 
+    void abolishContract(String[] params) throws Exception;
+
     void getContractStatus(String[] params) throws Exception;
 
     void freezeAccount(String[] params) throws Exception;
