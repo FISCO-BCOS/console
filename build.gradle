@@ -123,10 +123,7 @@ jar {
             from file('src/main/resources/contract/')
             into 'dist/contracts/'
         }
-        copy{
-            from file('dist/apps/console.jar')
-            into '/root/chain/console/apps/'
-        }
+       
         new File('dist/contracts/console').mkdirs()
         new File('dist/contracts/sdk').mkdirs()
     }
