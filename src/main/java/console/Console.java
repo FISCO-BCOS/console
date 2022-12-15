@@ -176,9 +176,11 @@ public class Console {
                     System.out.println(
                             "Current ledger crypto type is ECDSA, please make sure the account is a ecdsa account!");
                 }
+                logger.error("SignatureException, e: ", e);
             } catch (ClassNotFoundException e) {
                 System.out.println(e.getMessage() + " does not exist.");
                 System.out.println();
+                logger.error("ClassNotFoundException, e:", e);
             } catch (IOException e) {
                 if (e.getMessage().startsWith("activeConnections")) {
                     System.out.println(
@@ -192,10 +194,12 @@ public class Console {
                     logger.error("IOException, e:", e);
                 }
                 System.out.println();
+                logger.error("IOException, e:", e);
             } catch (InvocationTargetException e) {
                 Throwable targetException = e.getTargetException();
                 System.out.println(targetException.getMessage());
                 System.out.println();
+                logger.error("InvocationTargetException, e:", e);
             } catch (UserInterruptException e) {
                 consoleInitializer.stop();
                 break;
