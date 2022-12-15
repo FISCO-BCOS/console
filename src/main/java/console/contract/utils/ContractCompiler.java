@@ -310,7 +310,12 @@ public class ContractCompiler {
         File binPath =
                 new File(saveDir.getAbsolutePath() + File.separator + contractName + BIN_SUFFIX);
         File smBinPath =
-                new File(saveDir.getAbsolutePath() + contractName + SM_SUFFIX + BIN_SUFFIX);
+                new File(
+                        saveDir.getAbsolutePath()
+                                + File.separator
+                                + contractName
+                                + SM_SUFFIX
+                                + BIN_SUFFIX);
 
         if (Objects.nonNull(abiAndBin.getAbi()) && !abiAndBin.getAbi().isEmpty()) {
             FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());
