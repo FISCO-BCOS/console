@@ -307,6 +307,7 @@ public class CRUDParseUtils {
         if (condition instanceof ConditionV320) {
             parseWhereClause(
                     selectBody.getWhere(),
+                    table.getKeyFieldName(),
                     table.getValueFields(),
                     selectBody.getLimit(),
                     (ConditionV320) condition);
@@ -348,6 +349,7 @@ public class CRUDParseUtils {
         if (condition instanceof ConditionV320) {
             parseWhereClause(
                     update.getWhere(),
+                    table.getKeyFieldName(),
                     table.getValueFields(),
                     update.getLimit(),
                     (ConditionV320) condition);
@@ -370,6 +372,7 @@ public class CRUDParseUtils {
         if (condition instanceof ConditionV320) {
             parseWhereClause(
                     delete.getWhere(),
+                    table.getKeyFieldName(),
                     table.getValueFields(),
                     delete.getLimit(),
                     (ConditionV320) condition);
@@ -400,12 +403,16 @@ public class CRUDParseUtils {
     }
 
     private static void parseWhereClause(
-            Expression where, List<String> valueFields, Limit limit, ConditionV320 condition)
+            Expression where,
+            String keyField,
+            List<String> valueFields,
+            Limit limit,
+            ConditionV320 condition)
             throws ConsoleMessageException {
         // parse where clause
         if (where != null) {
             BinaryExpression expr = (BinaryExpression) (where);
-            covertExpressionToCondition(expr, valueFields, condition);
+            covertExpressionToCondition(expr, keyField, valueFields, condition);
         }
 
         // parse limit
@@ -486,7 +493,7 @@ public class CRUDParseUtils {
     }
 
     private static void covertExpressionToCondition(
-            Expression expr, List<String> valueField, ConditionV320 condition)
+            Expression expr, String keyField, List<String> valueField, ConditionV320 condition)
             throws ConsoleMessageException {
         if (expr instanceof BinaryExpression) {
             Set<String> undefinedKeys = new HashSet<>();
@@ -498,28 +505,28 @@ public class CRUDParseUtils {
                             String key = trimQuotes(expr.getLeftExpression().toString());
                             String operation = expr.getStringExpression();
                             String value = trimQuotes(expr.getRightExpression().toString());
-                            if (!valueField.contains(key)) {
+                            if (!valueField.contains(key) && !keyField.equals(key)) {
                                 undefinedKeys.add(key);
                             }
                             if (expr instanceof ComparisonOperator) {
                                 switch (operation) {
                                     case "=":
-                                        condition.EQ(valueField.indexOf(key), value);
+                                        condition.EQ(key, value);
                                         break;
                                     case ">":
-                                        condition.GT(valueField.indexOf(key), value);
+                                        condition.GT(key, value);
                                         break;
                                     case ">=":
-                                        condition.GE(valueField.indexOf(key), value);
+                                        condition.GE(key, value);
                                         break;
                                     case "<":
-                                        condition.LT(valueField.indexOf(key), value);
+                                        condition.LT(key, value);
                                         break;
                                     case "<=":
-                                        condition.LE(valueField.indexOf(key), value);
+                                        condition.LE(key, value);
                                         break;
                                     case "!=":
-                                        condition.NE(valueField.indexOf(key), value);
+                                        condition.NE(key, value);
                                         break;
                                     default:
                                         break;
@@ -528,18 +535,24 @@ public class CRUDParseUtils {
                                 boolean startFlag = value.startsWith("%");
                                 boolean endFlag = value.endsWith("%");
                                 int flag = (startFlag ? 1 : 0) + (endFlag ? 2 : 0);
+                                if (value.equals("%")) flag = 0;
                                 switch (flag) {
                                     case 0:
-                                        condition.EQ(valueField.indexOf(key), value);
+                                        condition.EQ(key, value);
                                         break;
                                     case 1:
-                                        condition.STARTS_WITH(valueField.indexOf(key), value);
+                                        // %value
+                                        condition.ENDS_WITH(key, value.substring(1));
                                         break;
                                     case 2:
-                                        condition.ENDS_WITH(valueField.indexOf(key), value);
+                                        // value%
+                                        condition.STARTS_WITH(
+                                                key, value.substring(0, value.length() - 1));
                                         break;
                                     case 3:
-                                        condition.CONTAINS(valueField.indexOf(key), value);
+                                        // %value%
+                                        condition.CONTAINS(
+                                                key, value.substring(1, value.length() - 1));
                                         break;
                                     default:
                                         break;
@@ -556,7 +569,7 @@ public class CRUDParseUtils {
                     });
             if (!undefinedKeys.isEmpty()) {
                 throw new ConsoleMessageException(
-                        "Wrong condition! There is an equal comparison, no need to do other comparison! The conflicting condition is: "
+                        "Wrong condition! There is an undefined field comparison! The condition is: "
                                 + condition.getConditions());
             }
             if (!unsupportedConditions.isEmpty()) {
@@ -564,8 +577,9 @@ public class CRUDParseUtils {
                         "Wrong condition! Find unsupported conditions! message: "
                                 + unsupportedConditions);
             }
+        } else {
+            checkExpression(expr);
         }
-        checkExpression(expr);
     }
 
     private static void checkExpression(Expression expression) throws ConsoleMessageException {

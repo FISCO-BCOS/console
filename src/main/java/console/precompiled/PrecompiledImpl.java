@@ -148,9 +148,21 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         CRUDParseUtils.parseCreateTable(sql, table);
-        RetCode result =
-                tableCRUDService.createTable(
-                        table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion()).toVersionObj();
+        RetCode result;
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+            result =
+                    tableCRUDService.createTable(
+                            table.getTableName(),
+                            table.getKeyOrder(),
+                            table.getKeyFieldName(),
+                            table.getValueFields());
+        } else {
+            result =
+                    tableCRUDService.createTable(
+                            table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        }
 
         // parse the result
         if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
