@@ -148,9 +148,21 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         CRUDParseUtils.parseCreateTable(sql, table);
-        RetCode result =
-                tableCRUDService.createTable(
-                        table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion()).toVersionObj();
+        RetCode result;
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+            result =
+                    tableCRUDService.createTable(
+                            table.getTableName(),
+                            table.getKeyOrder(),
+                            table.getKeyFieldName(),
+                            table.getValueFields());
+        } else {
+            result =
+                    tableCRUDService.createTable(
+                            table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        }
 
         // parse the result
         if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
@@ -189,7 +201,15 @@ public class PrecompiledImpl implements PrecompiledFace {
         try {
             Table table = new Table();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
-            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
+                            .toVersionObj();
+            Map<String, List<String>> descTable;
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                descTable = tableCRUDService.descWithKeyOrder(tableName);
+            } else {
+                descTable = tableCRUDService.desc(tableName);
+            }
             table.setTableName(tableName);
             if (!checkTableExistence(descTable)) {
                 System.out.println("The table \"" + tableName + "\" doesn't exist!");
