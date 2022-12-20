@@ -42,7 +42,7 @@ contract TableTest {
     }
 
     function insert(int64 id, string memory name, string  memory age) public returns (int32){
-        Entry memory entry = Entry(cast.s64ToString(id), new string[](2));
+        Entry memory entry = Entry(cast.s64ToString(id), new string[](3));
         entry.fields[0] = name;
         entry.fields[1] = age;
         entry.fields[2] = "init";
@@ -71,8 +71,8 @@ contract TableTest {
     {
         Limit memory limit = Limit(0, 500);
         Condition[] memory cond = new Condition[](2);
-        cond[0] = Condition(ConditionOP.GT, 0, cast.s64ToString(idLow));
-        cond[1] = Condition(ConditionOP.LE, 0, cast.s64ToString(idHigh));
+        cond[0] = Condition(ConditionOP.GT, "id", cast.s64ToString(idLow));
+        cond[1] = Condition(ConditionOP.LE, "id", cast.s64ToString(idHigh));
         Entry[] memory entries = table.select(cond, limit);
         string[] memory names = new string[](entries.length);
         for(uint i = 0; i < names.length; i++)
@@ -85,8 +85,8 @@ contract TableTest {
     function count(int64 idLow, int64 idHigh) public view returns (uint32)
     {
         Condition[] memory cond = new Condition[](2);
-        cond[0] = Condition(ConditionOP.GT, 0, cast.s64ToString(idLow));
-        cond[1] = Condition(ConditionOP.LE, 0, cast.s64ToString(idHigh));
+        cond[0] = Condition(ConditionOP.GT, "id", cast.s64ToString(idLow));
+        cond[1] = Condition(ConditionOP.LE, "id", cast.s64ToString(idHigh));
         return  table.count(cond);
     }
 
@@ -97,8 +97,8 @@ contract TableTest {
 
         Limit memory limit = Limit(0, 500);
         Condition[] memory cond = new Condition[](2);
-        cond[0] = Condition(ConditionOP.GT, 0, cast.s64ToString(idLow));
-        cond[1] = Condition(ConditionOP.LE, 0, cast.s64ToString(idHigh));
+        cond[0] = Condition(ConditionOP.GT, "id", cast.s64ToString(idLow));
+        cond[1] = Condition(ConditionOP.LE, "id", cast.s64ToString(idHigh));
         return table.update(cond, limit, updateFields);
     }
 
@@ -106,8 +106,8 @@ contract TableTest {
     {
         Limit memory limit = Limit(0, 500);
         Condition[] memory cond = new Condition[](2);
-        cond[0] = Condition(ConditionOP.GT, 0, cast.s64ToString(idLow));
-        cond[1] = Condition(ConditionOP.LE, 0, cast.s64ToString(idHigh));
+        cond[0] = Condition(ConditionOP.GT, "id", cast.s64ToString(idLow));
+        cond[1] = Condition(ConditionOP.LE, "id", cast.s64ToString(idHigh));
         return table.remove(cond, limit);
     }
 
@@ -125,7 +125,7 @@ contract TableTest {
     }
 
     function desc() public view returns(string memory, string[] memory){
-        TableInfo memory ti = tm.desc(TABLE_NAME);
+        TableInfo memory ti = tm.descWithKeyOrder(TABLE_NAME);
         return (ti.keyColumn,ti.valueColumns);
     }
 }

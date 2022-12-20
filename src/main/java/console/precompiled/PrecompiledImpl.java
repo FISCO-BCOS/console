@@ -201,7 +201,15 @@ public class PrecompiledImpl implements PrecompiledFace {
         try {
             Table table = new Table();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
-            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
+                            .toVersionObj();
+            Map<String, List<String>> descTable;
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                descTable = tableCRUDService.descWithKeyOrder(tableName);
+            } else {
+                descTable = tableCRUDService.desc(tableName);
+            }
             table.setTableName(tableName);
             if (!checkTableExistence(descTable)) {
                 System.out.println("The table \"" + tableName + "\" doesn't exist!");
