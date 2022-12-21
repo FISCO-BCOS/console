@@ -22,7 +22,7 @@ contract KVTableTest {
     }
 
     function desc() public view returns(string memory, string memory){
-        TableInfo memory tf = tm.desc(tableName);
+        TableInfo memory tf = tm.descWithKeyOrder(tableName);
         return (tf.keyColumn, tf.valueColumns[0]);
     }
 
