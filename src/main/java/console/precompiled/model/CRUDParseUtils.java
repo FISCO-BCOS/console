@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -505,7 +506,9 @@ public class CRUDParseUtils {
                             String key = trimQuotes(expr.getLeftExpression().toString());
                             String operation = expr.getStringExpression();
                             String value = trimQuotes(expr.getRightExpression().toString());
-                            if (!valueField.contains(key) && !keyField.equals(key)) {
+                            if (!(expr instanceof AndExpression)
+                                    && !valueField.contains(key)
+                                    && !keyField.equals(key)) {
                                 undefinedKeys.add(key);
                             }
                             if (expr instanceof ComparisonOperator) {
@@ -570,7 +573,9 @@ public class CRUDParseUtils {
             if (!undefinedKeys.isEmpty()) {
                 throw new ConsoleMessageException(
                         "Wrong condition! There is an undefined field comparison! The condition is: "
-                                + condition.getConditions());
+                                + condition.getConditions()
+                                + ", undefinedKeys: "
+                                + undefinedKeys);
             }
             if (!unsupportedConditions.isEmpty()) {
                 throw new ConsoleMessageException(
