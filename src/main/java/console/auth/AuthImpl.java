@@ -593,7 +593,7 @@ public class AuthImpl implements AuthFace {
         String contract = params[1];
         checkValidAddress(contract, "contractAddress");
         Boolean isAvailable = authManager.contractAvailable(contract);
-        System.out.println(isAvailable ? "Available" : "Freeze");
+        System.out.println(isAvailable ? "Available" : "Unavailable");
     }
 
     @Override
