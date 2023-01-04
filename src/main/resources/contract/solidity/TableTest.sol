@@ -14,7 +14,7 @@ contract TableTest {
     Cast constant cast =  Cast(address(0x100f));  
     TableManager constant tm =  TableManager(address(0x1002));
     Table table;
-    string constant TABLE_NAME = "t_test";
+    string constant TABLE_NAME = "t_testV320";
     constructor () public {
         // create table
         string[] memory columnNames = new string[](3);
