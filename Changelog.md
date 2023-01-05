@@ -1,3 +1,19 @@
+## v3.1.1
+(2023-01-04)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 交易、交易回执数据结构添加`extraData`字段
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+
 ## v3.1.0
 (2022-11-21)
 
