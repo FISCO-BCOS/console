@@ -1,7 +1,8 @@
 # Created by .ignore support plugin (hsz.mobi)
 ### Java template
 *.class
-
+bin/
+.vscode/
 
 # Package Files #
 *.war
