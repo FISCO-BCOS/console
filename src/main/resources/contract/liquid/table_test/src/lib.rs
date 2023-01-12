@@ -112,7 +112,7 @@ mod table_test {
                 .initialize(Table::at("/tables/t_testV320".parse().unwrap()));
         }
 
-        pub fn select(&self, id_low: i64, id_high: i64) -> Vec<Entry> {
+        pub fn select(&self, id_low: i64, id_high: i64) -> Vec<String> {
             let limit = Limit {
                 offset: 0,
                 count: 500,
@@ -131,7 +131,11 @@ mod table_test {
             });
 
             let entries = self.table.select(conditions, limit).unwrap();
-            return entries;
+            let mut values: Vec<String> = Vec::new();
+            for entry in entries {
+                values.push(entry.fields[0].clone());
+            }
+            return values.clone();
         }
 
         pub fn insert(&mut self, id: i64, name: String, age: String) -> i32 {

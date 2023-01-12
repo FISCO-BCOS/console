@@ -24,7 +24,7 @@ download_build_chain()
     LOG_INFO "tag is empty, use default tag: ${default_tag}"
     tag="${default_tag}"
   fi
-  curl -#LO "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/FISCO-BCOS/releases/${tag}/build_chain.sh" && chmod u+x build_chain.sh
+  curl -#LO "https://github.com/FISCO-BCOS/FISCO-BCOS/releases/download/${tag}/build_chain.sh" && chmod u+x build_chain.sh
 }
 
 prepare_environment()

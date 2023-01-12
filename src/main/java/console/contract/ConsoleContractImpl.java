@@ -374,7 +374,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
             System.out.println(
                     "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
-            System.out.println("contract address: " + path);
+            System.out.println("contract address: " + ContractCompiler.BFS_APPS_PREFIX + path);
             System.out.println(
                     "currentAccount: " + client.getCryptoSuite().getCryptoKeyPair().getAddress());
             String contractName = FilenameUtils.getBaseName(path);
