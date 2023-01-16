@@ -27,6 +27,7 @@ import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.TableCRUDService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionV320;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
@@ -120,7 +121,14 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (tableName.endsWith(";")) {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
-        Map<String, List<String>> tableDesc = tableCRUDService.desc(tableName);
+        Map<String, List<String>> tableDesc;
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion()).toVersionObj();
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+            tableDesc = tableCRUDService.descWithKeyOrder(tableName);
+        } else {
+            tableDesc = tableCRUDService.desc(tableName);
+        }
         ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc));
     }
 
@@ -140,9 +148,21 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         CRUDParseUtils.parseCreateTable(sql, table);
-        RetCode result =
-                tableCRUDService.createTable(
-                        table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion()).toVersionObj();
+        RetCode result;
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+            result =
+                    tableCRUDService.createTable(
+                            table.getTableName(),
+                            table.getKeyOrder(),
+                            table.getKeyFieldName(),
+                            table.getValueFields());
+        } else {
+            result =
+                    tableCRUDService.createTable(
+                            table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        }
 
         // parse the result
         if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
@@ -181,7 +201,15 @@ public class PrecompiledImpl implements PrecompiledFace {
         try {
             Table table = new Table();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
-            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
+                            .toVersionObj();
+            Map<String, List<String>> descTable;
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                descTable = tableCRUDService.descWithKeyOrder(tableName);
+            } else {
+                descTable = tableCRUDService.desc(tableName);
+            }
             table.setTableName(tableName);
             if (!checkTableExistence(descTable)) {
                 System.out.println("The table \"" + tableName + "\" doesn't exist!");
@@ -235,13 +263,27 @@ public class PrecompiledImpl implements PrecompiledFace {
                 return;
             }
             table.setKeyFieldName(keyName);
-            Condition condition = CRUDParseUtils.parseUpdate(sql, table, updateFields);
+            table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
 
-            String keyValue = condition.getEqValue();
-            RetCode updateResult =
-                    keyValue.isEmpty()
-                            ? tableCRUDService.update(tableName, condition, updateFields)
-                            : tableCRUDService.update(tableName, keyValue, updateFields);
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
+                            .toVersionObj();
+            RetCode updateResult;
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                ConditionV320 conditionV320 = new ConditionV320();
+                CRUDParseUtils.parseUpdate(sql, table, conditionV320, updateFields);
+                updateResult = tableCRUDService.update(tableName, conditionV320, updateFields);
+            } else {
+                Condition condition = new Condition();
+                CRUDParseUtils.parseUpdate(sql, table, condition, updateFields);
+
+                String keyValue = condition.getEqValue();
+                updateResult =
+                        keyValue.isEmpty()
+                                ? tableCRUDService.update(tableName, condition, updateFields)
+                                : tableCRUDService.update(tableName, keyValue, updateFields);
+            }
+
             if (updateResult.getCode() >= 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
             } else {
@@ -270,12 +312,25 @@ public class PrecompiledImpl implements PrecompiledFace {
                 return;
             }
             table.setKeyFieldName(descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0));
-            Condition condition = CRUDParseUtils.parseRemove(sql, table);
-            String keyValue = condition.getEqValue();
-            RetCode removeResult =
-                    keyValue.isEmpty()
-                            ? tableCRUDService.remove(table.getTableName(), condition)
-                            : tableCRUDService.remove(table.getTableName(), keyValue);
+            table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
+
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
+                            .toVersionObj();
+            RetCode removeResult;
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                ConditionV320 conditionV320 = new ConditionV320();
+                CRUDParseUtils.parseRemove(sql, table, conditionV320);
+                removeResult = tableCRUDService.remove(table.getTableName(), conditionV320);
+            } else {
+                Condition condition = new Condition();
+                CRUDParseUtils.parseRemove(sql, table, condition);
+                String keyValue = condition.getEqValue();
+                removeResult =
+                        keyValue.isEmpty()
+                                ? tableCRUDService.remove(table.getTableName(), condition)
+                                : tableCRUDService.remove(table.getTableName(), keyValue);
+            }
 
             if (removeResult.getCode() >= 0) {
                 System.out.println("Remove OK, " + removeResult.getCode() + " row(s) affected.");
@@ -312,19 +367,31 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             String keyField = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
             table.setKeyFieldName(keyField);
-            Condition condition = CRUDParseUtils.parseSelect(sql, table, selectColumns);
-            String keyValue = condition.getEqValue();
+            table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
+
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
+                            .toVersionObj();
             List<Map<String, String>> result = new ArrayList<>();
-            if (keyValue.isEmpty()) {
-                result = tableCRUDService.select(table.getTableName(), descTable, condition);
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                ConditionV320 conditionV320 = new ConditionV320();
+                CRUDParseUtils.parseSelect(sql, table, selectColumns, conditionV320);
+                result = tableCRUDService.select(table.getTableName(), descTable, conditionV320);
             } else {
-                Map<String, String> select =
-                        tableCRUDService.select(table.getTableName(), descTable, keyValue);
-                if (select.isEmpty()) {
-                    System.out.println("Empty set.");
-                    return;
+                Condition condition = new Condition();
+                CRUDParseUtils.parseSelect(sql, table, selectColumns, condition);
+                String keyValue = condition.getEqValue();
+                if (keyValue.isEmpty()) {
+                    result = tableCRUDService.select(table.getTableName(), descTable, condition);
+                } else {
+                    Map<String, String> select =
+                            tableCRUDService.select(table.getTableName(), descTable, keyValue);
+                    if (select.isEmpty()) {
+                        System.out.println("Empty set.");
+                        return;
+                    }
+                    result.add(select);
                 }
-                result.add(select);
             }
             int rows;
             if (result.isEmpty()) {

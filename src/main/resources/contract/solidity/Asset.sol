@@ -17,19 +17,24 @@ contract Asset {
         string indexed to_account,
         uint256 indexed amount
     );
+    event UpdateEvent(
+        string account,
+        uint256 asset_value,
+        string key
+    );
 
     KVTable kvTable;
     TableManager tm;
     string constant tableName = "t_asset";
 
-    constructor() public {
+    constructor() {
         // 构造函数中创建t_asset表
         tm = TableManager(address(0x1002));
 
-        // 资产管理表, key : account, field : asset_value
-        // |  资产账户(主键)      |     资产金额       |
+        // 资产管理表 key : account, field : asset_value
+        // |  资产账户(主键)       |     资产金额       |
         // |-------------------- |-------------------|
-        // |        account      |    asset_value    |
+        // |       account       |    asset_value    |
         // |---------------------|-------------------|
         //
 
@@ -50,7 +55,11 @@ contract Asset {
             参数一： 成功返回0, 账户不存在返回-1
             参数二： 第一个参数为0时有效，资产金额
     */
-    function select(string memory account) public view returns (bool, uint256) {
+    function select(string memory account) 
+    public 
+    view 
+    returns (bool, uint256) 
+    {
         // 查询
         bool result;
         string memory value;
@@ -59,6 +68,65 @@ contract Asset {
 
         asset_value = safeParseInt(value);
         return (result, asset_value);
+    }
+
+    /*
+    描述 : 查询资产账户历史状态
+    参数 ：
+            account : 资产账户
+            block_number : 块高
+
+    返回值：
+            参数一： 成功返回0, 账户不存在返回-1, 块高状态查询失败返回-2
+            参数二： 第一个参数为0时有效，资产金额
+    */
+    function selectWithBlockNumber(string memory account, uint256 block_number) 
+    public 
+    view 
+    returns (int256, uint256) 
+    {
+        bool ret;
+        uint256 temp_asset_value;
+        // 查询账号是否存在
+        (ret, temp_asset_value) = select(account);
+        if (ret != true) {
+            return (-1, 0);
+        }
+
+        // 查找 [1, block_number]
+        uint256 low = 1;
+        uint256 high = block_number;
+        while(low < high) {
+            string memory key = string(abi.encodePacked(account, "@", uint2str(high)));
+            uint256 asset_value;
+            // 查询账号是否存在
+            (ret, asset_value) = select(key);
+            if (ret) {
+                return (0, asset_value);
+            }
+            high = high - 1;
+        }
+
+        return (-2, 0);
+    }
+
+    /*
+    描述 : 更新账户历史状态
+    参数 ：
+            account : 资产账户
+            block_number: 块高
+            asset_value: 账户余额
+
+    返回值：
+            无
+    */
+    function update(string memory account, uint256 block_number, uint256 asset_value) 
+    private 
+    {
+        string memory key = string(abi.encodePacked(account, "@", uint2str(block_number)));
+        string memory value = uint2str(asset_value);
+        kvTable.set(key, value);
+        emit UpdateEvent(account, asset_value, key);
     }
 
     /*
@@ -89,6 +157,8 @@ contract Asset {
             if (count == 1) {
                 // 成功
                 ret_code = 0;
+                // 更新历史状态
+                update(account, block.number, asset_value);
             } else {
                 // 失败? 无权限或者其他错误
                 ret_code = - 2;
@@ -155,7 +225,8 @@ contract Asset {
             return - 4;
         }
 
-        string memory f_new_value_str = uint2str(from_asset_value - amount);
+        uint256 f_new_value = from_asset_value - amount;
+        string memory f_new_value_str = uint2str(f_new_value);
 
         // 更新转账账户
         int32 count = kvTable.set(from_account, f_new_value_str);
@@ -165,12 +236,16 @@ contract Asset {
             return - 5;
         }
 
-        string memory to_new_value_str = uint2str(to_asset_value + amount);
+        uint256 to_new_value = to_asset_value + amount;
+        string memory to_new_value_str = uint2str(to_new_value);
 
         // 更新接收账户
         kvTable.set(to_account, to_new_value_str);
 
         emit TransferEvent(0, from_account, to_account, amount);
+        // 更新历史状态
+        update(from_account, block.number, f_new_value);
+        update(to_account, block.number, to_new_value);
 
         return 0;
     }
@@ -244,3 +319,4 @@ contract Asset {
         return mint;
     }
 }
+

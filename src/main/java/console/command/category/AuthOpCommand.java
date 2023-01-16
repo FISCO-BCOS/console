@@ -407,6 +407,19 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     false,
                     true);
 
+    public static final CommandInfo ABOLISH_CONTRACT =
+            new CommandInfo(
+                    "abolishContract",
+                    "Abolish a specific contract.",
+                    HelpInfo::abolishContractHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().abolishContract(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
     public static final CommandInfo GET_CONTRACT_STATUS =
             new CommandInfo(
                     "getContractStatus",
