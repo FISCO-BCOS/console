@@ -1,3 +1,32 @@
+## v3.2.0
+(2023-01-17)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增合约权限管理命令： `abolishContract`，合约管理员可以通过这个命令废止某个合约，不再使用。
+- 支持CRUD范围查询、修改、删除新接口，在CRUD SQL语句中支持LIKE语句，支持前缀、后缀、包含查询。
+- 支持CRUD建表新接口，支持在建表时指定主键为整数类型，在插入时为数字序排序。
+- 新增EntryWrapper、Cast的合约示例，优化CRUD的使用体验，提供在Solidity快速类型转换的工具。
+
+### 更新
+
+- 更新 `fisco-bcos-java-sdk` 到3.2.0
+- 控制台提供的Solidity`TableTest`合约和Liquid`table_test`均已经支持全新的CRUD接口。
+
+### 修复
+
+- 修复一些错误发生时的信息展示。
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+
 ## v3.1.1
 (2023-01-04)
 
