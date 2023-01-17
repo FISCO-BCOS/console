@@ -208,7 +208,7 @@ public class Console {
                 logger.error("EndOfFileException, e:", e);
                 break;
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.out.println("Exception, e: " + e);
                 System.out.println();
                 logger.error("Exception, e:", e);
             }
