@@ -40,7 +40,7 @@ dependencies {
     //compile 'org.fisco-bcos:solcJ:0.5.2.1'
     compile 'org.fisco-bcos:solcJ:0.8.11.1'
 
-    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.2.0') {
+    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.3.0-SNAPSHOT') {
         exclude group: "org.slf4j"
     }
     compile('org.fisco-bcos:evm-static-analysis:1.0.0') {
