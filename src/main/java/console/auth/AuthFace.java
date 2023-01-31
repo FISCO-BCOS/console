@@ -69,4 +69,6 @@ public interface AuthFace {
     void abolishAccount(String[] params) throws Exception;
 
     void getAccountStatus(String[] params) throws Exception;
+
+    void initAuth(String[] params) throws Exception;
 }

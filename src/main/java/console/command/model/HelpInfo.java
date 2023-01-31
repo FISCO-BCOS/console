@@ -338,6 +338,16 @@ public class HelpInfo {
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
+    public static void initAuthHelp() {
+        System.out.println("Initialize committee contract system.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only can be used when first init chain committee."
+                        + "\033[m");
+        System.out.println("Usage: \ninitAuth admin");
+        System.out.println("* account -- 20 Bytes - The address of a account.");
+    }
+
     public static void setSystemConfigByKeyHelp() {
         System.out.println("Set a system config.");
         System.out.println("Usage: \nsetSystemConfigByKey key value");
