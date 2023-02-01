@@ -485,6 +485,19 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     false,
                     true);
 
+    public static final CommandInfo INIT_AUTH =
+            new CommandInfo(
+                    "initAuth",
+                    "Initialize committee contract system.",
+                    HelpInfo::initAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().initAuth(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    true);
+
     static {
         Field[] fields = AuthOpCommand.class.getDeclaredFields();
         for (Field field : fields) {

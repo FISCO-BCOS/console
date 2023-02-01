@@ -637,6 +637,14 @@ public class AuthImpl implements AuthFace {
         System.out.println("Account " + account + " status: " + (isNormal ? "Normal" : "Abnormal"));
     }
 
+    @Override
+    public void initAuth(String[] params) throws Exception {
+        String admin = params[1];
+        checkValidAddress(admin, "adminAddress");
+        RetCode retCode = authManager.initAuth(admin);
+        ConsoleUtils.printJson(retCode.toString());
+    }
+
     void checkValidAddress(String address, String valueName) throws TransactionException {
         if (!ConsoleUtils.isValidAddress(address)) {
             throw new TransactionException(
