@@ -475,6 +475,21 @@ public class HelpInfo {
         System.out.println("Usage: pwd");
     }
 
+    public static void getContractShardHelp() {
+        System.out.println("Get a contract's belonging shard");
+        System.out.println("Usage: getContractShard [contractAddress]");
+    }
+
+    public static void makeShardHelp() {
+        System.out.println("Make a shard");
+        System.out.println("Usage: makeShard [shardName]");
+    }
+
+    public static void linkShardHelp() {
+        System.out.println("Add a contract to a shard");
+        System.out.println("Usage: linkShard [shardName] [contractAddress]");
+    }
+
     public static void initializeHelp() {
         System.out.println("Usage: \ninitialize binPath abiPath");
         System.out.println("* binPath -- The path of contract template.");

@@ -36,5 +36,11 @@ public interface PrecompiledFace {
 
     void link(String[] params) throws Exception;
 
+    void getContractShard(String[] params) throws Exception;
+
+    void makeShard(String[] params) throws Exception;
+
+    void linkShard(String[] params) throws Exception;
+
     String getPwd();
 }
