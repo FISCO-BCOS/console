@@ -94,11 +94,4 @@ public class ShardingCommand extends BasicCategoryCommand {
             }
         }
     }
-
-    public static final List<String> BFS_COMMANDS =
-            new ArrayList<>(
-                    Arrays.asList(
-                            ShardingCommand.GET_CONTRACT_SHARD.getCommand(),
-                            ShardingCommand.MAKE_SHARD.getCommand(),
-                            ShardingCommand.LINK_SHARD.getCommand()));
 }
