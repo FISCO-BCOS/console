@@ -21,6 +21,7 @@ import console.command.category.ConsensusOpCommand;
 import console.command.category.ContractOpCommand;
 import console.command.category.CrudCommand;
 import console.command.category.GroupCommand;
+import console.command.category.ShardingCommand;
 import console.command.category.StatusQueryCommand;
 import console.command.model.BasicCategoryCommand;
 import console.command.model.CommandInfo;
@@ -57,6 +58,7 @@ public class SupportedCommand {
     public static final GroupCommand groupCommand = new GroupCommand();
     public static final AuthOpCommand authOpCommand = new AuthOpCommand();
     public static final AccountOpCommand accountOpCommand = new AccountOpCommand();
+    public static final ShardingCommand shardingCommand = new ShardingCommand();
 
     /// FIXME: not supported now
     // public static CollaborationOpCommand collaborationOpCommand = new CollaborationOpCommand();

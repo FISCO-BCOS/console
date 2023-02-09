@@ -30,6 +30,7 @@ import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionV320;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sharding.ShardingService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
@@ -52,6 +53,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
     private BFSService bfsService;
+    private ShardingService shardingService;
     private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
@@ -61,6 +63,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
+        this.shardingService = new ShardingService(client, cryptoKeyPair);
     }
 
     @Override
@@ -669,6 +672,44 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         ConsoleUtils.printJson(retCode.toString());
         System.out.println();
+    }
+
+    @Override
+    public void getContractShard(String[] params) throws Exception {
+        String shard = this.shardingService.getContractShard(params[1]);
+        System.out.println(shard);
+    }
+
+    @Override
+    public void makeShard(String[] params) throws Exception {
+        String shardName = params[1];
+        RetCode retCode = this.shardingService.makeShard(shardName);
+
+        logger.info("makeShard: {}, retCode {}", shardName, retCode);
+        // parse the result
+        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println("make shard " + shardName + " Ok. You can use 'ls' to check");
+        } else {
+            System.out.println("make shard " + shardName + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void linkShard(String[] params) throws Exception {
+        String shardName = params[1];
+        String address = params[2];
+        RetCode retCode = this.shardingService.linkShard(shardName, address);
+
+        logger.info("linkShard: add {} to {}, retCode {}", address, shardName, retCode);
+        // parse the result
+        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println(
+                    "Add " + address + " to " + shardName + " Ok. You can use 'ls' to check");
+        } else {
+            System.out.println("Add " + address + " to " + shardName + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
     }
 
     @Override
