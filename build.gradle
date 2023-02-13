@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.sherter.google-java-format' version '0.8'
+    // id 'com.github.sherter.google-java-format' version '0.8'
 }
 apply plugin: 'maven'
 apply plugin: 'java'
@@ -18,11 +18,11 @@ repositories {
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 
-googleJavaFormat {
-    options style: 'AOSP'
-    source = sourceSets*.allJava
-    include '**/*.java'
-}
+// googleJavaFormat {
+//     options style: 'AOSP'
+//     source = sourceSets*.allJava
+//     include '**/*.java'
+// }
 
 def log4j_version = '2.19.0'
 List logger = [
@@ -40,9 +40,10 @@ dependencies {
     //compile 'org.fisco-bcos:solcJ:0.5.2.1'
     compile 'org.fisco-bcos:solcJ:0.8.11.1'
 
-    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.3.0-SNAPSHOT') {
+    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.3.0-debugHsm-SNAPSHOT') {
         exclude group: "org.slf4j"
     }
+
     compile('org.fisco-bcos:evm-static-analysis:1.0.0') {
         exclude group: "org.slf4j"
     }
