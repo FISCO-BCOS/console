@@ -697,8 +697,8 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     @Override
     public void linkShard(String[] params) throws Exception {
-        String shardName = params[1];
-        String address = params[2];
+        String address = params[1];
+        String shardName = params[2];
         RetCode retCode = this.shardingService.linkShard(shardName, address);
 
         logger.info("linkShard: add {} to {}, retCode {}", address, shardName, retCode);

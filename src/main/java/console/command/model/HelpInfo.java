@@ -487,7 +487,7 @@ public class HelpInfo {
 
     public static void linkShardHelp() {
         System.out.println("Add a contract to a shard");
-        System.out.println("Usage: linkShard [shardName] [contractAddress]");
+        System.out.println("Usage: linkShard [contractAddress] [shardName]");
     }
 
     public static void initializeHelp() {
