@@ -677,6 +677,12 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void getContractShard(String[] params) throws Exception {
         String shard = this.shardingService.getContractShard(params[1]);
+        if (shard.isEmpty()) {
+            shard = "default";
+        } else {
+            shard = "/shards/" + shard;
+        }
+
         System.out.println(shard);
     }
 
