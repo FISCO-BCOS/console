@@ -135,6 +135,10 @@ public class ConsoleInitializer {
                 System.exit(0);
             }
 
+            if (config.getCryptoMaterialConfig().getEnableHsm()) {
+                return new AccountInfo("HSM", "", "");
+            }
+
             if (args.length == 3) {
                 return loadAccount(bcosSDK, args);
             }
@@ -150,7 +154,6 @@ public class ConsoleInitializer {
         try {
             this.client = groupID == null ? bcosSDK.getClient() : bcosSDK.getClient(groupID);
             if (accountInfo != null) {
-                logger.debug("===== loadAccountInfo accountInfo != null");
                 this.client
                         .getCryptoSuite()
                         .loadAccount(
@@ -161,10 +164,8 @@ public class ConsoleInitializer {
                     .getConfig()
                     .getAccountConfig()
                     .isAccountConfigured()) {
-                logger.debug("===== loadAccountRandomly");
                 accountInfo = loadAccountRandomly(bcosSDK, client);
                 if (accountInfo != null) {
-                    logger.debug("===== accountInfo != null");
                     this.client
                             .getCryptoSuite()
                             .loadAccount(
@@ -173,10 +174,8 @@ public class ConsoleInitializer {
                                     accountInfo.password);
                 }
                 if (accountInfo == null) {
-                    logger.debug("===== accountInfo == null");
                     // save the keyPair
                     client.getCryptoSuite().getCryptoKeyPair().storeKeyPairWithPemFormat();
-                    logger.debug("===== save the keyPair 11111111111111");
                 }
             }
         } catch (LoadKeyStoreException e) {
@@ -196,14 +195,11 @@ public class ConsoleInitializer {
     private AccountInfo loadAccountRandomly(BcosSDK bcosSDK, Client client) {
         ConfigOption config = bcosSDK.getConfig();
         if (config.getAccountConfig() == null) {
-            logger.debug("=======  loadAccountRandomly config.getAccountConfig() == null");
             return null;
         }
         String keyStoreDir = config.getAccountConfig().getKeyStoreDir();
-        logger.debug("=======  keyStoreDir: {}", keyStoreDir);
         File keyStoreDirPath = new File(keyStoreDir);
         if (!keyStoreDirPath.exists() || !keyStoreDirPath.isDirectory()) {
-            logger.debug("=======  loadAccountRandomly !keyStoreDirPath.exists() || !keyStoreDirPath.isDirectory()");
             return null;
         }
         String subDir = client.getCryptoSuite().getKeyPairFactory().getKeyStoreSubDir();
@@ -211,7 +207,6 @@ public class ConsoleInitializer {
         File keyStoreFileDirPath = new File(keyStoreFileDir);
         logger.debug("loadAccountRandomly, keyStoreFileDirPath:{}", keyStoreFileDir);
         if (!keyStoreFileDirPath.exists() || !keyStoreFileDirPath.isDirectory()) {
-            logger.debug("=======  loadAccountRandomly !keyStoreFileDirPath.exists() || !keyStoreFileDirPath.isDirectory()");
             return null;
         }
         // load account from the keyStoreDir
