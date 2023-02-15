@@ -1,5 +1,8 @@
 package console.precompiled;
 
+import static console.common.Common.compatibilityVersion;
+
+import console.ConsoleInitializer;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.model.AbiAndBin;
@@ -111,10 +114,18 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void setSystemConfigByKey(String[] params) throws Exception {
+    public void setSystemConfigByKey(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
         String key = params[1];
         String value = params[2];
-        ConsoleUtils.printJson(this.systemConfigService.setValueByKey(key, value).toString());
+        RetCode retCode = this.systemConfigService.setValueByKey(key, value);
+        ConsoleUtils.printJson(retCode.toString());
+        if (key.equals(compatibilityVersion)
+                && retCode.code == PrecompiledRetCode.CODE_SUCCESS.code) {
+            String[] param = new String[2];
+            param[1] = consoleInitializer.getGroupID();
+            consoleInitializer.switchGroup(param);
+        }
     }
 
     @Override
