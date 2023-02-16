@@ -135,6 +135,10 @@ public class ConsoleInitializer {
                 System.exit(0);
             }
 
+            if (config.getCryptoMaterialConfig().getEnableHsm()) {
+                return new AccountInfo("HSM", "", "");
+            }
+
             if (args.length == 3) {
                 return loadAccount(bcosSDK, args);
             }
@@ -183,7 +187,7 @@ public class ConsoleInitializer {
             System.out.println(
                     "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
                             + e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}", e.getMessage(), e);
             System.exit(0);
         }
     }

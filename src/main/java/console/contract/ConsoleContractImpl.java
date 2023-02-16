@@ -296,7 +296,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 }
             }
 
-            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
+            boolean sm =
+                    (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE)
+                            || (client.getCryptoSuite().getCryptoTypeConfig()
+                                    == CryptoType.HSM_TYPE);
             AbiAndBin abiAndBin =
                     ContractCompiler.compileContract(
                             contractNameOrPath, contractName, sm, isContractParallelAnalysis);
