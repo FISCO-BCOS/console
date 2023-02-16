@@ -1,5 +1,7 @@
 package console.precompiled;
 
+import console.ConsoleInitializer;
+
 public interface PrecompiledFace {
     // ConsensusPrecompiled
     void addSealer(String[] params) throws Exception;
@@ -8,7 +10,8 @@ public interface PrecompiledFace {
 
     void removeNode(String[] params) throws Exception;
 
-    void setSystemConfigByKey(String[] params) throws Exception;
+    void setSystemConfigByKey(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception;
 
     void createTable(String sql) throws Exception;
 
