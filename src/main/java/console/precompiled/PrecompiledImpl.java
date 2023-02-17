@@ -1,6 +1,6 @@
 package console.precompiled;
 
-import static console.common.Common.compatibilityVersion;
+import static console.common.Common.COMPATIBILITY_VERSION;
 
 import console.ConsoleInitializer;
 import console.common.Common;
@@ -120,7 +120,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         String value = params[2];
         RetCode retCode = this.systemConfigService.setValueByKey(key, value);
         ConsoleUtils.printJson(retCode.toString());
-        if (key.equals(compatibilityVersion)
+        if (key.equals(COMPATIBILITY_VERSION)
                 && retCode.code == PrecompiledRetCode.CODE_SUCCESS.code) {
             String[] param = new String[2];
             param[1] = consoleInitializer.getGroupID();

@@ -220,7 +220,7 @@ public class ConsoleUtils {
                                 + " and "
                                 + maxValue
                                 + ".");
-                return Common.InvalidLongValue;
+                return Common.INVALID_LONG_VALUE;
             }
             return value;
         } catch (NumberFormatException e) {
@@ -234,7 +234,7 @@ public class ConsoleUtils {
                             + Long.MAX_VALUE
                             + ".");
             logger.debug("processLong for {} failed, error info: {}", name, e.getMessage());
-            return Common.InvalidLongValue;
+            return Common.INVALID_LONG_VALUE;
         }
     }
 
@@ -256,7 +256,7 @@ public class ConsoleUtils {
                                 + " and "
                                 + maxValue
                                 + ".");
-                return Common.InvalidReturnNumber;
+                return Common.INVALID_RETURN_NUMBER;
             }
         } catch (NumberFormatException e) {
             System.out.println("Invalid " + name + ": \"" + intStr + "\"!");
@@ -268,7 +268,7 @@ public class ConsoleUtils {
                             + " and "
                             + maxValue
                             + ".");
-            return Common.InvalidReturnNumber;
+            return Common.INVALID_RETURN_NUMBER;
         }
         return intParam;
     }
