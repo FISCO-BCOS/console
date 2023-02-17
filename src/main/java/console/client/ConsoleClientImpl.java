@@ -117,7 +117,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getBlockByNumber(String[] params) throws IOException {
         String blockNumberStr = params[1];
         int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
-        if (blockNumber == Common.InvalidReturnNumber) {
+        if (blockNumber == Common.INVALID_RETURN_NUMBER) {
             return;
         }
         boolean flag = false;
@@ -155,7 +155,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getBlockHashByNumber(String[] params) throws IOException {
         String blockNumberStr = params[1];
         int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
-        if (blockNumber == Common.InvalidReturnNumber) {
+        if (blockNumber == Common.INVALID_RETURN_NUMBER) {
             return;
         }
         String blockHashByNumber =
@@ -173,7 +173,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getBlockHeaderByNumber(String[] params) throws IOException {
         String blockNumberStr = params[1];
         int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
-        if (blockNumber == Common.InvalidReturnNumber) {
+        if (blockNumber == Common.INVALID_RETURN_NUMBER) {
             return;
         }
         ConsoleUtils.printJson(

@@ -405,40 +405,40 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     private synchronized void writeLog(String contractName, String contractAddress) {
         contractName = ConsoleUtils.removeSolSuffix(contractName);
 
-        File logFile = new File(Common.ContractLogFileName);
+        File logFile = new File(Common.CONTRACT_LOG_FILE_NAME);
         try {
             if (!logFile.exists() && !logFile.createNewFile()) {
-                System.out.println("Failed to create log file: " + Common.ContractLogFileName);
+                System.out.println("Failed to create log file: " + Common.CONTRACT_LOG_FILE_NAME);
                 return;
             }
         } catch (IOException e) {
-            System.out.println("Failed to create log file: " + Common.ContractLogFileName);
+            System.out.println("Failed to create log file: " + Common.CONTRACT_LOG_FILE_NAME);
             logger.error("create file exception", e);
             return;
         }
         try (BufferedReader reader =
-                        new BufferedReader(new FileReader(Common.ContractLogFileName));
+                        new BufferedReader(new FileReader(Common.CONTRACT_LOG_FILE_NAME));
                 PrintWriter pw =
-                        new PrintWriter(new FileWriter(Common.ContractLogFileName, true)); ) {
+                        new PrintWriter(new FileWriter(Common.CONTRACT_LOG_FILE_NAME, true)); ) {
             String line;
             List<String> textList = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
                 textList.add(line);
             }
             int i = 0;
-            if (textList.size() >= Common.LogMaxCount) {
-                i = textList.size() - Common.LogMaxCount + 1;
+            if (textList.size() >= Common.LOG_MAX_COUNT) {
+                i = textList.size() - Common.LOG_MAX_COUNT + 1;
                 if (logFile.exists()) {
 
                     if (!logFile.delete()) {
                         System.out.println(
-                                "Failed to delete log file: " + Common.ContractLogFileName);
+                                "Failed to delete log file: " + Common.CONTRACT_LOG_FILE_NAME);
                         return;
                     }
 
                     if (!logFile.createNewFile()) {
                         System.out.println(
-                                "Failed to create log file: " + Common.ContractLogFileName);
+                                "Failed to create log file: " + Common.CONTRACT_LOG_FILE_NAME);
                         return;
                     }
                 }
@@ -465,9 +465,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         + contractName
                         + "  "
                         + contractAddress;
-        try (PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true))) {
+        try (PrintWriter pw =
+                new PrintWriter(new FileWriter(Common.CONTRACT_LOG_FILE_NAME, true))) {
             if (!logFile.exists() && !logFile.createNewFile()) {
-                System.out.println("Failed to create file " + Common.ContractLogFileName);
+                System.out.println("Failed to create file " + Common.CONTRACT_LOG_FILE_NAME);
             }
             pw.println(log);
             pw.flush();
@@ -480,7 +481,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void getDeployLog(String[] params) throws Exception {
         String queryRecordNumber = "";
-        int recordNumber = Common.QueryLogCount;
+        int recordNumber = Common.QUERY_LOG_COUNT;
         if (params.length == 2) {
             queryRecordNumber = params[1];
             try {
@@ -488,24 +489,24 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 if (recordNumber <= 0 || recordNumber > 100) {
                     System.out.println(
                             "Please provide record number by integer mode, "
-                                    + Common.DeployLogIntegerRange
+                                    + Common.DEPLOY_LOG_INTEGER_RANGE
                                     + ".");
                     return;
                 }
             } catch (NumberFormatException e) {
                 System.out.println(
                         "Please provide record number by integer mode, "
-                                + Common.DeployLogIntegerRange
+                                + Common.DEPLOY_LOG_INTEGER_RANGE
                                 + ".");
                 return;
             }
         }
-        File logFile = new File(Common.ContractLogFileName);
+        File logFile = new File(Common.CONTRACT_LOG_FILE_NAME);
         if (!logFile.exists() && !logFile.createNewFile()) {
-            System.out.println("Failed to create file " + Common.ContractLogFileName);
+            System.out.println("Failed to create file " + Common.CONTRACT_LOG_FILE_NAME);
             return;
         }
-        BufferedReader reader = new BufferedReader(new FileReader(Common.ContractLogFileName));
+        BufferedReader reader = new BufferedReader(new FileReader(Common.CONTRACT_LOG_FILE_NAME));
         String line;
         String ls = System.getProperty("line.separator");
         List<String> textList = new ArrayList<String>();
@@ -535,7 +536,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println(stringBuilder);
             }
         } catch (Exception e) {
-            logger.error(" load {} failed, e: {}", Common.ContractLogFileName, e);
+            logger.error(" load {} failed, e: {}", Common.CONTRACT_LOG_FILE_NAME, e);
         } finally {
             reader.close();
         }
@@ -919,7 +920,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             recordNum =
                     ConsoleUtils.processNonNegativeNumber(
                             "recordNum", params[2], 1, Integer.MAX_VALUE);
-            if (recordNum == Common.InvalidReturnNumber) {
+            if (recordNum == Common.INVALID_RETURN_NUMBER) {
                 return;
             }
         }
