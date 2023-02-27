@@ -37,6 +37,8 @@ import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicBytes;
 import org.fisco.bcos.sdk.v3.codec.datatypes.StructType;
 import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIObject;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -579,14 +581,16 @@ public class ConsoleUtils {
 
     public static String bytesToHex(byte[] bytes) {
         String strHex = "";
-        StringBuilder sb = new StringBuilder("");
-        for (int n = 0; n < bytes.length; n++) {
-            strHex = Integer.toHexString(bytes[n] & 0xFF);
+        StringBuilder sb = new StringBuilder();
+        for (byte aByte : bytes) {
+            strHex = Integer.toHexString(aByte & 0xFF);
             sb.append((strHex.length() == 1) ? "0" + strHex : strHex);
         }
         return sb.toString().trim();
     }
 
+    // for compatibility, if AbiObject not exist, use this method print results
+    @Deprecated
     public static void getReturnResults(
             StringBuilder resultType, StringBuilder resultData, Type result) {
         if (result instanceof Array) {
@@ -619,6 +623,7 @@ public class ConsoleUtils {
         }
     }
 
+    @Deprecated
     public static void printReturnResults(List<Type> results) {
         if (results == null) {
             return;
@@ -639,6 +644,77 @@ public class ConsoleUtils {
         System.out.println("Return value size:" + results.size());
         System.out.println("Return types: " + resultType);
         System.out.println("Return values:" + resultData);
+    }
+
+    public static void printResults(
+            List<ABIObject> returnABIObject, List<Object> returnObject, List<Type> results) {
+        if (returnABIObject == null
+                || returnObject == null
+                || returnObject.isEmpty()
+                || returnABIObject.isEmpty()) {
+            // if AbiObject not exist, use this method print results
+            printReturnResults(results);
+            return;
+        }
+        StringBuilder resultType = new StringBuilder();
+        StringBuilder resultData = new StringBuilder();
+        resultType.append("(");
+        resultData.append("(");
+        getReturnObjectOutputData(resultType, resultData, returnObject, returnABIObject);
+        if (resultType.toString().endsWith(", ")) {
+            resultType.delete(resultType.length() - 2, resultType.length());
+        }
+        if (resultData.toString().endsWith(", ")) {
+            resultData.delete(resultData.length() - 2, resultData.length());
+        }
+        resultType.append(")");
+        resultData.append(")");
+        System.out.println("Return value size:" + returnObject.size());
+        System.out.println("Return types: " + resultType);
+        System.out.println("Return values:" + resultData);
+    }
+
+    public static void getReturnObjectOutputData(
+            StringBuilder resultType,
+            StringBuilder resultData,
+            List<Object> returnObject,
+            List<ABIObject> returnABIObject) {
+        int i = 0;
+        for (ABIObject abiObject : returnABIObject) {
+            if (abiObject.getListValues() != null) {
+                resultType.append("[");
+                resultData.append("[");
+                getReturnObjectOutputData(
+                        resultType,
+                        resultData,
+                        (List<Object>) returnObject.get(i),
+                        abiObject.getListValues());
+                if (resultType.toString().endsWith(", ")) {
+                    resultType.delete(resultType.length() - 2, resultType.length());
+                }
+                if (resultData.toString().endsWith(", ")) {
+                    resultData.delete(resultData.length() - 2, resultData.length());
+                }
+                resultData.append("] ");
+                resultType.append("] ");
+                i += 1;
+                continue;
+            }
+            if (abiObject.getValueType() == null && returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+                i += 1;
+                continue;
+            }
+            resultType.append(abiObject.getValueType()).append(", ");
+            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)
+                    || abiObject.getValueType().equals(ABIObject.ValueType.DBYTES)) {
+                String data = "hex://0x" + bytesToHex(ContractCodecTools.formatBytesN(abiObject));
+                resultData.append(data).append(", ");
+            } else if (returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+            }
+            i += 1;
+        }
     }
 
     public static void main(String[] args) {
