@@ -25,6 +25,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
@@ -465,26 +466,40 @@ public class PrecompiledImpl implements PrecompiledFace {
             pwd = path;
             return;
         }
-        Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
-        String parentDir = parentAndBase.getValue1();
-        String baseName = parentAndBase.getValue2();
-        List<BfsInfo> listResult = bfsService.list(parentDir);
-        if (!listResult.isEmpty()) {
-            boolean findFlag = false;
-            for (BfsInfo bfsInfo : listResult) {
-                if (bfsInfo.getFileName().equals(baseName)) {
-                    findFlag = true;
-                    if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
-                        throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
-                    }
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            BFSInfo bfsInfo = bfsService.isExist(path);
+            if (bfsInfo != null) {
+                if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                    throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
                 }
-            }
-            if (!findFlag) {
+            } else {
                 logger.error("cd: no such file or directory: '{}'", path);
-                throw new Exception("cd: no such file or directory: " + baseName);
+                throw new Exception("cd: no such file or directory: " + params[1]);
             }
         } else {
-            throw new Exception("cd: no such file or directory: " + params[1]);
+            Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
+            String parentDir = parentAndBase.getValue1();
+            String baseName = parentAndBase.getValue2();
+            List<BfsInfo> listResult = bfsService.list(parentDir);
+            if (!listResult.isEmpty()) {
+                boolean findFlag = false;
+                for (BfsInfo bfsInfo : listResult) {
+                    if (bfsInfo.getFileName().equals(baseName)) {
+                        findFlag = true;
+                        if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                            throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
+                        }
+                    }
+                }
+                if (!findFlag) {
+                    logger.error("cd: no such file or directory: '{}'", path);
+                    throw new Exception("cd: no such file or directory: " + baseName);
+                }
+            } else {
+                throw new Exception("cd: no such file or directory: " + params[1]);
+            }
         }
         pwd = path;
     }
