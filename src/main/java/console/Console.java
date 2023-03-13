@@ -53,8 +53,8 @@ public class Console {
             }
             consoleInitializer.setLineReader(lineReader);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            e.printStackTrace();
+            logger.error(" message: {}", e.getMessage(), e);
             System.exit(-1);
         }
 
