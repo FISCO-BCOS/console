@@ -55,7 +55,7 @@ LOG_INFO()
 }
 
 check_env() {
-    [ ! -z "$(openssl version | grep 1.0.2)" ] || [ ! -z "$(openssl version | grep 1.1)" ] || [ ! -z "$(openssl version | grep reSSL)" ] || {
+    [ ! -z "$(openssl version | grep 1.0.2)" ] || [ ! -z "$(openssl version | grep 1.1)" ] || [ ! -z "$(openssl version | grep '3.')" ] || [ ! -z "$(openssl version | grep reSSL)" ] || {
         echo "please install openssl! use \"openssl version\" command to check."
         LOG_INFO "  Ubuntu : sudo apt install -y openssl"
         LOG_INFO "  CentOS : sudo yum install -y openssl"
