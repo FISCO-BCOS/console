@@ -706,9 +706,11 @@ public class ConsoleUtils {
                 continue;
             }
             resultType.append(abiObject.getValueType()).append(", ");
-            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)
-                    || abiObject.getValueType().equals(ABIObject.ValueType.DBYTES)) {
+            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
                 String data = "hex://0x" + bytesToHex(ContractCodecTools.formatBytesN(abiObject));
+                resultData.append(data).append(", ");
+            } else if (abiObject.getValueType().equals(ABIObject.ValueType.DBYTES)) {
+                String data = "hex://0x" + bytesToHex(abiObject.getDynamicBytesValue().getValue());
                 resultData.append(data).append(", ");
             } else if (returnObject.size() > i) {
                 resultData.append(returnObject.get(i).toString()).append(", ");
