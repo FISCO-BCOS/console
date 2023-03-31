@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-default_tag=v3.1.1
+default_tag=v3.2.0
 LOG_INFO() {
     local content=${1}
     echo -e "\033[32m ${content}\033[0m"
@@ -48,8 +48,6 @@ build_node()
   local node_type="${1}"
   if [ "${node_type}" == "sm" ];then
       bash -x build_chain.sh -l 127.0.0.1:4 -s -A
-      sed_cmd=$(get_sed_cmd)
-      $sed_cmd 's/sm_crypto_channel=false/sm_crypto_channel=true/g' nodes/127.0.0.1/node*/config.ini
   else
       bash -x build_chain.sh -l 127.0.0.1:4 -A
   fi
