@@ -85,7 +85,7 @@ calculate_address_pem()
     else
         accountAddress=$(echo ${pubKey}| ${keccak_256_bin} -x -l | tr -d ' -' | tail -c 41)
     fi
-    [ ! -z "${no_print}" ] || LOG_INFO "Account Address   : 0x${accountAddress}"
+    [ ! -z "${no_print}" ] || LOG_INFO "Account Address   : 0x${accountAddress}" && LOG_INFO "Account privateHex: 0x${privKey}" && LOG_INFO "Account publicHex : 0x${pubKey}"
 }
 
 calculate_address_pkcs12()

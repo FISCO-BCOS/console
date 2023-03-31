@@ -111,7 +111,7 @@ calculate_address_pem()
     pubKey=$(${TASSL_CMD} ec -in ${pem_file} -text -noout 2>/dev/null| sed -n '7,11p' | tr -d ": \n" | awk '{print substr($0,3);}')
     # echo "public key = ${pubKey}"
     accountAddress=$(${sm3_bin}  ${pubKey})
-    [ ! -z "${no_print}" ] || LOG_INFO "Account Address   : 0x${accountAddress}"
+    [ ! -z "${no_print}" ] || LOG_INFO "Account Address   : 0x${accountAddress}" && LOG_INFO "Account privateHex: 0x${privKey}" && LOG_INFO "Account publicHex : 0x${pubKey}"
 }
 
 calculate_address_pkcs12()

@@ -55,6 +55,7 @@ import org.fisco.bcos.sdk.v3.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionBaseException;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Hex;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.bcos.sdk.v3.utils.StringUtils;
@@ -540,7 +541,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             ConsoleUtils.sortFiles(contractAddressFiles);
             for (File contractAddressFile : contractAddressFiles) {
                 if (contractAddressFile.isDirectory()
-                        && ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                        && AddressUtils.isValidAddress(contractAddressFile.getName())) {
                     contractAddressStr = contractAddressFile.getName();
                     break;
                 }
@@ -554,7 +555,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
 
         // check contract address
-        if (!ConsoleUtils.isValidAddress(contractAddressStr)) {
+        if (!AddressUtils.isValidAddress(contractAddressStr)) {
             System.out.println("Invalid contract address: " + contractAddressStr);
             return;
         }
@@ -868,7 +869,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         ConsoleUtils.sortFiles(contractFileList);
         for (File contractAddressFile : contractFileList) {
-            if (!isWasm && !ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+            if (!isWasm && !AddressUtils.isValidAddress(contractAddressFile.getName())) {
                 continue;
             }
             String contractAddress =

@@ -646,7 +646,7 @@ public class AuthImpl implements AuthFace {
     }
 
     void checkValidAddress(String address, String valueName) throws TransactionException {
-        if (!ConsoleUtils.isValidAddress(address)) {
+        if (!AddressUtils.isValidAddress(address)) {
             throw new TransactionException(
                     "Invalid address "
                             + (valueName.isEmpty() ? "" : ("for " + valueName))

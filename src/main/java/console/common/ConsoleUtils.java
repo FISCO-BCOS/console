@@ -39,7 +39,6 @@ import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ABIObject;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
-import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -313,7 +312,8 @@ public class ConsoleUtils {
             String binDir,
             String librariesOption,
             String specifyContract,
-            boolean isContractParallelAnalysis)
+            boolean isContractParallelAnalysis,
+            boolean enableAsyncCall)
             throws IOException, CompileContractException {
 
         String contractName = solFile.getName().split("\\.")[0];
@@ -343,15 +343,19 @@ public class ConsoleUtils {
                 new File(abiDir + "/sm/" + contractName + ".abi"), abiAndBin.getAbi());
         FileUtils.writeStringToFile(smBinFile, abiAndBin.getSmBin());
 
-        CodeGenMain.main(
-                Arrays.asList(
+        List<String> args =
+                new ArrayList<>(
+                        Arrays.asList(
                                 "-v", "V3",
                                 "-a", abiFilePath,
                                 "-b", binFilePath,
                                 "-s", smBinFilePath,
                                 "-p", packageName,
-                                "-o", javaDir)
-                        .toArray(new String[0]));
+                                "-o", javaDir));
+        if (enableAsyncCall) {
+            args.add("-e");
+        }
+        CodeGenMain.main(args.toArray(new String[0]));
         System.out.println(
                 "*** Convert solidity to java  for " + solFile.getName() + " success ***\n");
     }
@@ -362,7 +366,8 @@ public class ConsoleUtils {
             File solFileList,
             String abiDir,
             String binDir,
-            boolean isContractParallelAnalysis)
+            boolean isContractParallelAnalysis,
+            boolean enableAsyncCall)
             throws IOException {
         File[] solFiles = solFileList.listFiles();
         if (solFiles.length == 0) {
@@ -386,7 +391,8 @@ public class ConsoleUtils {
                         binDir,
                         null,
                         null,
-                        isContractParallelAnalysis);
+                        isContractParallelAnalysis,
+                        enableAsyncCall);
             } catch (Exception e) {
                 System.out.println(
                         "ERROR:convert solidity to java for "
@@ -484,12 +490,6 @@ public class ConsoleUtils {
                     else if (diff == 0) return 0;
                     else return 1;
                 });
-    }
-
-    public static boolean isValidAddress(String address) {
-        String addressNoPrefix = Numeric.cleanHexPrefix(address);
-        return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX
-                && addressNoPrefix.matches("^[0-9a-fA-F]{40}$");
     }
 
     public static String getFileCreationTime(File file) {
@@ -781,6 +781,7 @@ public class ConsoleUtils {
         String ABI_OPTION = "abi";
 
         String NO_ANALYSIS_OPTION = "no-analysis";
+        String ENABLE_ASYNC_CALL_OPTION = "enable-async-call";
 
         if (mode.equals("solidity")) {
             Option solidityFilePathOption =
@@ -811,6 +812,14 @@ public class ConsoleUtils {
                             false,
                             "[Optional] NOT use evm static parallel-able analysis. It will not active DAG analysis, but will speedup compile speed.");
             options.addOption(noAnalysisOption);
+
+            Option enableAsyncCall =
+                    new Option(
+                            "e",
+                            ENABLE_ASYNC_CALL_OPTION,
+                            false,
+                            "[Optional] Enable generate async interfaces for constant call, java file only compilable when java-sdk >= 3.3.0.");
+            options.addOption(enableAsyncCall);
         } else if (mode.equals("liquid")) {
             Option liquidBinPathOption =
                     new Option(
@@ -869,6 +878,7 @@ public class ConsoleUtils {
             String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
             String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
             boolean useDagAnalysis = !cmd.hasOption(NO_ANALYSIS_OPTION);
+            boolean enableAsyncCall = cmd.hasOption(ENABLE_ASYNC_CALL_OPTION);
             String fullJavaDir = new File(javaDir).getAbsolutePath();
             String specifyContract = null;
             if (solPathOrDir.contains(":")
@@ -892,10 +902,17 @@ public class ConsoleUtils {
                             BIN_PATH,
                             librariesOption,
                             specifyContract,
-                            useDagAnalysis);
+                            useDagAnalysis,
+                            enableAsyncCall);
                 } else { // input dir
                     compileAllSolToJava(
-                            fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, useDagAnalysis);
+                            fullJavaDir,
+                            pkgName,
+                            sol,
+                            ABI_PATH,
+                            BIN_PATH,
+                            useDagAnalysis,
+                            enableAsyncCall);
                 }
             } catch (IOException | CompileContractException e) {
                 System.out.print(e.getMessage());
