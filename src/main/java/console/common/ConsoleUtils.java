@@ -607,7 +607,18 @@ public class ConsoleUtils {
             resultData.append("]");
             resultType.append("]");
         } else if (result instanceof StructType) {
-            // FIXME: out put struct
+            resultType.append("[");
+            resultData.append("[");
+            List<Type> values = ((StructType) result).getComponentTypes();
+            for (int i = 0; i < values.size(); ++i) {
+                getReturnResults(resultType, resultData, values.get(i));
+                if (i != values.size() - 1) {
+                    resultType.append(", ");
+                    resultData.append(", ");
+                }
+            }
+            resultData.append("]");
+            resultType.append("]");
             throw new UnsupportedOperationException();
         } else if (result instanceof Bytes) {
             String data = "hex://0x" + bytesToHex(((Bytes) result).getValue());

@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import "./TableV320.sol";
 import "./Cast.sol";
 
-contract TableTest {
+contract TableTestV320 {
     event CreateResult(int256 count);
     event InsertResult(int256 count);
     event UpdateResult(int256 count);
