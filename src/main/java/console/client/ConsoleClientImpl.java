@@ -366,7 +366,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return;
         }
         String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
-        System.out.println(currentAccount + "(current account) <=");
+        String currentAccountSuffix =
+                client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.HSM_TYPE
+                        ? "(current HSM account) <="
+                        : "(current account) <=";
+        System.out.println(currentAccount + currentAccountSuffix);
         for (String s : accountList) {
             if (!s.equals(currentAccount)) {
                 System.out.println(s);
@@ -377,7 +381,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public static String getAccountDir(Client client) {
         ConfigOption configOption = client.getCryptoSuite().getConfig();
         String subDir = CryptoKeyPair.ECDSA_ACCOUNT_SUBDIR;
-        if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE) {
+        if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE
+                || client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.HSM_TYPE) {
             subDir = CryptoKeyPair.GM_ACCOUNT_SUBDIR;
         }
         return configOption.getAccountConfig().getKeyStoreDir() + File.separator + subDir;
