@@ -672,6 +672,11 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
+    public void fixBFS(String[] params) throws Exception {
+        ConsoleUtils.printJson(bfsService.fixBfs().toString());
+    }
+
+    @Override
     public String getPwd() {
         return pwd;
     }

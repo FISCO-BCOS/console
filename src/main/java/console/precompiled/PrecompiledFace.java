@@ -36,5 +36,7 @@ public interface PrecompiledFace {
 
     void link(String[] params) throws Exception;
 
+    void fixBFS(String[] params) throws Exception;
+
     String getPwd();
 }
