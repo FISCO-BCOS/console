@@ -45,5 +45,7 @@ public interface PrecompiledFace {
 
     void linkShard(String[] params) throws Exception;
 
+    void fixBFS(String[] params) throws Exception;
+
     String getPwd();
 }
