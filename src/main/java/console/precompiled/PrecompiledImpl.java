@@ -466,8 +466,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             pwd = path;
             return;
         }
-        EnumNodeVersion.Version supportedVersion =
-                EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion().toVersionObj();
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
             BFSInfo bfsInfo = bfsService.isExist(path);
             if (bfsInfo != null) {
@@ -529,7 +528,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         do {
             Tuple2<BigInteger, List<BfsInfo>> fileInfoList;
             EnumNodeVersion.Version supportedVersion =
-                    EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+                    bfsService.getCurrentVersion().toVersionObj();
             if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
                 fileInfoList = bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
             } else {
@@ -678,8 +677,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         RetCode retCode;
-        EnumNodeVersion.Version supportedVersion =
-                EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion().toVersionObj();
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
             retCode =
                     bfsService.link(
@@ -742,6 +740,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             System.out.println("Add " + address + " to " + shardName + " failed ");
             ConsoleUtils.printJson(retCode.toString());
         }
+    }
+
+    @Override
+    public void fixBFS(String[] params) throws Exception {
+        ConsoleUtils.printJson(bfsService.fixBfs().toString());
     }
 
     @Override

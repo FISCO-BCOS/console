@@ -182,8 +182,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     private void deployLink(String linkPath, String address, String abiString) throws Exception {
-        EnumNodeVersion.Version supportedVersion =
-                EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion().toVersionObj();
         final RetCode retCode;
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
             retCode =
