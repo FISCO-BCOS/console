@@ -183,7 +183,9 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     "Create a proposal to committee, which attempt to set system config.",
                     HelpInfo::setSysConfigProposalHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getAuthFace().createSetSysConfigProposal(params),
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .createSetSysConfigProposal(consoleInitializer, params),
                     2,
                     2,
                     false,
