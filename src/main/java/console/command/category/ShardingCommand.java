@@ -51,7 +51,9 @@ public class ShardingCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().getContractShard(params),
                     1,
-                    1);
+                    1,
+                    false,
+                    false);
 
     public static final CommandInfo MAKE_SHARD =
             new CommandInfo(
@@ -61,7 +63,9 @@ public class ShardingCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().makeShard(params),
                     1,
-                    1);
+                    1,
+                    false,
+                    false);
 
     public static final CommandInfo LINK_SHARD =
             new CommandInfo(
@@ -71,7 +75,9 @@ public class ShardingCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().linkShard(params),
                     2,
-                    2);
+                    2,
+                    false,
+                    false);
 
     static {
         Field[] fields = ShardingCommand.class.getDeclaredFields();

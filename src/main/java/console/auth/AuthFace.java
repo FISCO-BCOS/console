@@ -24,7 +24,8 @@ public interface AuthFace {
 
     void createRemoveNodeProposal(String[] params) throws Exception;
 
-    void createSetSysConfigProposal(String[] params) throws Exception;
+    void createSetSysConfigProposal(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception;
 
     void createUpgradeVoteComputerProposal(String[] params) throws Exception;
 
