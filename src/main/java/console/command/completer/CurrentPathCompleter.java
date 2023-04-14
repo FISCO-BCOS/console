@@ -93,4 +93,10 @@ public class CurrentPathCompleter extends StringsCompleterIgnoreCase {
             logger.debug("CurrentPathCompleter exception, error: {}", e.getMessage(), e);
         }
     }
+
+    public void setClient(Client client) {
+        this.client = client;
+        this.bfsService = new BFSService(client, client.getCryptoSuite().getCryptoKeyPair());
+        this.pwd = "/apps";
+    }
 }

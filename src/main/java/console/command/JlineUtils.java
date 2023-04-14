@@ -55,6 +55,9 @@ public class JlineUtils {
         if (accountCompleter != null) {
             accountCompleter.setClient(client);
         }
+        if (currentPathCompleter != null) {
+            currentPathCompleter.setClient(client);
+        }
     }
 
     public static void switchPwd(String pwd) {
