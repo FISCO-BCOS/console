@@ -37,7 +37,8 @@ import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicBytes;
 import org.fisco.bcos.sdk.v3.codec.datatypes.StructType;
 import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.v3.utils.Numeric;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIObject;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -220,7 +221,7 @@ public class ConsoleUtils {
                                 + " and "
                                 + maxValue
                                 + ".");
-                return Common.InvalidLongValue;
+                return Common.INVALID_LONG_VALUE;
             }
             return value;
         } catch (NumberFormatException e) {
@@ -234,7 +235,7 @@ public class ConsoleUtils {
                             + Long.MAX_VALUE
                             + ".");
             logger.debug("processLong for {} failed, error info: {}", name, e.getMessage());
-            return Common.InvalidLongValue;
+            return Common.INVALID_LONG_VALUE;
         }
     }
 
@@ -256,7 +257,7 @@ public class ConsoleUtils {
                                 + " and "
                                 + maxValue
                                 + ".");
-                return Common.InvalidReturnNumber;
+                return Common.INVALID_RETURN_NUMBER;
             }
         } catch (NumberFormatException e) {
             System.out.println("Invalid " + name + ": \"" + intStr + "\"!");
@@ -268,7 +269,7 @@ public class ConsoleUtils {
                             + " and "
                             + maxValue
                             + ".");
-            return Common.InvalidReturnNumber;
+            return Common.INVALID_RETURN_NUMBER;
         }
         return intParam;
     }
@@ -311,7 +312,8 @@ public class ConsoleUtils {
             String binDir,
             String librariesOption,
             String specifyContract,
-            boolean isContractParallelAnalysis)
+            boolean isContractParallelAnalysis,
+            boolean enableAsyncCall)
             throws IOException, CompileContractException {
 
         String contractName = solFile.getName().split("\\.")[0];
@@ -341,15 +343,19 @@ public class ConsoleUtils {
                 new File(abiDir + "/sm/" + contractName + ".abi"), abiAndBin.getAbi());
         FileUtils.writeStringToFile(smBinFile, abiAndBin.getSmBin());
 
-        CodeGenMain.main(
-                Arrays.asList(
+        List<String> args =
+                new ArrayList<>(
+                        Arrays.asList(
                                 "-v", "V3",
                                 "-a", abiFilePath,
                                 "-b", binFilePath,
                                 "-s", smBinFilePath,
                                 "-p", packageName,
-                                "-o", javaDir)
-                        .toArray(new String[0]));
+                                "-o", javaDir));
+        if (enableAsyncCall) {
+            args.add("-e");
+        }
+        CodeGenMain.main(args.toArray(new String[0]));
         System.out.println(
                 "*** Convert solidity to java  for " + solFile.getName() + " success ***\n");
     }
@@ -360,7 +366,8 @@ public class ConsoleUtils {
             File solFileList,
             String abiDir,
             String binDir,
-            boolean isContractParallelAnalysis)
+            boolean isContractParallelAnalysis,
+            boolean enableAsyncCall)
             throws IOException {
         File[] solFiles = solFileList.listFiles();
         if (solFiles.length == 0) {
@@ -384,7 +391,8 @@ public class ConsoleUtils {
                         binDir,
                         null,
                         null,
-                        isContractParallelAnalysis);
+                        isContractParallelAnalysis,
+                        enableAsyncCall);
             } catch (Exception e) {
                 System.out.println(
                         "ERROR:convert solidity to java for "
@@ -484,12 +492,6 @@ public class ConsoleUtils {
                 });
     }
 
-    public static boolean isValidAddress(String address) {
-        String addressNoPrefix = Numeric.cleanHexPrefix(address);
-        return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX
-                && addressNoPrefix.matches("^[0-9a-fA-F]{40}$");
-    }
-
     public static String getFileCreationTime(File file) {
         if (file == null) {
             return null;
@@ -579,14 +581,16 @@ public class ConsoleUtils {
 
     public static String bytesToHex(byte[] bytes) {
         String strHex = "";
-        StringBuilder sb = new StringBuilder("");
-        for (int n = 0; n < bytes.length; n++) {
-            strHex = Integer.toHexString(bytes[n] & 0xFF);
+        StringBuilder sb = new StringBuilder();
+        for (byte aByte : bytes) {
+            strHex = Integer.toHexString(aByte & 0xFF);
             sb.append((strHex.length() == 1) ? "0" + strHex : strHex);
         }
         return sb.toString().trim();
     }
 
+    // for compatibility, if AbiObject not exist, use this method print results
+    @Deprecated
     public static void getReturnResults(
             StringBuilder resultType, StringBuilder resultData, Type result) {
         if (result instanceof Array) {
@@ -603,7 +607,18 @@ public class ConsoleUtils {
             resultData.append("]");
             resultType.append("]");
         } else if (result instanceof StructType) {
-            // FIXME: out put struct
+            resultType.append("[");
+            resultData.append("[");
+            List<Type> values = ((StructType) result).getComponentTypes();
+            for (int i = 0; i < values.size(); ++i) {
+                getReturnResults(resultType, resultData, values.get(i));
+                if (i != values.size() - 1) {
+                    resultType.append(", ");
+                    resultData.append(", ");
+                }
+            }
+            resultData.append("]");
+            resultType.append("]");
             throw new UnsupportedOperationException();
         } else if (result instanceof Bytes) {
             String data = "hex://0x" + bytesToHex(((Bytes) result).getValue());
@@ -619,6 +634,7 @@ public class ConsoleUtils {
         }
     }
 
+    @Deprecated
     public static void printReturnResults(List<Type> results) {
         if (results == null) {
             return;
@@ -639,6 +655,79 @@ public class ConsoleUtils {
         System.out.println("Return value size:" + results.size());
         System.out.println("Return types: " + resultType);
         System.out.println("Return values:" + resultData);
+    }
+
+    public static void printResults(
+            List<ABIObject> returnABIObject, List<Object> returnObject, List<Type> results) {
+        if (returnABIObject == null
+                || returnObject == null
+                || returnObject.isEmpty()
+                || returnABIObject.isEmpty()) {
+            // if AbiObject not exist, use this method print results
+            printReturnResults(results);
+            return;
+        }
+        StringBuilder resultType = new StringBuilder();
+        StringBuilder resultData = new StringBuilder();
+        resultType.append("(");
+        resultData.append("(");
+        getReturnObjectOutputData(resultType, resultData, returnObject, returnABIObject);
+        if (resultType.toString().endsWith(", ")) {
+            resultType.delete(resultType.length() - 2, resultType.length());
+        }
+        if (resultData.toString().endsWith(", ")) {
+            resultData.delete(resultData.length() - 2, resultData.length());
+        }
+        resultType.append(")");
+        resultData.append(")");
+        System.out.println("Return value size:" + returnObject.size());
+        System.out.println("Return types: " + resultType);
+        System.out.println("Return values:" + resultData);
+    }
+
+    public static void getReturnObjectOutputData(
+            StringBuilder resultType,
+            StringBuilder resultData,
+            List<Object> returnObject,
+            List<ABIObject> returnABIObject) {
+        int i = 0;
+        for (ABIObject abiObject : returnABIObject) {
+            if (abiObject.getListValues() != null) {
+                resultType.append("[");
+                resultData.append("[");
+                getReturnObjectOutputData(
+                        resultType,
+                        resultData,
+                        (List<Object>) returnObject.get(i),
+                        abiObject.getListValues());
+                if (resultType.toString().endsWith(", ")) {
+                    resultType.delete(resultType.length() - 2, resultType.length());
+                }
+                if (resultData.toString().endsWith(", ")) {
+                    resultData.delete(resultData.length() - 2, resultData.length());
+                }
+                resultData.append("] ");
+                resultType.append("] ");
+                i += 1;
+                continue;
+            }
+            if (abiObject.getValueType() == null && returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+                i += 1;
+                continue;
+            }
+            resultType.append(abiObject.getValueType()).append(", ");
+            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
+                String data = "hex://0x" + bytesToHex(ContractCodecTools.formatBytesN(abiObject));
+                resultData.append(data).append(", ");
+            } else if (abiObject.getValueType().equals(ABIObject.ValueType.DBYTES)) {
+                String data = "hex://0x" + bytesToHex(abiObject.getDynamicBytesValue().getValue());
+                resultData.append(data).append(", ");
+            } else if (returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+            }
+            i += 1;
+        }
     }
 
     public static void main(String[] args) {
@@ -703,6 +792,7 @@ public class ConsoleUtils {
         String ABI_OPTION = "abi";
 
         String NO_ANALYSIS_OPTION = "no-analysis";
+        String ENABLE_ASYNC_CALL_OPTION = "enable-async-call";
 
         if (mode.equals("solidity")) {
             Option solidityFilePathOption =
@@ -733,6 +823,14 @@ public class ConsoleUtils {
                             false,
                             "[Optional] NOT use evm static parallel-able analysis. It will not active DAG analysis, but will speedup compile speed.");
             options.addOption(noAnalysisOption);
+
+            Option enableAsyncCall =
+                    new Option(
+                            "e",
+                            ENABLE_ASYNC_CALL_OPTION,
+                            false,
+                            "[Optional] Enable generate async interfaces for constant call, java file only compilable when java-sdk >= 3.3.0.");
+            options.addOption(enableAsyncCall);
         } else if (mode.equals("liquid")) {
             Option liquidBinPathOption =
                     new Option(
@@ -791,6 +889,7 @@ public class ConsoleUtils {
             String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
             String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
             boolean useDagAnalysis = !cmd.hasOption(NO_ANALYSIS_OPTION);
+            boolean enableAsyncCall = cmd.hasOption(ENABLE_ASYNC_CALL_OPTION);
             String fullJavaDir = new File(javaDir).getAbsolutePath();
             String specifyContract = null;
             if (solPathOrDir.contains(":")
@@ -814,10 +913,17 @@ public class ConsoleUtils {
                             BIN_PATH,
                             librariesOption,
                             specifyContract,
-                            useDagAnalysis);
+                            useDagAnalysis,
+                            enableAsyncCall);
                 } else { // input dir
                     compileAllSolToJava(
-                            fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, useDagAnalysis);
+                            fullJavaDir,
+                            pkgName,
+                            sol,
+                            ABI_PATH,
+                            BIN_PATH,
+                            useDagAnalysis,
+                            enableAsyncCall);
                 }
             } catch (IOException | CompileContractException e) {
                 System.out.print(e.getMessage());

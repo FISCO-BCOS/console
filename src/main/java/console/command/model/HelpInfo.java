@@ -65,7 +65,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetDeployLog [recordNumber]");
         System.out.println(
                 "* recordNumber -- (optional) The number of deployed contract records, "
-                        + Common.DeployLogIntegerRange
+                        + Common.DEPLOY_LOG_INTEGER_RANGE
                         + "(default 20).");
     }
 
@@ -141,7 +141,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockByNumber blockNumber [boolean]");
         System.out.println(
                 "* blockNumber -- Integer of a block number, "
-                        + Common.NonNegativeIntegerRange
+                        + Common.NON_NEGATIVE_INTEGER_RANGE
                         + ".");
         System.out.println(
                 "* boolean -- (optional) If true it returns only the hashes of the transactions, if false then return the full transaction objects.");
@@ -158,7 +158,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockHeaderByNumber blockNumber");
         System.out.println(
                 "* blockNumber -- Integer of a block number, "
-                        + Common.NonNegativeIntegerRange
+                        + Common.NON_NEGATIVE_INTEGER_RANGE
                         + ".");
     }
 
@@ -167,7 +167,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockHashByNumber blockNumber");
         System.out.println(
                 "* blockNumber -- Integer of a block number, "
-                        + Common.NonNegativeIntegerRange
+                        + Common.NON_NEGATIVE_INTEGER_RANGE
                         + ".");
     }
 
@@ -338,26 +338,52 @@ public class HelpInfo {
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
+    public static void initAuthHelp() {
+        System.out.println("Initialize committee contract system.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only can be used when first init chain committee."
+                        + "\033[m");
+        System.out.println("Usage: \ninitAuth admin");
+        System.out.println("* account -- 20 Bytes - The address of a account.");
+    }
+
     public static void setSystemConfigByKeyHelp() {
         System.out.println("Set a system config.");
         System.out.println("Usage: \nsetSystemConfigByKey key value");
+        systemConfigHelper();
+    }
+
+    public static void systemConfigHelper() {
+        System.out.println("* key   -- The name of system config.");
         System.out.println(
-                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_leader_period supported currently).");
+                "    -- supported keys: " + String.join(",", Common.SUPPORTED_SYSTEM_KEYS));
         System.out.println("* value -- The value of system config to be set.");
         System.out.println(
-                "      -- The value of tx_count_limit "
-                        + Common.TxCountLimitRange
+                "    -- the value of "
+                        + Common.COMPATIBILITY_VERSION
+                        + " "
+                        + Common.COMPATIBILITY_VERSION_DESC);
+        System.out.println(
+                "    -- The value of tx_count_limit "
+                        + Common.SYS_CONFIG_RANGE
                         + "(default 1000).");
         System.out.println(
-                "      -- the value of tx_gas_limit "
-                        + Common.TxGasLimitRange
+                "    -- the value of tx_gas_limit "
+                        + Common.TX_GAS_LIMIT_RANGE
                         + "(default 3000000000).");
         System.out.println(
-                "      -- the value of  "
-                        + Common.ConsensusLeaderPeriod
+                "    -- the value of "
+                        + Common.CONSENSUS_LEADER_PERIOD
                         + " "
-                        + Common.ConsensusLeaderPeriodRange
+                        + Common.SYS_CONFIG_RANGE
                         + "(default 1).");
+        System.out.println(
+                "    -- the value of "
+                        + Common.AUTH_CHECK_STATUS
+                        + " "
+                        + Common.SYS_CONFIG_RANGE
+                        + "(default 0).");
     }
 
     public static void getSystemConfigByKeyHelp() {
@@ -463,6 +489,21 @@ public class HelpInfo {
     public static void pwdHelp() {
         System.out.println("Show absolute path of working directory name.");
         System.out.println("Usage: pwd");
+    }
+
+    public static void getContractShardHelp() {
+        System.out.println("Get a contract's belonging shard");
+        System.out.println("Usage: getContractShard [contractAddress]");
+    }
+
+    public static void makeShardHelp() {
+        System.out.println("Make a shard");
+        System.out.println("Usage: makeShard [shardName]");
+    }
+
+    public static void linkShardHelp() {
+        System.out.println("Add a contract to a shard");
+        System.out.println("Usage: linkShard [contractAddress] [shardName]");
     }
 
     public static void initializeHelp() {
@@ -665,27 +706,7 @@ public class HelpInfo {
                         + "\033[m");
         ConsoleUtils.singleLine();
         System.out.println("Usage: setSysConfigProposal [key] [value]");
-        System.out.println(
-                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_leader_period supported currently).");
-        System.out.println("* value -- The value of system config to be set.");
-        System.out.println(
-                "      -- The value of "
-                        + Common.TxCountLimit
-                        + " "
-                        + Common.TxCountLimitRange
-                        + "(default 1000).");
-        System.out.println(
-                "      -- the value of "
-                        + Common.TxGasLimit
-                        + " "
-                        + Common.TxGasLimitRange
-                        + "(default 3000000000).");
-        System.out.println(
-                "      -- the value of  "
-                        + Common.ConsensusLeaderPeriod
-                        + " "
-                        + Common.ConsensusLeaderPeriodRange
-                        + "(default 1).");
+        systemConfigHelper();
     }
 
     public static void upgradeVoteProposalHelp() {

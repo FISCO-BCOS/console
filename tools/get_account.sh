@@ -55,7 +55,7 @@ LOG_INFO()
 }
 
 check_env() {
-    [ ! -z "$(openssl version | grep 1.0.2)" ] || [ ! -z "$(openssl version | grep 1.1)" ] || [ ! -z "$(openssl version | grep reSSL)" ] || {
+    [ ! -z "$(openssl version | grep 1.0.2)" ] || [ ! -z "$(openssl version | grep 1.1)" ] || [ ! -z "$(openssl version | grep '3.')" ] || [ ! -z "$(openssl version | grep reSSL)" ] || {
         echo "please install openssl! use \"openssl version\" command to check."
         LOG_INFO "  Ubuntu : sudo apt install -y openssl"
         LOG_INFO "  CentOS : sudo yum install -y openssl"
@@ -85,7 +85,7 @@ calculate_address_pem()
     else
         accountAddress=$(echo ${pubKey}| ${keccak_256_bin} -x -l | tr -d ' -' | tail -c 41)
     fi
-    [ ! -z "${no_print}" ] || LOG_INFO "Account Address   : 0x${accountAddress}"
+    [ ! -z "${no_print}" ] || LOG_INFO "Account Address   : 0x${accountAddress}" && LOG_INFO "Account privateHex: 0x${privKey}" && LOG_INFO "Account publicHex : 0x${pubKey}"
 }
 
 calculate_address_pkcs12()

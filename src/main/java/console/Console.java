@@ -51,9 +51,10 @@ public class Console {
                 keymap.bind(new Reference("beginning-of-line"), "\033[1~");
                 keymap.bind(new Reference("end-of-line"), "\033[4~");
             }
+            consoleInitializer.setLineReader(lineReader);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            e.printStackTrace();
+            logger.error(" message: {}", e.getMessage(), e);
             System.exit(-1);
         }
 
@@ -66,19 +67,21 @@ public class Console {
 
         while (true) {
             try {
-                if (lineReader == null) {
+                if (consoleInitializer.getLineReader() == null) {
                     System.out.println("Console can not read commands.");
                     break;
                 }
                 String request;
                 if (!consoleInitializer.isDisableAutoCompleter()) {
                     request =
-                            lineReader.readLine(
-                                    "["
-                                            + consoleInitializer.getGroupID()
-                                            + "]: "
-                                            + ConsoleUtils.prettyPwd(pwd)
-                                            + "> ");
+                            consoleInitializer
+                                    .getLineReader()
+                                    .readLine(
+                                            "["
+                                                    + consoleInitializer.getGroupID()
+                                                    + "]: "
+                                                    + ConsoleUtils.prettyPwd(pwd)
+                                                    + "> ");
                 } else {
                     System.out.print(
                             "[group:"

@@ -1,5 +1,8 @@
 package console.precompiled;
 
+import static console.common.Common.COMPATIBILITY_VERSION;
+
+import console.ConsoleInitializer;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.model.AbiAndBin;
@@ -22,6 +25,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
@@ -30,6 +34,7 @@ import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionV320;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sharding.ShardingService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
@@ -52,6 +57,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
     private BFSService bfsService;
+    private ShardingService shardingService;
     private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
@@ -61,6 +67,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
+        this.shardingService = new ShardingService(client, cryptoKeyPair);
     }
 
     @Override
@@ -108,10 +115,18 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void setSystemConfigByKey(String[] params) throws Exception {
+    public void setSystemConfigByKey(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
         String key = params[1];
         String value = params[2];
-        ConsoleUtils.printJson(this.systemConfigService.setValueByKey(key, value).toString());
+        RetCode retCode = this.systemConfigService.setValueByKey(key, value);
+        ConsoleUtils.printJson(retCode.toString());
+        if (key.equals(COMPATIBILITY_VERSION)
+                && retCode.code == PrecompiledRetCode.CODE_SUCCESS.code) {
+            String[] param = new String[2];
+            param[1] = consoleInitializer.getGroupID();
+            consoleInitializer.switchGroup(param);
+        }
     }
 
     @Override
@@ -451,26 +466,39 @@ public class PrecompiledImpl implements PrecompiledFace {
             pwd = path;
             return;
         }
-        Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
-        String parentDir = parentAndBase.getValue1();
-        String baseName = parentAndBase.getValue2();
-        List<BfsInfo> listResult = bfsService.list(parentDir);
-        if (!listResult.isEmpty()) {
-            boolean findFlag = false;
-            for (BfsInfo bfsInfo : listResult) {
-                if (bfsInfo.getFileName().equals(baseName)) {
-                    findFlag = true;
-                    if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
-                        throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
-                    }
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion().toVersionObj();
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            BFSInfo bfsInfo = bfsService.isExist(path);
+            if (bfsInfo != null) {
+                if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                    throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
                 }
-            }
-            if (!findFlag) {
+            } else {
                 logger.error("cd: no such file or directory: '{}'", path);
-                throw new Exception("cd: no such file or directory: " + baseName);
+                throw new Exception("cd: no such file or directory: " + params[1]);
             }
         } else {
-            throw new Exception("cd: no such file or directory: " + params[1]);
+            Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
+            String parentDir = parentAndBase.getValue1();
+            String baseName = parentAndBase.getValue2();
+            List<BfsInfo> listResult = bfsService.list(parentDir);
+            if (!listResult.isEmpty()) {
+                boolean findFlag = false;
+                for (BfsInfo bfsInfo : listResult) {
+                    if (bfsInfo.getFileName().equals(baseName)) {
+                        findFlag = true;
+                        if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                            throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
+                        }
+                    }
+                }
+                if (!findFlag) {
+                    logger.error("cd: no such file or directory: '{}'", path);
+                    throw new Exception("cd: no such file or directory: " + baseName);
+                }
+            } else {
+                throw new Exception("cd: no such file or directory: " + params[1]);
+            }
         }
         pwd = path;
     }
@@ -500,7 +528,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         do {
             Tuple2<BigInteger, List<BfsInfo>> fileInfoList;
             EnumNodeVersion.Version supportedVersion =
-                    EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+                    bfsService.getCurrentVersion().toVersionObj();
             if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
                 fileInfoList = bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
             } else {
@@ -649,8 +677,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         RetCode retCode;
-        EnumNodeVersion.Version supportedVersion =
-                EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion().toVersionObj();
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
             retCode =
                     bfsService.link(
@@ -669,6 +696,55 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         ConsoleUtils.printJson(retCode.toString());
         System.out.println();
+    }
+
+    @Override
+    public void getContractShard(String[] params) throws Exception {
+        String shard = this.shardingService.getContractShard(params[1]);
+        if (shard.isEmpty()) {
+            shard = "default";
+        } else {
+            shard = "/shards/" + shard;
+        }
+
+        System.out.println(shard);
+    }
+
+    @Override
+    public void makeShard(String[] params) throws Exception {
+        String shardName = params[1];
+        RetCode retCode = this.shardingService.makeShard(shardName);
+
+        logger.info("makeShard: {}, retCode {}", shardName, retCode);
+        // parse the result
+        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println("make shard " + shardName + " Ok. You can use 'ls' to check");
+        } else {
+            System.out.println("make shard " + shardName + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void linkShard(String[] params) throws Exception {
+        String address = params[1];
+        String shardName = params[2];
+        RetCode retCode = this.shardingService.linkShard(shardName, address);
+
+        logger.info("linkShard: add {} to {}, retCode {}", address, shardName, retCode);
+        // parse the result
+        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println(
+                    "Add " + address + " to " + shardName + " Ok. You can use 'ls' to check");
+        } else {
+            System.out.println("Add " + address + " to " + shardName + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void fixBFS(String[] params) throws Exception {
+        ConsoleUtils.printJson(bfsService.fixBfs().toString());
     }
 
     @Override

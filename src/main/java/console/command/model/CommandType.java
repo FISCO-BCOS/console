@@ -10,7 +10,8 @@ public enum CommandType {
     GROUP_QUERY,
     AUTH_OP,
     ACCOUNT_OP,
-    COLLABORATE_OP;
+    COLLABORATE_OP,
+    SHARDING_OP;
 
     @Override
     public String toString() {
@@ -35,6 +36,8 @@ public enum CommandType {
                 return "Account Operation";
             case COLLABORATE_OP:
                 return "Wasm Collaboration Operation";
+            case SHARDING_OP:
+                return "Sharding Operation";
             default:
                 return "Unknown Command";
         }
