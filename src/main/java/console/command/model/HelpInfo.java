@@ -379,11 +379,7 @@ public class HelpInfo {
                         + Common.SYS_CONFIG_RANGE
                         + "(default 1).");
         System.out.println(
-                "    -- the value of "
-                        + Common.AUTH_CHECK_STATUS
-                        + " "
-                        + Common.SYS_CONFIG_RANGE
-                        + "(default 0).");
+                "    -- the value of " + Common.AUTH_CHECK_STATUS + " " + Common.AUTH_CHECK_DESC);
     }
 
     public static void getSystemConfigByKeyHelp() {

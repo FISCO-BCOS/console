@@ -40,7 +40,7 @@ dependencies {
     //compile 'org.fisco-bcos:solcJ:0.5.2.1'
     compile 'org.fisco-bcos:solcJ:0.8.11.1'
 
-    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.3.0-SNAPSHOT') {
+    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.3.0') {
         exclude group: "org.slf4j"
     }
 
@@ -51,7 +51,7 @@ dependencies {
     compile('org.jline:jline:3.21.0')
     compile('io.bretty:console-table-builder:1.2')
     compile('com.github.jsqlparser:jsqlparser:2.0')
-    compile('org.fisco-bcos.code-generator:bcos-code-generator:1.1.0-SNAPSHOT') {
+    compile('org.fisco-bcos.code-generator:bcos-code-generator:1.1.0') {
         exclude group: "org.fisco-bcos.java-sdk"
         exclude group: "org.slf4j"
     }

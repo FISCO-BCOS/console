@@ -35,7 +35,9 @@ public class Common {
     public static final String NON_NEGATIVE_INTEGER_RANGE = "from 0 to 2147483647";
     public static final String DEPLOY_LOG_INTEGER_RANGE = "from 1 to 100";
     public static final String TX_GAS_LIMIT_RANGE = "must be greater than 100000";
-    public static final String SYS_CONFIG_RANGE = "must be greater than 1";
+    public static final String SYS_CONFIG_RANGE = "must be greater or equal to 1";
+    public static final String AUTH_CHECK_DESC =
+            "means whether to check auth when deploy/call contract, if value>0, check auth, otherwise not check auth.";
     public static final String COMPATIBILITY_VERSION_DESC =
             "must be in this format: 3.0.0, 3.1.0, etc. Latest version now is "
                     + ConsoleVersion.Version;
