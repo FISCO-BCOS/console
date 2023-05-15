@@ -742,7 +742,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
         CallResponse response =
-                assembleTransactionProcessor.sendCallWithStringParams(
+                assembleTransactionProcessor.sendCallWithSignWithStringParams(
                         cryptoKeyPair.getAddress(),
                         contractAddress,
                         abiAndBin.getAbi(),
