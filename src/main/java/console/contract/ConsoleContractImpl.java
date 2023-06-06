@@ -148,17 +148,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             ? "_gm" + ContractCompiler.WASM_SUFFIX
                             : ContractCompiler.WASM_SUFFIX;
             String liquidDir = paramsList.get(1);
-            // test/test.wasm test/test_gm.wasm
-            String wasmBinPath =
-                    liquidDir + File.separator + FilenameUtils.getBaseName(liquidDir) + wasmSuffix;
-            // test/test.abi
-            String abi =
-                    liquidDir
-                            + File.separator
-                            + FilenameUtils.getBaseName(liquidDir)
-                            + ContractCompiler.ABI_SUFFIX;
-            String binPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(wasmBinPath));
-            String abiPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(abi));
+            String binPath = ConsoleUtils.scanPathWithSuffix(liquidDir, wasmSuffix);
+            String abiPath =
+                    ConsoleUtils.scanPathWithSuffix(liquidDir, ContractCompiler.ABI_SUFFIX);
             String path = paramsList.get(2);
             try {
                 path = ConsoleUtils.fixedBfsParam(path, pwd);
