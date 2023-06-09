@@ -138,7 +138,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         Map<String, List<String>> tableDesc;
         EnumNodeVersion.Version supportedVersion =
-                EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion()).toVersionObj();
+                EnumNodeVersion.valueFromCompatibilityVersion(tableCRUDService.getCurrentVersion());
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
             tableDesc = tableCRUDService.descWithKeyOrder(tableName);
         } else {
@@ -164,7 +164,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         CRUDParseUtils.parseCreateTable(sql, table);
         EnumNodeVersion.Version supportedVersion =
-                EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion()).toVersionObj();
+                EnumNodeVersion.valueFromCompatibilityVersion(tableCRUDService.getCurrentVersion());
         RetCode result;
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
             result =
@@ -217,8 +217,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             Table table = new Table();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
             EnumNodeVersion.Version supportedVersion =
-                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
-                            .toVersionObj();
+                    EnumNodeVersion.valueFromCompatibilityVersion(
+                            tableCRUDService.getCurrentVersion());
             Map<String, List<String>> descTable;
             if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
                 descTable = tableCRUDService.descWithKeyOrder(tableName);
@@ -281,8 +281,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
 
             EnumNodeVersion.Version supportedVersion =
-                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
-                            .toVersionObj();
+                    EnumNodeVersion.valueFromCompatibilityVersion(
+                            tableCRUDService.getCurrentVersion());
             RetCode updateResult;
             if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
                 ConditionV320 conditionV320 = new ConditionV320();
@@ -330,8 +330,9 @@ public class PrecompiledImpl implements PrecompiledFace {
             table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
 
             EnumNodeVersion.Version supportedVersion =
-                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
-                            .toVersionObj();
+                    EnumNodeVersion.valueFromCompatibilityVersion(
+                            tableCRUDService.getCurrentVersion());
+
             RetCode removeResult;
             if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
                 ConditionV320 conditionV320 = new ConditionV320();
@@ -385,8 +386,8 @@ public class PrecompiledImpl implements PrecompiledFace {
             table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
 
             EnumNodeVersion.Version supportedVersion =
-                    EnumNodeVersion.valueOf((int) tableCRUDService.getCurrentVersion())
-                            .toVersionObj();
+                    EnumNodeVersion.valueFromCompatibilityVersion(
+                            tableCRUDService.getCurrentVersion());
             List<Map<String, String>> result = new ArrayList<>();
             if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
                 ConditionV320 conditionV320 = new ConditionV320();
@@ -466,7 +467,7 @@ public class PrecompiledImpl implements PrecompiledFace {
             pwd = path;
             return;
         }
-        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion().toVersionObj();
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
             BFSInfo bfsInfo = bfsService.isExist(path);
             if (bfsInfo != null) {
@@ -527,8 +528,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         BigInteger offset = BigInteger.ZERO;
         do {
             Tuple2<BigInteger, List<BfsInfo>> fileInfoList;
-            EnumNodeVersion.Version supportedVersion =
-                    bfsService.getCurrentVersion().toVersionObj();
+            EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
             if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
                 fileInfoList = bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
             } else {
@@ -677,7 +677,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
 
         RetCode retCode;
-        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion().toVersionObj();
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
             retCode =
                     bfsService.link(
