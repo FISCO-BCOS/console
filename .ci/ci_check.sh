@@ -67,6 +67,8 @@ prepare_environment()
 
 build_node()
 {
+  curl -LO https://github.com/FISCO-BCOS/console/releases/download/v3.0.0/get_account.sh
+  curl -LO https://github.com/FISCO-BCOS/console/releases/download/v3.0.0/get_gm_account.sh
   bash build_chain.sh -l 127.0.0.1:4 ${@} -e ./fisco-bcos
   ./nodes/127.0.0.1/fisco-bcos -v
   ./nodes/127.0.0.1/start_all.sh
