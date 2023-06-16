@@ -67,12 +67,9 @@ prepare_environment()
 
 build_node()
 {
-  local node_type="${1}"
-  if [ "${node_type}" == "sm" ];then
-      bash build_chain.sh -l 127.0.0.1:4 -s -A -e ./fisco-bcos
-  else
-      bash build_chain.sh -l 127.0.0.1:4 -A -e ./fisco-bcos
-  fi
+  curl -LO https://github.com/FISCO-BCOS/console/releases/download/v3.0.0/get_account.sh
+  curl -LO https://github.com/FISCO-BCOS/console/releases/download/v3.0.0/get_gm_account.sh
+  bash build_chain.sh -l 127.0.0.1:4 ${@} -e ./fisco-bcos
   ./nodes/127.0.0.1/fisco-bcos -v
   ./nodes/127.0.0.1/start_all.sh
 }
@@ -88,7 +85,7 @@ clean_node()
 
 check_standard_node()
 {
-  build_node
+  build_node ${@:2}
   prepare_environment
   ## run integration test
   bash gradlew test --info
@@ -98,7 +95,7 @@ check_standard_node()
 
 check_sm_node()
 {
-  build_node sm
+  build_node ${@:2} -s
   prepare_environment sm
   ## run integration test
   bash gradlew test --info
@@ -118,9 +115,10 @@ bash gradlew integrationTest --info
 }
 
 #cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
-#LOG_INFO "------ download_build_chain---------"
-download_binary "v3.2.0"
-download_build_chain "v3.2.0"
+download_tassl
+LOG_INFO "------ download_binary: v3.3.0---------"
+download_binary "v3.3.0"
+download_build_chain "v3.3.0"
 LOG_INFO "------ check_standard_node---------"
 check_standard_node false
 LOG_INFO "------ check_sm_node---------"
@@ -128,16 +126,23 @@ check_sm_node true
 LOG_INFO "------ check_basic---------"
 check_basic
 
+LOG_INFO "------ download_binary: v3.2.0---------"
+download_binary "v3.2.0"
+download_build_chain "v3.2.0"
+LOG_INFO "------ check_standard_node---------"
+check_standard_node -s
+rm -rf ./bin
+
 LOG_INFO "------ download_binary: v3.1.0---------"
 download_binary "v3.1.0"
 download_build_chain "v3.1.0"
 LOG_INFO "------ check_standard_node---------"
-check_standard_node
+check_standard_node -s
 rm -rf ./bin
 
 LOG_INFO "------ download_binary: v3.0.0---------"
 download_binary "v3.0.0"
 download_build_chain "v3.0.0"
 LOG_INFO "------ check_standard_node---------"
-check_standard_node
+check_standard_node -s
 rm -rf ./bin

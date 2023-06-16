@@ -5,6 +5,7 @@ import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
@@ -559,6 +560,50 @@ public class ConsoleUtils {
             throw new ConsoleMessageException(liquidFileNameOrPath + " does not exist ");
         }
         return liquidFile.getAbsolutePath();
+    }
+
+    // scan file in path matches suffix
+    public static String scanPathWithSuffix(String path, String suffix)
+            throws ConsoleMessageException {
+        class FileSuffixFilter implements FileFilter {
+            final String suffix;
+
+            FileSuffixFilter(String suffix) {
+                this.suffix = suffix.toLowerCase();
+            }
+
+            @Override
+            public boolean accept(File pathname) {
+                if (pathname.getName().toLowerCase().endsWith(this.suffix)) {
+                    return !pathname.getName().toLowerCase().endsWith("_gm" + this.suffix);
+                }
+                return false;
+            }
+        }
+        File scanFile = new File(path);
+        // not exist or not a directory, use contract path
+        if (!scanFile.exists() || !scanFile.isDirectory()) {
+            scanFile =
+                    new File(
+                            suffix.equals(SOL_SUFFIX)
+                                    ? SOLIDITY_PATH
+                                    : LIQUID_PATH + File.separator + path);
+        }
+        // still not exist
+        if (!scanFile.exists() || !scanFile.isDirectory()) {
+            throw new ConsoleMessageException("There is no any file end with " + suffix);
+        }
+        File[] files = scanFile.listFiles(new FileSuffixFilter(suffix));
+        if (files == null || files.length == 0) {
+            throw new ConsoleMessageException("There is no any file end with " + suffix);
+        } else if (files.length > 1) {
+            throw new ConsoleMessageException(
+                    "There are more than one file end with "
+                            + suffix
+                            + ": "
+                            + Arrays.toString(files));
+        }
+        return files[0].getAbsolutePath();
     }
 
     public static String resolvePath(String path) {

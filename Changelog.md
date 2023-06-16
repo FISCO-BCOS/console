@@ -1,3 +1,25 @@
+## v3.4.0
+(2023-06-13)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 更新
+
+- 将所有的static call请求都使用call with sign接口，支持在发起static call请求时使用私钥对请求体(to+data)进行签名，在节点侧将会对应会付出签名对应的用户地址，合约中可以取到call请求时的tx.origin和msg.sender，达到用户身份认证的目的。
+- 优化liquid合约部署的体验，支持在部署时指定.wasm和.abi所在的文件夹进行部署。
+- 适配Java sdk v3.4.0
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.3.0版本后，才支持使用ShardService的接口。
+
+---
+
 ## v3.3.0
 (2023-04-17)
 
@@ -31,6 +53,8 @@
 - 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
 - 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
 - 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+
+---
 
 ## v3.2.0
 (2023-01-17)
