@@ -38,7 +38,7 @@ $ ./gradlew build -b build-hsm.gradle
 If you install successfully, it produces the `dist` directory.
 
 ## Configuration
-Please see the [documentation](https://fisco-bcos-documentation.readthedocs.io/en/latest/docs/manual/console_of_java_sdk.html#id8) about configurating for the console. Have fun.
+Please see the [documentation](https://fisco-bcos-documentation.readthedocs.io/zh_CN/latest/docs/console/console_of_java_sdk.html#id4) about configurating for the console. Have fun.
 
 ## Code Contribution
 - Star our Github.
