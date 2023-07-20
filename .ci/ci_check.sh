@@ -86,6 +86,8 @@ bash gradlew test
 bash gradlew integrationTest --info
 }
 
+LOG_INFO "------ check_java_version---------"
+java -version
 #cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
 #LOG_INFO "------ download_build_chain---------"
 download_build_chain
