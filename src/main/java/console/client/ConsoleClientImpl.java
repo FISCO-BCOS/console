@@ -24,6 +24,7 @@ import org.fisco.bcos.sdk.v3.crypto.CryptoSuite;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
 import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
 import org.slf4j.Logger;
@@ -117,7 +118,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getBlockByNumber(String[] params) throws IOException {
         String blockNumberStr = params[1];
         int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
-        if (blockNumber == Common.InvalidReturnNumber) {
+        if (blockNumber == Common.INVALID_RETURN_NUMBER) {
             return;
         }
         boolean flag = false;
@@ -155,7 +156,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getBlockHashByNumber(String[] params) throws IOException {
         String blockNumberStr = params[1];
         int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
-        if (blockNumber == Common.InvalidReturnNumber) {
+        if (blockNumber == Common.INVALID_RETURN_NUMBER) {
             return;
         }
         String blockHashByNumber =
@@ -173,7 +174,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getBlockHeaderByNumber(String[] params) throws IOException {
         String blockNumberStr = params[1];
         int blockNumber = ConsoleUtils.processNonNegativeNumber("blockNumber", blockNumberStr);
-        if (blockNumber == Common.InvalidReturnNumber) {
+        if (blockNumber == Common.INVALID_RETURN_NUMBER) {
             return;
         }
         ConsoleUtils.printJson(
@@ -264,7 +265,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getCode(String[] params, boolean isWasm, String pwd) throws IOException {
         String address = params[1];
         if (!isWasm) {
-            if (!ConsoleUtils.isValidAddress(address)) {
+            if (!AddressUtils.isValidAddress(address)) {
                 System.out.println("This address is invalid.");
                 return;
             }
@@ -365,7 +366,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return;
         }
         String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
-        System.out.println(currentAccount + "(current account) <=");
+        String currentAccountSuffix =
+                client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.HSM_TYPE
+                        ? "(current HSM account) <="
+                        : "(current account) <=";
+        System.out.println(currentAccount + currentAccountSuffix);
         for (String s : accountList) {
             if (!s.equals(currentAccount)) {
                 System.out.println(s);
@@ -376,7 +381,8 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public static String getAccountDir(Client client) {
         ConfigOption configOption = client.getCryptoSuite().getConfig();
         String subDir = CryptoKeyPair.ECDSA_ACCOUNT_SUBDIR;
-        if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE) {
+        if (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE
+                || client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.HSM_TYPE) {
             subDir = CryptoKeyPair.GM_ACCOUNT_SUBDIR;
         }
         return configOption.getAccountConfig().getKeyStoreDir() + File.separator + subDir;

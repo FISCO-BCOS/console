@@ -4,9 +4,10 @@
 
 # 控制台
 
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![Build Status](https://travis-ci.org/FISCO-BCOS/console.svg?branch=master)](https://travis-ci.org/FISCO-BCOS/console)
+[![contributors](https://img.shields.io/github/contributors/FISCO-BCOS/console)](https://github.com/FISCO-BCOS/console/graphs/contributors)
+[![GitHub activity](https://img.shields.io/github/commit-activity/m/FISCO-BCOS/console)](https://github.com/FISCO-BCOS/console/pulse)
 [![GitHub All Releases](https://img.shields.io/github/downloads/FISCO-BCOS/console/total.svg)](https://github.com/FISCO-BCOS/console)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 ---
 
 控制台是FISCO BCOS的重要交互式客户端工具。控制台拥有丰富的命令，包括查询区块链状态、管理区块链节点、部署并调用合约等。
@@ -41,7 +42,7 @@
  - 提供一个合约转换工具，用户可将编译好的Liquid合约的物料包，例如WASM文件和ABI文件，转换成Java合约文件。
 
 ## 使用
-- 可以直接下载控制台压缩包，然后解压控制台压缩包使用控制台。具体参考 [控制台手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)。
+- 可以直接下载控制台压缩包，然后解压控制台压缩包使用控制台。具体参考 [控制台手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/operation_and_maintenance/console/index.html)。
 
 ## 源码安装
 ```

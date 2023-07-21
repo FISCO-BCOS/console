@@ -187,7 +187,9 @@ public class StatusQueryCommand extends BasicCategoryCommand {
                     "Set a system config value by key",
                     HelpInfo::setSystemConfigByKeyHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().setSystemConfigByKey(params),
+                            consoleInitializer
+                                    .getPrecompiledFace()
+                                    .setSystemConfigByKey(consoleInitializer, params),
                     2,
                     2);
 

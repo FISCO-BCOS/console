@@ -55,6 +55,9 @@ public class JlineUtils {
         if (accountCompleter != null) {
             accountCompleter.setClient(client);
         }
+        if (currentPathCompleter != null) {
+            currentPathCompleter.setClient(client);
+        }
     }
 
     public static void switchPwd(String pwd) {
@@ -172,23 +175,28 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.TxCountLimit),
+                            new StringsCompleter(Common.TX_COUNT_LIMIT),
                             new StringsCompleterIgnoreCase()));
 
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.TxGasLimit),
+                            new StringsCompleter(Common.TX_GAS_LIMIT),
                             new StringsCompleterIgnoreCase()));
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.ConsensusLeaderPeriod),
+                            new StringsCompleter(Common.CONSENSUS_LEADER_PERIOD),
                             new StringsCompleterIgnoreCase()));
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
-                            new StringsCompleter(Common.compatibilityVersion),
+                            new StringsCompleter(Common.COMPATIBILITY_VERSION),
+                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
+                            new StringsCompleter(Common.AUTH_CHECK_STATUS),
                             new StringsCompleterIgnoreCase()));
         }
         completers.add(

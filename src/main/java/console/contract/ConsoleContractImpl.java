@@ -42,9 +42,7 @@ import org.fisco.bcos.sdk.v3.codec.ContractCodecException;
 import org.fisco.bcos.sdk.v3.codec.EventEncoder;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinitionFactory;
-import org.fisco.bcos.sdk.v3.codec.wrapper.ABIObject;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ContractABIDefinition;
-import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
@@ -57,6 +55,7 @@ import org.fisco.bcos.sdk.v3.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionBaseException;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Hex;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.bcos.sdk.v3.utils.StringUtils;
@@ -149,17 +148,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             ? "_gm" + ContractCompiler.WASM_SUFFIX
                             : ContractCompiler.WASM_SUFFIX;
             String liquidDir = paramsList.get(1);
-            // test/test.wasm test/test_gm.wasm
-            String wasmBinPath =
-                    liquidDir + File.separator + FilenameUtils.getBaseName(liquidDir) + wasmSuffix;
-            // test/test.abi
-            String abi =
-                    liquidDir
-                            + File.separator
-                            + FilenameUtils.getBaseName(liquidDir)
-                            + ContractCompiler.ABI_SUFFIX;
-            String binPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(wasmBinPath));
-            String abiPath = ConsoleUtils.getLiquidFilePath(ConsoleUtils.resolvePath(abi));
+            String binPath = ConsoleUtils.scanPathWithSuffix(liquidDir, wasmSuffix);
+            String abiPath =
+                    ConsoleUtils.scanPathWithSuffix(liquidDir, ContractCompiler.ABI_SUFFIX);
             String path = paramsList.get(2);
             try {
                 path = ConsoleUtils.fixedBfsParam(path, pwd);
@@ -183,8 +174,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     }
 
     private void deployLink(String linkPath, String address, String abiString) throws Exception {
-        EnumNodeVersion.Version supportedVersion =
-                EnumNodeVersion.valueOf((int) bfsService.getCurrentVersion()).toVersionObj();
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
         final RetCode retCode;
         if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
             retCode =
@@ -211,75 +201,6 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         System.out.println("link path: " + linkPath);
     }
 
-    public void printReturnObject(
-            List<Object> returnObject, List<ABIObject> returnABIObject, String returnValue) {
-        if (returnABIObject == null || returnObject.isEmpty() || returnABIObject.isEmpty()) {
-            System.out.println("Return values:" + returnValue);
-            return;
-        }
-        StringBuilder resultType = new StringBuilder();
-        StringBuilder resultData = new StringBuilder();
-        resultType.append("(");
-        resultData.append("(");
-        getReturnObjectOutputData(resultType, resultData, returnObject, returnABIObject);
-        if (resultType.toString().endsWith(", ")) {
-            resultType.delete(resultType.length() - 2, resultType.length());
-        }
-        if (resultData.toString().endsWith(", ")) {
-            resultData.delete(resultData.length() - 2, resultData.length());
-        }
-        resultType.append(")");
-        resultData.append(")");
-        System.out.println("Return value size:" + returnObject.size());
-        System.out.println("Return types: " + resultType);
-        System.out.println("Return values:" + resultData);
-    }
-
-    public void getReturnObjectOutputData(
-            StringBuilder resultType,
-            StringBuilder resultData,
-            List<Object> returnObject,
-            List<ABIObject> returnABIObject) {
-        int i = 0;
-        for (ABIObject abiObject : returnABIObject) {
-            if (abiObject.getListValues() != null) {
-                resultType.append("[");
-                resultData.append("[");
-                getReturnObjectOutputData(
-                        resultType,
-                        resultData,
-                        (List<Object>) returnObject.get(i),
-                        abiObject.getListValues());
-                if (resultType.toString().endsWith(", ")) {
-                    resultType.delete(resultType.length() - 2, resultType.length());
-                }
-                if (resultData.toString().endsWith(", ")) {
-                    resultData.delete(resultData.length() - 2, resultData.length());
-                }
-                resultData.append("] ");
-                resultType.append("] ");
-                i += 1;
-                continue;
-            }
-            if (abiObject.getValueType() == null && returnObject.size() > i) {
-                resultData.append(returnObject.get(i).toString()).append(", ");
-                i += 1;
-                continue;
-            }
-            resultType.append(abiObject.getValueType()).append(", ");
-            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
-                String data =
-                        "hex://0x"
-                                + ConsoleUtils.bytesToHex(
-                                        ContractCodecTools.formatBytesN(abiObject));
-                resultData.append(data).append(", ");
-            } else if (returnObject.size() > i) {
-                resultData.append(returnObject.get(i).toString()).append(", ");
-            }
-            i += 1;
-        }
-    }
-
     public TransactionResponse deploySolidity(
             String contractName, String contractNameOrPath, List<String> inputParams)
             throws ConsoleMessageException {
@@ -296,7 +217,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 }
             }
 
-            boolean sm = client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE;
+            boolean sm =
+                    (client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE)
+                            || (client.getCryptoSuite().getCryptoTypeConfig()
+                                    == CryptoType.HSM_TYPE);
             AbiAndBin abiAndBin =
                     ContractCompiler.compileContract(
                             contractNameOrPath, contractName, sm, isContractParallelAnalysis);
@@ -311,10 +235,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
-                printReturnObject(
-                        response.getReturnObject(),
+                ConsoleUtils.printResults(
                         response.getReturnABIObject(),
-                        response.getValues());
+                        response.getReturnObject(),
+                        response.getResults());
                 return response;
             }
             String contractAddress = response.getTransactionReceipt().getContractAddress();
@@ -365,10 +289,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println("deploy contract for " + path + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
                 System.out.println("return code:" + response.getReturnCode());
-                printReturnObject(
-                        response.getReturnObject(),
+                ConsoleUtils.printResults(
                         response.getReturnABIObject(),
-                        response.getValues());
+                        response.getReturnObject(),
+                        response.getResults());
                 return response;
             }
 
@@ -402,40 +326,40 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     private synchronized void writeLog(String contractName, String contractAddress) {
         contractName = ConsoleUtils.removeSolSuffix(contractName);
 
-        File logFile = new File(Common.ContractLogFileName);
+        File logFile = new File(Common.CONTRACT_LOG_FILE_NAME);
         try {
             if (!logFile.exists() && !logFile.createNewFile()) {
-                System.out.println("Failed to create log file: " + Common.ContractLogFileName);
+                System.out.println("Failed to create log file: " + Common.CONTRACT_LOG_FILE_NAME);
                 return;
             }
         } catch (IOException e) {
-            System.out.println("Failed to create log file: " + Common.ContractLogFileName);
+            System.out.println("Failed to create log file: " + Common.CONTRACT_LOG_FILE_NAME);
             logger.error("create file exception", e);
             return;
         }
         try (BufferedReader reader =
-                        new BufferedReader(new FileReader(Common.ContractLogFileName));
+                        new BufferedReader(new FileReader(Common.CONTRACT_LOG_FILE_NAME));
                 PrintWriter pw =
-                        new PrintWriter(new FileWriter(Common.ContractLogFileName, true)); ) {
+                        new PrintWriter(new FileWriter(Common.CONTRACT_LOG_FILE_NAME, true)); ) {
             String line;
             List<String> textList = new ArrayList<>();
             while ((line = reader.readLine()) != null) {
                 textList.add(line);
             }
             int i = 0;
-            if (textList.size() >= Common.LogMaxCount) {
-                i = textList.size() - Common.LogMaxCount + 1;
+            if (textList.size() >= Common.LOG_MAX_COUNT) {
+                i = textList.size() - Common.LOG_MAX_COUNT + 1;
                 if (logFile.exists()) {
 
                     if (!logFile.delete()) {
                         System.out.println(
-                                "Failed to delete log file: " + Common.ContractLogFileName);
+                                "Failed to delete log file: " + Common.CONTRACT_LOG_FILE_NAME);
                         return;
                     }
 
                     if (!logFile.createNewFile()) {
                         System.out.println(
-                                "Failed to create log file: " + Common.ContractLogFileName);
+                                "Failed to create log file: " + Common.CONTRACT_LOG_FILE_NAME);
                         return;
                     }
                 }
@@ -462,9 +386,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         + contractName
                         + "  "
                         + contractAddress;
-        try (PrintWriter pw = new PrintWriter(new FileWriter(Common.ContractLogFileName, true))) {
+        try (PrintWriter pw =
+                new PrintWriter(new FileWriter(Common.CONTRACT_LOG_FILE_NAME, true))) {
             if (!logFile.exists() && !logFile.createNewFile()) {
-                System.out.println("Failed to create file " + Common.ContractLogFileName);
+                System.out.println("Failed to create file " + Common.CONTRACT_LOG_FILE_NAME);
             }
             pw.println(log);
             pw.flush();
@@ -477,7 +402,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     @Override
     public void getDeployLog(String[] params) throws Exception {
         String queryRecordNumber = "";
-        int recordNumber = Common.QueryLogCount;
+        int recordNumber = Common.QUERY_LOG_COUNT;
         if (params.length == 2) {
             queryRecordNumber = params[1];
             try {
@@ -485,24 +410,24 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 if (recordNumber <= 0 || recordNumber > 100) {
                     System.out.println(
                             "Please provide record number by integer mode, "
-                                    + Common.DeployLogIntegerRange
+                                    + Common.DEPLOY_LOG_INTEGER_RANGE
                                     + ".");
                     return;
                 }
             } catch (NumberFormatException e) {
                 System.out.println(
                         "Please provide record number by integer mode, "
-                                + Common.DeployLogIntegerRange
+                                + Common.DEPLOY_LOG_INTEGER_RANGE
                                 + ".");
                 return;
             }
         }
-        File logFile = new File(Common.ContractLogFileName);
+        File logFile = new File(Common.CONTRACT_LOG_FILE_NAME);
         if (!logFile.exists() && !logFile.createNewFile()) {
-            System.out.println("Failed to create file " + Common.ContractLogFileName);
+            System.out.println("Failed to create file " + Common.CONTRACT_LOG_FILE_NAME);
             return;
         }
-        BufferedReader reader = new BufferedReader(new FileReader(Common.ContractLogFileName));
+        BufferedReader reader = new BufferedReader(new FileReader(Common.CONTRACT_LOG_FILE_NAME));
         String line;
         String ls = System.getProperty("line.separator");
         List<String> textList = new ArrayList<String>();
@@ -532,7 +457,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 System.out.println(stringBuilder);
             }
         } catch (Exception e) {
-            logger.error(" load {} failed, e: {}", Common.ContractLogFileName, e);
+            logger.error(" load {} failed, e: {}", Common.CONTRACT_LOG_FILE_NAME, e);
         } finally {
             reader.close();
         }
@@ -607,7 +532,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             ConsoleUtils.sortFiles(contractAddressFiles);
             for (File contractAddressFile : contractAddressFiles) {
                 if (contractAddressFile.isDirectory()
-                        && ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                        && AddressUtils.isValidAddress(contractAddressFile.getName())) {
                     contractAddressStr = contractAddressFile.getName();
                     break;
                 }
@@ -621,7 +546,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
 
         // check contract address
-        if (!ConsoleUtils.isValidAddress(contractAddressStr)) {
+        if (!AddressUtils.isValidAddress(contractAddressStr)) {
             System.out.println("Invalid contract address: " + contractAddressStr);
             return;
         }
@@ -782,7 +707,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         ConsoleUtils.singleLine();
         System.out.println("Receipt message: " + response.getReceiptMessages());
         System.out.println("Return message: " + response.getReturnMessage());
-        ConsoleUtils.printReturnResults(response.getResults());
+        ConsoleUtils.printResults(
+                response.getReturnABIObject(), response.getReturnObject(), response.getResults());
         ConsoleUtils.singleLine();
         if (response.getEvents() != null && !response.getEvents().isEmpty()) {
             System.out.println("Event logs");
@@ -808,7 +734,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
         CallResponse response =
-                assembleTransactionProcessor.sendCallWithStringParams(
+                assembleTransactionProcessor.sendCallWithSignWithStringParams(
                         cryptoKeyPair.getAddress(),
                         contractAddress,
                         abiAndBin.getAbi(),
@@ -821,7 +747,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             System.out.println("description: " + "transaction executed successfully");
             System.out.println("Return message: " + response.getReturnMessage());
             ConsoleUtils.singleLine();
-            ConsoleUtils.printReturnResults(response.getResults());
+            ConsoleUtils.printResults(
+                    response.getReturnABIObject(),
+                    response.getReturnObject(),
+                    response.getResults());
         } else {
             String errorMessage = response.getReturnMessage();
             System.out.println(
@@ -916,7 +845,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             recordNum =
                     ConsoleUtils.processNonNegativeNumber(
                             "recordNum", params[2], 1, Integer.MAX_VALUE);
-            if (recordNum == Common.InvalidReturnNumber) {
+            if (recordNum == Common.INVALID_RETURN_NUMBER) {
                 return;
             }
         }
@@ -931,7 +860,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
         ConsoleUtils.sortFiles(contractFileList);
         for (File contractAddressFile : contractFileList) {
-            if (!isWasm && !ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+            if (!isWasm && !AddressUtils.isValidAddress(contractAddressFile.getName())) {
                 continue;
             }
             String contractAddress =

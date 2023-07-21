@@ -29,7 +29,7 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
     private boolean isWasm = false;
 
     static {
-        EXCLUDE_SOL.add("Table.sol");
+        EXCLUDE_SOL.add("TableV320.sol");
         EXCLUDE_SOL.add("Crypto.sol");
     }
 

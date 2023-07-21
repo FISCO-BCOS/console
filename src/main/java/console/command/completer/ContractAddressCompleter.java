@@ -5,6 +5,7 @@ import console.contract.utils.ContractCompiler;
 import java.io.File;
 import java.util.List;
 import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -58,7 +59,7 @@ public class ContractAddressCompleter extends StringsCompleterIgnoreCase {
                 int recordNum = 0;
 
                 for (File contractAddressFile : contractAddressFiles) {
-                    if (!ConsoleUtils.isValidAddress(contractAddressFile.getName())) {
+                    if (!AddressUtils.isValidAddress(contractAddressFile.getName())) {
                         continue;
                     }
                     candidates.add(

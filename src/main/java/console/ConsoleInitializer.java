@@ -24,6 +24,7 @@ import org.fisco.bcos.sdk.v3.crypto.CryptoSuite;
 import org.fisco.bcos.sdk.v3.crypto.exceptions.LoadKeyStoreException;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.jline.reader.LineReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,15 @@ public class ConsoleInitializer {
     private AuthFace authFace;
     private CollaborationFace collaborationFace;
     private boolean disableAutoCompleter = false;
+    private LineReader lineReader;
+
+    public LineReader getLineReader() {
+        return lineReader;
+    }
+
+    public void setLineReader(LineReader lineReader) {
+        this.lineReader = lineReader;
+    }
 
     public void init(String[] args) throws ConfigException {
         AccountInfo accountInfo = null;
@@ -125,6 +135,10 @@ public class ConsoleInitializer {
                 System.exit(0);
             }
 
+            if (config.getCryptoMaterialConfig().getEnableHsm()) {
+                return new AccountInfo("HSM", "", "");
+            }
+
             if (args.length == 3) {
                 return loadAccount(bcosSDK, args);
             }
@@ -173,7 +187,7 @@ public class ConsoleInitializer {
             System.out.println(
                     "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
                             + e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}", e.getMessage(), e);
             System.exit(0);
         }
     }

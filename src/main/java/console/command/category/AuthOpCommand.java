@@ -5,10 +5,10 @@ import console.command.model.CommandInfo;
 import console.command.model.CommandType;
 import console.command.model.HelpInfo;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class AuthOpCommand extends BasicCategoryCommand {
     protected static final Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
@@ -27,10 +27,15 @@ public class AuthOpCommand extends BasicCategoryCommand {
 
     @Override
     public List<String> getAllCommand(boolean isWasm, boolean isAuthOpen) {
-        if (!isWasm && isAuthOpen) {
-            return new ArrayList<>(commandToCommandInfo.keySet());
-        }
-        return new ArrayList<>();
+        return commandToCommandInfo
+                .keySet()
+                .stream()
+                .filter(
+                        key ->
+                                !(isWasm && !commandToCommandInfo.get(key).isWasmSupport()
+                                        || (!isAuthOpen
+                                                && commandToCommandInfo.get(key).isNeedAuthOpen())))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -178,7 +183,9 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     "Create a proposal to committee, which attempt to set system config.",
                     HelpInfo::setSysConfigProposalHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getAuthFace().createSetSysConfigProposal(params),
+                            consoleInitializer
+                                    .getAuthFace()
+                                    .createSetSysConfigProposal(consoleInitializer, params),
                     2,
                     2,
                     false,
@@ -484,6 +491,19 @@ public class AuthOpCommand extends BasicCategoryCommand {
                     false,
                     false,
                     true);
+
+    public static final CommandInfo INIT_AUTH =
+            new CommandInfo(
+                    "initAuth",
+                    "Initialize committee contract system.",
+                    HelpInfo::initAuthHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getAuthFace().initAuth(params),
+                    1,
+                    1,
+                    false,
+                    false,
+                    false);
 
     static {
         Field[] fields = AuthOpCommand.class.getDeclaredFields();

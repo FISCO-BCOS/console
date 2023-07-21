@@ -1,5 +1,7 @@
 package console.auth;
 
+import static console.common.Common.COMPATIBILITY_VERSION;
+
 import console.ConsoleInitializer;
 import console.common.ConsoleUtils;
 import java.math.BigInteger;
@@ -217,13 +219,19 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
-    public void createSetSysConfigProposal(String[] params) throws Exception {
+    public void createSetSysConfigProposal(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
         String key = params[1];
         String value = params[2];
 
         BigInteger proposalId = authManager.createSetSysConfigProposal(key, value);
         System.out.println("Set system config proposal created, ID is: " + proposalId);
         showProposalInfo(proposalId);
+        if (key.equals(COMPATIBILITY_VERSION) && proposalId.compareTo(BigInteger.ZERO) > 0) {
+            String[] param = new String[2];
+            param[1] = consoleInitializer.getGroupID();
+            consoleInitializer.switchGroup(param);
+        }
     }
 
     @Override
@@ -637,8 +645,16 @@ public class AuthImpl implements AuthFace {
         System.out.println("Account " + account + " status: " + (isNormal ? "Normal" : "Abnormal"));
     }
 
+    @Override
+    public void initAuth(String[] params) throws Exception {
+        String admin = params[1];
+        checkValidAddress(admin, "adminAddress");
+        RetCode retCode = authManager.initAuth(admin);
+        ConsoleUtils.printJson(retCode.toString());
+    }
+
     void checkValidAddress(String address, String valueName) throws TransactionException {
-        if (!ConsoleUtils.isValidAddress(address)) {
+        if (!AddressUtils.isValidAddress(address)) {
             throw new TransactionException(
                     "Invalid address "
                             + (valueName.isEmpty() ? "" : ("for " + valueName))

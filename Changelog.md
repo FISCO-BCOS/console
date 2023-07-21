@@ -1,3 +1,61 @@
+## v3.4.0
+(2023-06-13)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 更新
+
+- 将所有的static call请求都使用call with sign接口，支持在发起static call请求时使用私钥对请求体(to+data)进行签名，在节点侧将会对应会付出签名对应的用户地址，合约中可以取到call请求时的tx.origin和msg.sender，达到用户身份认证的目的。
+- 优化liquid合约部署的体验，支持在部署时指定.wasm和.abi所在的文件夹进行部署。
+- 适配Java sdk v3.4.0
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.3.0版本后，才支持使用ShardService的接口。
+
+---
+
+## v3.3.0
+(2023-04-17)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增对硬件密码机的支持。
+- 新增适配链上动态权限配置项`auth_check_status`，新增初始化权限治理的命令`initAuth`。
+- 新增链上分区服务命令：`makeShard`、`linkShard`、`getContractShard`。
+- 新增命令 `fixBFS` 以恢复3.2.0版本节点写入的错误数据，相关Issue：https://github.com/FISCO-BCOS/FISCO-BCOS/issues/3600
+
+### 更新
+
+- 在升级链版本号后自动`switch group` 刷新控制台状态。
+- get_account/get_gm_account脚本支持返回生成密钥的公私钥十六进制字符串。
+- TableTest示例合约改名未TableTestV320，与TableTest合约区分。
+- 更新 `fisco-bcos-java-sdk` 到3.3.0。
+- 更新 `bcos-code-generator` 到1.1.0。
+
+### 修复
+
+- 修复struct类型的打印输出。
+- 修复动态数组的返回bug。
+- 修复get_account/get_gm_account脚本不支持OpenSSL 3.x版本的问题。
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+
+---
+
 ## v3.2.0
 (2023-01-17)
 
