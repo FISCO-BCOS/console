@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 5
       - name: install Ubuntu dependencies
         if: runner.os == 'Linux'
-        run: sudo apt update && sudo apt install -y git curl libssl-dev build-essential openssl
+        run: sudo apt update && sudo apt install -y git curl libssl-dev build-essential openssl openssl-dev
       - name: install macOS dependencies
         if: runner.os == 'macOS'
         run: brew install openssl@1.1
