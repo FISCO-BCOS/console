@@ -56,6 +56,8 @@ bash gradlew integrationTest --info
 }
 
 cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
+LOG_INFO "------ check java version -------"
+java -version
 LOG_INFO "------ download_build_chain---------"
 download_build_chain
 LOG_INFO "------ check_standard_node---------"
