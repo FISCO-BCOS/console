@@ -69,7 +69,7 @@ public class JlineUtils {
         List<Completer> completers = new ArrayList<>();
 
         List<String> commands =
-                SupportedCommand.getAllCommand(client.isWASM(), client.isAuthCheck());
+                SupportedCommand.getAllCommand(client.isWASM(), client.isEnableCommittee());
         contractAddressCompleter = new ContractAddressCompleter(client);
         contractMethodCompleter = new ContractMethodCompleter(client);
         accountCompleter = new AccountCompleter(client);
@@ -167,7 +167,7 @@ public class JlineUtils {
                         Arrays.asList(
                                 StatusQueryCommand.SET_SYSTEM_CONFIG_BY_KEY.getCommand(),
                                 StatusQueryCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand()));
-        if (client.isAuthCheck()) {
+        if (client.isEnableCommittee()) {
             commands.add(AuthOpCommand.SET_SYS_CONFIG_PROPOSAL.getCommand());
         }
 

@@ -36,7 +36,7 @@ public class AuthImpl implements AuthFace {
 
     public AuthImpl(Client client) {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        boolean authAvailable = client.isAuthCheck() && !client.isWASM();
+        boolean authAvailable = client.isEnableCommittee() && !client.isWASM();
         if (authAvailable) {
             this.authManager = new AuthManager(client, cryptoKeyPair);
         } else {
