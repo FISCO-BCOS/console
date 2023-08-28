@@ -24,7 +24,7 @@ public class TestBase {
         consoleInitializer = new ConsoleInitializer();
         consoleInitializer.init(new String[0]);
         isWasm = consoleInitializer.getClient().isWASM();
-        isAuthCheck = consoleInitializer.getClient().isAuthCheck();
+        isAuthCheck = consoleInitializer.getClient().isEnableCommittee();
         authFace = consoleInitializer.getAuthFace();
         consoleClientFace = consoleInitializer.getConsoleClientFace();
         precompiledFace = consoleInitializer.getPrecompiledFace();
