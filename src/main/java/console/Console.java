@@ -61,7 +61,7 @@ public class Console {
         WelcomeInfo.welcome();
         String pwd = consoleInitializer.getPrecompiledFace().getPwd();
         SupportedCommand.setIsAuthOpen(
-                consoleInitializer.getClient().isAuthCheck()
+                consoleInitializer.getClient().isEnableCommittee()
                         && !consoleInitializer.getClient().isWASM());
         SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
@@ -105,7 +105,7 @@ public class Console {
                         SupportedCommand.getCommandInfo(
                                 params[0],
                                 consoleInitializer.getClient().isWASM(),
-                                consoleInitializer.getClient().isAuthCheck());
+                                consoleInitializer.getClient().isEnableCommittee());
                 if (commandInfo != null) {
                     if (CrudCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
@@ -137,7 +137,7 @@ public class Console {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
                             SupportedCommand.setIsAuthOpen(
-                                    consoleInitializer.getClient().isAuthCheck()
+                                    consoleInitializer.getClient().isEnableCommittee()
                                             && !consoleInitializer.getClient().isWASM());
                             SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
                         }
