@@ -4,6 +4,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigFeature;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 
 public class Common {
 
@@ -21,11 +23,17 @@ public class Common {
     public static final List<String> SUPPORTED_SYSTEM_KEYS =
             new ArrayList<>(
                     Arrays.asList(
-                            TX_COUNT_LIMIT,
-                            TX_GAS_LIMIT,
-                            CONSENSUS_LEADER_PERIOD,
-                            COMPATIBILITY_VERSION,
-                            AUTH_CHECK_STATUS));
+                            SystemConfigService.TX_COUNT_LIMIT,
+                            SystemConfigService.TX_GAS_LIMIT,
+                            SystemConfigService.CONSENSUS_PERIOD,
+                            SystemConfigService.COMPATIBILITY_VERSION,
+                            SystemConfigService.AUTH_STATUS));
+
+    static {
+        for (SystemConfigFeature.Features feature : SystemConfigFeature.Features.values()) {
+            SUPPORTED_SYSTEM_KEYS.add(feature.toString());
+        }
+    }
 
     public static final int INVALID_RETURN_NUMBER = -100;
     public static final long INVALID_LONG_VALUE = Long.MAX_VALUE;

@@ -21,6 +21,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -40,9 +41,11 @@ import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.ContractCodecException;
 import org.fisco.bcos.sdk.v3.codec.EventEncoder;
+import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinition;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ABIDefinitionFactory;
 import org.fisco.bcos.sdk.v3.codec.wrapper.ContractABIDefinition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
@@ -568,9 +571,16 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         if (!address.isEmpty() && !address.equals(Common.EMPTY_CONTRACT_ADDRESS)) {
             String abi = client.getABI(address).getABI();
             if (abi.isEmpty()) {
-                System.out.println(
-                        "Resource " + path + " doesnt have abi, maybe this is not a link.");
-                return;
+                Tuple2<BigInteger, List<BFSPrecompiled.BfsInfo>> list =
+                        bfsService.list(fixedBfsParam, BigInteger.ZERO, BigInteger.TEN);
+                if (list.getValue2().isEmpty()
+                        || list.getValue2().get(0).getExt().size() < 2
+                        || list.getValue2().get(0).getExt().get(1).isEmpty()) {
+                    System.out.println(
+                            "Resource " + path + " doesnt have abi, maybe this is not a link.");
+                    return;
+                }
+                abi = list.getValue2().get(0).getExt().get(1);
             }
             AbiAndBin abiAndBin = new AbiAndBin(abi, "", "");
             String functionName = params[2];

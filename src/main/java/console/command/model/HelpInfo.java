@@ -3,6 +3,9 @@ package console.command.model;
 import console.command.SupportedCommand;
 import console.common.Common;
 import console.common.ConsoleUtils;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigFeature;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
+import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 
 public class HelpInfo {
     public static void promptHelp(String command) {
@@ -361,7 +364,7 @@ public class HelpInfo {
         System.out.println("* value -- The value of system config to be set.");
         System.out.println(
                 "    -- the value of "
-                        + Common.COMPATIBILITY_VERSION
+                        + SystemConfigService.COMPATIBILITY_VERSION
                         + " "
                         + Common.COMPATIBILITY_VERSION_DESC);
         System.out.println(
@@ -374,19 +377,34 @@ public class HelpInfo {
                         + "(default 3000000000).");
         System.out.println(
                 "    -- the value of "
-                        + Common.CONSENSUS_LEADER_PERIOD
+                        + SystemConfigService.CONSENSUS_PERIOD
                         + " "
                         + Common.SYS_CONFIG_RANGE
                         + "(default 1).");
         System.out.println(
-                "    -- the value of " + Common.AUTH_CHECK_STATUS + " " + Common.AUTH_CHECK_DESC);
+                "    -- the value of "
+                        + SystemConfigService.AUTH_STATUS
+                        + " "
+                        + Common.AUTH_CHECK_DESC);
+        for (SystemConfigFeature.Features feature : SystemConfigFeature.Features.values()) {
+            System.out.println(
+                    "    -- the feature of "
+                            + feature.toString()
+                            + " only enable when "
+                            + SystemConfigService.COMPATIBILITY_VERSION
+                            + " >= "
+                            + EnumNodeVersion.convertToVersion(feature.enableVersion())
+                                    .toVersionString()
+                            + ", value can only set 1 or greater equal than 1.");
+        }
     }
 
     public static void getSystemConfigByKeyHelp() {
         System.out.println("Query a system config value by key.");
         System.out.println("Usage: \ngetSystemConfigByKey key");
+        System.out.println("* key -- The name of system config.");
         System.out.println(
-                "* key -- The name of system config(tx_count_limit/tx_gas_limit/consensus_leader_period supported currently).");
+                "    -- supported keys: " + String.join(",", Common.SUPPORTED_SYSTEM_KEYS));
     }
 
     public static void operateGroupHelp(String command, String operator) {
