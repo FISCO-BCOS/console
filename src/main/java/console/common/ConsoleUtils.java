@@ -33,7 +33,6 @@ import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.sdk.channel.model.ChannelPrococolExceiption;
 import org.fisco.bcos.sdk.channel.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.client.Client;
-import org.fisco.bcos.sdk.codegen.CodeGenMain;
 import org.fisco.bcos.sdk.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.model.RetCode;
 import org.fisco.bcos.sdk.transaction.model.dto.TransactionResponse;
@@ -309,8 +308,9 @@ public class ConsoleUtils {
         String abiFile = abiDir + contractName + ".abi";
         String binFile = binDir + contractName + ".bin";
         String smBinFile = binDir + "/sm/" + contractName + ".bin";
-        CodeGenMain.main(
+        org.fisco.bcos.codegen.CodeGenMain.main(
                 Arrays.asList(
+                                "-v", "V2",
                                 "-a", abiFile,
                                 "-b", binFile,
                                 "-s", smBinFile,
@@ -325,7 +325,7 @@ public class ConsoleUtils {
             String javaDir, String packageName, File solFileList, String abiDir, String binDir)
             throws IOException {
         File[] solFiles = solFileList.listFiles();
-        if (solFiles.length == 0) {
+        if (solFiles == null || solFiles.length == 0) {
             System.out.println("The contracts directory is empty.");
             return;
         }
