@@ -114,6 +114,8 @@ bash gradlew test
 bash gradlew integrationTest --info
 }
 
+LOG_INFO "------ check java version --------"
+java -version
 #cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
 download_tassl
 LOG_INFO "------ download_binary: v3.3.0---------"
