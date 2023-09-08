@@ -8,9 +8,7 @@ LOG_INFO() {
 
 download_build_chain()
 {
-  tag=$(curl -sS "https://gitee.com/api/v5/repos/FISCO-BCOS/FISCO-BCOS/tags" | grep -oe "\"name\":\"v[2-9]*\.[0-9]*\.[0-9]*\"" | cut -d \" -f 4 | sort -V | tail -n 1)
-  LOG_INFO "--- current tag: $tag"
-  curl -LO "https://github.com/FISCO-BCOS/FISCO-BCOS/releases/download/v2.7.2/build_chain.sh" && chmod u+x build_chain.sh
+  curl -LO "https://github.com/FISCO-BCOS/FISCO-BCOS/releases/download/v2.9.1/build_chain.sh" && chmod u+x build_chain.sh
 }
 
 prepare_environment()
