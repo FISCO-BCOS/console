@@ -77,6 +77,19 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
+    public void getCandidateSealerList(String[] params) throws IOException {
+        String sealers =
+                client.getNodeListByType(nodeName, "consensus_candidate_sealer")
+                        .getSealerList()
+                        .toString();
+        if ("[]".equals(sealers)) {
+            System.out.println("[]");
+        } else {
+            ConsoleUtils.printJson(sealers);
+        }
+    }
+
+    @Override
     public void getSyncStatus(String[] params) throws IOException {
         ConsoleUtils.printJson(client.getSyncStatus(nodeName).getSyncStatus().toString());
     }

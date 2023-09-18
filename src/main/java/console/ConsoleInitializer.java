@@ -6,6 +6,7 @@ import console.client.ConsoleClientFace;
 import console.client.ConsoleClientImpl;
 import console.collaboration.CollaborationFace;
 import console.collaboration.CollaborationImpl;
+import console.command.JlineUtils;
 import console.common.ConsoleUtils;
 import console.contract.ConsoleContractFace;
 import console.contract.ConsoleContractImpl;
@@ -273,6 +274,8 @@ public class ConsoleInitializer {
             this.consoleContractFace = new ConsoleContractImpl(client);
             this.collaborationFace = new CollaborationImpl(client);
             this.authFace = new AuthImpl(client);
+            JlineUtils.switchGroup(client);
+            this.lineReader = JlineUtils.getLineReader();
             System.out.println("Switched to group " + group + ".");
             System.out.println();
         } catch (Exception e) {

@@ -93,6 +93,12 @@ public class HelpInfo {
         System.out.println("Usage: \ngetObserverList");
     }
 
+    public static void getCandidateListHelp() {
+        System.out.println("Query nodeId list for candidate sealer nodes.");
+        System.out.println("NOTE: only for the consensus node of the rPBFT algorithm.");
+        System.out.println("Usage: \ngetCandidateList");
+    }
+
     public static void getSealerListHelp() {
         System.out.println("Query nodeId list for sealer nodes.");
         System.out.println("Usage: \ngetSealerList");
