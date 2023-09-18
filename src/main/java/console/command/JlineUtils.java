@@ -25,6 +25,7 @@ import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.LineReaderImpl;
 import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
@@ -43,11 +44,13 @@ public class JlineUtils {
     private static AccountCompleter accountCompleter = null;
     private static CurrentPathCompleter currentPathCompleter = null;
 
-    public static LineReader getLineReader() throws IOException {
-        return createLineReader(new ArrayList<Completer>());
+    private static LineReader lineReader = null;
+
+    public static LineReader getLineReader() {
+        return lineReader;
     }
 
-    public static void switchGroup(Client client) {
+    public static void switchGroup(Client client) throws IOException {
         if (contractAddressCompleter != null) {
             contractAddressCompleter.setClient(client);
         }
@@ -60,6 +63,8 @@ public class JlineUtils {
         if (currentPathCompleter != null) {
             currentPathCompleter.setClient(client);
         }
+        List<Completer> completers = generateComplters(client);
+        ((LineReaderImpl) lineReader).setCompleter(new AggregateCompleter(completers));
     }
 
     public static void switchPwd(String pwd) {
@@ -68,6 +73,12 @@ public class JlineUtils {
 
     public static LineReader getLineReader(Client client) throws IOException {
 
+        List<Completer> completers = generateComplters(client);
+        lineReader = createLineReader(completers);
+        return lineReader;
+    }
+
+    private static List<Completer> generateComplters(Client client) {
         List<Completer> completers = new ArrayList<>();
 
         List<String> commands =
@@ -233,7 +244,7 @@ public class JlineUtils {
                             currentPathCompleter,
                             new StringsCompleterIgnoreCase()));
         }
-        return createLineReader(completers);
+        return completers;
     }
 
     public static LineReader createLineReader(List<Completer> completers) throws IOException {

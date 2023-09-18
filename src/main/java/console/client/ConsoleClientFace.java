@@ -15,6 +15,8 @@ public interface ConsoleClientFace {
 
     void getSealerList(String[] params) throws IOException;
 
+    void getCandidateSealerList(String[] params) throws IOException;
+
     void getSyncStatus(String[] params) throws IOException;
 
     void getConsensusStatus(String[] params) throws IOException;
