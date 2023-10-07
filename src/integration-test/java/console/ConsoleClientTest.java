@@ -90,7 +90,7 @@ public class ConsoleClientTest extends TestBase {
         consoleClientFace.getGroupInfoList(emptyParams);
         assertTrue(log.getLog().startsWith("["));
         log.clearLog();
-        consoleClientFace.getNodeName();
+        consoleClientFace.getNodeName(consoleInitializer);
     }
 
     @Test

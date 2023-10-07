@@ -1,6 +1,7 @@
 package console.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import console.ConsoleInitializer;
 import console.client.model.TotalTransactionCountResult;
 import console.common.Common;
 import console.common.ConsoleUtils;
@@ -473,7 +474,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     }
 
     @Override
-    public void setNodeName(String[] params) {
+    public void setNodeName(ConsoleInitializer consoleInitializer, String[] params) {
         String newNodeName = params[1];
         List<BcosGroupNodeInfo.GroupNodeInfo> nodeInfos =
                 client.getGroupInfo().getResult().getNodeList();
@@ -491,23 +492,24 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                             + ", node not contains in node list, check command 'getGroupInfo'.");
             return;
         }
-        this.nodeName = newNodeName;
-        getNodeName();
+        consoleInitializer.getClient().setNodeToSendRequest(newNodeName);
+        getNodeName(consoleInitializer);
     }
 
     @Override
-    public void clearNodeName() {
+    public void clearNodeName(ConsoleInitializer consoleInitializer) {
         System.out.println("Clear nodeName to empty.");
-        this.nodeName = "";
+        consoleInitializer.getClient().setNodeToSendRequest("");
     }
 
     @Override
-    public void getNodeName() {
-        if (this.nodeName.isEmpty()) {
+    public void getNodeName(ConsoleInitializer consoleInitializer) {
+        String nodeToSendRequest = consoleInitializer.getClient().getNodeToSendRequest();
+        if (nodeToSendRequest.isEmpty()) {
             System.out.println(
                     "Current default node name is empty, RPC will send request to node randomly.");
             return;
         }
-        System.out.println("Current default node name: " + this.nodeName);
+        System.out.println("Current default node name: " + nodeToSendRequest);
     }
 }
