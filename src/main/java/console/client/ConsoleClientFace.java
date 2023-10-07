@@ -1,6 +1,7 @@
 package console.client;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import console.ConsoleInitializer;
 import java.io.IOException;
 import org.fisco.bcos.sdk.v3.client.Client;
 
@@ -63,9 +64,9 @@ public interface ConsoleClientFace {
 
     void getGroupNodeInfo(String[] params) throws JsonProcessingException;
 
-    void setNodeName(String[] params) throws IOException;
+    void setNodeName(ConsoleInitializer consoleInitializer, String[] params) throws IOException;
 
-    void clearNodeName();
+    void clearNodeName(ConsoleInitializer consoleInitializer);
 
-    void getNodeName();
+    void getNodeName(ConsoleInitializer consoleInitializer);
 }
