@@ -71,7 +71,9 @@ public class BasicCommand extends BasicCategoryCommand {
                     "Set default node name to send request.",
                     HelpInfo::setNodeNameHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().setNodeName(params),
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .setNodeName(consoleInitializer, params),
                     1,
                     1);
 
@@ -81,7 +83,9 @@ public class BasicCommand extends BasicCategoryCommand {
                     "Get default node name in this client.",
                     HelpInfo::getNodeNameHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().getNodeName(),
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getNodeName(consoleInitializer),
                     0,
                     0);
 
@@ -91,7 +95,9 @@ public class BasicCommand extends BasicCategoryCommand {
                     "Clear default node name to empty.",
                     HelpInfo::clearNodeNameHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getConsoleClientFace().clearNodeName(),
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .clearNodeName(consoleInitializer),
                     0,
                     0);
 
