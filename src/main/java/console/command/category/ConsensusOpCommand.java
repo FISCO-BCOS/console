@@ -68,6 +68,15 @@ public class ConsensusOpCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getObserverList(params));
 
+    public static final CommandInfo GET_CANDIDATE_LIST =
+            new CommandInfo(
+                    "getCandidateList",
+                    "Query nodeId list for candidate sealer nodes.",
+                    HelpInfo::getCandidateListHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleClientFace()
+                                    .getCandidateSealerList(params));
     public static final CommandInfo GET_PBFT_VIEW =
             new CommandInfo(
                     "getPbftView",

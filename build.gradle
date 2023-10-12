@@ -40,7 +40,7 @@ dependencies {
     //compile 'org.fisco-bcos:solcJ:0.5.2.1'
     compile 'org.fisco-bcos:solcJ:0.8.11.1'
 
-    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.4.0') {
+    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.5.0-SNAPSHOT') {
         exclude group: "org.slf4j"
     }
 
@@ -55,7 +55,7 @@ dependencies {
         exclude group: "org.fisco-bcos.java-sdk"
         exclude group: "org.slf4j"
     }
-    compile ('com.fasterxml.jackson.core:jackson-databind:2.14.2'){
+    compile ('com.fasterxml.jackson.core:jackson-databind:2.14.3'){
         force true
     }
     testCompile('com.github.stefanbirkner:system-rules:1.19.0')

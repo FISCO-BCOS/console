@@ -40,7 +40,7 @@ public class NonInteractiveConsole {
         }
 
         SupportedCommand.isWasm = consoleInitializer.getClient().isWASM();
-        SupportedCommand.isAuthOpen = consoleInitializer.getClient().isAuthCheck();
+        SupportedCommand.isAuthOpen = consoleInitializer.getClient().isEnableCommittee();
         try {
             String[] command = params[0].split(" ");
             CommandInfo commandInfo = null;
@@ -50,13 +50,13 @@ public class NonInteractiveConsole {
                         SupportedCommand.getCommandInfo(
                                 command[0],
                                 consoleInitializer.getClient().isWASM(),
-                                consoleInitializer.getClient().isAuthCheck());
+                                consoleInitializer.getClient().isEnableCommittee());
             } else {
                 commandInfo =
                         SupportedCommand.getCommandInfo(
                                 params[0],
                                 consoleInitializer.getClient().isWASM(),
-                                consoleInitializer.getClient().isAuthCheck());
+                                consoleInitializer.getClient().isEnableCommittee());
             }
             if (commandInfo != null) {
                 if (CrudCommand.CRUD_COMMANDS.contains(command[0])) {
