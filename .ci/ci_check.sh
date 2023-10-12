@@ -118,15 +118,23 @@ LOG_INFO "------ check java version --------"
 java -version
 #cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
 download_tassl
-LOG_INFO "------ download_binary: v3.3.0---------"
-download_binary "v3.3.0"
-download_build_chain "v3.3.0"
+
+LOG_INFO "------ download_binary: v3.4.0---------"
+download_binary "v3.4.0"
+download_build_chain "v3.4.0"
 LOG_INFO "------ check_standard_node---------"
 check_standard_node false
 LOG_INFO "------ check_sm_node---------"
 check_sm_node true
 LOG_INFO "------ check_basic---------"
 check_basic
+
+LOG_INFO "------ download_binary: v3.3.0---------"
+download_binary "v3.3.0"
+download_build_chain "v3.3.0"
+LOG_INFO "------ check_standard_node---------"
+check_standard_node
+rm -rf ./bin
 
 LOG_INFO "------ download_binary: v3.2.0---------"
 download_binary "v3.2.0"

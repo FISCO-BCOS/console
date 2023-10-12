@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 public class ConsoleClientImpl implements ConsoleClientFace {
     private static final Logger logger = LoggerFactory.getLogger(ConsoleContractImpl.class);
     private Client client;
-    private String nodeName = "";
     private static String EMPTY_HASH_HEX =
             "0x0000000000000000000000000000000000000000000000000000000000000000";
 
@@ -49,17 +48,17 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getBlockNumber(String[] params) throws IOException {
-        System.out.println(client.getBlockNumber(nodeName).getBlockNumber());
+        System.out.println(client.getBlockNumber().getBlockNumber());
     }
 
     @Override
     public void getPbftView(String[] params) throws IOException {
-        System.out.println(client.getPbftView(nodeName).getPbftView());
+        System.out.println(client.getPbftView().getPbftView());
     }
 
     @Override
     public void getObserverList(String[] params) throws IOException {
-        String observers = client.getObserverList(nodeName).getObserverList().toString();
+        String observers = client.getObserverList().getObserverList().toString();
         if ("[]".equals(observers)) {
             System.out.println("[]");
         } else {
@@ -69,7 +68,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getSealerList(String[] params) throws IOException {
-        String sealers = client.getSealerList(nodeName).getSealerList().toString();
+        String sealers = client.getSealerList().getSealerList().toString();
         if ("[]".equals(sealers)) {
             System.out.println("[]");
         } else {
@@ -80,9 +79,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getCandidateSealerList(String[] params) throws IOException {
         String sealers =
-                client.getNodeListByType(nodeName, "consensus_candidate_sealer")
-                        .getSealerList()
-                        .toString();
+                client.getNodeListByType("consensus_candidate_sealer").getSealerList().toString();
         if ("[]".equals(sealers)) {
             System.out.println("[]");
         } else {
@@ -92,7 +89,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getSyncStatus(String[] params) throws IOException {
-        ConsoleUtils.printJson(client.getSyncStatus(nodeName).getSyncStatus().toString());
+        ConsoleUtils.printJson(client.getSyncStatus().getSyncStatus().toString());
     }
 
     @Override
@@ -120,7 +117,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 return;
             }
         }
-        BcosBlock.Block block = client.getBlockByHash(nodeName, blockHash, false, flag).getBlock();
+        BcosBlock.Block block = client.getBlockByHash(blockHash, false, flag).getBlock();
         if (block == null) {
             System.out.println("Block can not ne found, please check hash: " + blockHash);
             return;
@@ -147,12 +144,12 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             }
         }
         BcosBlock blockByNumber =
-                client.getBlockByNumber(nodeName, BigInteger.valueOf(blockNumber), false, flag);
+                client.getBlockByNumber(BigInteger.valueOf(blockNumber), false, flag);
         if (blockByNumber.getBlock() == null) {
             System.out.println("Block not found, please check number: " + blockNumber);
         } else {
             ConsoleUtils.printJson(
-                    client.getBlockByNumber(nodeName, BigInteger.valueOf(blockNumber), false, flag)
+                    client.getBlockByNumber(BigInteger.valueOf(blockNumber), false, flag)
                             .getBlock()
                             .toString());
         }
@@ -162,8 +159,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getBlockHeaderByHash(String[] params) throws IOException {
         String blockHash = params[1];
         if (ConsoleUtils.isInvalidHash(blockHash)) return;
-        ConsoleUtils.printJson(
-                client.getBlockByHash(nodeName, blockHash, true, false).getBlock().toString());
+        ConsoleUtils.printJson(client.getBlockByHash(blockHash, true, false).getBlock().toString());
     }
 
     @Override
@@ -192,7 +188,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             return;
         }
         ConsoleUtils.printJson(
-                client.getBlockByNumber(nodeName, BigInteger.valueOf(blockNumber), true, false)
+                client.getBlockByNumber(BigInteger.valueOf(blockNumber), true, false)
                         .getBlock()
                         .toString());
     }
@@ -202,7 +198,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         String transactionHash = params[1];
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
         JsonTransactionResponse transaction =
-                client.getTransaction(nodeName, transactionHash, false).getTransaction().get();
+                client.getTransaction(transactionHash, false).getTransaction().get();
         if (transaction == null) {
             System.out.println("This transaction hash doesn't exist.");
             return;
@@ -216,9 +212,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
         TransactionReceipt receipt = null;
         try {
-            receipt =
-                    client.getTransactionReceipt(nodeName, transactionHash, false)
-                            .getTransactionReceipt();
+            receipt = client.getTransactionReceipt(transactionHash, false).getTransactionReceipt();
         } catch (ClientException e) {
             System.out.println(
                     "This transaction hash doesn't exist, errorMsg:" + e.getErrorMessage());
@@ -237,7 +231,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         String transactionHash = params[1];
         if (ConsoleUtils.isInvalidHash(transactionHash)) return;
         String transactionWithProof =
-                client.getTransaction(nodeName, transactionHash, true).getResult().toString();
+                client.getTransaction(transactionHash, true).getResult().toString();
 
         if (Objects.isNull(transactionWithProof) || transactionWithProof.isEmpty()) {
             System.out.println("This transaction hash doesn't exist.");
@@ -253,9 +247,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         String transactionReceiptWithProof;
         try {
             transactionReceiptWithProof =
-                    client.getTransactionReceipt(nodeName, transactionHash, true)
-                            .getResult()
-                            .toString();
+                    client.getTransactionReceipt(transactionHash, true).getResult().toString();
         } catch (ClientException e) {
             System.out.println(
                     "This transaction hash doesn't exist, errorMsg:" + e.getErrorMessage());
@@ -271,7 +263,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
 
     @Override
     public void getPendingTxSize(String[] params) throws IOException {
-        String size = client.getPendingTxSize(nodeName).getResult();
+        String size = client.getPendingTxSize().getResult();
         System.out.println(Numeric.decodeQuantity(size));
     }
 
@@ -291,7 +283,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
                 return;
             }
         }
-        String code = client.getCode(nodeName, address).getCode();
+        String code = client.getCode(address).getCode();
         if ("0x".equals(code) || code.isEmpty()) {
             System.out.println("This address doesn't exist.");
             return;
@@ -303,7 +295,7 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     public void getTotalTransactionCount(String[] params) throws IOException {
 
         TotalTransactionCount.TransactionCountInfo transactionCount =
-                client.getTotalTransactionCount(nodeName).getTotalTransactionCount();
+                client.getTotalTransactionCount().getTotalTransactionCount();
 
         TotalTransactionCountResult innerTotalTransactionCountResult =
                 new TotalTransactionCountResult();
@@ -325,11 +317,11 @@ public class ConsoleClientImpl implements ConsoleClientFace {
     @Override
     public void getSystemConfigByKey(String[] params) throws Exception {
         String key = params[1];
-        SystemConfig systemConfigByKey = client.getSystemConfigByKey(nodeName, key);
+        SystemConfig systemConfigByKey = client.getSystemConfigByKey(key);
         if (systemConfigByKey.getSystemConfig() == null) {
             System.out.println("System config not found, please check key: " + key);
         } else {
-            String value = client.getSystemConfigByKey(nodeName, key).getSystemConfig().getValue();
+            String value = client.getSystemConfigByKey(key).getSystemConfig().getValue();
             System.out.println(value);
         }
     }
