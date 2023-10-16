@@ -1,3 +1,37 @@
+## v3.5.0
+(2023-10-16)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 增加系统Feature在 `SystemConfig`相关的命令中联想补全的功能。
+- 增加 `getCandidateList` 命令，用于查询rPBFT当前节点的候选人列表。
+- 
+
+### 更新
+
+- 脚本 `get_account.sh` 生成账户密钥对时增加`.public.pem` 的公钥格式，与2.0版本保持一致。
+- `setNodeName` 命令使用SDK的 `setNodeToSendRequest` 接口，支持Client全局接口指定节点发送。
+- `org.fisco-bcos.java-sdk:fisco-bcos-java-sdk` 更新到3.5.0版本
+- `org.fisco-bcos.code-generator:bcos-code-generator` 更新到1.2.0版本
+
+### 修复
+
+- 修复在调用 `link` 资源时没有正确返回ABI导致调用失败的问题。
+- 修复权限命令的联想补全使用了错误Client标志位的问题。
+- 修复JLine在刷新控制台时出现的联想补全错误。
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.3.0版本后，才支持使用ShardService的接口。
+- 控制台连接FISCO BCOS 3.4.0版本后，才支持使用call with sign接口。
+
 ## v3.4.0
 (2023-06-13)
 
