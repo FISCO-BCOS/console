@@ -1,7 +1,9 @@
 plugins {
     id 'com.github.sherter.google-java-format' version '0.8'
+    id 'java-library'
+    id 'java'
 }
-apply plugin: 'maven'
+apply plugin: 'maven-publish'
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
@@ -13,7 +15,7 @@ targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
-    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+    maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
     maven { url "https://oss.sonatype.org/service/local/staging/deploy/maven2" }
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
@@ -34,32 +36,32 @@ List logger = [
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    compile logger
+    implementation logger
     //compile 'org.fisco-bcos:solcJ:0.4.25.1'
     //compile 'org.fisco-bcos:solcJ:0.6.10.1'
     //compile 'org.fisco-bcos:solcJ:0.5.2.1'
-    compile 'org.fisco-bcos:solcJ:0.8.11.1'
+    implementation 'org.fisco-bcos:solcJ:0.8.11.1'
 
-    compile('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.5.0') {
+    implementation ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.6.0-SNAPSHOT') {
         exclude group: "org.slf4j"
     }
 
-    compile('org.fisco-bcos:evm-static-analysis:1.0.0') {
-        exclude group: "org.slf4j"
+    implementation('org.fisco-bcos:evm-static-analysis:1.0.0') {
+		exclude group: "org.slf4j"
     }
-    compile('commons-cli:commons-cli:1.5.0')
-    compile('org.jline:jline:3.21.0')
-    compile('io.bretty:console-table-builder:1.2')
-    compile('com.github.jsqlparser:jsqlparser:2.0')
-    compile('org.fisco-bcos.code-generator:bcos-code-generator:1.2.0') {
+    implementation('commons-cli:commons-cli:1.5.0')
+    implementation('org.jline:jline:3.21.0')
+    implementation('io.bretty:console-table-builder:1.2')
+    implementation('com.github.jsqlparser:jsqlparser:2.0')
+    implementation('org.fisco-bcos.code-generator:bcos-code-generator:1.2.0') {
         exclude group: "org.fisco-bcos.java-sdk"
         exclude group: "org.slf4j"
     }
-    compile ('com.fasterxml.jackson.core:jackson-databind:2.14.3'){
+    implementation ('com.fasterxml.jackson.core:jackson-databind:2.14.3'){
         force true
     }
-    testCompile('com.github.stefanbirkner:system-rules:1.19.0')
-    testCompile('junit:junit:4.13.2')
+    testImplementation('com.github.stefanbirkner:system-rules:1.19.0')
+    testImplementation('junit:junit:4.13.2')
 }
 
 configurations.all {
@@ -88,7 +90,7 @@ sourceSets {
     }
 }
 configurations {
-    integrationTestCompile.extendsFrom testCompile
+    integrationTestCompile.extendsFrom testImplementation
     integrationTestRuntime.extendsFrom testRuntime
 }
 

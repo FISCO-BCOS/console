@@ -43,3 +43,4 @@ bin/**
 /account
 /build_chain.sh
 /deploylog.txt
+/bin/
