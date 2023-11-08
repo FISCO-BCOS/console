@@ -62,29 +62,6 @@ dependencies {
     }
     testImplementation('com.github.stefanbirkner:system-rules:1.19.0')
     testImplementation('junit:junit:4.13.2')
-    
-    runtimeOnly logger
-    //runtimeOnly 'org.fisco-bcos:solcJ:0.4.25.1'
-    //runtimeOnly 'org.fisco-bcos:solcJ:0.6.10.1'
-    //runtimeOnly 'org.fisco-bcos:solcJ:0.5.2.1'
-    runtimeOnly 'org.fisco-bcos:solcJ:0.8.11.1'
-    runtimeOnly ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.6.0-SNAPSHOT') {
-        exclude group: "org.slf4j"
-    }
-    runtimeOnly('org.fisco-bcos:evm-static-analysis:1.0.0') {
-		exclude group: "org.slf4j"
-    }
-    runtimeOnly('commons-cli:commons-cli:1.5.0')
-    runtimeOnly('org.jline:jline:3.21.0')
-    runtimeOnly('io.bretty:console-table-builder:1.2')
-    runtimeOnly('com.github.jsqlparser:jsqlparser:2.0')
-    runtimeOnly('org.fisco-bcos.code-generator:bcos-code-generator:1.2.0') {
-        exclude group: "org.fisco-bcos.java-sdk"
-        exclude group: "org.slf4j"
-    }
-    runtimeOnly('com.fasterxml.jackson.core:jackson-databind:2.14.3'){
-        force true
-    }
 }
 
 configurations.all {
@@ -132,7 +109,7 @@ jar {
 
     doLast {
         copy {
-            from configurations.runtime
+            from configurations.runtimeClasspath
             into 'dist/lib'
         }
         copy {
