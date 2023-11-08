@@ -37,9 +37,9 @@ List logger = [
 // In this section you declare the dependencies for your production and test code
 dependencies {
     implementation logger
-    //compile 'org.fisco-bcos:solcJ:0.4.25.1'
-    //compile 'org.fisco-bcos:solcJ:0.6.10.1'
-    //compile 'org.fisco-bcos:solcJ:0.5.2.1'
+    //implementation 'org.fisco-bcos:solcJ:0.4.25.1'
+    //implementation 'org.fisco-bcos:solcJ:0.6.10.1'
+    //implementation 'org.fisco-bcos:solcJ:0.5.2.1'
     implementation 'org.fisco-bcos:solcJ:0.8.11.1'
 
     implementation ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.6.0-SNAPSHOT') {
@@ -101,7 +101,7 @@ task integrationTest(type: Test) {
 
 jar {
     destinationDir file('dist/apps')
-    archiveName project.name + '.jar'
+    archiveFileName=project.name + '.jar'
     exclude '**/*.xml'
     exclude '**/*.properties'
     exclude '**/*.crt'
@@ -109,7 +109,7 @@ jar {
 
     doLast {
         copy {
-            from configurations.runtime
+            from configurations.runtimeClasspath
             into 'dist/lib'
         }
         copy {
