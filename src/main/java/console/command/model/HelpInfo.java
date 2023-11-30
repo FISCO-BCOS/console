@@ -456,6 +456,17 @@ public class HelpInfo {
                 "recordNumber -- (optional) The number of deployed contract records, (default 20).");
     }
 
+    public static void transferHelp() {
+        System.out.println("Transfer token to a specified address");
+        System.out.println("Usage: \ntransfer toAddress amount [unit]");
+        System.out.println("* toAddress -- The address of the receiver.");
+        System.out.println("* amount -- The amount of token to transfer.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
     public static void startHelp() {
         System.out.println("Please provide one of the following ways to start the console.");
         System.out.println("Usage: ");

@@ -21,6 +21,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -52,12 +53,16 @@ import org.fisco.bcos.sdk.v3.model.CryptoType;
 import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
+import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
 import org.fisco.bcos.sdk.v3.transaction.manager.AssembleTransactionProcessorInterface;
 import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessorFactory;
+import org.fisco.bcos.sdk.v3.transaction.manager.Transactionv2.ProxySignTransactionManager;
+import org.fisco.bcos.sdk.v3.transaction.manager.Transactionv2.TransferTransactionService;
 import org.fisco.bcos.sdk.v3.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionBaseException;
+import org.fisco.bcos.sdk.v3.transaction.tools.Convert;
 import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Hex;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
@@ -73,6 +78,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     private final Client client;
     private final AssembleTransactionProcessorInterface assembleTransactionProcessor;
+    private final TransferTransactionService transferTransactionService;
     private final BFSService bfsService;
 
     public ConsoleContractImpl(Client client) {
@@ -82,6 +88,9 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 TransactionProcessorFactory.createAssembleTransactionProcessor(
                         client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
+        ProxySignTransactionManager proxySignTransactionManager =
+                new ProxySignTransactionManager(client);
+        transferTransactionService = new TransferTransactionService(proxySignTransactionManager);
     }
 
     @Override
@@ -885,6 +894,49 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (i == recordNum) {
                 break;
             }
+        }
+    }
+
+    @Override
+    public void transfer(ConsoleInitializer consoleInitializer, String[] params) throws Exception {
+        String address = params[1];
+        String amount = params[2];
+
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length == 4) {
+            String unitStr = params[3];
+            unit = Convert.Unit.fromString(unitStr);
+        }
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid contract address: " + address);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to transfer.");
+            return;
+        }
+        TransactionReceipt transactionReceipt =
+                transferTransactionService.sendFunds(address, value, unit);
+        System.out.println("transaction hash: " + transactionReceipt.getTransactionHash());
+        ConsoleUtils.singleLine();
+        System.out.println("transaction status: " + transactionReceipt.getStatus());
+
+        ConsoleUtils.singleLine();
+        if (transactionReceipt.getStatus() == 0) {
+            System.out.println("description: transaction executed successfully");
+            System.out.println(
+                    transactionReceipt.getFrom() + " => " + address + ", " + amount + " " + unit);
+        } else {
+            System.out.println("description: transfer transaction failed");
         }
     }
 

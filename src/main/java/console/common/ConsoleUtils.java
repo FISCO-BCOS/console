@@ -138,6 +138,10 @@ public class ConsoleUtils {
         }
     }
 
+    public static boolean isValidNumber(String number) {
+        return number.matches("^-?\\d+$") || number.matches("^0[xX][0-9a-fA-F]+$");
+    }
+
     public static String[] fixedBfsParams(String[] params, String pwd) throws Exception {
         String[] fixedParams = new String[params.length];
         fixedParams[0] = params[0];
