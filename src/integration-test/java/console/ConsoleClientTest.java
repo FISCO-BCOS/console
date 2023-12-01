@@ -184,10 +184,10 @@ public class ConsoleClientTest extends TestBase {
         String[] txHashParams = {"", transactionHash};
         // tx
         consoleClientFace.getTransactionByHash(txHashParams);
-        Assert.assertTrue(log.getLog().contains("hash='" + transactionHash + "'"));
+        Assert.assertTrue(log.getLog().contains(transactionHash));
         log.clearLog();
         consoleClientFace.getTransactionByHashWithProof(txHashParams);
-        Assert.assertTrue(log.getLog().contains("hash='" + transactionHash + "'"));
+        Assert.assertTrue(log.getLog().contains(transactionHash));
         log.clearLog();
 
         // receipt

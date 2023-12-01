@@ -14,4 +14,6 @@ public interface ConsoleContractFace {
 
     void listDeployContractAddress(ConsoleInitializer consoleInitializer, String[] params)
             throws Exception;
+
+    void transfer(ConsoleInitializer consoleInitializer, String[] params) throws Exception;
 }

@@ -118,6 +118,19 @@ public class ContractOpCommand extends BasicCategoryCommand {
                     2,
                     true);
 
+    public static final CommandInfo TRANSFER =
+            new CommandInfo(
+                    "transfer",
+                    "Transfer token to a specified address",
+                    HelpInfo::transferHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleContractFace()
+                                    .transfer(consoleInitializer, params),
+                    2,
+                    3,
+                    true);
+
     static {
         Field[] fields = ContractOpCommand.class.getDeclaredFields();
         for (Field field : fields) {
