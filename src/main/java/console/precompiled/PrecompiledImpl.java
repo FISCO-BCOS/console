@@ -18,11 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
+
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.contract.auth.manager.AuthManager;
+import org.fisco.bcos.sdk.v3.contract.auth.po.GovernorInfo;
+import org.fisco.bcos.sdk.v3.contract.precompiled.balance.BalanceService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
@@ -56,16 +60,20 @@ public class PrecompiledImpl implements PrecompiledFace {
     private TableCRUDService tableCRUDService;
     private BFSService bfsService;
     private ShardingService shardingService;
+    private BalanceService balanceService;
+    private AuthManager authManager;
     private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
         this.client = client;
+        this.authManager = new AuthManager(client, client.getCryptoSuite().getCryptoKeyPair());
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
         this.consensusService = new ConsensusService(client, cryptoKeyPair);
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
         this.shardingService = new ShardingService(client, cryptoKeyPair);
+        this.balanceService = new BalanceService(client, cryptoKeyPair);
     }
 
     @Override
@@ -743,6 +751,100 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void fixBFS(String[] params) throws Exception {
         ConsoleUtils.printJson(bfsService.fixBfs().toString());
+    }
+
+    @Override
+    public void getBalance(String[] params) throws Exception {
+        String address = params[1];
+        Tuple2<BigInteger, String> result = this.balanceService.getBalance(address);
+        if (result.getValue2().equals("success")) {
+            System.out.println("balance: " + result.getValue1());
+        } else {
+            System.out.println("get balance " + address + " failed.  " + result.getValue2());
+        }
+    }
+
+    @Override
+    public void addBalance(String[] params) throws Exception {
+        String address = params[1];
+        BigInteger amount =
+                BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[2]));
+        RetCode retCode = this.balanceService.addBalance(address, amount);
+
+        logger.info("addBalance: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode.getMessage() == "") {
+            System.out.println(
+                    "add balance " + address + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("add balance " + address + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void subBalance(String[] params) throws Exception {
+        String address = params[1];
+        BigInteger amount =
+                BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[2]));
+        RetCode retCode = this.balanceService.subBalance(address, amount);
+
+        logger.info("subBalance: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode.getMessage() == "") {
+            System.out.println(
+                    "sub balance " + address + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("sub balance " + address + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void registerCaller(String[] params) throws Exception {
+        String address = params[1];
+        String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
+        System.out.println("currentAccount: " + currentAccount);
+        List<GovernorInfo> governorList = authManager.getCommitteeInfo().getGovernorList();
+        for (GovernorInfo governorInfo : governorList) {
+            if (!governorInfo.getGovernorAddress().equals(currentAccount)) {
+                System.out.println("Only governor can register caller");
+                return;
+            }
+        }
+        RetCode retCode = this.balanceService.registerCaller(address);
+
+        logger.info("registerCaller: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println("register caller " + address + " success.");
+        } else {
+            System.out.println("register caller " + address + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void unregisterCaller(String[] params) throws Exception {
+        String address = params[1];
+        String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
+        List<GovernorInfo> governorList = authManager.getCommitteeInfo().getGovernorList();
+        for (GovernorInfo governorInfo : governorList) {
+            if (!governorInfo.getGovernorAddress().equals(currentAccount)) {
+                System.out.println("Only governor can register caller");
+                return;
+            }
+        }
+        RetCode retCode = this.balanceService.unregisterCaller(address);
+
+        logger.info("unregisterCaller: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println("unregister caller " + address + " success.");
+        } else {
+            System.out.println("unregister caller " + address + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
     }
 
     @Override
