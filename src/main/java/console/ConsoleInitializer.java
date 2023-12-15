@@ -69,9 +69,15 @@ public class ConsoleInitializer {
 
         accountInfo = loadConfig(args);
         loadAccountInfo(accountInfo, groupID);
+
+        boolean useV1TxService = false;
+        if (args.length > 3 && "-v1".equals(args[3])) {
+            // use v1 transaction service
+            useV1TxService = true;
+        }
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
-        this.consoleContractFace = new ConsoleContractImpl(client);
+        this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
         this.collaborationFace = new CollaborationImpl(client);
         this.authFace = new AuthImpl(client);
     }
@@ -140,7 +146,7 @@ public class ConsoleInitializer {
                 return new AccountInfo("HSM", "", "");
             }
 
-            if (args.length == 3) {
+            if (args.length >= 3) {
                 return loadAccount(bcosSDK, args);
             }
         } catch (NumberFormatException e) {
