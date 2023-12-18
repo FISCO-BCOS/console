@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
-
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
@@ -756,12 +755,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void getBalance(String[] params) throws Exception {
         String address = params[1];
-        Tuple2<BigInteger, String> result = this.balanceService.getBalance(address);
-        if (result.getValue2().equals("success")) {
-            System.out.println("balance: " + result.getValue1());
-        } else {
-            System.out.println("get balance " + address + " failed.  " + result.getValue2());
-        }
+        BigInteger result = this.balanceService.getBalance(address);
+        System.out.println("balance: " + result);
     }
 
     @Override
@@ -773,7 +768,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         logger.info("addBalance: {}, retCode {}", address, retCode);
         // parse the result
-        if (retCode.getMessage() == "") {
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println(
                     "add balance " + address + " success. You can use 'getBalance' to check");
         } else {
@@ -791,7 +786,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
         logger.info("subBalance: {}, retCode {}", address, retCode);
         // parse the result
-        if (retCode.getMessage() == "") {
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println(
                     "sub balance " + address + " success. You can use 'getBalance' to check");
         } else {
@@ -806,21 +801,25 @@ public class PrecompiledImpl implements PrecompiledFace {
         String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
         System.out.println("currentAccount: " + currentAccount);
         List<GovernorInfo> governorList = authManager.getCommitteeInfo().getGovernorList();
+        boolean isGovernor = false;
         for (GovernorInfo governorInfo : governorList) {
-            if (!governorInfo.getGovernorAddress().equals(currentAccount)) {
-                System.out.println("Only governor can register caller");
-                return;
+            if (governorInfo.getGovernorAddress().equals(currentAccount)) {
+                isGovernor = true;
+                break;
             }
+        }
+        if (!isGovernor) {
+            System.out.println("Only governor can register caller");
+            return;
         }
         RetCode retCode = this.balanceService.registerCaller(address);
 
         logger.info("registerCaller: {}, retCode {}", address, retCode);
         // parse the result
-        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println("register caller " + address + " success.");
         } else {
-            System.out.println("register caller " + address + " failed ");
-            ConsoleUtils.printJson(retCode.toString());
+            System.out.println("register caller " + address + " failed. ");
         }
     }
 
@@ -829,21 +828,25 @@ public class PrecompiledImpl implements PrecompiledFace {
         String address = params[1];
         String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
         List<GovernorInfo> governorList = authManager.getCommitteeInfo().getGovernorList();
+        boolean isGovernor = false;
         for (GovernorInfo governorInfo : governorList) {
-            if (!governorInfo.getGovernorAddress().equals(currentAccount)) {
-                System.out.println("Only governor can register caller");
-                return;
+            if (governorInfo.getGovernorAddress().equals(currentAccount)) {
+                isGovernor = true;
+                break;
             }
+        }
+        if (!isGovernor) {
+            System.out.println("Only governor can register caller");
+            return;
         }
         RetCode retCode = this.balanceService.unregisterCaller(address);
 
         logger.info("unregisterCaller: {}, retCode {}", address, retCode);
         // parse the result
-        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println("unregister caller " + address + " success.");
         } else {
-            System.out.println("unregister caller " + address + " failed ");
-            ConsoleUtils.printJson(retCode.toString());
+            System.out.println("unregister caller " + address + " failed. ");
         }
     }
 
