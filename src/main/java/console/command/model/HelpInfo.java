@@ -478,10 +478,7 @@ public class HelpInfo {
         System.out.println("Usage: \naddBalance accountAddress amount [unit]");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("* amount -- The amount of token to add.");
-        System.out.println(
-                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
-        System.out.println(
-                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+        System.out.println("* unit -- (optional) The unit of amount, default is wei.");
     }
 
     public static void subBalanceHelp() {
@@ -489,10 +486,7 @@ public class HelpInfo {
         System.out.println("Usage: \nsubBalance accountAddress amount [unit]");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("* amount -- The amount of token to sub.");
-        System.out.println(
-                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
-        System.out.println(
-                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+        System.out.println("* unit -- (optional) The unit of amount, default is wei.");
     }
 
     public static void registerCallerHelp() {

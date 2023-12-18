@@ -13,10 +13,21 @@
  */
 package console.command;
 
-import console.command.category.*;
+import console.command.category.AccountOpCommand;
+import console.command.category.AuthOpCommand;
+import console.command.category.BalanceOpCommand;
+import console.command.category.BasicCommand;
+import console.command.category.BfsCommand;
+import console.command.category.ConsensusOpCommand;
+import console.command.category.ContractOpCommand;
+import console.command.category.CrudCommand;
+import console.command.category.GroupCommand;
+import console.command.category.ShardingCommand;
+import console.command.category.StatusQueryCommand;
 import console.command.model.BasicCategoryCommand;
 import console.command.model.CommandInfo;
 import console.common.ConsoleUtils;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;

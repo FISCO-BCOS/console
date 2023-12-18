@@ -24,7 +24,6 @@ import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
 import org.fisco.bcos.sdk.v3.contract.auth.manager.AuthManager;
-import org.fisco.bcos.sdk.v3.contract.auth.po.GovernorInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.balance.BalanceService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
@@ -798,20 +797,6 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void registerCaller(String[] params) throws Exception {
         String address = params[1];
-        String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
-        System.out.println("currentAccount: " + currentAccount);
-        List<GovernorInfo> governorList = authManager.getCommitteeInfo().getGovernorList();
-        boolean isGovernor = false;
-        for (GovernorInfo governorInfo : governorList) {
-            if (governorInfo.getGovernorAddress().equals(currentAccount)) {
-                isGovernor = true;
-                break;
-            }
-        }
-        if (!isGovernor) {
-            System.out.println("Only governor can register caller");
-            return;
-        }
         RetCode retCode = this.balanceService.registerCaller(address);
 
         logger.info("registerCaller: {}, retCode {}", address, retCode);
@@ -826,19 +811,6 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void unregisterCaller(String[] params) throws Exception {
         String address = params[1];
-        String currentAccount = client.getCryptoSuite().getCryptoKeyPair().getAddress();
-        List<GovernorInfo> governorList = authManager.getCommitteeInfo().getGovernorList();
-        boolean isGovernor = false;
-        for (GovernorInfo governorInfo : governorList) {
-            if (governorInfo.getGovernorAddress().equals(currentAccount)) {
-                isGovernor = true;
-                break;
-            }
-        }
-        if (!isGovernor) {
-            System.out.println("Only governor can register caller");
-            return;
-        }
         RetCode retCode = this.balanceService.unregisterCaller(address);
 
         logger.info("unregisterCaller: {}, retCode {}", address, retCode);
