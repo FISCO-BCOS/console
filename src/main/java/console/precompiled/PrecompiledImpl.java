@@ -64,7 +64,6 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     public PrecompiledImpl(Client client) {
         this.client = client;
-        this.authManager = new AuthManager(client, client.getCryptoSuite().getCryptoKeyPair());
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
         this.consensusService = new ConsensusService(client, cryptoKeyPair);
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);

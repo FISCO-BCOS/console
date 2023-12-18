@@ -42,7 +42,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
             new CommandInfo(
                     "registerCaller",
                     "Register caller to the account",
-                    HelpInfo::registerCallerHelp,
+                    HelpInfo::registerBalancePrecompiledCallerHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer
                                     .getPrecompiledFace()
@@ -53,7 +53,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
             new CommandInfo(
                     "unregisterCaller",
                     "Unregister caller from the account",
-                    HelpInfo::unregisterCallerHelp,
+                    HelpInfo::unregisterBalancePrecompiledCallerHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer
                                     .getPrecompiledFace()
@@ -86,6 +86,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
         super(CommandType.BALANCE_PRECOMPILED_OP);
     }
 
+    @Override
     public CommandInfo getCommandInfo(String command) {
         if (commandToCommandInfo.containsKey(command)) {
             return commandToCommandInfo.get(command);
@@ -93,6 +94,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
         return null;
     }
 
+    @Override
     public List<String> getAllCommand(boolean isWasm, boolean isAuthOpen) {
         return commandToCommandInfo
                 .keySet()
@@ -101,10 +103,11 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                         key ->
                                 !(isWasm && !commandToCommandInfo.get(key).isWasmSupport()
                                         || (!isAuthOpen
-                                                && commandToCommandInfo.get(key).isNeedAuthOpen())))
+                                        && commandToCommandInfo.get(key).isNeedAuthOpen())))
                 .collect(Collectors.toList());
     }
 
+    @Override
     public Map<String, CommandInfo> getAllCommandInfo(boolean isWasm) {
         return commandToCommandInfo;
     }

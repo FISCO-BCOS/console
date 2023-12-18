@@ -475,21 +475,19 @@ public class HelpInfo {
 
     public static void addBalanceHelp() {
         System.out.println("Add balance to the specified account");
-        System.out.println("Usage: \naddBalance accountAddress amount [unit]");
+        System.out.println("Usage: \naddBalance accountAddress amount");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("* amount -- The amount of token to add.");
-        System.out.println("* unit -- (optional) The unit of amount, default is wei.");
     }
 
     public static void subBalanceHelp() {
         System.out.println("Sub balance from the specified account");
-        System.out.println("Usage: \nsubBalance accountAddress amount [unit]");
+        System.out.println("Usage: \nsubBalance accountAddress amount");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("* amount -- The amount of token to sub.");
-        System.out.println("* unit -- (optional) The unit of amount, default is wei.");
     }
 
-    public static void registerCallerHelp() {
+    public static void registerBalancePrecompiledCallerHelp() {
         System.out.println("Register caller to the specified account");
         System.out.println("Usage: \nregisterCaller accountAddress");
         System.out.println("* accountAddress -- The address of the account.");
@@ -497,7 +495,7 @@ public class HelpInfo {
         System.out.println("[Note]: The request initiator account must be governor.");
     }
 
-    public static void unregisterCallerHelp() {
+    public static void unregisterBalancePrecompiledCallerHelp() {
         System.out.println("Unregister caller from the specified account");
         System.out.println("Usage: \nunregisterCaller accountAddress");
         System.out.println("* accountAddress -- The address of the account.");
