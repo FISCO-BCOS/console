@@ -795,7 +795,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void registerCaller(String[] params) throws Exception {
+    public void registerBalancePrecompiledCaller(String[] params) throws Exception {
         String address = params[1];
         RetCode retCode = this.balanceService.registerCaller(address);
 
@@ -809,7 +809,7 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void unregisterCaller(String[] params) throws Exception {
+    public void unregisterBalancePrecompiledCaller(String[] params) throws Exception {
         String address = params[1];
         RetCode retCode = this.balanceService.unregisterCaller(address);
 

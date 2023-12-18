@@ -53,9 +53,9 @@ public interface PrecompiledFace {
 
     void subBalance(String[] params) throws Exception;
 
-    void registerCaller(String[] params) throws Exception;
+    void registerBalancePrecompiledCaller(String[] params) throws Exception;
 
-    void unregisterCaller(String[] params) throws Exception;
+    void unregisterBalancePrecompiledCaller(String[] params) throws Exception;
 
     String getPwd();
 }

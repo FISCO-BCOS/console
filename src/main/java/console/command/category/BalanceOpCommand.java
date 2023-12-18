@@ -44,7 +44,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                     "Register caller to the account",
                     HelpInfo::registerCallerHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().registerCaller(params),
+                            consoleInitializer.getPrecompiledFace().registerBalancePrecompiledCaller(params),
                     1,
                     1);
     public static final CommandInfo UNREGISTER_CALLER =
@@ -53,7 +53,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                     "Unregister caller from the account",
                     HelpInfo::unregisterCallerHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().unregisterCaller(params),
+                            consoleInitializer.getPrecompiledFace().unregisterBalancePrecompiledCaller(params),
                     1,
                     1);
     protected static final Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
