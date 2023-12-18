@@ -23,6 +23,8 @@ import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.contract.auth.manager.AuthManager;
+import org.fisco.bcos.sdk.v3.contract.precompiled.balance.BalanceService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
@@ -56,6 +58,8 @@ public class PrecompiledImpl implements PrecompiledFace {
     private TableCRUDService tableCRUDService;
     private BFSService bfsService;
     private ShardingService shardingService;
+    private BalanceService balanceService;
+    private AuthManager authManager;
     private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
@@ -66,6 +70,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
         this.shardingService = new ShardingService(client, cryptoKeyPair);
+        this.balanceService = new BalanceService(client, cryptoKeyPair);
     }
 
     @Override
@@ -743,6 +748,77 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void fixBFS(String[] params) throws Exception {
         ConsoleUtils.printJson(bfsService.fixBfs().toString());
+    }
+
+    @Override
+    public void getBalance(String[] params) throws Exception {
+        String address = params[1];
+        BigInteger result = this.balanceService.getBalance(address);
+        System.out.println("balance: " + result);
+    }
+
+    @Override
+    public void addBalance(String[] params) throws Exception {
+        String address = params[1];
+        BigInteger amount =
+                BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[2]));
+        RetCode retCode = this.balanceService.addBalance(address, amount);
+
+        logger.info("addBalance: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "add balance " + address + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("add balance " + address + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void subBalance(String[] params) throws Exception {
+        String address = params[1];
+        BigInteger amount =
+                BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[2]));
+        RetCode retCode = this.balanceService.subBalance(address, amount);
+
+        logger.info("subBalance: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "sub balance " + address + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("sub balance " + address + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void registerBalancePrecompiledCaller(String[] params) throws Exception {
+        String address = params[1];
+        RetCode retCode = this.balanceService.registerCaller(address);
+
+        logger.info("registerCaller: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println("register caller " + address + " success.");
+        } else {
+            System.out.println("register caller " + address + " failed. ");
+        }
+    }
+
+    @Override
+    public void unregisterBalancePrecompiledCaller(String[] params) throws Exception {
+        String address = params[1];
+        RetCode retCode = this.balanceService.unregisterCaller(address);
+
+        logger.info("unregisterCaller: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println("unregister caller " + address + " success.");
+        } else {
+            System.out.println("unregister caller " + address + " failed. ");
+        }
     }
 
     @Override

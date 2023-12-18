@@ -47,5 +47,15 @@ public interface PrecompiledFace {
 
     void fixBFS(String[] params) throws Exception;
 
+    void getBalance(String[] params) throws Exception;
+
+    void addBalance(String[] params) throws Exception;
+
+    void subBalance(String[] params) throws Exception;
+
+    void registerBalancePrecompiledCaller(String[] params) throws Exception;
+
+    void unregisterBalancePrecompiledCaller(String[] params) throws Exception;
+
     String getPwd();
 }

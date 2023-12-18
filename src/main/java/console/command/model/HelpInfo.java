@@ -467,6 +467,42 @@ public class HelpInfo {
                 "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
     }
 
+    public static void getBalanceHelp() {
+        System.out.println("Query the balance of the specified account");
+        System.out.println("Usage: \ngetBalance accountAddress");
+        System.out.println("* accountAddress -- The address of the account.");
+    }
+
+    public static void addBalanceHelp() {
+        System.out.println("Add balance to the specified account");
+        System.out.println("Usage: \naddBalance accountAddress amount");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("* amount -- The amount of token to add.");
+    }
+
+    public static void subBalanceHelp() {
+        System.out.println("Sub balance from the specified account");
+        System.out.println("Usage: \nsubBalance accountAddress amount");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("* amount -- The amount of token to sub.");
+    }
+
+    public static void registerBalancePrecompiledCallerHelp() {
+        System.out.println("Register caller to the specified account");
+        System.out.println("Usage: \nregisterCaller accountAddress");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("[Note]: The caller must be a contract address.");
+        System.out.println("[Note]: The request initiator account must be governor.");
+    }
+
+    public static void unregisterBalancePrecompiledCallerHelp() {
+        System.out.println("Unregister caller from the specified account");
+        System.out.println("Usage: \nunregisterCaller accountAddress");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("[Note]: The caller must be a contract address.");
+        System.out.println("[Note]: The request initiator account must be governor.");
+    }
+
     public static void startHelp() {
         System.out.println("Please provide one of the following ways to start the console.");
         System.out.println("Usage: ");
