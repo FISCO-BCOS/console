@@ -27,7 +27,6 @@ import console.command.category.StatusQueryCommand;
 import console.command.model.BasicCategoryCommand;
 import console.command.model.CommandInfo;
 import console.common.ConsoleUtils;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
