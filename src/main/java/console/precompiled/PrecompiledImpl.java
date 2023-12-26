@@ -23,7 +23,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.v3.contract.auth.manager.AuthManager;
 import org.fisco.bcos.sdk.v3.contract.precompiled.balance.BalanceService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
@@ -59,7 +58,6 @@ public class PrecompiledImpl implements PrecompiledFace {
     private BFSService bfsService;
     private ShardingService shardingService;
     private BalanceService balanceService;
-    private AuthManager authManager;
     private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
@@ -793,6 +791,24 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
+    public void transferV2(String[] params) throws Exception {
+        String from = params[1];
+        String to = params[2];
+        BigInteger amount =
+                BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[3]));
+        RetCode retCode = this.balanceService.transferV2(from, to, amount);
+
+        logger.info("transferV2: {}, retCode {}", from, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transferV2 " + from + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("transferV2 " + from + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
     @Override
     public void registerBalancePrecompiledCaller(String[] params) throws Exception {
         String address = params[1];
@@ -819,6 +835,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         } else {
             System.out.println("unregister caller " + address + " failed. ");
         }
+    }
+
+    @Override
+    public void listCaller() throws Exception {
+        List<String> result = this.balanceService.listCaller();
+        System.out.println("list caller: " + result.toString());
     }
 
     @Override

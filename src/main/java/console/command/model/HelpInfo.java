@@ -487,6 +487,14 @@ public class HelpInfo {
         System.out.println("* amount -- The amount of token to sub.");
     }
 
+    public static void transferV2Help() {
+        System.out.println("Transfer token from address A to address B");
+        System.out.println("Usage: \ntransferV2 fromAddress toAddress amount [unit]");
+        System.out.println("* fromAddress -- The address of the sender.");
+        System.out.println("* toAddress -- The address of the receiver.");
+        System.out.println("* amount -- The amount of token to transfer.");
+    }
+
     public static void registerBalancePrecompiledCallerHelp() {
         System.out.println("Register caller to the specified account");
         System.out.println("Usage: \nregisterCaller accountAddress");
@@ -501,6 +509,11 @@ public class HelpInfo {
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("[Note]: The caller must be a contract address.");
         System.out.println("[Note]: The request initiator account must be governor.");
+    }
+
+    public static void listCallerHelp() {
+        System.out.println("List all registered balancePrecompiled caller.");
+        System.out.println("Usage: listCaller");
     }
 
     public static void startHelp() {
