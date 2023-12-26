@@ -38,6 +38,16 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                             consoleInitializer.getPrecompiledFace().subBalance(params),
                     2,
                     2);
+
+    public static final CommandInfo TRANSFER_FROM =
+            new CommandInfo(
+                    "transferFrom",
+                    "Transfer balance from one account to another",
+                    HelpInfo::transferFromHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().transferFrom(params),
+                    3,
+                    3);
     public static final CommandInfo REGISTER_CALLER =
             new CommandInfo(
                     "registerCaller",
@@ -60,6 +70,16 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                                     .unregisterBalancePrecompiledCaller(params),
                     1,
                     1);
+    public static final CommandInfo LIST_CALLER =
+            new CommandInfo(
+                    "listCaller",
+                    "List all registered callers of balancePrecompiled",
+                    HelpInfo::listCallerHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().listCaller(),
+                    0,
+                    0);
+
     protected static final Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
 
     static {
