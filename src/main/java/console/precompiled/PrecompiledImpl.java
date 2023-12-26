@@ -791,20 +791,20 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
-    public void transferV2(String[] params) throws Exception {
+    public void transferFrom(String[] params) throws Exception {
         String from = params[1];
         String to = params[2];
         BigInteger amount =
                 BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[3]));
-        RetCode retCode = this.balanceService.transferV2(from, to, amount);
+        RetCode retCode = this.balanceService.transfer(from, to, amount);
 
-        logger.info("transferV2: {}, retCode {}", from, retCode);
+        logger.info("transferFrom: {}, retCode {}", from, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println(
-                    "transferV2 " + from + " success. You can use 'getBalance' to check");
+                    "transferFrom " + from + " success. You can use 'getBalance' to check");
         } else {
-            System.out.println("transferV2 " + from + " failed ");
+            System.out.println("transferFrom " + from + " failed ");
             ConsoleUtils.printJson(retCode.toString());
         }
     }

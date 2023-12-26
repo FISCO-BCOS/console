@@ -487,9 +487,9 @@ public class HelpInfo {
         System.out.println("* amount -- The amount of token to sub.");
     }
 
-    public static void transferV2Help() {
+    public static void transferFromHelp() {
         System.out.println("Transfer token from address A to address B");
-        System.out.println("Usage: \ntransferV2 fromAddress toAddress amount [unit]");
+        System.out.println("Usage: \ntransferFrom fromAddress toAddress amount [unit]");
         System.out.println("* fromAddress -- The address of the sender.");
         System.out.println("* toAddress -- The address of the receiver.");
         System.out.println("* amount -- The amount of token to transfer.");
