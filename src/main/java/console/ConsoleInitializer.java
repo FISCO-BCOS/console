@@ -237,12 +237,12 @@ public class ConsoleInitializer {
             System.out.println("Invalid param " + params[1] + ", must be -pem or -p12");
             System.exit(0);
         }
-        if (params[1].compareToIgnoreCase("-pem") == 0 && params.length != 3) {
+        if (params[1].compareToIgnoreCase("-pem") == 0 && params.length < 3) {
             System.out.println(
                     "Load account from the pem file failed! Please specified the pem file path");
             System.exit(0);
         }
-        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length != 3) {
+        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length < 3) {
             System.out.println(
                     "Load account from the p12 file failed! Please specified the p12 file path");
             System.exit(0);
