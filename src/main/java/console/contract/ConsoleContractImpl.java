@@ -260,7 +260,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 DeployTransactionRequestWithStringParams request =
                         new TransactionRequestBuilder(abiAndBin.getAbi(), bin)
                                 .buildDeployStringParamsRequest(tempInputParams);
-                response = assembleTransactionService.deployContractWithStringParams(request);
+                response = assembleTransactionService.deployContract(request);
             } else {
                 response =
                         this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
@@ -325,7 +325,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         new TransactionRequestBuilder(abi, binStr)
                                 .setTo(path)
                                 .buildDeployStringParamsRequest(inputParams);
-                response = assembleTransactionService.deployContractWithStringParams(request);
+                response = assembleTransactionService.deployContract(request);
             } else {
                 response =
                         this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
@@ -760,7 +760,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             TransactionRequestWithStringParams request =
                     new TransactionRequestBuilder(abiAndBin.getAbi(), functionName, contractAddress)
                             .buildStringParamsRequest(callParams);
-            response = assembleTransactionService.sendTransactionWithStringParams(request);
+            response = assembleTransactionService.sendTransaction(request);
         } else {
             response =
                     assembleTransactionProcessor.sendTransactionWithStringParamsAndGetResponse(
