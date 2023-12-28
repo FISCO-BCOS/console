@@ -853,7 +853,16 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (deep >= limit) return new Tuple2<>(0, 0);
         int dirCount = 0;
         int contractCount = 0;
-        List<BfsInfo> children = bfsService.list(absolutePath);
+        BigInteger offset = BigInteger.ZERO;
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
+        Tuple2<BigInteger, List<BfsInfo>> fileInfoList;
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            fileInfoList = bfsService.list(absolutePath, offset, Common.LS_DEFAULT_COUNT);
+        } else {
+            fileInfoList = new Tuple2<>(BigInteger.ZERO, bfsService.list(absolutePath));
+        }
+        BigInteger fileLeft = fileInfoList.getValue1();
+        List<BfsInfo> children = fileInfoList.getValue2();
         for (int i = 0; i < children.size(); i++) {
             String thisPrefix = "";
             String nextPrefix = "";
@@ -863,7 +872,11 @@ public class PrecompiledImpl implements PrecompiledFace {
                     thisPrefix = prefix + "├─";
                 } else {
                     nextPrefix = prefix + "  ";
-                    thisPrefix = prefix + "└─";
+                    if (fileLeft.compareTo(BigInteger.ZERO) > 0) {
+                        thisPrefix = prefix + "├─";
+                    } else {
+                        thisPrefix = prefix + "└─";
+                    }
                 }
                 System.out.println(thisPrefix + children.get(i).getFileName());
                 if (children.get(i).getFileType().equals(Common.BFS_TYPE_DIR)) {
@@ -880,6 +893,9 @@ public class PrecompiledImpl implements PrecompiledFace {
                     contractCount += childCount.getValue2();
                 } else {
                     contractCount++;
+                }
+                if (fileLeft.compareTo(BigInteger.ZERO) > 0 && i == children.size() - 1) {
+                    System.out.println(prefix + "└─" + "... " + fileLeft + " left files...");
                 }
             }
         }
