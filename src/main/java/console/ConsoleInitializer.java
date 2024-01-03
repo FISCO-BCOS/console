@@ -171,25 +171,31 @@ public class ConsoleInitializer {
                     .getConfig()
                     .getAccountConfig()
                     .isAccountConfigured()) {
-                accountInfo = loadAccountRandomly(bcosSDK, client);
-                if (accountInfo != null) {
+                // load key from account dir
+                AccountInfo newAccountInfo = loadAccountRandomly(bcosSDK, client);
+                if (newAccountInfo != null) {
                     this.client
                             .getCryptoSuite()
                             .loadAccount(
-                                    accountInfo.accountFileFormat,
-                                    accountInfo.accountFile,
-                                    accountInfo.password);
+                                    newAccountInfo.accountFileFormat,
+                                    newAccountInfo.accountFile,
+                                    newAccountInfo.password);
                 }
-                if (accountInfo == null) {
+                if (newAccountInfo == null) {
+                    // still not found key, use client crypto key pair
                     // save the keyPair
                     client.getCryptoSuite().getCryptoKeyPair().storeKeyPairWithPemFormat();
                 }
             }
         } catch (LoadKeyStoreException e) {
-            logger.warn(
+            logger.error(
                     "loadAccountRandomly failed, try to generate and load the random account, error info: {}",
                     e.getMessage(),
                     e);
+            System.out.println(
+                    "Failed to load the account from the keyStoreDir, error info: "
+                            + e.getMessage());
+            System.exit(0);
         } catch (Exception e) {
             System.out.println(
                     "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
