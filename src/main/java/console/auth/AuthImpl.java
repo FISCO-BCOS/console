@@ -312,6 +312,14 @@ public class AuthImpl implements AuthFace {
                         params[2],
                         BigInteger.ONE,
                         BigInteger.valueOf(Integer.MAX_VALUE));
+        if (from.compareTo(to) > 0) {
+            System.out.println("Query From should be less than To.");
+            return;
+        }
+        if (to.subtract(from).compareTo(BigInteger.valueOf(100)) > 0) {
+            System.out.println("Query range should be less than 100.");
+            return;
+        }
         List<ProposalInfo> proposalInfoList = authManager.getProposalInfoList(from, to);
         int showFrom = from.intValue();
         for (ProposalInfo proposalInfo : proposalInfoList) {
