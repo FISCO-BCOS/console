@@ -41,11 +41,11 @@ public class BalanceOpCommand extends BasicCategoryCommand {
 
     public static final CommandInfo TRANSFER_FROM =
             new CommandInfo(
-                    "transferFrom",
+                    "transferBalance",
                     "Transfer balance from one account to another",
-                    HelpInfo::transferFromHelp,
+                    HelpInfo::transferBalanceHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().transferFrom(params),
+                            consoleInitializer.getPrecompiledFace().transferBalance(params),
                     3,
                     3);
     public static final CommandInfo REGISTER_CALLER =
