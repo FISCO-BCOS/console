@@ -791,7 +791,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
     }
 
-    public void transferFrom(String[] params) throws Exception {
+    public void transferBalance(String[] params) throws Exception {
         String from = params[1];
         String to = params[2];
         BigInteger amount =
@@ -801,10 +801,9 @@ public class PrecompiledImpl implements PrecompiledFace {
         logger.info("transferFrom: {}, retCode {}", from, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
-            System.out.println(
-                    "transferFrom " + from + " success. You can use 'getBalance' to check");
+            System.out.println("transferBalance success. You can use getBalance to check");
         } else {
-            System.out.println("transferFrom " + from + " failed ");
+            System.out.println("transferBalance failed." + retCode.getMessage());
             ConsoleUtils.printJson(retCode.toString());
         }
     }
