@@ -84,7 +84,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     private final Client client;
     private final AssembleTransactionProcessorInterface assembleTransactionProcessor;
     // new version tx v2
-    private final AssembleTransactionService assembleTransactionService;
+    private AssembleTransactionService assembleTransactionService = null;
     private final TransferTransactionService transferTransactionService;
     private final BFSService bfsService;
 
@@ -100,12 +100,14 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         ProxySignTransactionManager proxySignTransactionManager =
                 new ProxySignTransactionManager(client);
         transferTransactionService = new TransferTransactionService(proxySignTransactionManager);
-        assembleTransactionService = new AssembleTransactionService(client);
     }
 
     public ConsoleContractImpl(Client client, boolean useTransactionV1) {
         this(client);
         this.useTransactionV1 = useTransactionV1;
+        if (useTransactionV1) {
+            assembleTransactionService = new AssembleTransactionService(client);
+        }
     }
 
     @Override

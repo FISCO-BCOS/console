@@ -45,6 +45,7 @@ public class ConsoleInitializer {
     private CollaborationFace collaborationFace;
     private boolean disableAutoCompleter = false;
     private LineReader lineReader;
+    private boolean useV1TxService;
 
     public LineReader getLineReader() {
         return lineReader;
@@ -70,7 +71,6 @@ public class ConsoleInitializer {
         accountInfo = loadConfig(args);
         loadAccountInfo(accountInfo, groupID);
 
-        boolean useV1TxService = false;
         if (args.length > 3 && "-v1".equals(args[3])) {
             // use v1 transaction service
             useV1TxService = true;
@@ -283,7 +283,7 @@ public class ConsoleInitializer {
             }
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
-            this.consoleContractFace = new ConsoleContractImpl(client);
+            this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
             this.collaborationFace = new CollaborationImpl(client);
             this.authFace = new AuthImpl(client);
             JlineUtils.switchGroup(client);
@@ -357,7 +357,7 @@ public class ConsoleInitializer {
         cryptoSuite.loadAccount(accountFormat, accountPath, accountPassword);
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
-        this.consoleContractFace = new ConsoleContractImpl(client);
+        this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
         this.collaborationFace = new CollaborationImpl(client);
         this.authFace = new AuthImpl(client);
         System.out.println("Load account " + params[1] + " success!");
