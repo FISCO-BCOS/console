@@ -28,7 +28,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().addBalance(params),
                     2,
-                    2);
+                    3);
     public static final CommandInfo SUB_BALANCE =
             new CommandInfo(
                     "subBalance",
@@ -37,7 +37,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().subBalance(params),
                     2,
-                    2);
+                    3);
 
     public static final CommandInfo TRANSFER_FROM =
             new CommandInfo(
@@ -47,7 +47,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getPrecompiledFace().transferBalance(params),
                     3,
-                    3);
+                    4);
     public static final CommandInfo REGISTER_CALLER =
             new CommandInfo(
                     "registerCaller",

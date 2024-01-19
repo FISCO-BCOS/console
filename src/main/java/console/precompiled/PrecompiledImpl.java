@@ -41,6 +41,7 @@ import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.transaction.tools.Convert;
 import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
@@ -50,6 +51,7 @@ import org.slf4j.LoggerFactory;
 public class PrecompiledImpl implements PrecompiledFace {
 
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
+    BigInteger maxValue = new BigInteger("2").pow(256).subtract(BigInteger.ONE);
 
     private Client client;
     private ConsensusService consensusService;
@@ -758,17 +760,22 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void addBalance(String[] params) throws Exception {
         String address = params[1];
-        BigInteger amount =
-                BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[2]));
-        RetCode retCode = this.balanceService.addBalance(address, amount);
+        String amount = params[2];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 3) {
+            unit = Convert.Unit.fromString(params[3]);
+        }
+        RetCode retCode = this.balanceService.addBalance(address, amount, unit);
 
         logger.info("addBalance: {}, retCode {}", address, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
                     "add balance " + address + " success. You can use 'getBalance' to check");
         } else {
-            System.out.println("add balance " + address + " failed ");
+            System.out.println("add balance " + address + " failed.");
             ConsoleUtils.printJson(retCode.toString());
         }
     }
@@ -776,17 +783,22 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void subBalance(String[] params) throws Exception {
         String address = params[1];
-        BigInteger amount =
-                BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[2]));
-        RetCode retCode = this.balanceService.subBalance(address, amount);
+        String amount = params[2];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 3) {
+            unit = Convert.Unit.fromString(params[3]);
+        }
+        RetCode retCode = this.balanceService.subBalance(address, amount, unit);
 
         logger.info("subBalance: {}, retCode {}", address, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
                     "sub balance " + address + " success. You can use 'getBalance' to check");
         } else {
-            System.out.println("sub balance " + address + " failed ");
+            System.out.println("sub balance " + address + " failed. receipt.");
             ConsoleUtils.printJson(retCode.toString());
         }
     }
@@ -794,16 +806,29 @@ public class PrecompiledImpl implements PrecompiledFace {
     public void transferBalance(String[] params) throws Exception {
         String from = params[1];
         String to = params[2];
-        BigInteger amount =
-                BigInteger.valueOf(ConsoleUtils.processNonNegativeNumber("amount", params[3]));
-        RetCode retCode = this.balanceService.transfer(from, to, amount);
+        String amount = params[3];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 4) {
+            unit = Convert.Unit.fromString(params[4]);
+        }
+        RetCode retCode = this.balanceService.transfer(from, to, amount, unit);
 
-        logger.info("transferFrom: {}, retCode {}", from, retCode);
+        logger.info("transfer: {}, retCode {}", from, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
-            System.out.println("transferBalance success. You can use getBalance to check");
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
+                    "transfer "
+                            + amount
+                            + unit.toString()
+                            + " from "
+                            + from
+                            + " to "
+                            + to
+                            + " success. You can use 'getBalance' to check");
         } else {
-            System.out.println("transferBalance failed." + retCode.getMessage());
+            System.out.println("transfer " + amount + " from " + from + " to " + to + " failed.");
             ConsoleUtils.printJson(retCode.toString());
         }
     }
@@ -816,6 +841,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         logger.info("registerCaller: {}, retCode {}", address, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
             System.out.println("register caller " + address + " success.");
         } else {
             System.out.println("register caller " + address + " failed. ");
@@ -830,9 +857,11 @@ public class PrecompiledImpl implements PrecompiledFace {
         logger.info("unregisterCaller: {}, retCode {}", address, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
             System.out.println("unregister caller " + address + " success.");
         } else {
-            System.out.println("unregister caller " + address + " failed. ");
+            System.out.println("unregister caller " + address + " failed.");
         }
     }
 
