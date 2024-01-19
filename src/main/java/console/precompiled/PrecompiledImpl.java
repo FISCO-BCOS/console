@@ -51,8 +51,6 @@ import org.slf4j.LoggerFactory;
 public class PrecompiledImpl implements PrecompiledFace {
 
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
-    BigInteger maxValue = new BigInteger("2").pow(256).subtract(BigInteger.ONE);
-
     private Client client;
     private ConsensusService consensusService;
     private SystemConfigService systemConfigService;
