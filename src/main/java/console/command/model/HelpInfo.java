@@ -478,6 +478,10 @@ public class HelpInfo {
         System.out.println("Usage: \naddBalance accountAddress amount");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("* amount -- The amount of token to add.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
     }
 
     public static void subBalanceHelp() {
@@ -485,6 +489,10 @@ public class HelpInfo {
         System.out.println("Usage: \nsubBalance accountAddress amount");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("* amount -- The amount of token to sub.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
     }
 
     public static void transferBalanceHelp() {
@@ -493,6 +501,10 @@ public class HelpInfo {
         System.out.println("* fromAddress -- The address of the sender.");
         System.out.println("* toAddress -- The address of the receiver.");
         System.out.println("* amount -- The amount of token to transfer.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
     }
 
     public static void registerBalancePrecompiledCallerHelp() {
