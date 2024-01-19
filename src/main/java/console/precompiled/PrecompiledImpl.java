@@ -811,7 +811,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         RetCode retCode = this.balanceService.transfer(from, to, amount, unit);
 
-        logger.info("transfer: {}, retCode {}", from, retCode);
+        logger.info("transferBalance: {}, retCode {}", from, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println(
