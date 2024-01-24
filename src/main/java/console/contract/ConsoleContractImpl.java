@@ -55,6 +55,7 @@ import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
 import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.transaction.codec.decode.RevertMessageParser;
 import org.fisco.bcos.sdk.v3.transaction.manager.AssembleTransactionProcessorInterface;
 import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessorFactory;
 import org.fisco.bcos.sdk.v3.transaction.manager.transactionv2.AssembleTransactionService;
@@ -106,6 +107,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         this(client);
         this.useTransactionV1 = useTransactionV1;
         if (useTransactionV1) {
+            int negotiatedProtocol = client.getNegotiatedProtocol();
+            // if protocol version < 2, it means client connect to old version node, not support
+            if ((negotiatedProtocol >> 16) < 2) {
+                throw new UnsupportedOperationException(
+                        "The node version is too low, incompatible with v1 params, please upgrade the node to 3.6.0 or higher");
+            }
             assembleTransactionService = new AssembleTransactionService(client);
         }
     }
@@ -960,6 +967,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     @Override
     public void transfer(ConsoleInitializer consoleInitializer, String[] params) throws Exception {
+
+        int negotiatedProtocol = consoleInitializer.getClient().getNegotiatedProtocol();
+        if ((negotiatedProtocol >> 16) < 2) {
+            throw new UnsupportedOperationException(
+                    "The node version is too low, please upgrade the node to 3.6.0 or higher");
+        }
         String address = params[1];
         String amount = params[2];
 
@@ -997,7 +1010,13 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             System.out.println(
                     transactionReceipt.getFrom() + " => " + address + ", " + amount + " " + unit);
         } else {
-            System.out.println("description: transfer transaction failed");
+            Tuple2<Boolean, String> revertMessage =
+                    RevertMessageParser.tryResolveRevertMessage(transactionReceipt);
+            System.out.println(
+                    "description: transfer transaction failed."
+                            + (revertMessage.getValue1()
+                                    ? " Reason: " + revertMessage.getValue2()
+                                    : ""));
         }
     }
 
