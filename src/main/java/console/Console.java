@@ -53,7 +53,7 @@ public class Console {
             }
             consoleInitializer.setLineReader(lineReader);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Failed to initialize console, msg: " + e.getMessage());
             logger.error(" message: {}", e.getMessage(), e);
             System.exit(-1);
         }
