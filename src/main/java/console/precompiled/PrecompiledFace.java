@@ -55,11 +55,11 @@ public interface PrecompiledFace {
 
     void transferBalance(String[] params) throws Exception;
 
-    void registerBalancePrecompiledCaller(String[] params) throws Exception;
+    void registerBalanceGovernor(String[] params) throws Exception;
 
-    void unregisterBalancePrecompiledCaller(String[] params) throws Exception;
+    void unregisterBalanceGovernor(String[] params) throws Exception;
 
-    void listCaller() throws Exception;
+    void listBalanceGovernor() throws Exception;
 
     String getPwd();
 }

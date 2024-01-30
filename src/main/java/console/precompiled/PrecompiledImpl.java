@@ -832,41 +832,41 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void registerBalancePrecompiledCaller(String[] params) throws Exception {
+    public void registerBalanceGovernor(String[] params) throws Exception {
         String address = params[1];
         RetCode retCode = this.balanceService.registerCaller(address);
 
-        logger.info("registerCaller: {}, retCode {}", address, retCode);
+        logger.info("registerBalanceGovernor: {}, retCode {}", address, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println(
                     "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
-            System.out.println("register caller " + address + " success.");
+            System.out.println("register balanceGovernor " + address + " success.");
         } else {
-            System.out.println("register caller " + address + " failed. ");
+            System.out.println("register balanceGovernor " + address + " failed. ");
         }
     }
 
     @Override
-    public void unregisterBalancePrecompiledCaller(String[] params) throws Exception {
+    public void unregisterBalanceGovernor(String[] params) throws Exception {
         String address = params[1];
         RetCode retCode = this.balanceService.unregisterCaller(address);
 
-        logger.info("unregisterCaller: {}, retCode {}", address, retCode);
+        logger.info("unregisterBalanceGovernor: {}, retCode {}", address, retCode);
         // parse the result
         if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
             System.out.println(
                     "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
-            System.out.println("unregister caller " + address + " success.");
+            System.out.println("unregister balanceGovernor " + address + " success.");
         } else {
-            System.out.println("unregister caller " + address + " failed.");
+            System.out.println("unregister balanceGovernor " + address + " failed.");
         }
     }
 
     @Override
-    public void listCaller() throws Exception {
+    public void listBalanceGovernor() throws Exception {
         List<String> result = this.balanceService.listCaller();
-        System.out.println("list caller: " + result.toString());
+        System.out.println("listBalanceGovernor: " + result.toString());
     }
 
     @Override
