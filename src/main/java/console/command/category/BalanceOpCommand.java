@@ -50,33 +50,31 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                     4);
     public static final CommandInfo REGISTER_CALLER =
             new CommandInfo(
-                    "registerCaller",
-                    "Register caller to the account",
-                    HelpInfo::registerBalancePrecompiledCallerHelp,
+                    "registerBalanceGovernor",
+                    "Register the account to balanceGovernor",
+                    HelpInfo::registerBalanceGovernorHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer
-                                    .getPrecompiledFace()
-                                    .registerBalancePrecompiledCaller(params),
+                            consoleInitializer.getPrecompiledFace().registerBalanceGovernor(params),
                     1,
                     1);
     public static final CommandInfo UNREGISTER_CALLER =
             new CommandInfo(
-                    "unregisterCaller",
-                    "Unregister caller from the account",
-                    HelpInfo::unregisterBalancePrecompiledCallerHelp,
+                    "unregisterBalanceGovernor",
+                    "Unregister the account from balanceGovernor",
+                    HelpInfo::unregisterBalanceGovernorHelp,
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer
                                     .getPrecompiledFace()
-                                    .unregisterBalancePrecompiledCaller(params),
+                                    .unregisterBalanceGovernor(params),
                     1,
                     1);
     public static final CommandInfo LIST_CALLER =
             new CommandInfo(
-                    "listCaller",
-                    "List all registered callers of balancePrecompiled",
-                    HelpInfo::listCallerHelp,
+                    "listBalanceGovernor",
+                    "List all registered balanceGovernor",
+                    HelpInfo::listBalanceGovernorHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer.getPrecompiledFace().listCaller(),
+                            consoleInitializer.getPrecompiledFace().listBalanceGovernor(),
                     0,
                     0);
 

@@ -507,25 +507,25 @@ public class HelpInfo {
                 "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
     }
 
-    public static void registerBalancePrecompiledCallerHelp() {
-        System.out.println("Register caller to the specified account");
-        System.out.println("Usage: \nregisterCaller accountAddress");
+    public static void registerBalanceGovernorHelp() {
+        System.out.println("Register the specified account to balanceGovernor");
+        System.out.println("Usage: \nregisterBalanceGovernor accountAddress");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("[Note]: The caller must be a contract address.");
         System.out.println("[Note]: The request initiator account must be governor.");
     }
 
-    public static void unregisterBalancePrecompiledCallerHelp() {
-        System.out.println("Unregister caller from the specified account");
-        System.out.println("Usage: \nunregisterCaller accountAddress");
+    public static void unregisterBalanceGovernorHelp() {
+        System.out.println("Unregister the specified account from balanceGovernor");
+        System.out.println("Usage: \nunregisterBalanceGovernor to accountAddress");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("[Note]: The caller must be a contract address.");
         System.out.println("[Note]: The request initiator account must be governor.");
     }
 
-    public static void listCallerHelp() {
-        System.out.println("List all registered balancePrecompiled caller.");
-        System.out.println("Usage: listCaller");
+    public static void listBalanceGovernorHelp() {
+        System.out.println("List all registered balanceGovernor.");
+        System.out.println("Usage: listBalanceGovernor");
     }
 
     public static void startHelp() {
