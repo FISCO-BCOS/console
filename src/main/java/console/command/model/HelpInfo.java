@@ -382,6 +382,10 @@ public class HelpInfo {
                         + Common.TX_GAS_LIMIT_RANGE
                         + "(default 3000000000).");
         System.out.println(
+                "    -- the value of tx_gas_price "
+                        + Common.TX_GAS_PRICE_RANGE
+                        + "(Users can specify the unit of gasPrice. The default unit is wei. support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\").");
+        System.out.println(
                 "    -- the value of "
                         + SystemConfigService.CONSENSUS_PERIOD
                         + " "
@@ -475,7 +479,8 @@ public class HelpInfo {
 
     public static void addBalanceHelp() {
         System.out.println("Add balance to the specified account");
-        System.out.println("Usage: \naddBalance accountAddress amount");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, addBalance accountAddress amount [unit].");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("* amount -- The amount of token to add.");
         System.out.println(
@@ -486,7 +491,8 @@ public class HelpInfo {
 
     public static void subBalanceHelp() {
         System.out.println("Sub balance from the specified account");
-        System.out.println("Usage: \nsubBalance accountAddress amount");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, subBalance accountAddress amount [unit].");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("* amount -- The amount of token to sub.");
         System.out.println(
@@ -497,7 +503,8 @@ public class HelpInfo {
 
     public static void transferBalanceHelp() {
         System.out.println("Transfer token from address A to address B");
-        System.out.println("Usage: \ntransferBalance fromAddress toAddress amount");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, transferBalance fromAddress toAddress amount [unit].");
         System.out.println("* fromAddress -- The address of the sender.");
         System.out.println("* toAddress -- The address of the receiver.");
         System.out.println("* amount -- The amount of token to transfer.");
@@ -509,7 +516,8 @@ public class HelpInfo {
 
     public static void registerBalanceGovernorHelp() {
         System.out.println("Register the specified account to balanceGovernor");
-        System.out.println("Usage: \nregisterBalanceGovernor accountAddress");
+        System.out.println(
+                "Usage: \nOnly governor account can use it, registerBalanceGovernor accountAddress.");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("[Note]: The caller must be a contract address.");
         System.out.println("[Note]: The request initiator account must be governor.");
@@ -517,7 +525,8 @@ public class HelpInfo {
 
     public static void unregisterBalanceGovernorHelp() {
         System.out.println("Unregister the specified account from balanceGovernor");
-        System.out.println("Usage: \nunregisterBalanceGovernor to accountAddress");
+        System.out.println(
+                "Usage: \nOnly governor account can use it, unregisterBalanceGovernor to accountAddress.");
         System.out.println("* accountAddress -- The address of the account.");
         System.out.println("[Note]: The caller must be a contract address.");
         System.out.println("[Note]: The request initiator account must be governor.");

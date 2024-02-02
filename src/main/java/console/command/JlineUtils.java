@@ -199,6 +199,11 @@ public class JlineUtils {
             completers.add(
                     new ArgumentCompleter(
                             new StringsCompleter(command),
+                            new StringsCompleter(SystemConfigService.TX_GAS_PRICE),
+                            new StringsCompleterIgnoreCase()));
+            completers.add(
+                    new ArgumentCompleter(
+                            new StringsCompleter(command),
                             new StringsCompleter(SystemConfigService.CONSENSUS_PERIOD),
                             new StringsCompleterIgnoreCase()));
             completers.add(
