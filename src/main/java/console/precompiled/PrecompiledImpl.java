@@ -9,6 +9,7 @@ import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -120,6 +121,13 @@ public class PrecompiledImpl implements PrecompiledFace {
             throws Exception {
         String key = params[1];
         String value = params[2];
+        if (params.length > 3 && key.equals(SystemConfigService.TX_GAS_PRICE)) {
+            Convert.Unit unit = Convert.Unit.fromString(params[3]);
+            BigDecimal weiValue = Convert.toWei(value, unit);
+            System.out.println("weiValue: " + weiValue);
+            value = weiValue.toBigIntegerExact().toString();
+            System.out.println("value: " + value);
+        }
         RetCode retCode = this.systemConfigService.setValueByKey(key, value);
         ConsoleUtils.printJson(retCode.toString());
         if (key.equals(SystemConfigService.COMPATIBILITY_VERSION)
@@ -751,8 +759,12 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void getBalance(String[] params) throws Exception {
         String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
         BigInteger result = this.balanceService.getBalance(address);
-        System.out.println("balance: " + result);
+        System.out.println("balance: " + result + " wei");
     }
 
     @Override
@@ -762,6 +774,23 @@ public class PrecompiledImpl implements PrecompiledFace {
         Convert.Unit unit = Convert.Unit.WEI;
         if (params.length > 3) {
             unit = Convert.Unit.fromString(params[3]);
+        }
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to addBalance.");
+            return;
         }
         RetCode retCode = this.balanceService.addBalance(address, amount, unit);
 
@@ -786,6 +815,23 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (params.length > 3) {
             unit = Convert.Unit.fromString(params[3]);
         }
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to subBalance.");
+            return;
+        }
         RetCode retCode = this.balanceService.subBalance(address, amount, unit);
 
         logger.info("subBalance: {}, retCode {}", address, retCode);
@@ -808,6 +854,27 @@ public class PrecompiledImpl implements PrecompiledFace {
         Convert.Unit unit = Convert.Unit.WEI;
         if (params.length > 4) {
             unit = Convert.Unit.fromString(params[4]);
+        }
+        if (!AddressUtils.isValidAddress(from)) {
+            System.out.println("Invalid from address: " + from);
+            return;
+        }
+        if (!AddressUtils.isValidAddress(to)) {
+            System.out.println("Invalid to address: " + to);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to transferBalance.");
+            return;
         }
         RetCode retCode = this.balanceService.transfer(from, to, amount, unit);
 
@@ -834,6 +901,10 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void registerBalanceGovernor(String[] params) throws Exception {
         String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
         RetCode retCode = this.balanceService.registerCaller(address);
 
         logger.info("registerBalanceGovernor: {}, retCode {}", address, retCode);
@@ -850,6 +921,10 @@ public class PrecompiledImpl implements PrecompiledFace {
     @Override
     public void unregisterBalanceGovernor(String[] params) throws Exception {
         String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
         RetCode retCode = this.balanceService.unregisterCaller(address);
 
         logger.info("unregisterBalanceGovernor: {}, retCode {}", address, retCode);

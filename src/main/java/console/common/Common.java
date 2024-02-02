@@ -16,6 +16,7 @@ public class Common {
     // SystemConfig key
     public static final String TX_COUNT_LIMIT = "tx_count_limit";
     public static final String TX_GAS_LIMIT = "tx_gas_limit";
+    public static final String TX_GAS_PRICE = "tx_gas_price";
     public static final String CONSENSUS_LEADER_PERIOD = "consensus_leader_period";
     public static final String COMPATIBILITY_VERSION = "compatibility_version";
     public static final String AUTH_CHECK_STATUS = "auth_check_status";
@@ -25,6 +26,7 @@ public class Common {
                     Arrays.asList(
                             SystemConfigService.TX_COUNT_LIMIT,
                             SystemConfigService.TX_GAS_LIMIT,
+                            SystemConfigService.TX_GAS_PRICE,
                             SystemConfigService.CONSENSUS_PERIOD,
                             SystemConfigService.COMPATIBILITY_VERSION,
                             SystemConfigService.AUTH_STATUS));
@@ -44,6 +46,7 @@ public class Common {
     public static final String DEPLOY_LOG_INTEGER_RANGE = "from 1 to 100";
     public static final String TX_GAS_LIMIT_RANGE = "must be greater than 100000";
     public static final String SYS_CONFIG_RANGE = "must be greater or equal to 1";
+    public static final String TX_GAS_PRICE_RANGE = "must be >= 0";
     public static final String AUTH_CHECK_DESC =
             "means whether to check auth when deploy/call contract, if value>0, check auth, otherwise not check auth.";
     public static final String COMPATIBILITY_VERSION_DESC =
