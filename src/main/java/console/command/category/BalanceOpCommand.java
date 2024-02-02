@@ -69,6 +69,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                     1,
                     1);
     protected static final Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
+
     public BalanceOpCommand() {
         super(CommandType.BALANCE_PRECOMPILED_OP);
     }
@@ -98,6 +99,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
     public Map<String, CommandInfo> getAllCommandInfo(boolean isWasm) {
         return commandToCommandInfo;
     }
+
     public static final CommandInfo LIST_CALLER =
             new CommandInfo(
                     "listBalanceGovernor",
