@@ -91,7 +91,7 @@ public class BalanceOpCommand extends BasicCategoryCommand {
                         key ->
                                 !(isWasm && !commandToCommandInfo.get(key).isWasmSupport()
                                         || (!isAuthOpen
-                                        && commandToCommandInfo.get(key).isNeedAuthOpen())))
+                                                && commandToCommandInfo.get(key).isNeedAuthOpen())))
                 .collect(Collectors.toList());
     }
 
