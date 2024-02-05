@@ -2,7 +2,6 @@ package console.auth;
 
 import console.ConsoleInitializer;
 import console.common.ConsoleUtils;
-
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
