@@ -124,9 +124,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (params.length > 3 && key.equals(SystemConfigService.TX_GAS_PRICE)) {
             Convert.Unit unit = Convert.Unit.fromString(params[3]);
             BigDecimal weiValue = Convert.toWei(value, unit);
-            System.out.println("weiValue: " + weiValue);
             value = weiValue.toBigIntegerExact().toString();
-            System.out.println("value: " + value);
         }
         RetCode retCode = this.systemConfigService.setValueByKey(key, value);
         ConsoleUtils.printJson(retCode.toString());

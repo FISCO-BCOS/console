@@ -2,6 +2,7 @@ package console.auth;
 
 import console.ConsoleInitializer;
 import console.common.ConsoleUtils;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
 import org.fisco.bcos.sdk.v3.transaction.codec.decode.ReceiptParser;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionException;
+import org.fisco.bcos.sdk.v3.transaction.tools.Convert;
 import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,6 +224,11 @@ public class AuthImpl implements AuthFace {
             throws Exception {
         String key = params[1];
         String value = params[2];
+        if (params.length > 3 && key.equals(SystemConfigService.TX_GAS_PRICE)) {
+            Convert.Unit unit = Convert.Unit.fromString(params[3]);
+            BigDecimal weiValue = Convert.toWei(value, unit);
+            value = weiValue.toBigIntegerExact().toString();
+        }
 
         BigInteger proposalId = authManager.createSetSysConfigProposal(key, value);
         System.out.println("Set system config proposal created, ID is: " + proposalId);
