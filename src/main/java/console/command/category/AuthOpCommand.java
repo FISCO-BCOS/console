@@ -187,7 +187,7 @@ public class AuthOpCommand extends BasicCategoryCommand {
                                     .getAuthFace()
                                     .createSetSysConfigProposal(consoleInitializer, params),
                     2,
-                    2,
+                    3,
                     false,
                     false,
                     true);
