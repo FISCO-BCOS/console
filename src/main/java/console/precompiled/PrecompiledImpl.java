@@ -9,6 +9,7 @@ import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -23,6 +24,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.contract.precompiled.balance.BalanceService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
@@ -40,6 +42,7 @@ import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.transaction.tools.Convert;
 import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
@@ -49,13 +52,13 @@ import org.slf4j.LoggerFactory;
 public class PrecompiledImpl implements PrecompiledFace {
 
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
-
     private Client client;
     private ConsensusService consensusService;
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
     private BFSService bfsService;
     private ShardingService shardingService;
+    private BalanceService balanceService;
     private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
@@ -66,6 +69,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
         this.shardingService = new ShardingService(client, cryptoKeyPair);
+        this.balanceService = new BalanceService(client, cryptoKeyPair);
     }
 
     @Override
@@ -117,6 +121,11 @@ public class PrecompiledImpl implements PrecompiledFace {
             throws Exception {
         String key = params[1];
         String value = params[2];
+        if (params.length > 3 && key.equals(SystemConfigService.TX_GAS_PRICE)) {
+            Convert.Unit unit = Convert.Unit.fromString(params[3]);
+            BigDecimal weiValue = Convert.toWei(value, unit);
+            value = weiValue.toBigIntegerExact().toString();
+        }
         RetCode retCode = this.systemConfigService.setValueByKey(key, value);
         ConsoleUtils.printJson(retCode.toString());
         if (key.equals(SystemConfigService.COMPATIBILITY_VERSION)
@@ -746,6 +755,194 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
+    public void getBalance(String[] params) throws Exception {
+        String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        BigInteger result = this.balanceService.getBalance(address);
+        System.out.println("balance: " + result + " wei");
+    }
+
+    @Override
+    public void addBalance(String[] params) throws Exception {
+        String address = params[1];
+        String amount = params[2];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 3) {
+            unit = Convert.Unit.fromString(params[3]);
+        }
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to addBalance.");
+            return;
+        }
+        RetCode retCode = this.balanceService.addBalance(address, amount, unit);
+
+        logger.info("addBalance: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
+                    "add balance " + address + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("add balance " + address + " failed.");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void subBalance(String[] params) throws Exception {
+        String address = params[1];
+        String amount = params[2];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 3) {
+            unit = Convert.Unit.fromString(params[3]);
+        }
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to subBalance.");
+            return;
+        }
+        RetCode retCode = this.balanceService.subBalance(address, amount, unit);
+
+        logger.info("subBalance: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
+                    "sub balance " + address + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("sub balance " + address + " failed. receipt.");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    public void transferBalance(String[] params) throws Exception {
+        String from = params[1];
+        String to = params[2];
+        String amount = params[3];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 4) {
+            unit = Convert.Unit.fromString(params[4]);
+        }
+        if (!AddressUtils.isValidAddress(from)) {
+            System.out.println("Invalid from address: " + from);
+            return;
+        }
+        if (!AddressUtils.isValidAddress(to)) {
+            System.out.println("Invalid to address: " + to);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to transferBalance.");
+            return;
+        }
+        RetCode retCode = this.balanceService.transfer(from, to, amount, unit);
+
+        logger.info("transferBalance: {}, retCode {}", from, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
+                    "transfer "
+                            + amount
+                            + unit.toString()
+                            + " from "
+                            + from
+                            + " to "
+                            + to
+                            + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("transfer " + amount + " from " + from + " to " + to + " failed.");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void registerBalanceGovernor(String[] params) throws Exception {
+        String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        RetCode retCode = this.balanceService.registerCaller(address);
+
+        logger.info("registerBalanceGovernor: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println("register balanceGovernor " + address + " success.");
+        } else {
+            System.out.println("register balanceGovernor " + address + " failed. ");
+        }
+    }
+
+    @Override
+    public void unregisterBalanceGovernor(String[] params) throws Exception {
+        String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        RetCode retCode = this.balanceService.unregisterCaller(address);
+
+        logger.info("unregisterBalanceGovernor: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println("unregister balanceGovernor " + address + " success.");
+        } else {
+            System.out.println("unregister balanceGovernor " + address + " failed.");
+        }
+    }
+
+    @Override
+    public void listBalanceGovernor() throws Exception {
+        List<String> result = this.balanceService.listCaller();
+        System.out.println("listBalanceGovernor: " + result.toString());
+    }
+
+    @Override
     public String getPwd() {
         return pwd;
     }
@@ -755,7 +952,16 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (deep >= limit) return new Tuple2<>(0, 0);
         int dirCount = 0;
         int contractCount = 0;
-        List<BfsInfo> children = bfsService.list(absolutePath);
+        BigInteger offset = BigInteger.ZERO;
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
+        Tuple2<BigInteger, List<BfsInfo>> fileInfoList;
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            fileInfoList = bfsService.list(absolutePath, offset, Common.LS_DEFAULT_COUNT);
+        } else {
+            fileInfoList = new Tuple2<>(BigInteger.ZERO, bfsService.list(absolutePath));
+        }
+        BigInteger fileLeft = fileInfoList.getValue1();
+        List<BfsInfo> children = fileInfoList.getValue2();
         for (int i = 0; i < children.size(); i++) {
             String thisPrefix = "";
             String nextPrefix = "";
@@ -765,7 +971,11 @@ public class PrecompiledImpl implements PrecompiledFace {
                     thisPrefix = prefix + "├─";
                 } else {
                     nextPrefix = prefix + "  ";
-                    thisPrefix = prefix + "└─";
+                    if (fileLeft.compareTo(BigInteger.ZERO) > 0) {
+                        thisPrefix = prefix + "├─";
+                    } else {
+                        thisPrefix = prefix + "└─";
+                    }
                 }
                 System.out.println(thisPrefix + children.get(i).getFileName());
                 if (children.get(i).getFileType().equals(Common.BFS_TYPE_DIR)) {
@@ -782,6 +992,9 @@ public class PrecompiledImpl implements PrecompiledFace {
                     contractCount += childCount.getValue2();
                 } else {
                     contractCount++;
+                }
+                if (fileLeft.compareTo(BigInteger.ZERO) > 0 && i == children.size() - 1) {
+                    System.out.println(prefix + "└─" + "... " + fileLeft + " left files...");
                 }
             }
         }

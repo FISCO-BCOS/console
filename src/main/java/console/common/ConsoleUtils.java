@@ -138,6 +138,10 @@ public class ConsoleUtils {
         }
     }
 
+    public static boolean isValidNumber(String number) {
+        return number.matches("^-?\\d+$") || number.matches("^0[xX][0-9a-fA-F]+$");
+    }
+
     public static String[] fixedBfsParams(String[] params, String pwd) throws Exception {
         String[] fixedParams = new String[params.length];
         fixedParams[0] = params[0];
@@ -314,7 +318,8 @@ public class ConsoleUtils {
             String librariesOption,
             String specifyContract,
             boolean isContractParallelAnalysis,
-            boolean enableAsyncCall)
+            boolean enableAsyncCall,
+            String transactionVersion)
             throws IOException, CompileContractException {
 
         String contractName = solFile.getName().split("\\.")[0];
@@ -356,6 +361,10 @@ public class ConsoleUtils {
         if (enableAsyncCall) {
             args.add("-e");
         }
+        if (!transactionVersion.equals("V0")) {
+            args.add("-t");
+            args.add(transactionVersion);
+        }
         CodeGenMain.main(args.toArray(new String[0]));
         System.out.println(
                 "*** Convert solidity to java  for " + solFile.getName() + " success ***\n");
@@ -368,7 +377,8 @@ public class ConsoleUtils {
             String abiDir,
             String binDir,
             boolean isContractParallelAnalysis,
-            boolean enableAsyncCall)
+            boolean enableAsyncCall,
+            String transactionVersion)
             throws IOException {
         File[] solFiles = solFileList.listFiles();
         if (solFiles.length == 0) {
@@ -393,7 +403,8 @@ public class ConsoleUtils {
                         null,
                         null,
                         isContractParallelAnalysis,
-                        enableAsyncCall);
+                        enableAsyncCall,
+                        transactionVersion);
             } catch (Exception e) {
                 System.out.println(
                         "ERROR:convert solidity to java for "
@@ -838,7 +849,16 @@ public class ConsoleUtils {
 
         String NO_ANALYSIS_OPTION = "no-analysis";
         String ENABLE_ASYNC_CALL_OPTION = "enable-async-call";
+        String TRANSACTION_VERSION = "transaction-version";
 
+        Option transactionVersion =
+                new Option(
+                        "t",
+                        TRANSACTION_VERSION,
+                        true,
+                        "[Optional] Specify transaction version interface, default is 0; If you want to use the latest transaction interface, please specify 1.");
+        transactionVersion.setRequired(false);
+        options.addOption(transactionVersion);
         if (mode.equals("solidity")) {
             Option solidityFilePathOption =
                     new Option(
@@ -930,6 +950,7 @@ public class ConsoleUtils {
 
         String pkgName = cmd.getOptionValue(PACKAGE_OPTION, DEFAULT_PACKAGE);
         String javaDir = cmd.getOptionValue(OUTPUT_OPTION, DEFAULT_OUTPUT);
+        String transactionVersionStr = "V" + cmd.getOptionValue(TRANSACTION_VERSION, "0");
         if (mode.equals("solidity")) {
             String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
             String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
@@ -959,7 +980,8 @@ public class ConsoleUtils {
                             librariesOption,
                             specifyContract,
                             useDagAnalysis,
-                            enableAsyncCall);
+                            enableAsyncCall,
+                            transactionVersionStr);
                 } else { // input dir
                     compileAllSolToJava(
                             fullJavaDir,
@@ -968,7 +990,8 @@ public class ConsoleUtils {
                             ABI_PATH,
                             BIN_PATH,
                             useDagAnalysis,
-                            enableAsyncCall);
+                            enableAsyncCall,
+                            transactionVersionStr);
                 }
             } catch (IOException | CompileContractException e) {
                 System.out.print(e.getMessage());
@@ -981,15 +1004,20 @@ public class ConsoleUtils {
             String abiFile = cmd.getOptionValue(ABI_OPTION);
             String binFile = cmd.getOptionValue(BIN_OPTION);
             String smBinFile = cmd.getOptionValue(SM_BIN_OPTION);
-            CodeGenMain.main(
-                    Arrays.asList(
+            List<String> params =
+                    new ArrayList<>(
+                            Arrays.asList(
                                     "-v", "V3",
                                     "-a", abiFile,
                                     "-b", binFile,
                                     "-s", smBinFile,
                                     "-p", pkgName,
-                                    "-o", javaDir)
-                            .toArray(new String[0]));
+                                    "-o", javaDir));
+            if (!transactionVersionStr.equals("0")) {
+                params.add("-t");
+                params.add(transactionVersionStr);
+            }
+            CodeGenMain.main(params.toArray(new String[0]));
         }
     }
 }

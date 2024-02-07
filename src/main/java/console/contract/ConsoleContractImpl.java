@@ -21,6 +21,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +37,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.codegen.v3.exceptions.CodeGenException;
 import org.fisco.bcos.codegen.v3.utils.CodeGenUtils;
+import org.fisco.bcos.sdk.jni.common.JniException;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
@@ -52,12 +54,21 @@ import org.fisco.bcos.sdk.v3.model.CryptoType;
 import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
+import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
+import org.fisco.bcos.sdk.v3.transaction.codec.decode.RevertMessageParser;
 import org.fisco.bcos.sdk.v3.transaction.manager.AssembleTransactionProcessorInterface;
 import org.fisco.bcos.sdk.v3.transaction.manager.TransactionProcessorFactory;
+import org.fisco.bcos.sdk.v3.transaction.manager.transactionv1.AssembleTransactionService;
+import org.fisco.bcos.sdk.v3.transaction.manager.transactionv1.ProxySignTransactionManager;
+import org.fisco.bcos.sdk.v3.transaction.manager.transactionv1.TransferTransactionService;
+import org.fisco.bcos.sdk.v3.transaction.manager.transactionv1.dto.DeployTransactionRequestWithStringParams;
+import org.fisco.bcos.sdk.v3.transaction.manager.transactionv1.dto.TransactionRequestWithStringParams;
+import org.fisco.bcos.sdk.v3.transaction.manager.transactionv1.utils.TransactionRequestBuilder;
 import org.fisco.bcos.sdk.v3.transaction.model.dto.CallResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.dto.TransactionResponse;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionBaseException;
+import org.fisco.bcos.sdk.v3.transaction.tools.Convert;
 import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Hex;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
@@ -73,7 +84,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     private final Client client;
     private final AssembleTransactionProcessorInterface assembleTransactionProcessor;
+    // new version tx v2
+    private AssembleTransactionService assembleTransactionService = null;
+    private final TransferTransactionService transferTransactionService;
     private final BFSService bfsService;
+
+    private boolean useTransactionV1 = false;
 
     public ConsoleContractImpl(Client client) {
         this.client = client;
@@ -82,6 +98,23 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 TransactionProcessorFactory.createAssembleTransactionProcessor(
                         client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
+        ProxySignTransactionManager proxySignTransactionManager =
+                new ProxySignTransactionManager(client);
+        transferTransactionService = new TransferTransactionService(proxySignTransactionManager);
+    }
+
+    public ConsoleContractImpl(Client client, boolean useTransactionV1) {
+        this(client);
+        this.useTransactionV1 = useTransactionV1;
+        if (useTransactionV1) {
+            int negotiatedProtocol = client.getNegotiatedProtocol();
+            // if protocol version < 2, it means client connect to old version node, not support
+            if ((negotiatedProtocol >> 16) < 2) {
+                throw new UnsupportedOperationException(
+                        "The node version is too low, incompatible with v1 params, please upgrade the node to 3.6.0 or higher");
+            }
+            assembleTransactionService = new AssembleTransactionService(client);
+        }
     }
 
     @Override
@@ -231,9 +264,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (sm) {
                 bin = abiAndBin.getSmBin();
             }
-            TransactionResponse response =
-                    this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
-                            abiAndBin.getAbi(), bin, tempInputParams, null);
+            TransactionResponse response;
+            if (useTransactionV1) {
+                DeployTransactionRequestWithStringParams request =
+                        new TransactionRequestBuilder(abiAndBin.getAbi(), bin)
+                                .buildDeployStringParamsRequest(tempInputParams);
+                response = assembleTransactionService.deployContract(request);
+            } else {
+                response =
+                        this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
+                                abiAndBin.getAbi(), bin, tempInputParams, null);
+            }
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
@@ -261,6 +302,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         } catch (ClientException
                 | CompileContractException
                 | IOException
+                | ContractException
+                | JniException
                 | ContractCodecException e) {
             throw new ConsoleMessageException("deploy contract failed for " + e.getMessage(), e);
         }
@@ -285,9 +328,18 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String binStr = Hex.toHexString(bin);
             File abiFile = new File(abiPath);
             String abi = FileUtils.readFileToString(abiFile);
-            TransactionResponse response =
-                    this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
-                            abi, binStr, inputParams, path);
+            TransactionResponse response;
+            if (useTransactionV1) {
+                DeployTransactionRequestWithStringParams request =
+                        new TransactionRequestBuilder(abi, binStr)
+                                .setTo(path)
+                                .buildDeployStringParamsRequest(inputParams);
+                response = assembleTransactionService.deployContract(request);
+            } else {
+                response =
+                        this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
+                                abi, binStr, inputParams, path);
+            }
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + path + " failed!");
                 System.out.println("return message: " + response.getReturnMessage());
@@ -321,7 +373,11 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             ContractCompiler.saveAbiAndBin(
                     client.getGroup(), abiAndBin, contractName, contractAddress);
             return response;
-        } catch (ClientException | IOException | ContractCodecException e) {
+        } catch (ClientException
+                | IOException
+                | JniException
+                | ContractException
+                | ContractCodecException e) {
             throw new ConsoleMessageException("deploy contract failed due to:" + e.getMessage(), e);
         }
     }
@@ -682,6 +738,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                             + errorMessage
                             + ", please refer to "
                             + StatusCodeLink.txReceiptStatusLink);
+        } catch (JniException | ContractException e) {
+            System.out.println(
+                    "call for " + contractName + " failed, contractAddress: " + contractAddress);
+            System.out.println(e.getMessage());
         }
     }
 
@@ -692,7 +752,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String functionName,
             List<String> callParams,
             ABIDefinition abiDefinition)
-            throws ContractCodecException, TransactionBaseException {
+            throws ContractCodecException, TransactionBaseException, ContractException,
+                    JniException {
         if (logger.isTraceEnabled()) {
             logger.trace(
                     "sendTransactionAndGetResponse request, params: {}, contractAddress: {}, contractName: {}, functionName: {}, paramSize:{},  abiDefinition: {}",
@@ -703,9 +764,17 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     callParams.size(),
                     abiDefinition);
         }
-        TransactionResponse response =
-                assembleTransactionProcessor.sendTransactionWithStringParamsAndGetResponse(
-                        contractAddress, abiAndBin.getAbi(), functionName, callParams);
+        TransactionResponse response;
+        if (useTransactionV1) {
+            TransactionRequestWithStringParams request =
+                    new TransactionRequestBuilder(abiAndBin.getAbi(), functionName, contractAddress)
+                            .buildStringParamsRequest(callParams);
+            response = assembleTransactionService.sendTransaction(request);
+        } else {
+            response =
+                    assembleTransactionProcessor.sendTransactionWithStringParamsAndGetResponse(
+                            contractAddress, abiAndBin.getAbi(), functionName, callParams);
+        }
         System.out.println(
                 "transaction hash: " + response.getTransactionReceipt().getTransactionHash());
         ConsoleUtils.singleLine();
@@ -732,7 +801,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             String contractAddress,
             String functionName,
             List<String> callParams)
-            throws TransactionBaseException, ContractCodecException {
+            throws TransactionBaseException, ContractCodecException, JniException,
+                    ContractException {
         if (logger.isDebugEnabled()) {
             logger.debug(
                     "sendCall request, params: {}, contractAddress: {}, contractName: {}, functionName:{}, paramSize: {}",
@@ -743,14 +813,21 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                     callParams.size());
         }
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        CallResponse response =
-                assembleTransactionProcessor.sendCallWithSignWithStringParams(
-                        cryptoKeyPair.getAddress(),
-                        contractAddress,
-                        abiAndBin.getAbi(),
-                        functionName,
-                        callParams);
-
+        CallResponse response;
+        if (useTransactionV1) {
+            TransactionRequestWithStringParams request =
+                    new TransactionRequestBuilder(abiAndBin.getAbi(), functionName, contractAddress)
+                            .buildStringParamsRequest(callParams);
+            response = assembleTransactionService.sendCall(request);
+        } else {
+            response =
+                    assembleTransactionProcessor.sendCallWithSignWithStringParams(
+                            cryptoKeyPair.getAddress(),
+                            contractAddress,
+                            abiAndBin.getAbi(),
+                            functionName,
+                            callParams);
+        }
         ConsoleUtils.singleLine();
         System.out.println("Return code: " + response.getReturnCode());
         if (response.getReturnCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
@@ -885,6 +962,61 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (i == recordNum) {
                 break;
             }
+        }
+    }
+
+    @Override
+    public void transfer(ConsoleInitializer consoleInitializer, String[] params) throws Exception {
+
+        int negotiatedProtocol = consoleInitializer.getClient().getNegotiatedProtocol();
+        if ((negotiatedProtocol >> 16) < 2) {
+            throw new UnsupportedOperationException(
+                    "The node version is too low, please upgrade the node to 3.6.0 or higher");
+        }
+        String address = params[1];
+        String amount = params[2];
+
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length == 4) {
+            String unitStr = params[3];
+            unit = Convert.Unit.fromString(unitStr);
+        }
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid contract address: " + address);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to transfer.");
+            return;
+        }
+        TransactionReceipt transactionReceipt =
+                transferTransactionService.sendFunds(address, value, unit);
+        System.out.println("transaction hash: " + transactionReceipt.getTransactionHash());
+        ConsoleUtils.singleLine();
+        System.out.println("transaction status: " + transactionReceipt.getStatus());
+
+        ConsoleUtils.singleLine();
+        if (transactionReceipt.getStatus() == 0) {
+            System.out.println("description: transaction executed successfully");
+            System.out.println(
+                    transactionReceipt.getFrom() + " => " + address + ", " + amount + " " + unit);
+        } else {
+            Tuple2<Boolean, String> revertMessage =
+                    RevertMessageParser.tryResolveRevertMessage(transactionReceipt);
+            System.out.println(
+                    "description: transfer transaction failed."
+                            + (revertMessage.getValue1()
+                                    ? " Reason: " + revertMessage.getValue2()
+                                    : ""));
         }
     }
 

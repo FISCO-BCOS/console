@@ -382,6 +382,10 @@ public class HelpInfo {
                         + Common.TX_GAS_LIMIT_RANGE
                         + "(default 3000000000).");
         System.out.println(
+                "    -- the value of tx_gas_price "
+                        + Common.TX_GAS_PRICE_RANGE
+                        + "(Users can specify the unit of gasPrice. The default unit is wei. support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\").");
+        System.out.println(
                 "    -- the value of "
                         + SystemConfigService.CONSENSUS_PERIOD
                         + " "
@@ -454,6 +458,83 @@ public class HelpInfo {
                 "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
         System.out.println(
                 "recordNumber -- (optional) The number of deployed contract records, (default 20).");
+    }
+
+    public static void transferHelp() {
+        System.out.println("Transfer token to a specified address");
+        System.out.println("Usage: \ntransfer toAddress amount [unit]");
+        System.out.println("* toAddress -- The address of the receiver.");
+        System.out.println("* amount -- The amount of token to transfer.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
+    public static void getBalanceHelp() {
+        System.out.println("Query the balance of the specified account");
+        System.out.println("Usage: \ngetBalance accountAddress");
+        System.out.println("* accountAddress -- The address of the account.");
+    }
+
+    public static void addBalanceHelp() {
+        System.out.println("Add balance to the specified account");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, addBalance accountAddress amount [unit].");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("* amount -- The amount of token to add.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
+    public static void subBalanceHelp() {
+        System.out.println("Sub balance from the specified account");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, subBalance accountAddress amount [unit].");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("* amount -- The amount of token to sub.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
+    public static void transferBalanceHelp() {
+        System.out.println("Transfer token from address A to address B");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, transferBalance fromAddress toAddress amount [unit].");
+        System.out.println("* fromAddress -- The address of the sender.");
+        System.out.println("* toAddress -- The address of the receiver.");
+        System.out.println("* amount -- The amount of token to transfer.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
+    public static void registerBalanceGovernorHelp() {
+        System.out.println("Register the specified account to balanceGovernor");
+        System.out.println(
+                "Usage: \nOnly governor account can use it, registerBalanceGovernor accountAddress.");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("[Note]: The caller must be a contract address.");
+        System.out.println("[Note]: The request initiator account must be governor.");
+    }
+
+    public static void unregisterBalanceGovernorHelp() {
+        System.out.println("Unregister the specified account from balanceGovernor");
+        System.out.println(
+                "Usage: \nOnly governor account can use it, unregisterBalanceGovernor to accountAddress.");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("[Note]: The caller must be a contract address.");
+        System.out.println("[Note]: The request initiator account must be governor.");
+    }
+
+    public static void listBalanceGovernorHelp() {
+        System.out.println("List all registered balanceGovernor.");
+        System.out.println("Usage: listBalanceGovernor");
     }
 
     public static void startHelp() {

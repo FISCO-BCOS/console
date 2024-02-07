@@ -191,7 +191,7 @@ public class StatusQueryCommand extends BasicCategoryCommand {
                                     .getPrecompiledFace()
                                     .setSystemConfigByKey(consoleInitializer, params),
                     2,
-                    2);
+                    3);
 
     public static final CommandInfo GET_SYSTEM_CONFIG_BY_KEY =
             new CommandInfo(

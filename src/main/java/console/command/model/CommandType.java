@@ -11,7 +11,8 @@ public enum CommandType {
     AUTH_OP,
     ACCOUNT_OP,
     COLLABORATE_OP,
-    SHARDING_OP;
+    SHARDING_OP,
+    BALANCE_PRECOMPILED_OP;
 
     @Override
     public String toString() {
@@ -38,6 +39,8 @@ public enum CommandType {
                 return "Wasm Collaboration Operation";
             case SHARDING_OP:
                 return "Sharding Operation";
+            case BALANCE_PRECOMPILED_OP:
+                return "Balance Precompiled Operation";
             default:
                 return "Unknown Command";
         }
