@@ -174,7 +174,9 @@ public class ConsoleInitializer {
         String subDir = client.getCryptoSuite().getKeyPairFactory().getKeyStoreSubDir();
         String keyStoreFileDir = keyStoreDirPath + File.separator + subDir;
         File keyStoreFileDirPath = new File(keyStoreFileDir);
-        logger.debug("loadAccountRandomly, keyStoreFileDirPath:{}", keyStoreFileDir);
+        if (logger.isDebugEnabled()) {
+            logger.debug("loadAccountRandomly, keyStoreFileDirPath:{}", keyStoreFileDir);
+        }
         if (!keyStoreFileDirPath.exists() || !keyStoreFileDirPath.isDirectory()) {
             return null;
         }
