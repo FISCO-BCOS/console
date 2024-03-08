@@ -24,6 +24,7 @@ import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.sdk.codegen.CodeGenUtils;
 import org.fisco.bcos.sdk.codegen.exceptions.CodeGenException;
@@ -75,6 +76,7 @@ public class ContractCompiler {
             throws CompileContractException, IOException {
         return compileSolToBinAndAbi(contractFile, abiDir, binDir, null);
     }
+
     // compile with libraries option
     public static AbiAndBin compileSolToBinAndAbi(
             File contractFile, String abiDir, String binDir, String librariesOption)
@@ -160,46 +162,23 @@ public class ContractCompiler {
     public static void saveAbiAndBin(
             Integer groupId, AbiAndBin abiAndBin, String contractName, String contractAddress)
             throws IOException {
-        File abiPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + ABI_POSTFIX);
-        File binPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + BIN_POSTFIX);
-        File smBinPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + SM_POSTFIX
-                                + BIN_POSTFIX);
-        FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());
-        FileUtils.writeStringToFile(binPath, abiAndBin.getBin());
-        FileUtils.writeStringToFile(smBinPath, abiAndBin.getSmBin());
+        String contractDir =
+                COMPILED_PATH
+                        + File.separator
+                        + groupId
+                        + File.separator
+                        + contractName
+                        + File.separator
+                        + contractAddress
+                        + File.separator
+                        + contractName;
+        contractDir = contractDir.replace("..", "");
+        File abiPath = new File(contractDir + ABI_POSTFIX);
+        File binPath = new File(contractDir + BIN_POSTFIX);
+        File smBinPath = new File(contractDir + SM_POSTFIX + BIN_POSTFIX);
+        FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi(), Charset.defaultCharset());
+        FileUtils.writeStringToFile(binPath, abiAndBin.getBin(), Charset.defaultCharset());
+        FileUtils.writeStringToFile(smBinPath, abiAndBin.getSmBin(), Charset.defaultCharset());
     }
 
     public static AbiAndBin loadAbiAndBin(
@@ -222,43 +201,21 @@ public class ContractCompiler {
             String contractAddress,
             boolean needCompile)
             throws IOException, CodeGenException, CompileContractException {
-        File abiPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + ABI_POSTFIX);
-        File binPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + BIN_POSTFIX);
-        File smBinPath =
-                new File(
-                        COMPILED_PATH
-                                + File.separator
-                                + groupId
-                                + File.separator
-                                + contractName
-                                + File.separator
-                                + contractAddress
-                                + File.separator
-                                + contractName
-                                + SM_POSTFIX
-                                + BIN_POSTFIX);
+
+        String contractDir =
+                COMPILED_PATH
+                        + File.separator
+                        + groupId
+                        + File.separator
+                        + contractName
+                        + File.separator
+                        + contractAddress
+                        + File.separator
+                        + contractName;
+        contractDir = contractDir.replace("..", "");
+        File abiPath = new File(contractDir + ABI_POSTFIX);
+        File binPath = new File(contractDir + BIN_POSTFIX);
+        File smBinPath = new File(contractDir + SM_POSTFIX + BIN_POSTFIX);
         if (!abiPath.exists() || !binPath.exists() || !smBinPath.exists()) {
             if (needCompile) {
                 AbiAndBin abiAndBin = ContractCompiler.compileContract(contractNameOrPath);

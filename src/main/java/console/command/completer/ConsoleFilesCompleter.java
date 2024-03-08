@@ -39,7 +39,6 @@ public class ConsoleFilesCompleter extends Completers.FilesCompleter {
         this.solidityPath = solidityPath;
     }
 
-    @Override
     protected String getDisplay(Terminal terminal, Path p) {
         String name = p.getFileName().toString();
         // do not display .sol
