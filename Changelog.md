@@ -1,3 +1,18 @@
+### v2.10.0
+
+(2024-03-08)
+
+更新：
+
+- 合约生成Java文件的功能使用org.fisco-bcos.code-generator:bcos-code-generator中的方法，弃用 `org.fisco-bcos.java-sdk:fisco-bcos-java-sdk` 的 `sdk-codegen` 模块。
+- 升级Java SDK版本为2.10.0。
+
+修复：
+
+- 修复在使用Solidity复杂数据结构、复杂事件场景时，生成的Java文件出现编译、运行错误的问题。
+- 修复 `get_account.sh` 脚本在openssl v3.0 版本下检查失败的问题。
+- 修复在读取密钥时可能存在的安全问题。
+
 ### v2.9.2
 (2022-10-31)
 
