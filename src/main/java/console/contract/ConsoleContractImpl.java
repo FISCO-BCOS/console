@@ -88,7 +88,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     private AssembleTransactionService assembleTransactionService = null;
     private final TransferTransactionService transferTransactionService;
     private final BFSService bfsService;
-
+    private byte[] extension = null;
     private boolean useTransactionV1 = false;
 
     public ConsoleContractImpl(Client client) {
@@ -115,6 +115,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             }
             assembleTransactionService = new AssembleTransactionService(client);
         }
+    }
+
+    public void setExtension(byte[] extension) {
+        this.extension = extension;
     }
 
     @Override
@@ -268,6 +272,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             if (useTransactionV1) {
                 DeployTransactionRequestWithStringParams request =
                         new TransactionRequestBuilder(abiAndBin.getAbi(), bin)
+                                .setExtension(extension)
                                 .buildDeployStringParamsRequest(tempInputParams);
                 response = assembleTransactionService.deployContract(request);
             } else {
@@ -333,6 +338,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 DeployTransactionRequestWithStringParams request =
                         new TransactionRequestBuilder(abi, binStr)
                                 .setTo(path)
+                                .setExtension(extension)
                                 .buildDeployStringParamsRequest(inputParams);
                 response = assembleTransactionService.deployContract(request);
             } else {
@@ -768,6 +774,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         if (useTransactionV1) {
             TransactionRequestWithStringParams request =
                     new TransactionRequestBuilder(abiAndBin.getAbi(), functionName, contractAddress)
+                            .setExtension(extension)
                             .buildStringParamsRequest(callParams);
             response = assembleTransactionService.sendTransaction(request);
         } else {
