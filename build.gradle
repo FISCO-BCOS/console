@@ -26,7 +26,7 @@ googleJavaFormat {
     include '**/*.java'
 }
 
-def log4j_version = '2.19.0'
+def log4j_version = '2.22.1'
 List logger = [
         "org.apache.logging.log4j:log4j-api:$log4j_version",
         "org.apache.logging.log4j:log4j-core:$log4j_version",
@@ -50,7 +50,7 @@ dependencies {
 		exclude group: "org.slf4j"
     }
     implementation('commons-cli:commons-cli:1.5.0')
-    implementation('org.jline:jline:3.21.0')
+    implementation('org.jline:jline:3.25.0')
     implementation('io.bretty:console-table-builder:1.2')
     implementation('com.github.jsqlparser:jsqlparser:2.0')
     implementation('org.fisco-bcos.code-generator:bcos-code-generator:1.5.0-SNAPSHOT') {

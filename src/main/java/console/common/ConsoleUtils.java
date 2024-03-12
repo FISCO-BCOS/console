@@ -856,7 +856,7 @@ public class ConsoleUtils {
                         "t",
                         TRANSACTION_VERSION,
                         true,
-                        "[Optional] Specify transaction version interface, default is 0; If you want to use the latest transaction interface, please specify 1.");
+                        "[Optional] Specify transaction version interface, default is 0; Supporting {0,1,2}; If you want to use the latest transaction interface, please specify 2.");
         transactionVersion.setRequired(false);
         options.addOption(transactionVersion);
         if (mode.equals("solidity")) {
