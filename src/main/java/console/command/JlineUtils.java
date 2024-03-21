@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.BcosGroupInfo;
+import org.fisco.bcos.sdk.v3.client.protocol.response.BcosGroupInfoList;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigFeature;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
@@ -201,16 +202,22 @@ public class JlineUtils {
                 keys.add(feature.toString());
             }
         }
-        Optional<BcosGroupInfo.GroupInfo> group =
-                client.getGroupInfoList()
-                        .getResult()
-                        .stream()
-                        .filter(groupInfo -> groupInfo.getGroupID().equals(client.getGroup()))
-                        .findFirst();
-        if (group.isPresent() && !group.get().getNodeList().isEmpty()) {
-            group.get()
-                    .getNodeList()
-                    .forEach(groupNodeInfo -> keys.addAll(groupNodeInfo.getFeatureKeys()));
+        BcosGroupInfoList groupInfoList;
+        try {
+            groupInfoList = client.getGroupInfoList();
+            Optional<BcosGroupInfo.GroupInfo> group =
+                    groupInfoList
+                            .getResult()
+                            .stream()
+                            .filter(groupInfo -> groupInfo.getGroupID().equals(client.getGroup()))
+                            .findFirst();
+            if (group.isPresent() && !group.get().getNodeList().isEmpty()) {
+                group.get()
+                        .getNodeList()
+                        .forEach(groupNodeInfo -> keys.addAll(groupNodeInfo.getFeatureKeys()));
+            }
+        } catch (Exception ignored) {
+            logger.info("Failed to get group info list, skip feature keys.");
         }
 
         for (String command : commands) {
