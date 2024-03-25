@@ -47,6 +47,9 @@ public class ConsoleInitializer {
     private LineReader lineReader;
     private boolean useV1TxService;
 
+    // v2 transaction extension
+    private byte[] extension;
+
     public LineReader getLineReader() {
         return lineReader;
     }
@@ -73,11 +76,20 @@ public class ConsoleInitializer {
 
         if (args.length > 3 && "-v1".equals(args[3])) {
             // use v1 transaction service
+            logger.info("use v1 transaction service");
             useV1TxService = true;
+        }
+        if (args.length > 3 && "-v2".equals(args[3])) {
+            logger.info("use v2 transaction service");
+            useV1TxService = true;
+            extension = args.length > 4 ? args[4].getBytes() : null;
         }
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
         this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
+        if (extension != null) {
+            ((ConsoleContractImpl) this.consoleContractFace).setExtension(extension);
+        }
         this.collaborationFace = new CollaborationImpl(client);
         this.authFace = new AuthImpl(client);
     }
@@ -284,6 +296,9 @@ public class ConsoleInitializer {
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
             this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
+            if (extension != null) {
+                ((ConsoleContractImpl) this.consoleContractFace).setExtension(extension);
+            }
             this.collaborationFace = new CollaborationImpl(client);
             this.authFace = new AuthImpl(client);
             JlineUtils.switchGroup(client);
@@ -358,6 +373,9 @@ public class ConsoleInitializer {
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
         this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
+        if (extension != null) {
+            ((ConsoleContractImpl) this.consoleContractFace).setExtension(extension);
+        }
         this.collaborationFace = new CollaborationImpl(client);
         this.authFace = new AuthImpl(client);
         System.out.println("Load account " + params[1] + " success!");

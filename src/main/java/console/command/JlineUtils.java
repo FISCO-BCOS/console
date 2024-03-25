@@ -17,8 +17,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.client.protocol.response.BcosGroupInfo;
+import org.fisco.bcos.sdk.v3.client.protocol.response.BcosGroupInfoList;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigFeature;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
@@ -183,50 +188,45 @@ public class JlineUtils {
         if (client.isEnableCommittee()) {
             commands.add(AuthOpCommand.SET_SYS_CONFIG_PROPOSAL.getCommand());
         }
+        Set<String> keys = new HashSet<>();
+        keys.add(SystemConfigService.TX_COUNT_LIMIT);
+        keys.add(SystemConfigService.TX_GAS_LIMIT);
+        keys.add(SystemConfigService.TX_GAS_PRICE);
+        keys.add(SystemConfigService.CONSENSUS_PERIOD);
+        keys.add(SystemConfigService.COMPATIBILITY_VERSION);
+        keys.add(SystemConfigService.AUTH_STATUS);
+        for (SystemConfigFeature.Features feature : SystemConfigFeature.Features.values()) {
+            if (client.getChainCompatibilityVersion()
+                            .compareTo(EnumNodeVersion.convertToVersion(feature.enableVersion()))
+                    >= 0) {
+                keys.add(feature.toString());
+            }
+        }
+        BcosGroupInfoList groupInfoList;
+        try {
+            groupInfoList = client.getGroupInfoList();
+            Optional<BcosGroupInfo.GroupInfo> group =
+                    groupInfoList
+                            .getResult()
+                            .stream()
+                            .filter(groupInfo -> groupInfo.getGroupID().equals(client.getGroup()))
+                            .findFirst();
+            if (group.isPresent() && !group.get().getNodeList().isEmpty()) {
+                group.get()
+                        .getNodeList()
+                        .forEach(groupNodeInfo -> keys.addAll(groupNodeInfo.getFeatureKeys()));
+            }
+        } catch (Exception ignored) {
+            logger.info("Failed to get group info list, skip feature keys.");
+        }
 
         for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(SystemConfigService.TX_COUNT_LIMIT),
-                            new StringsCompleterIgnoreCase()));
-
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(SystemConfigService.TX_GAS_LIMIT),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(SystemConfigService.TX_GAS_PRICE),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(SystemConfigService.CONSENSUS_PERIOD),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(SystemConfigService.COMPATIBILITY_VERSION),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(SystemConfigService.AUTH_STATUS),
-                            new StringsCompleterIgnoreCase()));
-            for (SystemConfigFeature.Features feature : SystemConfigFeature.Features.values()) {
-                if (client.getChainCompatibilityVersion()
-                                .compareTo(
-                                        EnumNodeVersion.convertToVersion(feature.enableVersion()))
-                        >= 0) {
-                    completers.add(
-                            new ArgumentCompleter(
-                                    new StringsCompleter(command),
-                                    new StringsCompleter(feature.toString()),
-                                    new StringsCompleterIgnoreCase()));
-                }
+            for (String key : keys) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new StringsCompleter(key),
+                                new StringsCompleterIgnoreCase()));
             }
         }
         completers.add(
