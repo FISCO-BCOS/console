@@ -1,3 +1,38 @@
+## v3.7.0
+
+(2024-03-25)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增`v2`版本的交易支持，控制台启动时增加v2选项，可让控制台只发新版本的交易。详情见：https://github.com/FISCO-BCOS/console/pull/835
+- 新增用户使用控制台的脚本`contract2java.sh`从合约生成Java文件时，增加 `-t` 参数选项 `2`, 可以生成带有 `FunctionWrapper`返回的接口，`FunctionWrapper`使用可见：https://github.com/FISCO-BCOS/java-sdk/releases/tag/v3.7.0 , https://github.com/FISCO-BCOS/java-sdk/pull/899
+
+### 更新
+
+- `org.fisco-bcos.java-sdk:fisco-bcos-java-sdk` 更新到3.7.0版本
+- `org.fisco-bcos.code-generator:bcos-code-generator` 更新到1.5.0版本
+
+### 修复
+
+- 修复feature list、bugfix list没有展示全的问题。
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.3.0版本后，才支持使用ShardService的接口。
+- 控制台连接FISCO BCOS 3.4.0版本后，才支持使用call with sign接口。
+- 控制台连接FISCO BCOS 3.6.0版本后，才支持使用BalanceService的接口。
+- 控制台连接FISCO BCOS 3.6.0版本后，才支持使用v1版本的交易接口。
+- 控制台连接FISCO BCOS 3.7.0版本后，才支持使用v2版本的交易接口。
+
+---
+
 ## v3.6.0
 (2024-02-08)
 
