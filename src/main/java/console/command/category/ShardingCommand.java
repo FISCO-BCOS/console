@@ -5,19 +5,16 @@ import console.command.model.CommandInfo;
 import console.command.model.CommandType;
 import console.command.model.HelpInfo;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class BasicCommand extends BasicCategoryCommand {
+public class ShardingCommand extends BasicCategoryCommand {
     protected static final Map<String, CommandInfo> commandToCommandInfo = new HashMap<>();
 
-    public BasicCommand() {
-        super(CommandType.BASIC_CMD);
+    public ShardingCommand() {
+        super(CommandType.SHARDING_OP);
     }
 
     @Override
@@ -46,63 +43,44 @@ public class BasicCommand extends BasicCategoryCommand {
         return commandToCommandInfo;
     }
 
-    public static final CommandInfo SWITCH =
+    public static final CommandInfo GET_CONTRACT_SHARD =
             new CommandInfo(
-                    "switch",
-                    "Switch to a specific group by name",
-                    new ArrayList<>(Collections.singletonList("s")),
-                    HelpInfo::switchEndPointHelp,
-                    (consoleInitializer, params, pwd) -> consoleInitializer.switchGroup(params),
+                    "getContractShard",
+                    "Get a contract's belonging shard.",
+                    HelpInfo::getContractShardHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().getContractShard(params),
                     1,
                     1,
+                    false,
                     false);
 
-    public static final CommandInfo QUIT =
+    public static final CommandInfo MAKE_SHARD =
             new CommandInfo(
-                    "quit",
-                    "Quit console",
-                    new ArrayList<>(Arrays.asList("quit", "q", "exit")),
-                    (consoleInitializer, params, pwd) -> System.exit(0),
+                    "makeShard",
+                    "Make a shard.",
+                    HelpInfo::makeShardHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().makeShard(params),
+                    1,
+                    1,
+                    false,
                     false);
 
-    public static final CommandInfo SET_NODE_NAME =
+    public static final CommandInfo LINK_SHARD =
             new CommandInfo(
-                    "setNodeName",
-                    "Set default node name to send request.",
-                    HelpInfo::setNodeNameHelp,
+                    "linkShard",
+                    "Add a contract to a shard.",
+                    HelpInfo::linkShardHelp,
                     (consoleInitializer, params, pwd) ->
-                            consoleInitializer
-                                    .getConsoleClientFace()
-                                    .setNodeName(consoleInitializer, params),
-                    1,
-                    1);
-
-    public static final CommandInfo GET_NODE_NAME =
-            new CommandInfo(
-                    "getNodeName",
-                    "Get default node name in this client.",
-                    HelpInfo::getNodeNameHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer
-                                    .getConsoleClientFace()
-                                    .getNodeName(consoleInitializer),
-                    0,
-                    0);
-
-    public static final CommandInfo CLEAR_NODE_NAME =
-            new CommandInfo(
-                    "clearNodeName",
-                    "Clear default node name to empty.",
-                    HelpInfo::clearNodeNameHelp,
-                    (consoleInitializer, params, pwd) ->
-                            consoleInitializer
-                                    .getConsoleClientFace()
-                                    .clearNodeName(consoleInitializer),
-                    0,
-                    0);
+                            consoleInitializer.getPrecompiledFace().linkShard(params),
+                    2,
+                    2,
+                    false,
+                    false);
 
     static {
-        Field[] fields = BasicCommand.class.getDeclaredFields();
+        Field[] fields = ShardingCommand.class.getDeclaredFields();
         for (Field field : fields) {
             if (field.getType().equals(CommandInfo.class)) {
                 try {

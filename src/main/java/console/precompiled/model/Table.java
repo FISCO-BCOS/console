@@ -1,6 +1,7 @@
 package console.precompiled.model;
 
 import java.util.List;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Common;
 
 public class Table {
 
@@ -8,6 +9,7 @@ public class Table {
     private String keyFieldName;
     private List<String> valueFields;
     private String optional = "";
+    private Common.TableKeyOrder keyOrder = Common.TableKeyOrder.Lexicographic;
 
     public Table() {}
 
@@ -41,5 +43,13 @@ public class Table {
 
     public void setOptional(String optional) {
         this.optional = optional;
+    }
+
+    public Common.TableKeyOrder getKeyOrder() {
+        return keyOrder;
+    }
+
+    public void setKeyOrder(Common.TableKeyOrder keyOrder) {
+        this.keyOrder = keyOrder;
     }
 }

@@ -1,10 +1,10 @@
 package console.command.completer;
 
 import console.client.ConsoleClientImpl;
-import console.common.ConsoleUtils;
 import java.io.File;
 import java.util.List;
 import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.jline.reader.Candidate;
 import org.jline.reader.LineReader;
 import org.jline.reader.ParsedLine;
@@ -35,7 +35,7 @@ public class AccountCompleter extends StringsCompleterIgnoreCase {
         // list the account
         String prefix = "[ Account.";
         for (String account : accountList) {
-            if (!ConsoleUtils.isValidAddress(account)) {
+            if (!AddressUtils.isValidAddress(account)) {
                 continue;
             }
             candidates.add(

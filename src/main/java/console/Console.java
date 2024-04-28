@@ -28,8 +28,6 @@ public class Console {
 
     private static final Logger logger = LoggerFactory.getLogger(Console.class);
 
-    public static int INPUT_FLAG = 0;
-
     public static LineReader createLineReader(ConsoleInitializer consoleInitializer)
             throws IOException {
         if (consoleInitializer.isDisableAutoCompleter()) {
@@ -42,46 +40,48 @@ public class Console {
     public static void main(String[] args) {
 
         LineReader lineReader = null;
-        Scanner sc = null;
+        Scanner sc;
         ConsoleInitializer consoleInitializer = null;
         try {
             consoleInitializer = new ConsoleInitializer();
             consoleInitializer.init(args);
             lineReader = createLineReader(consoleInitializer);
-            sc = new Scanner(System.in);
             if (!consoleInitializer.isDisableAutoCompleter() && lineReader != null) {
                 KeyMap<Binding> keymap = lineReader.getKeyMaps().get(LineReader.MAIN);
                 keymap.bind(new Reference("beginning-of-line"), "\033[1~");
                 keymap.bind(new Reference("end-of-line"), "\033[4~");
             }
+            consoleInitializer.setLineReader(lineReader);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            System.out.println("Failed to initialize console, msg: " + e.getMessage());
+            logger.error(" message: {}", e.getMessage(), e);
             System.exit(-1);
         }
 
         WelcomeInfo.welcome();
         String pwd = consoleInitializer.getPrecompiledFace().getPwd();
         SupportedCommand.setIsAuthOpen(
-                consoleInitializer.getClient().isAuthCheck()
+                consoleInitializer.getClient().isEnableCommittee()
                         && !consoleInitializer.getClient().isWASM());
         SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
 
         while (true) {
             try {
-                if (lineReader == null && !consoleInitializer.isDisableAutoCompleter()) {
+                if (consoleInitializer.getLineReader() == null) {
                     System.out.println("Console can not read commands.");
                     break;
                 }
                 String request;
-                if (INPUT_FLAG == 0 && !consoleInitializer.isDisableAutoCompleter()) {
+                if (!consoleInitializer.isDisableAutoCompleter()) {
                     request =
-                            lineReader.readLine(
-                                    "["
-                                            + consoleInitializer.getGroupID()
-                                            + "]: "
-                                            + ConsoleUtils.prettyPwd(pwd)
-                                            + "> ");
+                            consoleInitializer
+                                    .getLineReader()
+                                    .readLine(
+                                            "["
+                                                    + consoleInitializer.getGroupID()
+                                                    + "]: "
+                                                    + ConsoleUtils.prettyPwd(pwd)
+                                                    + "> ");
                 } else {
                     System.out.print(
                             "[group:"
@@ -97,7 +97,7 @@ public class Console {
                 if (params.length < 1) {
                     continue;
                 }
-                if ("".equals(params[0].trim())) {
+                if (params[0].trim().isEmpty()) {
                     continue;
                 }
                 // execute the command
@@ -105,7 +105,7 @@ public class Console {
                         SupportedCommand.getCommandInfo(
                                 params[0],
                                 consoleInitializer.getClient().isWASM(),
-                                consoleInitializer.getClient().isAuthCheck());
+                                consoleInitializer.getClient().isEnableCommittee());
                 if (commandInfo != null) {
                     if (CrudCommand.CRUD_COMMANDS.contains(params[0])) {
                         String[] inputParamString = new String[1];
@@ -137,7 +137,7 @@ public class Console {
                             // update the client when switch group
                             JlineUtils.switchGroup(consoleInitializer.getClient());
                             SupportedCommand.setIsAuthOpen(
-                                    consoleInitializer.getClient().isAuthCheck()
+                                    consoleInitializer.getClient().isEnableCommittee()
                                             && !consoleInitializer.getClient().isWASM());
                             SupportedCommand.setIsWasm(consoleInitializer.getClient().isWASM());
                         }
@@ -179,9 +179,11 @@ public class Console {
                     System.out.println(
                             "Current ledger crypto type is ECDSA, please make sure the account is a ecdsa account!");
                 }
+                logger.error("SignatureException, e: ", e);
             } catch (ClassNotFoundException e) {
                 System.out.println(e.getMessage() + " does not exist.");
                 System.out.println();
+                logger.error("ClassNotFoundException, e:", e);
             } catch (IOException e) {
                 if (e.getMessage().startsWith("activeConnections")) {
                     System.out.println(
@@ -195,10 +197,12 @@ public class Console {
                     logger.error("IOException, e:", e);
                 }
                 System.out.println();
+                logger.error("IOException, e:", e);
             } catch (InvocationTargetException e) {
                 Throwable targetException = e.getTargetException();
                 System.out.println(targetException.getMessage());
                 System.out.println();
+                logger.error("InvocationTargetException, e:", e);
             } catch (UserInterruptException e) {
                 consoleInitializer.stop();
                 break;
@@ -207,7 +211,7 @@ public class Console {
                 logger.error("EndOfFileException, e:", e);
                 break;
             } catch (Exception e) {
-                System.out.println(e.getMessage());
+                System.out.println("Exception, e: " + e);
                 System.out.println();
                 logger.error("Exception, e:", e);
             }

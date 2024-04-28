@@ -1,3 +1,267 @@
+## v3.7.0
+
+(2024-03-25)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增`v2`版本的交易支持，控制台启动时增加v2选项，可让控制台只发新版本的交易。详情见：https://github.com/FISCO-BCOS/console/pull/835
+- 新增用户使用控制台的脚本`contract2java.sh`从合约生成Java文件时，增加 `-t` 参数选项 `2`, 可以生成带有 `FunctionWrapper`返回的接口，`FunctionWrapper`使用可见：https://github.com/FISCO-BCOS/java-sdk/releases/tag/v3.7.0 , https://github.com/FISCO-BCOS/java-sdk/pull/899
+
+### 更新
+
+- `org.fisco-bcos.java-sdk:fisco-bcos-java-sdk` 更新到3.7.0版本
+- `org.fisco-bcos.code-generator:bcos-code-generator` 更新到1.5.0版本
+
+### 修复
+
+- 修复feature list、bugfix list没有展示全的问题。
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.3.0版本后，才支持使用ShardService的接口。
+- 控制台连接FISCO BCOS 3.4.0版本后，才支持使用call with sign接口。
+- 控制台连接FISCO BCOS 3.6.0版本后，才支持使用BalanceService的接口。
+- 控制台连接FISCO BCOS 3.6.0版本后，才支持使用v1版本的交易接口。
+- 控制台连接FISCO BCOS 3.7.0版本后，才支持使用v2版本的交易接口。
+
+---
+
+## v3.6.0
+(2024-02-08)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增`v1`版本的交易支持，控制台启动时增加v1选项，可让控制台只发新版本的交易。详情见：https://github.com/FISCO-BCOS/console/pull/809
+- 新增用户使用控制台的脚本`contract2java.sh`从合约生成Java文件时，增加 `-t` 参数，可以指定生成交易版本号。详情见：https://github.com/FISCO-BCOS/console/pull/817
+- 新增用户使用控制台的脚本`contract2java.sh`从合约生成Java文件时，支持合约带有 `payable` 的函数接口带上value参数。详情见：https://github.com/FISCO-BCOS/console/pull/812
+- 新增 `transfer` 命令，用户可以发起原生balance转账。详情见：https://github.com/FISCO-BCOS/console/pull/805
+- 新增Balance操作命令，管理员可以通过命令操作某个用户的balance。详情见：https://github.com/FISCO-BCOS/console/pull/808
+
+### 更新
+
+- `org.fisco-bcos.java-sdk:fisco-bcos-java-sdk` 更新到3.6.0版本
+- `org.fisco-bcos.code-generator:bcos-code-generator` 更新到1.3.0版本
+
+### 修复
+
+- 修复在加载账户时当账户文件不存在时，控制台不退出的问题。详情见：https://github.com/FISCO-BCOS/console/pull/813
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.3.0版本后，才支持使用ShardService的接口。
+- 控制台连接FISCO BCOS 3.4.0版本后，才支持使用call with sign接口。
+- 控制台连接FISCO BCOS 3.6.0版本后，才支持使用BalanceService的接口。
+- 控制台连接FISCO BCOS 3.6.0版本后，才支持使用v1版本的交易接口。
+
+---
+
+## v3.5.0
+(2023-10-16)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 增加系统Feature在 `SystemConfig`相关的命令中联想补全的功能。
+- 增加 `getCandidateList` 命令，用于查询rPBFT当前节点的候选人列表。
+
+### 更新
+
+- 脚本 `get_account.sh` 生成账户密钥对时增加`.public.pem` 的公钥格式，与2.0版本保持一致。
+- `setNodeName` 命令使用SDK的 `setNodeToSendRequest` 接口，支持Client全局接口指定节点发送。
+- `org.fisco-bcos.java-sdk:fisco-bcos-java-sdk` 更新到3.5.0版本
+- `org.fisco-bcos.code-generator:bcos-code-generator` 更新到1.2.0版本
+
+### 修复
+
+- 修复在调用 `link` 资源时没有正确返回ABI导致调用失败的问题。
+- 修复权限命令的联想补全使用了错误Client标志位的问题。
+- 修复JLine在刷新控制台时出现的联想补全错误。
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.3.0版本后，才支持使用ShardService的接口。
+- 控制台连接FISCO BCOS 3.4.0版本后，才支持使用call with sign接口。
+
+## v3.4.0
+(2023-06-13)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 更新
+
+- 将所有的static call请求都使用call with sign接口，支持在发起static call请求时使用私钥对请求体(to+data)进行签名，在节点侧将会对应会付出签名对应的用户地址，合约中可以取到call请求时的tx.origin和msg.sender，达到用户身份认证的目的。
+- 优化liquid合约部署的体验，支持在部署时指定.wasm和.abi所在的文件夹进行部署。
+- 适配Java sdk v3.4.0
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.3.0版本后，才支持使用ShardService的接口。
+
+---
+
+## v3.3.0
+(2023-04-17)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增对硬件密码机的支持。
+- 新增适配链上动态权限配置项`auth_check_status`，新增初始化权限治理的命令`initAuth`。
+- 新增链上分区服务命令：`makeShard`、`linkShard`、`getContractShard`。
+- 新增命令 `fixBFS` 以恢复3.2.0版本节点写入的错误数据，相关Issue：https://github.com/FISCO-BCOS/FISCO-BCOS/issues/3600
+
+### 更新
+
+- 在升级链版本号后自动`switch group` 刷新控制台状态。
+- get_account/get_gm_account脚本支持返回生成密钥的公私钥十六进制字符串。
+- TableTest示例合约改名未TableTestV320，与TableTest合约区分。
+- 更新 `fisco-bcos-java-sdk` 到3.3.0。
+- 更新 `bcos-code-generator` 到1.1.0。
+
+### 修复
+
+- 修复struct类型的打印输出。
+- 修复动态数组的返回bug。
+- 修复get_account/get_gm_account脚本不支持OpenSSL 3.x版本的问题。
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+
+---
+
+## v3.2.0
+(2023-01-17)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增合约权限管理命令： `abolishContract`，合约管理员可以通过这个命令废止某个合约，不再使用。
+- 支持CRUD范围查询、修改、删除新接口，在CRUD SQL语句中支持LIKE语句，支持前缀、后缀、包含查询。
+- 支持CRUD建表新接口，支持在建表时指定主键为整数类型，在插入时为数字序排序。
+- 新增EntryWrapper、Cast的合约示例，优化CRUD的使用体验，提供在Solidity快速类型转换的工具。
+
+### 更新
+
+- 更新 `fisco-bcos-java-sdk` 到3.2.0
+- 控制台提供的Solidity`TableTest`合约和Liquid`table_test`均已经支持全新的CRUD接口。
+
+### 修复
+
+- 修复一些错误发生时的信息展示。
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+- 控制台连接FISCO BCOS 3.2.0版本后，才支持CRUD的LIKE语句和数字序建表，连接3.2.0版本前的节点将会用旧版本接口。
+
+## v3.1.1
+(2023-01-04)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 交易、交易回执数据结构添加`extraData`字段
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+
+## v3.1.0
+(2022-11-21)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+- 新增账户权限管理命令： `freezeAccount`、 `unfreezeAccount`、 `abolishAccount`
+- 新增支持FISCO BCOS 3.1.0 新的BFS list分页接口、link接口，连接3.1.0以下版本时将会使用旧接口。
+- 新增支持部署Solidity合约文件内指定的合约类，使用姿势为 'deploy A:B'
+- 新增支持 contract2java.sh 脚本编译Solidity合约文件内指定的合约类
+- 新增支持 contract2java.sh --no-analysis选项，可选不启用Solidity并行静态分析
+
+### 更新
+
+- 更新更新 `fisco-bcos-java-sdk` 到3.1.0
+- 更新 `jackson-databind` 到2.14.0
+
+### 修复
+
+- 修复CRUD因为更新包导致的解析SQL使用错误
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.0版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.0) 以上的区块链节点。
+- 控制台连接FISCO BCOS 3.1.0版本后，才支持BFS list分页查询、link新接口，连接3.1.0版本前的节点将会用旧版本接口。
+
+## v3.0.1
+(2022-9-26)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+
+### 新增
+
+* 新增 `deploy` 命令的 '-l' 选项，支持部署成功后在指定文件下建立软链接
+* listAbi支持通过合约地址参数列出ABI
+
+### 更新
+
+* 升级`fisco-bcos-java-sdk`到`3.0.1`版本，请阅读Java SDK v3.x+文档：[Java SDK v3.x+文档](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/sdk/java_sdk/index.html)
+* 部署Liquid合约只需要输入合约所在文件夹即可
+
+### 修复
+
+* 修复控制台部署时合约路径补全问题
+* 修复控制台部署Liquid时文件路径找不到的问题
+
+### 兼容性说明
+
+- 支持[FISCO BCOS 3.0.1版本](https://github.com/FISCO-BCOS/FISCO-BCOS/releases/tag/v3.0.1)
+- 不兼容 FISCO BCOS 2.0+ 版本
+- 不兼容 FISCO BCOS 3.0-rc+ 版本
+
 ## v3.0.0
 (2022-8-23)
 

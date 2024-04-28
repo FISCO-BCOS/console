@@ -19,15 +19,6 @@ import org.slf4j.LoggerFactory;
 public class NonInteractiveConsole {
     private static final Logger logger = LoggerFactory.getLogger(NonInteractiveConsole.class);
 
-    public static boolean isNumeric(String str) {
-        try {
-            new Integer(str);
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
-
     public static void main(String[] args) {
 
         if (args.length == 0 || args[0].equals("-h") || args[0].equals("--help")) {
@@ -39,18 +30,9 @@ public class NonInteractiveConsole {
         String[] params = null;
         try {
             consoleInitializer = new ConsoleInitializer();
-            if (args.length > 0 && isNumeric(args[0])) {
-                String[] groupId = new String[1];
-                params = new String[args.length - 1];
-                System.arraycopy(args, 1, params, 0, params.length);
-                // set the groupId
-                System.arraycopy(args, 0, groupId, 0, 1);
-                consoleInitializer.init(groupId);
-            } else {
-                params = new String[args.length];
-                System.arraycopy(args, 0, params, 0, params.length);
-                consoleInitializer.init(new String[] {});
-            }
+            params = new String[args.length];
+            System.arraycopy(args, 0, params, 0, params.length);
+            consoleInitializer.init(new String[] {});
         } catch (Exception e) {
             System.out.println(e.getMessage());
             logger.error(" message: {}, e: ", e.getMessage(), e);
@@ -58,23 +40,23 @@ public class NonInteractiveConsole {
         }
 
         SupportedCommand.isWasm = consoleInitializer.getClient().isWASM();
-        SupportedCommand.isAuthOpen = consoleInitializer.getClient().isAuthCheck();
+        SupportedCommand.isAuthOpen = consoleInitializer.getClient().isEnableCommittee();
         try {
             String[] command = params[0].split(" ");
             CommandInfo commandInfo = null;
             // execute the command
-            if (command != null && command.length > 1) {
+            if (command.length > 1) {
                 commandInfo =
                         SupportedCommand.getCommandInfo(
                                 command[0],
                                 consoleInitializer.getClient().isWASM(),
-                                consoleInitializer.getClient().isAuthCheck());
+                                consoleInitializer.getClient().isEnableCommittee());
             } else {
                 commandInfo =
                         SupportedCommand.getCommandInfo(
                                 params[0],
                                 consoleInitializer.getClient().isWASM(),
-                                consoleInitializer.getClient().isAuthCheck());
+                                consoleInitializer.getClient().isEnableCommittee());
             }
             if (commandInfo != null) {
                 if (CrudCommand.CRUD_COMMANDS.contains(command[0])) {
@@ -84,7 +66,7 @@ public class NonInteractiveConsole {
                     commandInfo.callCommand(consoleInitializer, inputParamString, null);
                 } else {
                     String[] paramWithoutQuotation = new String[params.length];
-                    for (Integer i = 0; i < params.length; i++) {
+                    for (int i = 0; i < params.length; i++) {
                         String param = params[i];
                         paramWithoutQuotation[i] = param;
                         // Remove the quotes around the input parameters

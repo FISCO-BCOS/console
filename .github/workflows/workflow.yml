@@ -1,0 +1,63 @@
+name: Console GitHub Actions
+on:
+  pull_request:
+  release:
+    types: [published, created, edited]
+env:
+  CCACHE_DIR: ${{ github.workspace }}/ccache
+
+jobs:
+  build:
+    name: build
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, windows-2019, macos-latest]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 5
+      - name: install Ubuntu dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt update && sudo apt install -y git curl libssl-dev build-essential openssl
+      - name: install macOS dependencies
+        if: runner.os == 'macOS'
+        run: brew install openssl@1.1
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '8.0.382'
+      - name: run build test
+        if: runner.os == 'Windows'
+        run: ./gradlew.bat build
+      - name: run integration testing
+        if: runner.os != 'Windows'
+        run: /bin/bash -x .ci/ci_check.sh
+
+  build-centos:
+    name: build-centos
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+    container: docker.io/centos:7
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 5
+      - name: install CentOS dependencies
+        run: yum install -y epel-release centos-release-scl which git openssl-devel openssl wget
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '8.0.382'
+      - name: run integration testing
+        run: /bin/bash -x .ci/ci_check.sh
+      - name: upload coverage
+        run: curl -LO https://codecov.io/bash && /bin/bash ./bash

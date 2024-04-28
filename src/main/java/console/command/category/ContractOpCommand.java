@@ -46,7 +46,7 @@ public class ContractOpCommand extends BasicCategoryCommand {
 
     public static void setIsWasm(boolean wasm) {
         isWasm = wasm;
-        DEPLOY.setMinParamLength(wasm ? 3 : 1);
+        DEPLOY.setMinParamLength(wasm ? 2 : 1);
     }
 
     public static final CommandInfo DEPLOY =
@@ -113,9 +113,22 @@ public class ContractOpCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer
                                     .getConsoleContractFace()
-                                    .listDeployContractAddress(consoleInitializer, params, pwd),
+                                    .listDeployContractAddress(consoleInitializer, params),
                     1,
                     2,
+                    true);
+
+    public static final CommandInfo TRANSFER =
+            new CommandInfo(
+                    "transfer",
+                    "Transfer token to a specified address",
+                    HelpInfo::transferHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getConsoleContractFace()
+                                    .transfer(consoleInitializer, params),
+                    2,
+                    3,
                     true);
 
     static {

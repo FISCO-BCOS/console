@@ -24,7 +24,8 @@ public interface AuthFace {
 
     void createRemoveNodeProposal(String[] params) throws Exception;
 
-    void createSetSysConfigProposal(String[] params) throws Exception;
+    void createSetSysConfigProposal(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception;
 
     void createUpgradeVoteComputerProposal(String[] params) throws Exception;
 
@@ -58,5 +59,17 @@ public interface AuthFace {
 
     void unfreezeContract(String[] params) throws Exception;
 
+    void abolishContract(String[] params) throws Exception;
+
     void getContractStatus(String[] params) throws Exception;
+
+    void freezeAccount(String[] params) throws Exception;
+
+    void unfreezeAccount(String[] params) throws Exception;
+
+    void abolishAccount(String[] params) throws Exception;
+
+    void getAccountStatus(String[] params) throws Exception;
+
+    void initAuth(String[] params) throws Exception;
 }
