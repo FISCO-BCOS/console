@@ -40,6 +40,7 @@ public class StringsCompleterIgnoreCase implements Completer {
         }
     }
 
+    @Override
     public void complete(
             LineReader reader, final ParsedLine commandLine, final List<Candidate> candidates) {
         if (commandLine == null || candidates == null) {

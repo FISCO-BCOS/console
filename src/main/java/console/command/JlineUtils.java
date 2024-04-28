@@ -1,6 +1,7 @@
 package console.command;
 
 import console.command.category.AccountOpCommand;
+import console.command.category.AuthOpCommand;
 import console.command.category.BfsCommand;
 import console.command.category.ContractOpCommand;
 import console.command.category.StatusQueryCommand;
@@ -11,17 +12,25 @@ import console.command.completer.ContractAddressCompleter;
 import console.command.completer.ContractMethodCompleter;
 import console.command.completer.CurrentPathCompleter;
 import console.command.completer.StringsCompleterIgnoreCase;
-import console.common.Common;
 import console.contract.utils.ContractCompiler;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.fisco.bcos.sdk.v3.client.Client;
+import org.fisco.bcos.sdk.v3.client.protocol.response.BcosGroupInfo;
+import org.fisco.bcos.sdk.v3.client.protocol.response.BcosGroupInfoList;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigFeature;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
+import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.jline.reader.Completer;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.LineReaderImpl;
 import org.jline.reader.impl.completer.AggregateCompleter;
 import org.jline.reader.impl.completer.ArgumentCompleter;
 import org.jline.reader.impl.completer.StringsCompleter;
@@ -40,11 +49,13 @@ public class JlineUtils {
     private static AccountCompleter accountCompleter = null;
     private static CurrentPathCompleter currentPathCompleter = null;
 
-    public static LineReader getLineReader() throws IOException {
-        return createLineReader(new ArrayList<Completer>());
+    private static LineReader lineReader = null;
+
+    public static LineReader getLineReader() {
+        return lineReader;
     }
 
-    public static void switchGroup(Client client) {
+    public static void switchGroup(Client client) throws IOException {
         if (contractAddressCompleter != null) {
             contractAddressCompleter.setClient(client);
         }
@@ -54,6 +65,11 @@ public class JlineUtils {
         if (accountCompleter != null) {
             accountCompleter.setClient(client);
         }
+        if (currentPathCompleter != null) {
+            currentPathCompleter.setClient(client);
+        }
+        List<Completer> completers = generateComplters(client);
+        ((LineReaderImpl) lineReader).setCompleter(new AggregateCompleter(completers));
     }
 
     public static void switchPwd(String pwd) {
@@ -62,10 +78,16 @@ public class JlineUtils {
 
     public static LineReader getLineReader(Client client) throws IOException {
 
+        List<Completer> completers = generateComplters(client);
+        lineReader = createLineReader(completers);
+        return lineReader;
+    }
+
+    private static List<Completer> generateComplters(Client client) {
         List<Completer> completers = new ArrayList<>();
 
         List<String> commands =
-                SupportedCommand.getAllCommand(client.isWASM(), client.isAuthCheck());
+                SupportedCommand.getAllCommand(client.isWASM(), client.isEnableCommittee());
         contractAddressCompleter = new ContractAddressCompleter(client);
         contractMethodCompleter = new ContractMethodCompleter(client);
         accountCompleter = new AccountCompleter(client);
@@ -89,7 +111,16 @@ public class JlineUtils {
                 completers.add(
                         new ArgumentCompleter(
                                 new StringsCompleter(command),
-                                new ConsoleFilesCompleter(new File(ContractCompiler.SOLIDITY_PATH)),
+                                new ConsoleFilesCompleter(
+                                        new File(ContractCompiler.SOLIDITY_PATH), false),
+                                new StringsCompleterIgnoreCase()));
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new StringsCompleter("-l"),
+                                currentPathCompleter,
+                                new ConsoleFilesCompleter(
+                                        new File(ContractCompiler.SOLIDITY_PATH), false),
                                 new StringsCompleterIgnoreCase()));
             }
             // contract address and method completer
@@ -125,6 +156,13 @@ public class JlineUtils {
                                 new StringsCompleter(command),
                                 new ConsoleFilesCompleter(
                                         new File(ContractCompiler.LIQUID_PATH), true),
+                                currentPathCompleter,
+                                new StringsCompleterIgnoreCase()));
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new StringsCompleter("-l"),
+                                currentPathCompleter,
                                 new ConsoleFilesCompleter(
                                         new File(ContractCompiler.LIQUID_PATH), true),
                                 currentPathCompleter,
@@ -143,32 +181,53 @@ public class JlineUtils {
         }
 
         commands =
-                Arrays.asList(
-                        StatusQueryCommand.SET_SYSTEM_CONFIG_BY_KEY.getCommand(),
-                        StatusQueryCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand());
+                new ArrayList<>(
+                        Arrays.asList(
+                                StatusQueryCommand.SET_SYSTEM_CONFIG_BY_KEY.getCommand(),
+                                StatusQueryCommand.GET_SYSTEM_CONFIG_BY_KEY.getCommand()));
+        if (client.isEnableCommittee()) {
+            commands.add(AuthOpCommand.SET_SYS_CONFIG_PROPOSAL.getCommand());
+        }
+        Set<String> keys = new HashSet<>();
+        keys.add(SystemConfigService.TX_COUNT_LIMIT);
+        keys.add(SystemConfigService.TX_GAS_LIMIT);
+        keys.add(SystemConfigService.TX_GAS_PRICE);
+        keys.add(SystemConfigService.CONSENSUS_PERIOD);
+        keys.add(SystemConfigService.COMPATIBILITY_VERSION);
+        keys.add(SystemConfigService.AUTH_STATUS);
+        for (SystemConfigFeature.Features feature : SystemConfigFeature.Features.values()) {
+            if (client.getChainCompatibilityVersion()
+                            .compareTo(EnumNodeVersion.convertToVersion(feature.enableVersion()))
+                    >= 0) {
+                keys.add(feature.toString());
+            }
+        }
+        BcosGroupInfoList groupInfoList;
+        try {
+            groupInfoList = client.getGroupInfoList();
+            Optional<BcosGroupInfo.GroupInfo> group =
+                    groupInfoList
+                            .getResult()
+                            .stream()
+                            .filter(groupInfo -> groupInfo.getGroupID().equals(client.getGroup()))
+                            .findFirst();
+            if (group.isPresent() && !group.get().getNodeList().isEmpty()) {
+                group.get()
+                        .getNodeList()
+                        .forEach(groupNodeInfo -> keys.addAll(groupNodeInfo.getFeatureKeys()));
+            }
+        } catch (Exception ignored) {
+            logger.info("Failed to get group info list, skip feature keys.");
+        }
 
         for (String command : commands) {
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(Common.TxCountLimit),
-                            new StringsCompleterIgnoreCase()));
-
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(Common.TxGasLimit),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(Common.ConsensusLeaderPeriod),
-                            new StringsCompleterIgnoreCase()));
-            completers.add(
-                    new ArgumentCompleter(
-                            new StringsCompleter(command),
-                            new StringsCompleter(Common.compatibilityVersion),
-                            new StringsCompleterIgnoreCase()));
+            for (String key : keys) {
+                completers.add(
+                        new ArgumentCompleter(
+                                new StringsCompleter(command),
+                                new StringsCompleter(key),
+                                new StringsCompleterIgnoreCase()));
+            }
         }
         completers.add(
                 new ArgumentCompleter(
@@ -190,7 +249,7 @@ public class JlineUtils {
                             currentPathCompleter,
                             new StringsCompleterIgnoreCase()));
         }
-        return createLineReader(completers);
+        return completers;
     }
 
     public static LineReader createLineReader(List<Completer> completers) throws IOException {

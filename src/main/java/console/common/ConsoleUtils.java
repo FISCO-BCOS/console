@@ -5,6 +5,7 @@ import console.contract.model.AbiAndBin;
 import console.contract.utils.ContractCompiler;
 import console.exception.ConsoleMessageException;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
@@ -19,7 +20,6 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Stack;
 import java.util.StringTokenizer;
@@ -38,7 +38,8 @@ import org.fisco.bcos.sdk.v3.codec.datatypes.DynamicBytes;
 import org.fisco.bcos.sdk.v3.codec.datatypes.StructType;
 import org.fisco.bcos.sdk.v3.codec.datatypes.Type;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
-import org.fisco.bcos.sdk.v3.utils.Numeric;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ABIObject;
+import org.fisco.bcos.sdk.v3.codec.wrapper.ContractCodecTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +65,7 @@ public class ConsoleUtils {
     }
 
     public static String formatJson(String jsonStr) {
-        if (null == jsonStr || "".equals(jsonStr)) return "";
+        if (null == jsonStr || jsonStr.isEmpty()) return "";
         jsonStr = jsonStr.replace("\\n", "");
         StringBuilder sb = new StringBuilder();
         char last = '\0';
@@ -135,6 +136,10 @@ public class ConsoleUtils {
             System.out.println("Please provide a valid hash.");
             return true;
         }
+    }
+
+    public static boolean isValidNumber(String number) {
+        return number.matches("^-?\\d+$") || number.matches("^0[xX][0-9a-fA-F]+$");
     }
 
     public static String[] fixedBfsParams(String[] params, String pwd) throws Exception {
@@ -221,7 +226,7 @@ public class ConsoleUtils {
                                 + " and "
                                 + maxValue
                                 + ".");
-                return Common.InvalidLongValue;
+                return Common.INVALID_LONG_VALUE;
             }
             return value;
         } catch (NumberFormatException e) {
@@ -235,7 +240,7 @@ public class ConsoleUtils {
                             + Long.MAX_VALUE
                             + ".");
             logger.debug("processLong for {} failed, error info: {}", name, e.getMessage());
-            return Common.InvalidLongValue;
+            return Common.INVALID_LONG_VALUE;
         }
     }
 
@@ -257,7 +262,7 @@ public class ConsoleUtils {
                                 + " and "
                                 + maxValue
                                 + ".");
-                return Common.InvalidReturnNumber;
+                return Common.INVALID_RETURN_NUMBER;
             }
         } catch (NumberFormatException e) {
             System.out.println("Invalid " + name + ": \"" + intStr + "\"!");
@@ -269,7 +274,7 @@ public class ConsoleUtils {
                             + " and "
                             + maxValue
                             + ".");
-            return Common.InvalidReturnNumber;
+            return Common.INVALID_RETURN_NUMBER;
         }
         return intParam;
     }
@@ -310,7 +315,11 @@ public class ConsoleUtils {
             File solFile,
             String abiDir,
             String binDir,
-            String librariesOption)
+            String librariesOption,
+            String specifyContract,
+            boolean isContractParallelAnalysis,
+            boolean enableAsyncCall,
+            String transactionVersion)
             throws IOException, CompileContractException {
 
         String contractName = solFile.getName().split("\\.")[0];
@@ -319,7 +328,13 @@ public class ConsoleUtils {
         System.out.println("*** Compile solidity " + solFile.getName() + "*** ");
         AbiAndBin abiAndBin =
                 ContractCompiler.compileSolToBinAndAbi(
-                        solFile, abiDir, binDir, ContractCompiler.All, librariesOption, true);
+                        solFile,
+                        abiDir,
+                        binDir,
+                        ContractCompiler.All,
+                        librariesOption,
+                        specifyContract,
+                        isContractParallelAnalysis);
         System.out.println("INFO: Compile for solidity " + solFile.getName() + " success.");
         File abiFile = new File(abiDir + contractName + ".abi");
         File binFile = new File(binDir + contractName + ".bin");
@@ -334,21 +349,36 @@ public class ConsoleUtils {
                 new File(abiDir + "/sm/" + contractName + ".abi"), abiAndBin.getAbi());
         FileUtils.writeStringToFile(smBinFile, abiAndBin.getSmBin());
 
-        CodeGenMain.main(
-                Arrays.asList(
+        List<String> args =
+                new ArrayList<>(
+                        Arrays.asList(
                                 "-v", "V3",
                                 "-a", abiFilePath,
                                 "-b", binFilePath,
                                 "-s", smBinFilePath,
                                 "-p", packageName,
-                                "-o", javaDir)
-                        .toArray(new String[0]));
+                                "-o", javaDir));
+        if (enableAsyncCall) {
+            args.add("-e");
+        }
+        if (!transactionVersion.equals("V0")) {
+            args.add("-t");
+            args.add(transactionVersion);
+        }
+        CodeGenMain.main(args.toArray(new String[0]));
         System.out.println(
                 "*** Convert solidity to java  for " + solFile.getName() + " success ***\n");
     }
 
     public static void compileAllSolToJava(
-            String javaDir, String packageName, File solFileList, String abiDir, String binDir)
+            String javaDir,
+            String packageName,
+            File solFileList,
+            String abiDir,
+            String binDir,
+            boolean isContractParallelAnalysis,
+            boolean enableAsyncCall,
+            String transactionVersion)
             throws IOException {
         File[] solFiles = solFileList.listFiles();
         if (solFiles.length == 0) {
@@ -364,7 +394,17 @@ public class ConsoleUtils {
                 continue;
             }
             try {
-                compileSolToJava(javaDir, packageName, solFile, abiDir, binDir, null);
+                compileSolToJava(
+                        javaDir,
+                        packageName,
+                        solFile,
+                        abiDir,
+                        binDir,
+                        null,
+                        null,
+                        isContractParallelAnalysis,
+                        enableAsyncCall,
+                        transactionVersion);
             } catch (Exception e) {
                 System.out.println(
                         "ERROR:convert solidity to java for "
@@ -394,20 +434,21 @@ public class ConsoleUtils {
             quoteChar('"');
         }
 
+        @Override
         public void parseNumbers() {}
     }
 
     public static String[] tokenizeCommand(String command) throws Exception {
         // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol,
         // set"Hello"]
-        List<String> tokens1 = new ArrayList<>();
+        List<String> commandWords1 = new ArrayList<>();
         StringTokenizer stringTokenizer = new StringTokenizer(command, " ");
         while (stringTokenizer.hasMoreTokens()) {
-            tokens1.add(stringTokenizer.nextToken());
+            commandWords1.add(stringTokenizer.nextToken());
         }
         // example: call HelloWorld.sol set "Hello" parse [call, HelloWorld.sol, set,
         // "Hello"]
-        List<String> tokens2 = new ArrayList<>();
+        List<String> commandWords2 = new ArrayList<>();
         StreamTokenizer tokenizer = new CommandTokenizer(new StringReader(command));
         int token = tokenizer.nextToken();
         while (token != StreamTokenizer.TT_EOF) {
@@ -416,17 +457,17 @@ public class ConsoleUtils {
                     // Ignore \n character.
                     break;
                 case StreamTokenizer.TT_WORD:
-                    tokens2.add(tokenizer.sval);
+                    commandWords2.add(tokenizer.sval);
                     break;
                 case '\'':
                     // If the tailing ' is missing, it will add a tailing ' to it.
                     // E.g. 'abc -> 'abc'
-                    tokens2.add(String.format("'%s'", tokenizer.sval));
+                    commandWords2.add(String.format("'%s'", tokenizer.sval));
                     break;
                 case '"':
                     // If the tailing " is missing, it will add a tailing ' to it.
                     // E.g. "abc -> "abc"
-                    tokens2.add(String.format("\"%s\"", tokenizer.sval));
+                    commandWords2.add(String.format("\"%s\"", tokenizer.sval));
                     break;
                 default:
                     // Ignore all other unknown characters.
@@ -434,9 +475,9 @@ public class ConsoleUtils {
             }
             token = tokenizer.nextToken();
         }
-        return tokens1.size() <= tokens2.size()
-                ? tokens1.toArray(new String[tokens1.size()])
-                : tokens2.toArray(new String[tokens2.size()]);
+        return commandWords1.size() <= commandWords2.size()
+                ? commandWords1.toArray(new String[0])
+                : commandWords2.toArray(new String[0]);
     }
 
     public static void singleLine() {
@@ -455,25 +496,12 @@ public class ConsoleUtils {
         }
         Arrays.sort(
                 files,
-                new Comparator<File>() {
-                    @Override
-                    public int compare(File o1, File o2) {
-                        long diff = o1.lastModified() - o2.lastModified();
-                        if (diff > 0) return -1;
-                        else if (diff == 0) return 0;
-                        else return 1;
-                    }
-
-                    public boolean equals(Object obj) {
-                        return true;
-                    }
+                (f1, f2) -> {
+                    long diff = f1.lastModified() - f2.lastModified();
+                    if (diff > 0) return -1;
+                    else if (diff == 0) return 0;
+                    else return 1;
                 });
-    }
-
-    public static boolean isValidAddress(String address) {
-        String addressNoPrefix = Numeric.cleanHexPrefix(address);
-        return addressNoPrefix.length() == ADDRESS_LENGTH_IN_HEX
-                && addressNoPrefix.matches("^[0-9a-fA-F]{40}$");
     }
 
     public static String getFileCreationTime(File file) {
@@ -486,13 +514,12 @@ public class ConsoleUtils {
             attr = Files.readAttributes(path, BasicFileAttributes.class);
         } catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
         Instant instant = attr.creationTime().toInstant();
-        String format =
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-                        .withZone(ZoneId.systemDefault())
-                        .format(instant);
-        return format;
+        return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                .withZone(ZoneId.systemDefault())
+                .format(instant);
     }
 
     public static String removeSolSuffix(String name) {
@@ -515,9 +542,15 @@ public class ConsoleUtils {
         }
         filePath = ConsoleUtils.removeSolSuffix(filePath);
         filePath += SOL_SUFFIX;
-        /** Check that the file exists in the default directory first */
+        // check again path file exist: contracts/solidity/Asset + .sol
+        solFile = new File(filePath);
+        if (solFile.exists()) {
+            return solFile;
+        }
+
+        // Check that the file exists in the default directory first
         solFile = new File(SOLIDITY_PATH + File.separator + filePath);
-        /** file not exist */
+        // file not exist
         if (!solFile.exists() && checkExist) {
             throw new ConsoleMessageException(solFileNameOrPath + " does not exist ");
         }
@@ -531,13 +564,57 @@ public class ConsoleUtils {
         if (liquidFile.exists()) {
             return liquidFile.getAbsolutePath();
         }
-        /** Check that the file exists in the default directory first */
+        // Check that the file exists in the default directory first
         liquidFile = new File(LIQUID_PATH + File.separator + liquidFileNameOrPath);
-        /** file not exist */
+        // file not exist
         if (!liquidFile.exists()) {
             throw new ConsoleMessageException(liquidFileNameOrPath + " does not exist ");
         }
         return liquidFile.getAbsolutePath();
+    }
+
+    // scan file in path matches suffix
+    public static String scanPathWithSuffix(String path, String suffix)
+            throws ConsoleMessageException {
+        class FileSuffixFilter implements FileFilter {
+            final String suffix;
+
+            FileSuffixFilter(String suffix) {
+                this.suffix = suffix.toLowerCase();
+            }
+
+            @Override
+            public boolean accept(File pathname) {
+                if (pathname.getName().toLowerCase().endsWith(this.suffix)) {
+                    return !pathname.getName().toLowerCase().endsWith("_gm" + this.suffix);
+                }
+                return false;
+            }
+        }
+        File scanFile = new File(path);
+        // not exist or not a directory, use contract path
+        if (!scanFile.exists() || !scanFile.isDirectory()) {
+            scanFile =
+                    new File(
+                            suffix.equals(SOL_SUFFIX)
+                                    ? SOLIDITY_PATH
+                                    : LIQUID_PATH + File.separator + path);
+        }
+        // still not exist
+        if (!scanFile.exists() || !scanFile.isDirectory()) {
+            throw new ConsoleMessageException("There is no any file end with " + suffix);
+        }
+        File[] files = scanFile.listFiles(new FileSuffixFilter(suffix));
+        if (files == null || files.length == 0) {
+            throw new ConsoleMessageException("There is no any file end with " + suffix);
+        } else if (files.length > 1) {
+            throw new ConsoleMessageException(
+                    "There are more than one file end with "
+                            + suffix
+                            + ": "
+                            + Arrays.toString(files));
+        }
+        return files[0].getAbsolutePath();
     }
 
     public static String resolvePath(String path) {
@@ -560,14 +637,16 @@ public class ConsoleUtils {
 
     public static String bytesToHex(byte[] bytes) {
         String strHex = "";
-        StringBuilder sb = new StringBuilder("");
-        for (int n = 0; n < bytes.length; n++) {
-            strHex = Integer.toHexString(bytes[n] & 0xFF);
+        StringBuilder sb = new StringBuilder();
+        for (byte aByte : bytes) {
+            strHex = Integer.toHexString(aByte & 0xFF);
             sb.append((strHex.length() == 1) ? "0" + strHex : strHex);
         }
         return sb.toString().trim();
     }
 
+    // for compatibility, if AbiObject not exist, use this method print results
+    @Deprecated
     public static void getReturnResults(
             StringBuilder resultType, StringBuilder resultData, Type result) {
         if (result instanceof Array) {
@@ -584,7 +663,18 @@ public class ConsoleUtils {
             resultData.append("]");
             resultType.append("]");
         } else if (result instanceof StructType) {
-            // FIXME: out put struct
+            resultType.append("[");
+            resultData.append("[");
+            List<Type> values = ((StructType) result).getComponentTypes();
+            for (int i = 0; i < values.size(); ++i) {
+                getReturnResults(resultType, resultData, values.get(i));
+                if (i != values.size() - 1) {
+                    resultType.append(", ");
+                    resultData.append(", ");
+                }
+            }
+            resultData.append("]");
+            resultType.append("]");
             throw new UnsupportedOperationException();
         } else if (result instanceof Bytes) {
             String data = "hex://0x" + bytesToHex(((Bytes) result).getValue());
@@ -600,6 +690,7 @@ public class ConsoleUtils {
         }
     }
 
+    @Deprecated
     public static void printReturnResults(List<Type> results) {
         if (results == null) {
             return;
@@ -620,6 +711,79 @@ public class ConsoleUtils {
         System.out.println("Return value size:" + results.size());
         System.out.println("Return types: " + resultType);
         System.out.println("Return values:" + resultData);
+    }
+
+    public static void printResults(
+            List<ABIObject> returnABIObject, List<Object> returnObject, List<Type> results) {
+        if (returnABIObject == null
+                || returnObject == null
+                || returnObject.isEmpty()
+                || returnABIObject.isEmpty()) {
+            // if AbiObject not exist, use this method print results
+            printReturnResults(results);
+            return;
+        }
+        StringBuilder resultType = new StringBuilder();
+        StringBuilder resultData = new StringBuilder();
+        resultType.append("(");
+        resultData.append("(");
+        getReturnObjectOutputData(resultType, resultData, returnObject, returnABIObject);
+        if (resultType.toString().endsWith(", ")) {
+            resultType.delete(resultType.length() - 2, resultType.length());
+        }
+        if (resultData.toString().endsWith(", ")) {
+            resultData.delete(resultData.length() - 2, resultData.length());
+        }
+        resultType.append(")");
+        resultData.append(")");
+        System.out.println("Return value size:" + returnObject.size());
+        System.out.println("Return types: " + resultType);
+        System.out.println("Return values:" + resultData);
+    }
+
+    public static void getReturnObjectOutputData(
+            StringBuilder resultType,
+            StringBuilder resultData,
+            List<Object> returnObject,
+            List<ABIObject> returnABIObject) {
+        int i = 0;
+        for (ABIObject abiObject : returnABIObject) {
+            if (abiObject.getListValues() != null) {
+                resultType.append("[");
+                resultData.append("[");
+                getReturnObjectOutputData(
+                        resultType,
+                        resultData,
+                        (List<Object>) returnObject.get(i),
+                        abiObject.getListValues());
+                if (resultType.toString().endsWith(", ")) {
+                    resultType.delete(resultType.length() - 2, resultType.length());
+                }
+                if (resultData.toString().endsWith(", ")) {
+                    resultData.delete(resultData.length() - 2, resultData.length());
+                }
+                resultData.append("] ");
+                resultType.append("] ");
+                i += 1;
+                continue;
+            }
+            if (abiObject.getValueType() == null && returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+                i += 1;
+                continue;
+            }
+            resultType.append(abiObject.getValueType()).append(", ");
+            if (abiObject.getValueType().equals(ABIObject.ValueType.BYTES)) {
+                String data = "hex://0x" + bytesToHex(ContractCodecTools.formatBytesN(abiObject));
+                resultData.append(data).append(", ");
+            } else if (abiObject.getValueType().equals(ABIObject.ValueType.DBYTES)) {
+                String data = "hex://0x" + bytesToHex(abiObject.getDynamicBytesValue().getValue());
+                resultData.append(data).append(", ");
+            } else if (returnObject.size() > i) {
+                resultData.append(returnObject.get(i).toString()).append(", ");
+            }
+            i += 1;
+        }
     }
 
     public static void main(String[] args) {
@@ -683,6 +847,18 @@ public class ConsoleUtils {
         String SM_BIN_OPTION = "sm-bin";
         String ABI_OPTION = "abi";
 
+        String NO_ANALYSIS_OPTION = "no-analysis";
+        String ENABLE_ASYNC_CALL_OPTION = "enable-async-call";
+        String TRANSACTION_VERSION = "transaction-version";
+
+        Option transactionVersion =
+                new Option(
+                        "t",
+                        TRANSACTION_VERSION,
+                        true,
+                        "[Optional] Specify transaction version interface, default is 0; Supporting {0,1,2}; If you want to use the latest transaction interface, please specify 2.");
+        transactionVersion.setRequired(false);
+        options.addOption(transactionVersion);
         if (mode.equals("solidity")) {
             Option solidityFilePathOption =
                     new Option(
@@ -703,6 +879,23 @@ public class ConsoleUtils {
                             "[Optional] Set library address information built into the solidity contract\n eg:\n --libraries lib1:lib1_address lib2:lib2_address\n");
             libraryOption.setRequired(false);
             options.addOption(libraryOption);
+
+            // no evm static analysis
+            Option noAnalysisOption =
+                    new Option(
+                            "n",
+                            NO_ANALYSIS_OPTION,
+                            false,
+                            "[Optional] NOT use evm static parallel-able analysis. It will not active DAG analysis, but will speedup compile speed.");
+            options.addOption(noAnalysisOption);
+
+            Option enableAsyncCall =
+                    new Option(
+                            "e",
+                            ENABLE_ASYNC_CALL_OPTION,
+                            false,
+                            "[Optional] Enable generate async interfaces for constant call, java file only compilable when java-sdk >= 3.3.0.");
+            options.addOption(enableAsyncCall);
         } else if (mode.equals("liquid")) {
             Option liquidBinPathOption =
                     new Option(
@@ -757,10 +950,20 @@ public class ConsoleUtils {
 
         String pkgName = cmd.getOptionValue(PACKAGE_OPTION, DEFAULT_PACKAGE);
         String javaDir = cmd.getOptionValue(OUTPUT_OPTION, DEFAULT_OUTPUT);
+        String transactionVersionStr = "V" + cmd.getOptionValue(TRANSACTION_VERSION, "0");
         if (mode.equals("solidity")) {
             String solPathOrDir = cmd.getOptionValue(SOL_OPTION, DEFAULT_SOL);
             String librariesOption = cmd.getOptionValue(LIBS_OPTION, "");
+            boolean useDagAnalysis = !cmd.hasOption(NO_ANALYSIS_OPTION);
+            boolean enableAsyncCall = cmd.hasOption(ENABLE_ASYNC_CALL_OPTION);
             String fullJavaDir = new File(javaDir).getAbsolutePath();
+            String specifyContract = null;
+            if (solPathOrDir.contains(":")
+                    && solPathOrDir.indexOf(':') == solPathOrDir.lastIndexOf(':')) {
+                String[] strings = solPathOrDir.split(":");
+                solPathOrDir = strings[0];
+                specifyContract = strings[1];
+            }
             File sol = new File(solPathOrDir);
             if (!sol.exists()) {
                 System.out.println(sol.getAbsoluteFile() + " not exist ");
@@ -769,9 +972,26 @@ public class ConsoleUtils {
             try {
                 if (sol.isFile()) { // input file
                     compileSolToJava(
-                            fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH, librariesOption);
+                            fullJavaDir,
+                            pkgName,
+                            sol,
+                            ABI_PATH,
+                            BIN_PATH,
+                            librariesOption,
+                            specifyContract,
+                            useDagAnalysis,
+                            enableAsyncCall,
+                            transactionVersionStr);
                 } else { // input dir
-                    compileAllSolToJava(fullJavaDir, pkgName, sol, ABI_PATH, BIN_PATH);
+                    compileAllSolToJava(
+                            fullJavaDir,
+                            pkgName,
+                            sol,
+                            ABI_PATH,
+                            BIN_PATH,
+                            useDagAnalysis,
+                            enableAsyncCall,
+                            transactionVersionStr);
                 }
             } catch (IOException | CompileContractException e) {
                 System.out.print(e.getMessage());
@@ -784,15 +1004,20 @@ public class ConsoleUtils {
             String abiFile = cmd.getOptionValue(ABI_OPTION);
             String binFile = cmd.getOptionValue(BIN_OPTION);
             String smBinFile = cmd.getOptionValue(SM_BIN_OPTION);
-            CodeGenMain.main(
-                    Arrays.asList(
+            List<String> params =
+                    new ArrayList<>(
+                            Arrays.asList(
                                     "-v", "V3",
                                     "-a", abiFile,
                                     "-b", binFile,
                                     "-s", smBinFile,
                                     "-p", pkgName,
-                                    "-o", javaDir)
-                            .toArray(new String[0]));
+                                    "-o", javaDir));
+            if (!transactionVersionStr.equals("0")) {
+                params.add("-t");
+                params.add(transactionVersionStr);
+            }
+            CodeGenMain.main(params.toArray(new String[0]));
         }
     }
 }

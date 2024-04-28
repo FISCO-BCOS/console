@@ -15,12 +15,14 @@ package console.command;
 
 import console.command.category.AccountOpCommand;
 import console.command.category.AuthOpCommand;
+import console.command.category.BalanceOpCommand;
 import console.command.category.BasicCommand;
 import console.command.category.BfsCommand;
 import console.command.category.ConsensusOpCommand;
 import console.command.category.ContractOpCommand;
 import console.command.category.CrudCommand;
 import console.command.category.GroupCommand;
+import console.command.category.ShardingCommand;
 import console.command.category.StatusQueryCommand;
 import console.command.model.BasicCategoryCommand;
 import console.command.model.CommandInfo;
@@ -57,6 +59,8 @@ public class SupportedCommand {
     public static final GroupCommand groupCommand = new GroupCommand();
     public static final AuthOpCommand authOpCommand = new AuthOpCommand();
     public static final AccountOpCommand accountOpCommand = new AccountOpCommand();
+    public static final ShardingCommand shardingCommand = new ShardingCommand();
+    public static final BalanceOpCommand balanceOpCommand = new BalanceOpCommand();
 
     /// FIXME: not supported now
     // public static CollaborationOpCommand collaborationOpCommand = new CollaborationOpCommand();

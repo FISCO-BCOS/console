@@ -31,6 +31,7 @@ import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.codegen.v3.exceptions.CodeGenException;
 import org.fisco.bcos.codegen.v3.utils.CodeGenUtils;
+import org.fisco.bcos.sdk.v3.utils.StringUtils;
 import org.fisco.evm.analysis.EvmAnalyser;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
@@ -49,33 +50,74 @@ public class ContractCompiler {
     public static final String LIQUID_PATH = "contracts/liquid/";
     public static final String COMPILED_PATH = "contracts/.compiled/";
     public static final String BFS_APPS_PREFIX = "/apps";
+    public static final String BFS_SYS_PREFIX = "/sys";
     public static final String BFS_APPS_FULL_PREFIX = "/apps/";
     public static final String SOL_SUFFIX = ".sol";
     public static final String SM_SUFFIX = ".sm";
     public static final String BIN_SUFFIX = ".bin";
     public static final String ABI_SUFFIX = ".abi";
     public static final String WASM_SUFFIX = ".wasm";
+    public static String solcJVersion;
+
+    static {
+        if (solcJVersion == null) {
+            try {
+                String runGetVersionOutput = SolidityCompiler.runGetVersionOutput(false);
+                solcJVersion =
+                        runGetVersionOutput.substring(
+                                runGetVersionOutput.indexOf("Version: ") + "Version: ".length(),
+                                runGetVersionOutput.lastIndexOf("+commit"));
+                if (!solcJVersion.matches("^([0-9]\\d|[0-9])(\\.([0-9]\\d|\\d)){2}$")) {
+                    solcJVersion = org.fisco.solc.compiler.Version.version;
+                }
+            } catch (Exception e) {
+                logger.info(
+                        "Load solcJ version error, use default version string, version:{}",
+                        org.fisco.solc.compiler.Version.version);
+                solcJVersion = org.fisco.solc.compiler.Version.version;
+            }
+        }
+    }
 
     public static AbiAndBin compileContract(
-            String contractNameOrPath, boolean sm, boolean isContractParallelAnalysis)
+            String contractNameOrPath,
+            String specifyContractName,
+            boolean sm,
+            boolean isContractParallelAnalysis)
             throws CompileContractException {
+        // if absolute path
         File contractFile = new File(contractNameOrPath);
         // the contractPath
         if (contractFile.exists() && !contractFile.isDirectory()) {
-            return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
+            return dynamicCompileSolFilesToJava(
+                    contractFile, specifyContractName, sm, isContractParallelAnalysis);
         }
+
+        // if absolute path without sol
+        // try again with .sol suffix
+        contractFile = new File(contractNameOrPath + SOL_SUFFIX);
+        if (contractFile.exists() && !contractFile.isDirectory()) {
+            return dynamicCompileSolFilesToJava(
+                    contractFile, specifyContractName, sm, isContractParallelAnalysis);
+        }
+
+        // if relative path in contracts/
         // the contractName
         String contractFileName = ConsoleUtils.removeSolSuffix(contractNameOrPath) + SOL_SUFFIX;
-        contractFile = new File(SOLIDITY_PATH + "/" + contractFileName);
+        contractFile = new File(SOLIDITY_PATH + File.separator + contractFileName);
         if (!contractFile.exists()) {
             throw new CompileContractException(
                     "There is no " + contractFileName + " in the directory of " + SOLIDITY_PATH);
         }
-        return dynamicCompileSolFilesToJava(contractFile, sm, isContractParallelAnalysis);
+        return dynamicCompileSolFilesToJava(
+                contractFile, specifyContractName, sm, isContractParallelAnalysis);
     }
 
     public static AbiAndBin dynamicCompileSolFilesToJava(
-            File contractFile, boolean sm, boolean isContractParallelAnalysis)
+            File contractFile,
+            String specifyContractName,
+            boolean sm,
+            boolean isContractParallelAnalysis)
             throws CompileContractException {
         try {
             return compileSolToBinAndAbi(
@@ -84,6 +126,7 @@ public class ContractCompiler {
                     COMPILED_PATH,
                     sm ? OnlySM : OnlyNonSM,
                     null,
+                    specifyContractName,
                     isContractParallelAnalysis);
         } catch (IOException e) {
             throw new CompileContractException(
@@ -99,6 +142,7 @@ public class ContractCompiler {
             String binDir,
             int compileType,
             String librariesOption,
+            String specifyContractName,
             boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
         if (compileType == OnlyNonSM) {
@@ -108,6 +152,7 @@ public class ContractCompiler {
                     binDir,
                     false,
                     librariesOption,
+                    specifyContractName,
                     isContractParallelAnalysis);
         } else if (compileType == OnlySM) {
             return compileSolToBinAndAbi(
@@ -116,6 +161,7 @@ public class ContractCompiler {
                     binDir,
                     true,
                     librariesOption,
+                    specifyContractName,
                     isContractParallelAnalysis);
         } else {
             AbiAndBin abiAndBin =
@@ -125,6 +171,7 @@ public class ContractCompiler {
                             binDir,
                             false,
                             librariesOption,
+                            specifyContractName,
                             isContractParallelAnalysis);
             AbiAndBin abiAndBinSM =
                     compileSolToBinAndAbi(
@@ -133,6 +180,7 @@ public class ContractCompiler {
                             binDir,
                             true,
                             librariesOption,
+                            specifyContractName,
                             isContractParallelAnalysis);
             return new AbiAndBin(abiAndBin.getAbi(), abiAndBin.getBin(), abiAndBinSM.getSmBin());
         }
@@ -145,14 +193,18 @@ public class ContractCompiler {
             String binDir,
             boolean sm,
             String librariesOption,
+            String specifyContractName,
             boolean isContractParallelAnalysis)
             throws IOException, CompileContractException {
         SolidityCompiler.Option libraryOption = null;
-        if (librariesOption != null && !librariesOption.equals("")) {
+        if (librariesOption != null && !librariesOption.isEmpty()) {
             libraryOption = new SolidityCompiler.CustomOption("libraries", librariesOption);
         }
 
         String contractName = contractFile.getName().split("\\.")[0];
+        if (!StringUtils.isEmpty(specifyContractName)) {
+            contractName = specifyContractName;
+        }
         List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
         List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
 
@@ -160,16 +212,17 @@ public class ContractCompiler {
             options.add(libraryOption);
         }
 
-        if (org.fisco.solc.compiler.Version.version.compareToIgnoreCase(
-                        ConsoleUtils.COMPILE_WITH_BASE_PATH)
-                >= 0) {
+        if (solcJVersion.compareToIgnoreCase(ConsoleUtils.COMPILE_WITH_BASE_PATH) >= 0) {
             logger.debug(
-                    "compileSolToBinAndAbi, basePath: {}",
+                    "compileSolToBinAndAbi, solc version:{} ,basePath: {}",
+                    solcJVersion,
                     contractFile.getParentFile().getCanonicalPath());
             SolidityCompiler.Option basePath =
                     new SolidityCompiler.CustomOption(
                             "base-path", contractFile.getParentFile().getCanonicalPath());
             options.add(basePath);
+        } else {
+            logger.debug("compileSolToBinAndAbi, solc version:{}", solcJVersion);
         }
         SolidityCompiler.Result res =
                 SolidityCompiler.compile(
@@ -181,7 +234,7 @@ public class ContractCompiler {
                 !res.isFailed(),
                 res.getOutput(),
                 res.getErrors());
-        if (res.isFailed() || "".equals(res.getOutput())) {
+        if (res.isFailed() || res.getOutput().isEmpty()) {
             throw new CompileContractException(" Compile error: " + res.getErrors());
         }
 
@@ -257,7 +310,12 @@ public class ContractCompiler {
         File binPath =
                 new File(saveDir.getAbsolutePath() + File.separator + contractName + BIN_SUFFIX);
         File smBinPath =
-                new File(saveDir.getAbsolutePath() + contractName + SM_SUFFIX + BIN_SUFFIX);
+                new File(
+                        saveDir.getAbsolutePath()
+                                + File.separator
+                                + contractName
+                                + SM_SUFFIX
+                                + BIN_SUFFIX);
 
         if (Objects.nonNull(abiAndBin.getAbi()) && !abiAndBin.getAbi().isEmpty()) {
             FileUtils.writeStringToFile(abiPath, abiAndBin.getAbi());

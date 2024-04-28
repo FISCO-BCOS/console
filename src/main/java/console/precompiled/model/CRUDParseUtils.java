@@ -15,6 +15,7 @@ import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.NotExpression;
+import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.expression.operators.conditional.OrExpression;
 import net.sf.jsqlparser.expression.operators.relational.ComparisonOperator;
 import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
@@ -41,7 +42,9 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.select.SubSelect;
 import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Common;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionV320;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
 import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
@@ -110,6 +113,12 @@ public class CRUDParseUtils {
         List<String> fieldsList = new ArrayList<>();
         for (ColumnDefinition columnDefinition : columnDefinitions) {
             String columnName = columnDefinition.getColumnName();
+            if (Objects.equals(columnName, table.getKeyFieldName())) {
+                String dataType = columnDefinition.getColDataType().getDataType();
+                if (dataType.toLowerCase().contains("integer")) {
+                    table.setKeyOrder(Common.TableKeyOrder.Numerical);
+                }
+            }
             if (fieldsList.contains(columnName)) {
                 throw new ConsoleMessageException(
                         "Please provide the field '" + columnName + "' only once.");
@@ -247,7 +256,8 @@ public class CRUDParseUtils {
         return new Entry(valueFields, keyValue, kv);
     }
 
-    public static Condition parseSelect(String sql, Table table, List<String> selectColumns)
+    public static void parseSelect(
+            String sql, Table table, List<String> selectColumns, Condition condition)
             throws JSQLParserException, ConsoleMessageException {
         Statement statement;
         statement = CCJSqlParserUtil.parse(sql);
@@ -281,15 +291,6 @@ public class CRUDParseUtils {
         if (selectBody.getDistinct() != null) {
             throw new ConsoleMessageException("The distinct clause is not supported.");
         }
-        Expression expr = selectBody.getWhere();
-        Condition condition = covertExpressionToCondition(expr, table.getKeyFieldName());
-
-        // parse limit
-        Limit limit = selectBody.getLimit();
-        if (limit != null) {
-            covertLimitExpressionToCondition(condition, limit);
-        }
-
         // parse select item
         List<SelectItem> selectItems = selectBody.getSelectItems();
         for (SelectItem item : selectItems) {
@@ -304,43 +305,130 @@ public class CRUDParseUtils {
             }
             selectColumns.add(item.toString());
         }
-        return condition;
-    }
-
-    private static void covertLimitExpressionToCondition(Condition condition, Limit limit) {
-        LongValue offsetLongValue = (LongValue) limit.getOffset();
-        LongValue rowCountLongValue = (LongValue) limit.getRowCount();
-        long offset = offsetLongValue == null ? 0 : offsetLongValue.getValue();
-        long rowCount = rowCountLongValue == null ? 0 : rowCountLongValue.getValue();
-        // TODO: add offset and rowCount check
-        condition.setLimit((int) offset, (int) rowCount);
-    }
-
-    private static void checkExpression(Expression expression) throws ConsoleMessageException {
-        if (expression instanceof OrExpression) {
-            throw new ConsoleMessageException("The OrExpression is not supported.");
-        }
-        if (expression instanceof NotExpression) {
-            throw new ConsoleMessageException("The NotExpression is not supported.");
-        }
-        if (expression instanceof InExpression) {
-            throw new ConsoleMessageException("The InExpression is not supported.");
-        }
-        if (expression instanceof LikeExpression) {
-            logger.debug("The LikeExpression is not supported.");
-            throw new ConsoleMessageException("The LikeExpression is not supported.");
-        }
-        if (expression instanceof SubSelect) {
-            throw new ConsoleMessageException("The SubSelect is not supported.");
-        }
-        if (expression instanceof IsNullExpression) {
-            throw new ConsoleMessageException("The IsNullExpression is not supported.");
+        if (condition instanceof ConditionV320) {
+            parseWhereClause(
+                    selectBody.getWhere(),
+                    table.getKeyFieldName(),
+                    table.getValueFields(),
+                    selectBody.getLimit(),
+                    (ConditionV320) condition);
+        } else {
+            parseWhereClause(
+                    selectBody.getWhere(),
+                    table.getKeyFieldName(),
+                    selectBody.getLimit(),
+                    condition);
         }
     }
 
-    private static Condition covertExpressionToCondition(Expression expr, String keyField)
+    public static void parseUpdate(
+            String sql, Table table, Condition condition, UpdateFields updateFields)
+            throws JSQLParserException, ConsoleMessageException {
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Update update = (Update) statement;
+
+        // parse table name
+        List<net.sf.jsqlparser.schema.Table> tables = update.getTables();
+        String tableName = tables.get(0).getName();
+        table.setTableName(tableName);
+
+        // parse columns
+        List<Column> columns = update.getColumns();
+        List<Expression> expressions = update.getExpressions();
+        int size = expressions.size();
+        String[] values = new String[size];
+        for (int i = 0; i < size; i++) {
+            values[i] = expressions.get(i).toString();
+        }
+        for (int i = 0; i < columns.size(); i++) {
+            updateFields
+                    .getFieldNameToValue()
+                    .put(trimQuotes(columns.get(i).toString()), trimQuotes(values[i]));
+        }
+
+        // set condition
+        if (condition instanceof ConditionV320) {
+            parseWhereClause(
+                    update.getWhere(),
+                    table.getKeyFieldName(),
+                    table.getValueFields(),
+                    update.getLimit(),
+                    (ConditionV320) condition);
+        } else {
+            parseWhereClause(
+                    update.getWhere(), table.getKeyFieldName(), update.getLimit(), condition);
+        }
+    }
+
+    public static void parseRemove(String sql, Table table, Condition condition)
+            throws JSQLParserException, ConsoleMessageException {
+        Statement statement = CCJSqlParserUtil.parse(sql);
+        Delete delete = (Delete) statement;
+
+        // parse table name
+        net.sf.jsqlparser.schema.Table sqlTable = delete.getTable();
+        table.setTableName(sqlTable.getName());
+
+        // parse where clause
+        if (condition instanceof ConditionV320) {
+            parseWhereClause(
+                    delete.getWhere(),
+                    table.getKeyFieldName(),
+                    table.getValueFields(),
+                    delete.getLimit(),
+                    (ConditionV320) condition);
+        } else {
+            parseWhereClause(
+                    delete.getWhere(), table.getKeyFieldName(), delete.getLimit(), condition);
+        }
+    }
+
+    private static void parseWhereClause(
+            Expression where, String keyFieldName, Limit limit, Condition condition)
             throws ConsoleMessageException {
-        Condition condition = new Condition();
+        // parse where clause
+        if (where != null) {
+            BinaryExpression expr = (BinaryExpression) (where);
+            covertExpressionToCondition(expr, keyFieldName, condition);
+        }
+
+        // parse limit
+        if (limit != null) {
+            LongValue offsetLongValue = (LongValue) limit.getOffset();
+            LongValue rowCountLongValue = (LongValue) limit.getRowCount();
+            long offset = offsetLongValue == null ? 0 : offsetLongValue.getValue();
+            long rowCount = rowCountLongValue == null ? 0 : rowCountLongValue.getValue();
+            // TODO: add offset and rowCount check
+            condition.setLimit((int) offset, (int) rowCount);
+        }
+    }
+
+    private static void parseWhereClause(
+            Expression where,
+            String keyField,
+            List<String> valueFields,
+            Limit limit,
+            ConditionV320 condition)
+            throws ConsoleMessageException {
+        // parse where clause
+        if (where != null) {
+            BinaryExpression expr = (BinaryExpression) (where);
+            covertExpressionToCondition(expr, keyField, valueFields, condition);
+        }
+
+        // parse limit
+        if (limit != null) {
+            LongValue offsetLongValue = (LongValue) limit.getOffset();
+            LongValue rowCountLongValue = (LongValue) limit.getRowCount();
+            long offset = offsetLongValue == null ? 0 : offsetLongValue.getValue();
+            long rowCount = rowCountLongValue == null ? 0 : rowCountLongValue.getValue();
+            // TODO: add offset and rowCount check
+            condition.setLimit((int) offset, (int) rowCount);
+        }
+    }
+
+    private static void covertExpressionToCondition(
+            Expression expr, String keyField, Condition condition) throws ConsoleMessageException {
         if (expr instanceof BinaryExpression) {
             Set<String> keySet = new HashSet<>();
             Set<String> eqValue = new HashSet<>();
@@ -403,7 +491,122 @@ public class CRUDParseUtils {
             }
         }
         checkExpression(expr);
-        return condition;
+    }
+
+    private static void covertExpressionToCondition(
+            Expression expr, String keyField, List<String> valueField, ConditionV320 condition)
+            throws ConsoleMessageException {
+        if (expr instanceof BinaryExpression) {
+            Set<String> undefinedKeys = new HashSet<>();
+            Set<String> unsupportedConditions = new HashSet<>();
+            expr.accept(
+                    new ExpressionVisitorAdapter() {
+                        @Override
+                        protected void visitBinaryExpression(BinaryExpression expr) {
+                            String key = trimQuotes(expr.getLeftExpression().toString());
+                            String operation = expr.getStringExpression();
+                            String value = trimQuotes(expr.getRightExpression().toString());
+                            if (!(expr instanceof AndExpression)
+                                    && !valueField.contains(key)
+                                    && !keyField.equals(key)) {
+                                undefinedKeys.add(key);
+                            }
+                            if (expr instanceof ComparisonOperator) {
+                                switch (operation) {
+                                    case "=":
+                                        condition.EQ(key, value);
+                                        break;
+                                    case ">":
+                                        condition.GT(key, value);
+                                        break;
+                                    case ">=":
+                                        condition.GE(key, value);
+                                        break;
+                                    case "<":
+                                        condition.LT(key, value);
+                                        break;
+                                    case "<=":
+                                        condition.LE(key, value);
+                                        break;
+                                    case "!=":
+                                        condition.NE(key, value);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            } else if (expr instanceof LikeExpression) {
+                                boolean startFlag = value.startsWith("%");
+                                boolean endFlag = value.endsWith("%");
+                                int flag = (startFlag ? 1 : 0) + (endFlag ? 2 : 0);
+                                if (value.equals("%")) flag = 0;
+                                switch (flag) {
+                                    case 0:
+                                        condition.EQ(key, value);
+                                        break;
+                                    case 1:
+                                        // %value
+                                        condition.ENDS_WITH(key, value.substring(1));
+                                        break;
+                                    case 2:
+                                        // value%
+                                        condition.STARTS_WITH(
+                                                key, value.substring(0, value.length() - 1));
+                                        break;
+                                    case 3:
+                                        // %value%
+                                        condition.CONTAINS(
+                                                key, value.substring(1, value.length() - 1));
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            } else {
+                                try {
+                                    checkExpression(expr);
+                                } catch (ConsoleMessageException e) {
+                                    unsupportedConditions.add(e.getMessage());
+                                }
+                            }
+                            super.visitBinaryExpression(expr);
+                        }
+                    });
+            if (!undefinedKeys.isEmpty()) {
+                throw new ConsoleMessageException(
+                        "Wrong condition! There is an undefined field comparison! The condition is: "
+                                + condition.getConditions()
+                                + ", undefinedKeys: "
+                                + undefinedKeys);
+            }
+            if (!unsupportedConditions.isEmpty()) {
+                throw new ConsoleMessageException(
+                        "Wrong condition! Find unsupported conditions! message: "
+                                + unsupportedConditions);
+            }
+        } else {
+            checkExpression(expr);
+        }
+    }
+
+    private static void checkExpression(Expression expression) throws ConsoleMessageException {
+        if (expression instanceof OrExpression) {
+            throw new ConsoleMessageException("The OrExpression is not supported.");
+        }
+        if (expression instanceof NotExpression) {
+            throw new ConsoleMessageException("The NotExpression is not supported.");
+        }
+        if (expression instanceof InExpression) {
+            throw new ConsoleMessageException("The InExpression is not supported.");
+        }
+        if (expression instanceof LikeExpression) {
+            logger.debug("The LikeExpression is not supported.");
+            throw new ConsoleMessageException("The LikeExpression is not supported.");
+        }
+        if (expression instanceof SubSelect) {
+            throw new ConsoleMessageException("The SubSelect is not supported.");
+        }
+        if (expression instanceof IsNullExpression) {
+            throw new ConsoleMessageException("The IsNullExpression is not supported.");
+        }
     }
 
     public static String trimQuotes(String str) {
@@ -420,72 +623,6 @@ public class CRUDParseUtils {
         }
         String string = ((st > 1) || (len < value.length)) ? str.substring(st, len) : str;
         return string;
-    }
-
-    public static Condition parseUpdate(String sql, Table table, UpdateFields updateFields)
-            throws JSQLParserException, ConsoleMessageException {
-        Condition condition = new Condition();
-        Statement statement = CCJSqlParserUtil.parse(sql);
-        Update update = (Update) statement;
-
-        // parse table name
-        List<net.sf.jsqlparser.schema.Table> tables = update.getTables();
-        String tableName = tables.get(0).getName();
-        table.setTableName(tableName);
-
-        // parse columns
-        List<Column> columns = update.getColumns();
-        List<Expression> expressions = update.getExpressions();
-        int size = expressions.size();
-        String[] values = new String[size];
-        for (int i = 0; i < size; i++) {
-            values[i] = expressions.get(i).toString();
-        }
-        for (int i = 0; i < columns.size(); i++) {
-            updateFields
-                    .getFieldNameToValue()
-                    .put(trimQuotes(columns.get(i).toString()), trimQuotes(values[i]));
-        }
-
-        // parse where clause
-        Expression where = update.getWhere();
-        if (where != null) {
-            BinaryExpression expr2 = (BinaryExpression) (where);
-            condition = covertExpressionToCondition(expr2, table.getKeyFieldName());
-        }
-
-        // parse limit
-        Limit limit = update.getLimit();
-        if (limit != null) {
-            covertLimitExpressionToCondition(condition, limit);
-        }
-
-        return condition;
-    }
-
-    public static Condition parseRemove(String sql, Table table)
-            throws JSQLParserException, ConsoleMessageException {
-        Condition condition = new Condition();
-        Statement statement = CCJSqlParserUtil.parse(sql);
-        Delete delete = (Delete) statement;
-
-        // parse table name
-        net.sf.jsqlparser.schema.Table sqlTable = delete.getTable();
-        table.setTableName(sqlTable.getName());
-
-        // parse where clause
-        Expression where = delete.getWhere();
-        if (where != null) {
-            BinaryExpression expr = (BinaryExpression) (where);
-            condition = covertExpressionToCondition(expr, table.getKeyFieldName());
-        }
-
-        // parse limit
-        Limit limit = delete.getLimit();
-        if (limit != null) {
-            covertLimitExpressionToCondition(condition, limit);
-        }
-        return condition;
     }
 
     public static void invalidSymbol(String sql) throws ConsoleMessageException {

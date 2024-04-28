@@ -281,7 +281,7 @@ public class CommandInfo {
             HelpInfo.printHelp(
                     command,
                     consoleInitializer.getClient().isWASM(),
-                    consoleInitializer.getClient().isAuthCheck());
+                    consoleInitializer.getClient().isEnableCommittee());
             return;
         }
 
@@ -300,7 +300,7 @@ public class CommandInfo {
             HelpInfo.printHelp(
                     command,
                     consoleInitializer.getClient().isWASM(),
-                    consoleInitializer.getClient().isAuthCheck());
+                    consoleInitializer.getClient().isEnableCommittee());
             return;
         }
         // check version

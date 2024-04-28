@@ -3,6 +3,9 @@ package console.command.model;
 import console.command.SupportedCommand;
 import console.common.Common;
 import console.common.ConsoleUtils;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigFeature;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
+import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 
 public class HelpInfo {
     public static void promptHelp(String command) {
@@ -34,6 +37,12 @@ public class HelpInfo {
         System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
     }
 
+    public static void abolishContractHelp() {
+        System.out.println("Abolish a specific contract.");
+        System.out.println("Usage: \nabolishContract contractAddress");
+        System.out.println("* contractAddress: 20 Bytes - The address of a contract.");
+    }
+
     public static void grantContractStatusManagerHelp() {
         System.out.println("Grant contract authorization to the user.");
         System.out.println("Usage: \ngrantContractStatusManager contractAddress userAddress");
@@ -59,7 +68,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetDeployLog [recordNumber]");
         System.out.println(
                 "* recordNumber -- (optional) The number of deployed contract records, "
-                        + Common.DeployLogIntegerRange
+                        + Common.DEPLOY_LOG_INTEGER_RANGE
                         + "(default 20).");
     }
 
@@ -82,6 +91,12 @@ public class HelpInfo {
     public static void getObserverListHelp() {
         System.out.println("Query nodeId list for observer nodes.");
         System.out.println("Usage: \ngetObserverList");
+    }
+
+    public static void getCandidateListHelp() {
+        System.out.println("Query nodeId list for candidate sealer nodes.");
+        System.out.println("NOTE: only for the consensus node of the rPBFT algorithm.");
+        System.out.println("Usage: \ngetCandidateList");
     }
 
     public static void getSealerListHelp() {
@@ -135,7 +150,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockByNumber blockNumber [boolean]");
         System.out.println(
                 "* blockNumber -- Integer of a block number, "
-                        + Common.NonNegativeIntegerRange
+                        + Common.NON_NEGATIVE_INTEGER_RANGE
                         + ".");
         System.out.println(
                 "* boolean -- (optional) If true it returns only the hashes of the transactions, if false then return the full transaction objects.");
@@ -152,7 +167,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockHeaderByNumber blockNumber");
         System.out.println(
                 "* blockNumber -- Integer of a block number, "
-                        + Common.NonNegativeIntegerRange
+                        + Common.NON_NEGATIVE_INTEGER_RANGE
                         + ".");
     }
 
@@ -161,7 +176,7 @@ public class HelpInfo {
         System.out.println("Usage: \ngetBlockHashByNumber blockNumber");
         System.out.println(
                 "* blockNumber -- Integer of a block number, "
-                        + Common.NonNegativeIntegerRange
+                        + Common.NON_NEGATIVE_INTEGER_RANGE
                         + ".");
     }
 
@@ -218,21 +233,23 @@ public class HelpInfo {
             System.out.println(
                     "* parameters -- Parameters will be passed to constructor when deploying the contract.");
             System.out.println(
+                    "* -l[Optional] -- deploy with link, link BFS path after deploy contract success, \n"
+                            + "                  link must locate under '/apps', and be composed of contract name and version ");
+            System.out.println(
                     "* --parallel-analysis/-p[Optional] -- parallel conflict analysis with the contract, default: no.");
         } else {
             System.out.println(
                     "Deploy a " + "\033[32m" + "Liquid" + "\033[m" + " contract on blockchain.");
-            System.out.println("Usage: \ndeploy bin abi path parameters...");
+            System.out.println("Usage: \ndeploy liquidTarget path parameters...");
             System.out.println(
-                    "* bin -- The path of binary file after contract being compiled via cargo-liquid.");
-            System.out.println(
-                    "* abi -- The path of ABI file after contract being compiled via cargo-liquid.");
+                    "* liquidTarget -- The path of DIRECTORY, which MUST contains binary file and ABI file after contract being compiled via cargo-liquid.");
             System.out.println(
                     "* path -- The path of BFS where the contract will be located at, such as '/apps/liquid/YouContract/'.");
             System.out.println(
-                    "* parameters -- Parameters will be passed to constructor when deploying the contract.");
+                    "* -l[Optional] -- deploy with link, link BFS path after deploy contract success, \n"
+                            + "                  link must locate under '/apps', and be composed of contract name and version ");
             System.out.println(
-                    "* --parallel-analysis/-p[Optional] -- parallel conflict analysis with the contract, default: no.");
+                    "* parameters -- Parameters will be passed to constructor when deploying the contract.");
         }
     }
 
@@ -262,10 +279,10 @@ public class HelpInfo {
         System.out.println("Create a link to access contract more conveniently.");
         System.out.println("Usage: \nln [path] [contractAddress]");
         System.out.println(
-                "* path[Required] -- The BFS path of link, link must locate under '/apps', and be composed of contract name and version.");
+                "* path[Required] -- The BFS path of link, link must locate under '/apps'.");
         System.out.println("* contractAddress[Required] -- The address of a contract.");
-        System.out.println("Example: (if in wasm)\nln /apps/Name/Version 0x1234567890");
-        System.out.println("Example: (if in evm)\nln /apps/Name/Version /apps/test/HelloWorld");
+        System.out.println("Example: (if in evm)\nln /apps/Name 0x1234567890");
+        System.out.println("Example: (if in wasm)\nln /apps/Name /apps/test/HelloWorld");
     }
 
     public static void addObserverHelp() {
@@ -296,13 +313,31 @@ public class HelpInfo {
 
     public static void freezeAccountHelp() {
         System.out.println("Freeze account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
         System.out.println("Usage: \nfreezeAccount account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
     public static void unfreezeAccountHelp() {
         System.out.println("Unfreeze account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
         System.out.println("Usage: \nunfreezeAccount account");
+        System.out.println("* account -- 20 Bytes - The address of a account.");
+    }
+
+    public static void abolishAccountHelp() {
+        System.out.println("Abolish account.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        System.out.println("Usage: \nabolishAccount account");
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
@@ -312,33 +347,74 @@ public class HelpInfo {
         System.out.println("* account -- 20 Bytes - The address of a account.");
     }
 
+    public static void initAuthHelp() {
+        System.out.println("Initialize committee contract system.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only can be used when first init chain committee."
+                        + "\033[m");
+        System.out.println("Usage: \ninitAuth admin");
+        System.out.println("* account -- 20 Bytes - The address of a account.");
+    }
+
     public static void setSystemConfigByKeyHelp() {
         System.out.println("Set a system config.");
         System.out.println("Usage: \nsetSystemConfigByKey key value");
+        systemConfigHelper();
+    }
+
+    public static void systemConfigHelper() {
+        System.out.println("* key   -- The name of system config.");
         System.out.println(
-                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_leader_period supported currently).");
+                "    -- supported keys: " + String.join(",", Common.SUPPORTED_SYSTEM_KEYS));
         System.out.println("* value -- The value of system config to be set.");
         System.out.println(
-                "      -- The value of tx_count_limit "
-                        + Common.TxCountLimitRange
+                "    -- the value of "
+                        + SystemConfigService.COMPATIBILITY_VERSION
+                        + " "
+                        + Common.COMPATIBILITY_VERSION_DESC);
+        System.out.println(
+                "    -- The value of tx_count_limit "
+                        + Common.SYS_CONFIG_RANGE
                         + "(default 1000).");
         System.out.println(
-                "      -- the value of tx_gas_limit "
-                        + Common.TxGasLimitRange
+                "    -- the value of tx_gas_limit "
+                        + Common.TX_GAS_LIMIT_RANGE
                         + "(default 3000000000).");
         System.out.println(
-                "      -- the value of  "
-                        + Common.ConsensusLeaderPeriod
+                "    -- the value of tx_gas_price "
+                        + Common.TX_GAS_PRICE_RANGE
+                        + "(Users can specify the unit of gasPrice. The default unit is wei. support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\").");
+        System.out.println(
+                "    -- the value of "
+                        + SystemConfigService.CONSENSUS_PERIOD
                         + " "
-                        + Common.ConsensusLeaderPeriodRange
+                        + Common.SYS_CONFIG_RANGE
                         + "(default 1).");
+        System.out.println(
+                "    -- the value of "
+                        + SystemConfigService.AUTH_STATUS
+                        + " "
+                        + Common.AUTH_CHECK_DESC);
+        for (SystemConfigFeature.Features feature : SystemConfigFeature.Features.values()) {
+            System.out.println(
+                    "    -- the feature of "
+                            + feature.toString()
+                            + " only enable when "
+                            + SystemConfigService.COMPATIBILITY_VERSION
+                            + " >= "
+                            + EnumNodeVersion.convertToVersion(feature.enableVersion())
+                                    .toVersionString()
+                            + ", value can only set 1 or greater equal than 1.");
+        }
     }
 
     public static void getSystemConfigByKeyHelp() {
         System.out.println("Query a system config value by key.");
         System.out.println("Usage: \ngetSystemConfigByKey key");
+        System.out.println("* key -- The name of system config.");
         System.out.println(
-                "* key -- The name of system config(tx_count_limit/tx_gas_limit/consensus_leader_period supported currently).");
+                "    -- supported keys: " + String.join(",", Common.SUPPORTED_SYSTEM_KEYS));
     }
 
     public static void operateGroupHelp(String command, String operator) {
@@ -355,26 +431,6 @@ public class HelpInfo {
         System.out.println("Description table information.");
         System.out.println("Usage: \ndesc tableName");
         System.out.println("* tableName -- The name of the table.");
-    }
-
-    public static void promptNoFunc(String contractName, String funcName, int lenParams) {
-        if (lenParams <= 1) {
-            System.out.println(
-                    "The method "
-                            + funcName
-                            + " with "
-                            + lenParams
-                            + " parameter"
-                            + " is undefined of the contract.");
-        } else {
-            System.out.println(
-                    "The method "
-                            + funcName
-                            + " with "
-                            + lenParams
-                            + " parameters"
-                            + " is undefined of the contract.");
-        }
     }
 
     public static void loadAccountHelp() {
@@ -404,6 +460,83 @@ public class HelpInfo {
                 "recordNumber -- (optional) The number of deployed contract records, (default 20).");
     }
 
+    public static void transferHelp() {
+        System.out.println("Transfer token to a specified address");
+        System.out.println("Usage: \ntransfer toAddress amount [unit]");
+        System.out.println("* toAddress -- The address of the receiver.");
+        System.out.println("* amount -- The amount of token to transfer.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
+    public static void getBalanceHelp() {
+        System.out.println("Query the balance of the specified account");
+        System.out.println("Usage: \ngetBalance accountAddress");
+        System.out.println("* accountAddress -- The address of the account.");
+    }
+
+    public static void addBalanceHelp() {
+        System.out.println("Add balance to the specified account");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, addBalance accountAddress amount [unit].");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("* amount -- The amount of token to add.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
+    public static void subBalanceHelp() {
+        System.out.println("Sub balance from the specified account");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, subBalance accountAddress amount [unit].");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("* amount -- The amount of token to sub.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
+    public static void transferBalanceHelp() {
+        System.out.println("Transfer token from address A to address B");
+        System.out.println(
+                "Usage: \nOnly balanceGovernor can use it, transferBalance fromAddress toAddress amount [unit].");
+        System.out.println("* fromAddress -- The address of the sender.");
+        System.out.println("* toAddress -- The address of the receiver.");
+        System.out.println("* amount -- The amount of token to transfer.");
+        System.out.println(
+                "* unit -- (optional) The unit of amount, default is wei, support \"wei\", \"kwei\", \"mwei\", \"gwei\", \"szabo\", \"finney\", \"ether\", \"kether\", \"mether\", \"gether\".");
+        System.out.println(
+                "[Note]: 1 ether = 10^18 wei = 10^15 kwei = 10^12 mwei = 10^9 gwei = 10^6 szabo = 10^3 finney");
+    }
+
+    public static void registerBalanceGovernorHelp() {
+        System.out.println("Register the specified account to balanceGovernor");
+        System.out.println(
+                "Usage: \nOnly governor account can use it, registerBalanceGovernor accountAddress.");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("[Note]: The caller must be a contract address.");
+        System.out.println("[Note]: The request initiator account must be governor.");
+    }
+
+    public static void unregisterBalanceGovernorHelp() {
+        System.out.println("Unregister the specified account from balanceGovernor");
+        System.out.println(
+                "Usage: \nOnly governor account can use it, unregisterBalanceGovernor to accountAddress.");
+        System.out.println("* accountAddress -- The address of the account.");
+        System.out.println("[Note]: The caller must be a contract address.");
+        System.out.println("[Note]: The request initiator account must be governor.");
+    }
+
+    public static void listBalanceGovernorHelp() {
+        System.out.println("List all registered balanceGovernor.");
+        System.out.println("Usage: listBalanceGovernor");
+    }
+
     public static void startHelp() {
         System.out.println("Please provide one of the following ways to start the console.");
         System.out.println("Usage: ");
@@ -415,14 +548,13 @@ public class HelpInfo {
 
     public static void listAbiHelp(boolean isWasm) {
         System.out.println("List functions and events info of the contract.");
-        System.out.println("Usage: listAbi [contractPath/contractName]");
+        System.out.println("Usage: listAbi [contractPath/contractName/contractAddress]");
         if (isWasm) {
-            System.out.println(
-                    "contractPath[Required] -- The BFS path of Liquid contract, this contract should be deployed in this console.");
+            System.out.println("contractAddress[Required] -- The BFS path of Liquid contract.");
             return;
         }
         System.out.println(
-                "contractPath/contractName[Required] -- The name or the path of a contract, if a name is specified, the contract should in the default directory \"contracts/solidity\"");
+                "contractPath/Name/Address[Required] -- The name or address or the path of a contract, if a name is specified, the contract should in the default directory \"contracts/solidity\"");
     }
 
     public static void changeDirHelp() {
@@ -458,6 +590,21 @@ public class HelpInfo {
     public static void pwdHelp() {
         System.out.println("Show absolute path of working directory name.");
         System.out.println("Usage: pwd");
+    }
+
+    public static void getContractShardHelp() {
+        System.out.println("Get a contract's belonging shard");
+        System.out.println("Usage: getContractShard [contractAddress]");
+    }
+
+    public static void makeShardHelp() {
+        System.out.println("Make a shard");
+        System.out.println("Usage: makeShard [shardName]");
+    }
+
+    public static void linkShardHelp() {
+        System.out.println("Add a contract to a shard");
+        System.out.println("Usage: linkShard [contractAddress] [shardName]");
     }
 
     public static void initializeHelp() {
@@ -639,6 +786,19 @@ public class HelpInfo {
                 "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
     }
 
+    public static void removeNodeProposalHelp() {
+        System.out.println(
+                "Create a proposal to committee, which attempt to remove a consensus node.");
+        System.out.println(
+                "\033[32m"
+                        + "[Note]: this command is only available for governors of committee."
+                        + "\033[m");
+        ConsoleUtils.singleLine();
+        System.out.println("Usage: removeNodeProposal [nodeID]");
+        System.out.println(
+                "nodeID[Required] -- The ID of consensus node, it's length should be 128 in hex.");
+    }
+
     public static void setSysConfigProposalHelp() {
         System.out.println("Create a proposal to committee, which attempt to set system config.");
         System.out.println(
@@ -647,27 +807,7 @@ public class HelpInfo {
                         + "\033[m");
         ConsoleUtils.singleLine();
         System.out.println("Usage: setSysConfigProposal [key] [value]");
-        System.out.println(
-                "* key   -- The name of system config(tx_count_limit/tx_gas_limit/consensus_leader_period supported currently).");
-        System.out.println("* value -- The value of system config to be set.");
-        System.out.println(
-                "      -- The value of "
-                        + Common.TxCountLimit
-                        + " "
-                        + Common.TxCountLimitRange
-                        + "(default 1000).");
-        System.out.println(
-                "      -- the value of "
-                        + Common.TxGasLimit
-                        + " "
-                        + Common.TxGasLimitRange
-                        + "(default 3000000000).");
-        System.out.println(
-                "      -- the value of  "
-                        + Common.ConsensusLeaderPeriod
-                        + " "
-                        + Common.ConsensusLeaderPeriodRange
-                        + "(default 1).");
+        systemConfigHelper();
     }
 
     public static void upgradeVoteProposalHelp() {

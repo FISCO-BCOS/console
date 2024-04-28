@@ -1,5 +1,6 @@
 package console.precompiled;
 
+import console.ConsoleInitializer;
 import console.common.Common;
 import console.common.ConsoleUtils;
 import console.contract.model.AbiAndBin;
@@ -8,6 +9,7 @@ import console.exception.ConsoleMessageException;
 import console.precompiled.model.CRUDParseUtils;
 import console.precompiled.model.Table;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -15,25 +17,32 @@ import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.Set;
 import net.sf.jsqlparser.JSQLParserException;
 import org.apache.commons.io.FilenameUtils;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
+import org.fisco.bcos.sdk.v3.contract.precompiled.balance.BalanceService;
+import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSPrecompiled.BfsInfo;
 import org.fisco.bcos.sdk.v3.contract.precompiled.bfs.BFSService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.consensus.ConsensusService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.TableCRUDService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Condition;
+import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.ConditionV320;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.Entry;
 import org.fisco.bcos.sdk.v3.contract.precompiled.crud.common.UpdateFields;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sharding.ShardingService;
 import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
+import org.fisco.bcos.sdk.v3.model.EnumNodeVersion;
 import org.fisco.bcos.sdk.v3.model.PrecompiledConstant;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
+import org.fisco.bcos.sdk.v3.transaction.tools.Convert;
 import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
@@ -43,12 +52,13 @@ import org.slf4j.LoggerFactory;
 public class PrecompiledImpl implements PrecompiledFace {
 
     private static final Logger logger = LoggerFactory.getLogger(PrecompiledImpl.class);
-
     private Client client;
     private ConsensusService consensusService;
     private SystemConfigService systemConfigService;
     private TableCRUDService tableCRUDService;
     private BFSService bfsService;
+    private ShardingService shardingService;
+    private BalanceService balanceService;
     private String pwd = "/apps";
 
     public PrecompiledImpl(Client client) {
@@ -58,6 +68,8 @@ public class PrecompiledImpl implements PrecompiledFace {
         this.systemConfigService = new SystemConfigService(client, cryptoKeyPair);
         this.tableCRUDService = new TableCRUDService(client, cryptoKeyPair);
         this.bfsService = new BFSService(client, cryptoKeyPair);
+        this.shardingService = new ShardingService(client, cryptoKeyPair);
+        this.balanceService = new BalanceService(client, cryptoKeyPair);
     }
 
     @Override
@@ -105,10 +117,23 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
-    public void setSystemConfigByKey(String[] params) throws Exception {
+    public void setSystemConfigByKey(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
         String key = params[1];
         String value = params[2];
-        ConsoleUtils.printJson(this.systemConfigService.setValueByKey(key, value).toString());
+        if (params.length > 3 && key.equals(SystemConfigService.TX_GAS_PRICE)) {
+            Convert.Unit unit = Convert.Unit.fromString(params[3]);
+            BigDecimal weiValue = Convert.toWei(value, unit);
+            value = weiValue.toBigIntegerExact().toString();
+        }
+        RetCode retCode = this.systemConfigService.setValueByKey(key, value);
+        ConsoleUtils.printJson(retCode.toString());
+        if (key.equals(SystemConfigService.COMPATIBILITY_VERSION)
+                && retCode.code == PrecompiledRetCode.CODE_SUCCESS.code) {
+            String[] param = new String[2];
+            param[1] = consoleInitializer.getGroupID();
+            consoleInitializer.switchGroup(param);
+        }
     }
 
     @Override
@@ -118,7 +143,14 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (tableName.endsWith(";")) {
             tableName = tableName.substring(0, tableName.length() - 1);
         }
-        Map<String, List<String>> tableDesc = tableCRUDService.desc(tableName);
+        Map<String, List<String>> tableDesc;
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueFromCompatibilityVersion(tableCRUDService.getCurrentVersion());
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+            tableDesc = tableCRUDService.descWithKeyOrder(tableName);
+        } else {
+            tableDesc = tableCRUDService.desc(tableName);
+        }
         ConsoleUtils.printJson(ObjectMapperFactory.getObjectMapper().writeValueAsString(tableDesc));
     }
 
@@ -138,9 +170,21 @@ public class PrecompiledImpl implements PrecompiledFace {
             return;
         }
         CRUDParseUtils.parseCreateTable(sql, table);
-        RetCode result =
-                tableCRUDService.createTable(
-                        table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        EnumNodeVersion.Version supportedVersion =
+                EnumNodeVersion.valueFromCompatibilityVersion(tableCRUDService.getCurrentVersion());
+        RetCode result;
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+            result =
+                    tableCRUDService.createTable(
+                            table.getTableName(),
+                            table.getKeyOrder(),
+                            table.getKeyFieldName(),
+                            table.getValueFields());
+        } else {
+            result =
+                    tableCRUDService.createTable(
+                            table.getTableName(), table.getKeyFieldName(), table.getValueFields());
+        }
 
         // parse the result
         if (result.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
@@ -179,7 +223,15 @@ public class PrecompiledImpl implements PrecompiledFace {
         try {
             Table table = new Table();
             String tableName = CRUDParseUtils.parseTableNameFromSql(sql);
-            Map<String, List<String>> descTable = tableCRUDService.desc(tableName);
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueFromCompatibilityVersion(
+                            tableCRUDService.getCurrentVersion());
+            Map<String, List<String>> descTable;
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                descTable = tableCRUDService.descWithKeyOrder(tableName);
+            } else {
+                descTable = tableCRUDService.desc(tableName);
+            }
             table.setTableName(tableName);
             if (!checkTableExistence(descTable)) {
                 System.out.println("The table \"" + tableName + "\" doesn't exist!");
@@ -233,13 +285,27 @@ public class PrecompiledImpl implements PrecompiledFace {
                 return;
             }
             table.setKeyFieldName(keyName);
-            Condition condition = CRUDParseUtils.parseUpdate(sql, table, updateFields);
+            table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
 
-            String keyValue = condition.getEqValue();
-            RetCode updateResult =
-                    keyValue.isEmpty()
-                            ? tableCRUDService.update(tableName, condition, updateFields)
-                            : tableCRUDService.update(tableName, keyValue, updateFields);
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueFromCompatibilityVersion(
+                            tableCRUDService.getCurrentVersion());
+            RetCode updateResult;
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                ConditionV320 conditionV320 = new ConditionV320();
+                CRUDParseUtils.parseUpdate(sql, table, conditionV320, updateFields);
+                updateResult = tableCRUDService.update(tableName, conditionV320, updateFields);
+            } else {
+                Condition condition = new Condition();
+                CRUDParseUtils.parseUpdate(sql, table, condition, updateFields);
+
+                String keyValue = condition.getEqValue();
+                updateResult =
+                        keyValue.isEmpty()
+                                ? tableCRUDService.update(tableName, condition, updateFields)
+                                : tableCRUDService.update(tableName, keyValue, updateFields);
+            }
+
             if (updateResult.getCode() >= 0) {
                 System.out.println(updateResult.getCode() + " row affected.");
             } else {
@@ -268,12 +334,26 @@ public class PrecompiledImpl implements PrecompiledFace {
                 return;
             }
             table.setKeyFieldName(descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0));
-            Condition condition = CRUDParseUtils.parseRemove(sql, table);
-            String keyValue = condition.getEqValue();
-            RetCode removeResult =
-                    keyValue.isEmpty()
-                            ? tableCRUDService.remove(table.getTableName(), condition)
-                            : tableCRUDService.remove(table.getTableName(), keyValue);
+            table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
+
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueFromCompatibilityVersion(
+                            tableCRUDService.getCurrentVersion());
+
+            RetCode removeResult;
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                ConditionV320 conditionV320 = new ConditionV320();
+                CRUDParseUtils.parseRemove(sql, table, conditionV320);
+                removeResult = tableCRUDService.remove(table.getTableName(), conditionV320);
+            } else {
+                Condition condition = new Condition();
+                CRUDParseUtils.parseRemove(sql, table, condition);
+                String keyValue = condition.getEqValue();
+                removeResult =
+                        keyValue.isEmpty()
+                                ? tableCRUDService.remove(table.getTableName(), condition)
+                                : tableCRUDService.remove(table.getTableName(), keyValue);
+            }
 
             if (removeResult.getCode() >= 0) {
                 System.out.println("Remove OK, " + removeResult.getCode() + " row(s) affected.");
@@ -293,7 +373,7 @@ public class PrecompiledImpl implements PrecompiledFace {
 
     private boolean checkTableExistence(Map<String, List<String>> descTable) {
         return descTable.size() != 0
-                && !descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0).equals("");
+                && !descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0).isEmpty();
     }
 
     @Override
@@ -310,19 +390,31 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
             String keyField = descTable.get(PrecompiledConstant.KEY_FIELD_NAME).get(0);
             table.setKeyFieldName(keyField);
-            Condition condition = CRUDParseUtils.parseSelect(sql, table, selectColumns);
-            String keyValue = condition.getEqValue();
+            table.setValueFields(descTable.get(PrecompiledConstant.VALUE_FIELD_NAME));
+
+            EnumNodeVersion.Version supportedVersion =
+                    EnumNodeVersion.valueFromCompatibilityVersion(
+                            tableCRUDService.getCurrentVersion());
             List<Map<String, String>> result = new ArrayList<>();
-            if (keyValue.isEmpty()) {
-                result = tableCRUDService.select(table.getTableName(), descTable, condition);
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_2_0.toVersionObj()) >= 0) {
+                ConditionV320 conditionV320 = new ConditionV320();
+                CRUDParseUtils.parseSelect(sql, table, selectColumns, conditionV320);
+                result = tableCRUDService.select(table.getTableName(), descTable, conditionV320);
             } else {
-                Map<String, String> select =
-                        tableCRUDService.select(table.getTableName(), descTable, keyValue);
-                if (select.isEmpty()) {
-                    System.out.println("Empty set.");
-                    return;
+                Condition condition = new Condition();
+                CRUDParseUtils.parseSelect(sql, table, selectColumns, condition);
+                String keyValue = condition.getEqValue();
+                if (keyValue.isEmpty()) {
+                    result = tableCRUDService.select(table.getTableName(), descTable, condition);
+                } else {
+                    Map<String, String> select =
+                            tableCRUDService.select(table.getTableName(), descTable, keyValue);
+                    if (select.isEmpty()) {
+                        System.out.println("Empty set.");
+                        return;
+                    }
+                    result.add(select);
                 }
-                result.add(select);
             }
             int rows;
             if (result.isEmpty()) {
@@ -382,26 +474,39 @@ public class PrecompiledImpl implements PrecompiledFace {
             pwd = path;
             return;
         }
-        Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
-        String parentDir = parentAndBase.getValue1();
-        String baseName = parentAndBase.getValue2();
-        List<BfsInfo> listResult = bfsService.list(parentDir);
-        if (!listResult.isEmpty()) {
-            boolean findFlag = false;
-            for (BfsInfo bfsInfo : listResult) {
-                if (bfsInfo.getFileName().equals(baseName)) {
-                    findFlag = true;
-                    if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
-                        throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
-                    }
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            BFSInfo bfsInfo = bfsService.isExist(path);
+            if (bfsInfo != null) {
+                if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                    throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
                 }
-            }
-            if (!findFlag) {
+            } else {
                 logger.error("cd: no such file or directory: '{}'", path);
-                throw new Exception("cd: no such file or directory: " + baseName);
+                throw new Exception("cd: no such file or directory: " + params[1]);
             }
         } else {
-            throw new Exception("cd: no such file or directory: " + params[1]);
+            Tuple2<String, String> parentAndBase = ConsoleUtils.getParentPathAndBaseName(path);
+            String parentDir = parentAndBase.getValue1();
+            String baseName = parentAndBase.getValue2();
+            List<BfsInfo> listResult = bfsService.list(parentDir);
+            if (!listResult.isEmpty()) {
+                boolean findFlag = false;
+                for (BfsInfo bfsInfo : listResult) {
+                    if (bfsInfo.getFileName().equals(baseName)) {
+                        findFlag = true;
+                        if (!bfsInfo.getFileType().equals(Common.BFS_TYPE_DIR)) {
+                            throw new Exception("cd: not a directory: " + bfsInfo.getFileName());
+                        }
+                    }
+                }
+                if (!findFlag) {
+                    logger.error("cd: no such file or directory: '{}'", path);
+                    throw new Exception("cd: no such file or directory: " + baseName);
+                }
+            } else {
+                throw new Exception("cd: no such file or directory: " + params[1]);
+            }
         }
         pwd = path;
     }
@@ -411,7 +516,7 @@ public class PrecompiledImpl implements PrecompiledFace {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
         String path = fixedBfsParams[1];
         RetCode mkdir = bfsService.mkdir(path);
-        logger.info("mkdir: make new dir {}", path);
+        logger.info("mkdir: make new dir {}, retCode {}", path, mkdir);
         if (mkdir.getCode() == PrecompiledRetCode.CODE_FILE_INVALID_PATH.getCode()) {
             if (!path.startsWith("/apps/") && !path.startsWith("/tables/")) {
                 System.out.println("Only permitted to mkdir in '/apps/' and '/tables/'");
@@ -426,32 +531,72 @@ public class PrecompiledImpl implements PrecompiledFace {
         String[] fixedBfsParams = ConsoleUtils.fixedBfsParams(params, pwd);
 
         String listPath = fixedBfsParams.length == 1 ? pwd : fixedBfsParams[1];
-        List<BfsInfo> fileInfoList = bfsService.list(listPath);
-        String baseName = FilenameUtils.getBaseName(listPath);
-        int newLineCount = 0;
-        for (BfsInfo fileInfo : fileInfoList) {
-            newLineCount++;
-            switch (fileInfo.getFileType()) {
-                case Common.BFS_TYPE_CON:
-                    System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
-                    break;
-                case Common.BFS_TYPE_DIR:
-                    System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
-                    break;
-                case Common.BFS_TYPE_LNK:
-                    System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
-                    if (fileInfoList.size() == 1 && fileInfo.getFileName().equals(baseName)) {
-                        System.out.print(" -> " + fileInfo.getExt().get(0));
-                    }
-                    System.out.print('\t');
-                    break;
-                default:
+        BigInteger fileLeft = BigInteger.ZERO;
+        BigInteger offset = BigInteger.ZERO;
+        do {
+            Tuple2<BigInteger, List<BfsInfo>> fileInfoList;
+            EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
+            if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+                fileInfoList = bfsService.list(listPath, offset, Common.LS_DEFAULT_COUNT);
+            } else {
+                fileInfoList = new Tuple2<>(BigInteger.ZERO, bfsService.list(listPath));
+            }
+            fileLeft = fileInfoList.getValue1();
+            String baseName = FilenameUtils.getBaseName(listPath);
+            int newLineCount = 0;
+            for (BfsInfo fileInfo : fileInfoList.getValue2()) {
+                newLineCount++;
+                switch (fileInfo.getFileType()) {
+                    case Common.BFS_TYPE_CON:
+                        System.out.print("\033[31m" + fileInfo.getFileName() + "\033[m" + '\t');
+                        break;
+                    case Common.BFS_TYPE_DIR:
+                        System.out.print("\033[36m" + fileInfo.getFileName() + "\033[m" + '\t');
+                        break;
+                    case Common.BFS_TYPE_LNK:
+                        System.out.print("\033[35m" + fileInfo.getFileName() + "\033[m");
+                        if (fileInfoList.getValue2().size() == 1
+                                && fileInfo.getFileName().equals(baseName)) {
+                            System.out.print(" -> " + fileInfo.getExt().get(0));
+                            System.out.println();
+                            if (listPath.startsWith(ContractCompiler.BFS_SYS_PREFIX)) {
+                                // /sys/ bfsInfo
+                                System.out.println(
+                                        listPath
+                                                + ": built-in contract, you can use it's address in contract to call interfaces.");
+                            }
+                        }
+                        System.out.print('\t');
+                        break;
+                    default:
+                        System.out.println();
+                        break;
+                }
+                if (newLineCount % 6 == 0) {
                     System.out.println();
-                    break;
+                }
             }
-            if (newLineCount % 6 == 0) {
+            if (fileLeft.compareTo(BigInteger.ZERO) > 0) {
+                offset = offset.add(Common.LS_DEFAULT_COUNT);
                 System.out.println();
+                ConsoleUtils.singleLine();
+                System.out.print(
+                        "----------------------- "
+                                + fileLeft
+                                + " File(s) left, continue to scan? (Y/N)-----------------------");
+                Scanner sc = new Scanner(System.in);
+                String nextString = sc.nextLine().toLowerCase().replace("\n", "");
+                if (!"y".equals(nextString)) {
+                    break;
+                }
             }
+        } while (fileLeft.compareTo(BigInteger.ZERO) > 0);
+
+        if (fileLeft.compareTo(BigInteger.ZERO) < 0) {
+            RetCode precompiledResponse =
+                    PrecompiledRetCode.getPrecompiledResponse(fileLeft.intValue(), "");
+            throw new ContractException(
+                    precompiledResponse.getMessage(), precompiledResponse.getCode());
         }
     }
 
@@ -489,18 +634,17 @@ public class PrecompiledImpl implements PrecompiledFace {
                         ? ConsoleUtils.fixedBfsParam(params[2], pwd)
                                 .substring(ContractCompiler.BFS_APPS_PREFIX.length())
                         : params[2];
-        List<String> path2Level = ConsoleUtils.path2Level(linkPath);
-        if (path2Level.size() != 3 || !path2Level.get(0).equals("apps")) {
-            System.out.println("Link must in /apps, and not support multi-level directory.");
-            System.out.println("Example: ln /apps/Name/Version 0x1234567890");
-            return;
-        }
-        String contractName = path2Level.get(1);
-        String contractVersion = path2Level.get(2);
         if (!client.isWASM() && !AddressUtils.isValidAddress(contractAddress)) {
             System.out.println("Contract address is invalid, address: " + contractAddress);
         }
+        if (!linkPath.startsWith(ContractCompiler.BFS_APPS_PREFIX)) {
+            System.out.println("Link must locate in /apps.");
+            System.out.println("Example: ln /apps/Name 0x1234567890abcd");
+            return;
+        }
         String abi = "";
+        String contractName = FilenameUtils.getBaseName(linkPath);
+        // get ABI
         try {
             String wasmAbiAddress = "";
             if (client.isWASM()) {
@@ -539,9 +683,263 @@ public class PrecompiledImpl implements PrecompiledFace {
             }
         }
 
-        ConsoleUtils.printJson(
-                bfsService.link(contractName, contractVersion, contractAddress, abi).toString());
+        RetCode retCode;
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            retCode =
+                    bfsService.link(
+                            linkPath.substring(ContractCompiler.BFS_APPS_PREFIX.length()),
+                            contractAddress,
+                            abi);
+        } else {
+            List<String> levels = ConsoleUtils.path2Level(linkPath);
+            if (levels.size() != 3) {
+                retCode = PrecompiledRetCode.CODE_FILE_INVALID_PATH;
+            } else {
+                String name = levels.get(1);
+                String version = levels.get(2);
+                retCode = bfsService.link(name, version, contractAddress, abi);
+            }
+        }
+        ConsoleUtils.printJson(retCode.toString());
         System.out.println();
+    }
+
+    @Override
+    public void getContractShard(String[] params) throws Exception {
+        String shard = this.shardingService.getContractShard(params[1]);
+        if (shard.isEmpty()) {
+            shard = "default";
+        } else {
+            shard = "/shards/" + shard;
+        }
+
+        System.out.println(shard);
+    }
+
+    @Override
+    public void makeShard(String[] params) throws Exception {
+        String shardName = params[1];
+        RetCode retCode = this.shardingService.makeShard(shardName);
+
+        logger.info("makeShard: {}, retCode {}", shardName, retCode);
+        // parse the result
+        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println("make shard " + shardName + " Ok. You can use 'ls' to check");
+        } else {
+            System.out.println("make shard " + shardName + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void linkShard(String[] params) throws Exception {
+        String address = params[1];
+        String shardName = params[2];
+        RetCode retCode = this.shardingService.linkShard(shardName, address);
+
+        logger.info("linkShard: add {} to {}, retCode {}", address, shardName, retCode);
+        // parse the result
+        if (retCode.getCode() == PrecompiledRetCode.CODE_SUCCESS.getCode()) {
+            System.out.println(
+                    "Add " + address + " to " + shardName + " Ok. You can use 'ls' to check");
+        } else {
+            System.out.println("Add " + address + " to " + shardName + " failed ");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void fixBFS(String[] params) throws Exception {
+        ConsoleUtils.printJson(bfsService.fixBfs().toString());
+    }
+
+    @Override
+    public void getBalance(String[] params) throws Exception {
+        String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        BigInteger result = this.balanceService.getBalance(address);
+        System.out.println("balance: " + result + " wei");
+    }
+
+    @Override
+    public void addBalance(String[] params) throws Exception {
+        String address = params[1];
+        String amount = params[2];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 3) {
+            unit = Convert.Unit.fromString(params[3]);
+        }
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to addBalance.");
+            return;
+        }
+        RetCode retCode = this.balanceService.addBalance(address, amount, unit);
+
+        logger.info("addBalance: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
+                    "add balance " + address + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("add balance " + address + " failed.");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void subBalance(String[] params) throws Exception {
+        String address = params[1];
+        String amount = params[2];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 3) {
+            unit = Convert.Unit.fromString(params[3]);
+        }
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to subBalance.");
+            return;
+        }
+        RetCode retCode = this.balanceService.subBalance(address, amount, unit);
+
+        logger.info("subBalance: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
+                    "sub balance " + address + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("sub balance " + address + " failed. receipt.");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    public void transferBalance(String[] params) throws Exception {
+        String from = params[1];
+        String to = params[2];
+        String amount = params[3];
+        Convert.Unit unit = Convert.Unit.WEI;
+        if (params.length > 4) {
+            unit = Convert.Unit.fromString(params[4]);
+        }
+        if (!AddressUtils.isValidAddress(from)) {
+            System.out.println("Invalid from address: " + from);
+            return;
+        }
+        if (!AddressUtils.isValidAddress(to)) {
+            System.out.println("Invalid to address: " + to);
+            return;
+        }
+        if (!ConsoleUtils.isValidNumber(amount)) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        BigDecimal value = new BigDecimal(amount);
+        if (value.compareTo(BigDecimal.ZERO) < 0) {
+            System.out.println("Invalid amount: " + amount);
+            return;
+        }
+        if (value.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Amount is zero, no need to transferBalance.");
+            return;
+        }
+        RetCode retCode = this.balanceService.transfer(from, to, amount, unit);
+
+        logger.info("transferBalance: {}, retCode {}", from, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println(
+                    "transfer "
+                            + amount
+                            + unit.toString()
+                            + " from "
+                            + from
+                            + " to "
+                            + to
+                            + " success. You can use 'getBalance' to check");
+        } else {
+            System.out.println("transfer " + amount + " from " + from + " to " + to + " failed.");
+            ConsoleUtils.printJson(retCode.toString());
+        }
+    }
+
+    @Override
+    public void registerBalanceGovernor(String[] params) throws Exception {
+        String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        RetCode retCode = this.balanceService.registerCaller(address);
+
+        logger.info("registerBalanceGovernor: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println("register balanceGovernor " + address + " success.");
+        } else {
+            System.out.println("register balanceGovernor " + address + " failed. ");
+        }
+    }
+
+    @Override
+    public void unregisterBalanceGovernor(String[] params) throws Exception {
+        String address = params[1];
+        if (!AddressUtils.isValidAddress(address)) {
+            System.out.println("Invalid address: " + address);
+            return;
+        }
+        RetCode retCode = this.balanceService.unregisterCaller(address);
+
+        logger.info("unregisterBalanceGovernor: {}, retCode {}", address, retCode);
+        // parse the result
+        if (retCode == PrecompiledRetCode.CODE_SUCCESS) {
+            System.out.println(
+                    "transaction hash:" + retCode.getTransactionReceipt().getTransactionHash());
+            System.out.println("unregister balanceGovernor " + address + " success.");
+        } else {
+            System.out.println("unregister balanceGovernor " + address + " failed.");
+        }
+    }
+
+    @Override
+    public void listBalanceGovernor() throws Exception {
+        List<String> result = this.balanceService.listCaller();
+        System.out.println("listBalanceGovernor: " + result.toString());
     }
 
     @Override
@@ -552,9 +950,18 @@ public class PrecompiledImpl implements PrecompiledFace {
     private Tuple2<Integer, Integer> travelBfs(
             String absolutePath, String prefix, int deep, int limit) throws ContractException {
         if (deep >= limit) return new Tuple2<>(0, 0);
-        Integer dirCount = 0;
-        Integer contractCount = 0;
-        List<BfsInfo> children = bfsService.list(absolutePath);
+        int dirCount = 0;
+        int contractCount = 0;
+        BigInteger offset = BigInteger.ZERO;
+        EnumNodeVersion.Version supportedVersion = bfsService.getCurrentVersion();
+        Tuple2<BigInteger, List<BfsInfo>> fileInfoList;
+        if (supportedVersion.compareTo(EnumNodeVersion.BCOS_3_1_0.toVersionObj()) >= 0) {
+            fileInfoList = bfsService.list(absolutePath, offset, Common.LS_DEFAULT_COUNT);
+        } else {
+            fileInfoList = new Tuple2<>(BigInteger.ZERO, bfsService.list(absolutePath));
+        }
+        BigInteger fileLeft = fileInfoList.getValue1();
+        List<BfsInfo> children = fileInfoList.getValue2();
         for (int i = 0; i < children.size(); i++) {
             String thisPrefix = "";
             String nextPrefix = "";
@@ -564,7 +971,11 @@ public class PrecompiledImpl implements PrecompiledFace {
                     thisPrefix = prefix + "├─";
                 } else {
                     nextPrefix = prefix + "  ";
-                    thisPrefix = prefix + "└─";
+                    if (fileLeft.compareTo(BigInteger.ZERO) > 0) {
+                        thisPrefix = prefix + "├─";
+                    } else {
+                        thisPrefix = prefix + "└─";
+                    }
                 }
                 System.out.println(thisPrefix + children.get(i).getFileName());
                 if (children.get(i).getFileType().equals(Common.BFS_TYPE_DIR)) {
@@ -581,6 +992,9 @@ public class PrecompiledImpl implements PrecompiledFace {
                     contractCount += childCount.getValue2();
                 } else {
                     contractCount++;
+                }
+                if (fileLeft.compareTo(BigInteger.ZERO) > 0 && i == children.size() - 1) {
+                    System.out.println(prefix + "└─" + "... " + fileLeft + " left files...");
                 }
             }
         }

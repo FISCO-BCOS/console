@@ -2,6 +2,7 @@ package console.auth;
 
 import console.ConsoleInitializer;
 import console.common.ConsoleUtils;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -9,10 +10,12 @@ import java.util.Objects;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple3;
 import org.fisco.bcos.sdk.v3.contract.auth.manager.AuthManager;
+import org.fisco.bcos.sdk.v3.contract.auth.po.AccessStatus;
 import org.fisco.bcos.sdk.v3.contract.auth.po.AuthType;
 import org.fisco.bcos.sdk.v3.contract.auth.po.CommitteeInfo;
 import org.fisco.bcos.sdk.v3.contract.auth.po.GovernorInfo;
 import org.fisco.bcos.sdk.v3.contract.auth.po.ProposalInfo;
+import org.fisco.bcos.sdk.v3.contract.precompiled.sysconfig.SystemConfigService;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.PrecompiledRetCode;
 import org.fisco.bcos.sdk.v3.model.RetCode;
@@ -20,6 +23,8 @@ import org.fisco.bcos.sdk.v3.model.TransactionReceipt;
 import org.fisco.bcos.sdk.v3.transaction.codec.decode.ReceiptParser;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.ContractException;
 import org.fisco.bcos.sdk.v3.transaction.model.exception.TransactionException;
+import org.fisco.bcos.sdk.v3.transaction.tools.Convert;
+import org.fisco.bcos.sdk.v3.utils.AddressUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +37,7 @@ public class AuthImpl implements AuthFace {
 
     public AuthImpl(Client client) {
         CryptoKeyPair cryptoKeyPair = client.getCryptoSuite().getCryptoKeyPair();
-        boolean authAvailable = client.isAuthCheck() && !client.isWASM();
+        boolean authAvailable = client.isEnableCommittee() && !client.isWASM();
         if (authAvailable) {
             this.authManager = new AuthManager(client, cryptoKeyPair);
         } else {
@@ -215,13 +220,25 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
-    public void createSetSysConfigProposal(String[] params) throws Exception {
+    public void createSetSysConfigProposal(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception {
         String key = params[1];
         String value = params[2];
+        if (params.length > 3 && key.equals(SystemConfigService.TX_GAS_PRICE)) {
+            Convert.Unit unit = Convert.Unit.fromString(params[3]);
+            BigDecimal weiValue = Convert.toWei(value, unit);
+            value = weiValue.toBigIntegerExact().toString();
+        }
 
         BigInteger proposalId = authManager.createSetSysConfigProposal(key, value);
         System.out.println("Set system config proposal created, ID is: " + proposalId);
         showProposalInfo(proposalId);
+        if (key.equals(SystemConfigService.COMPATIBILITY_VERSION)
+                && proposalId.compareTo(BigInteger.ZERO) > 0) {
+            String[] param = new String[2];
+            param[1] = consoleInitializer.getGroupID();
+            consoleInitializer.switchGroup(param);
+        }
     }
 
     @Override
@@ -302,6 +319,14 @@ public class AuthImpl implements AuthFace {
                         params[2],
                         BigInteger.ONE,
                         BigInteger.valueOf(Integer.MAX_VALUE));
+        if (from.compareTo(to) > 0) {
+            System.out.println("Query From should be less than To.");
+            return;
+        }
+        if (to.subtract(from).compareTo(BigInteger.valueOf(100)) > 0) {
+            System.out.println("Query range should be less than 100.");
+            return;
+        }
         List<ProposalInfo> proposalInfoList = authManager.getProposalInfoList(from, to);
         int showFrom = from.intValue();
         for (ProposalInfo proposalInfo : proposalInfoList) {
@@ -579,15 +604,72 @@ public class AuthImpl implements AuthFace {
     }
 
     @Override
+    public void abolishContract(String[] params) throws Exception {
+        String contract = params[1];
+        checkValidAddress(contract, "contractAddress");
+        RetCode result = authManager.setContractStatus(contract, AccessStatus.Abolish);
+        ConsoleUtils.printJson(result.toString());
+    }
+
+    @Override
     public void getContractStatus(String[] params) throws Exception {
         String contract = params[1];
         checkValidAddress(contract, "contractAddress");
         Boolean isAvailable = authManager.contractAvailable(contract);
-        System.out.println(isAvailable ? "Available" : "Freeze");
+        System.out.println(isAvailable ? "Available" : "Unavailable");
+    }
+
+    @Override
+    public void freezeAccount(String[] params) throws Exception {
+        String account = params[1];
+        if (!AddressUtils.isValidAddress(account)) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
+            return;
+        }
+        RetCode retCode = authManager.setAccountStatus(account, AccessStatus.Freeze);
+        ConsoleUtils.printJson(retCode.toString());
+    }
+
+    @Override
+    public void unfreezeAccount(String[] params) throws Exception {
+        String account = params[1];
+        if (!AddressUtils.isValidAddress(account)) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
+            return;
+        }
+        RetCode retCode = authManager.setAccountStatus(account, AccessStatus.Normal);
+        ConsoleUtils.printJson(retCode.toString());
+    }
+
+    @Override
+    public void abolishAccount(String[] params) throws Exception {
+        String account = params[1];
+        if (!AddressUtils.isValidAddress(account)) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_ADDRESS_INVALID.toString());
+            return;
+        }
+        RetCode retCode = authManager.setAccountStatus(account, AccessStatus.Abolish);
+        ConsoleUtils.printJson(retCode.toString());
+    }
+
+    @Override
+    public void getAccountStatus(String[] params) throws Exception {
+        String account = params[1];
+        checkValidAddress(account, "accountAddress");
+        Boolean isNormal = authManager.accountAvailable(account);
+        System.out.println("Account " + account + " status: " + (isNormal ? "Normal" : "Abnormal"));
+    }
+
+    @Override
+    public void initAuth(String[] params) throws Exception {
+        String admin = params[1];
+        checkValidAddress(admin, "adminAddress");
+        RetCode retCode = authManager.initAuth(admin);
+        ConsoleUtils.printJson(retCode.toString());
     }
 
     void checkValidAddress(String address, String valueName) throws TransactionException {
-        if (!ConsoleUtils.isValidAddress(address)) {
+        if (!AddressUtils.isValidAddress(address)) {
             throw new TransactionException(
                     "Invalid address "
                             + (valueName.isEmpty() ? "" : ("for " + valueName))

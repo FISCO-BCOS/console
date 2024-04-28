@@ -1,5 +1,7 @@
 package console.precompiled;
 
+import console.ConsoleInitializer;
+
 public interface PrecompiledFace {
     // ConsensusPrecompiled
     void addSealer(String[] params) throws Exception;
@@ -8,7 +10,8 @@ public interface PrecompiledFace {
 
     void removeNode(String[] params) throws Exception;
 
-    void setSystemConfigByKey(String[] params) throws Exception;
+    void setSystemConfigByKey(ConsoleInitializer consoleInitializer, String[] params)
+            throws Exception;
 
     void createTable(String sql) throws Exception;
 
@@ -35,6 +38,28 @@ public interface PrecompiledFace {
     void tree(String[] params) throws Exception;
 
     void link(String[] params) throws Exception;
+
+    void getContractShard(String[] params) throws Exception;
+
+    void makeShard(String[] params) throws Exception;
+
+    void linkShard(String[] params) throws Exception;
+
+    void fixBFS(String[] params) throws Exception;
+
+    void getBalance(String[] params) throws Exception;
+
+    void addBalance(String[] params) throws Exception;
+
+    void subBalance(String[] params) throws Exception;
+
+    void transferBalance(String[] params) throws Exception;
+
+    void registerBalanceGovernor(String[] params) throws Exception;
+
+    void unregisterBalanceGovernor(String[] params) throws Exception;
+
+    void listBalanceGovernor() throws Exception;
 
     String getPwd();
 }

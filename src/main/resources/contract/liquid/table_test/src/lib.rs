@@ -3,10 +3,14 @@
 use liquid::storage;
 use liquid_lang as liquid;
 use liquid_lang::InOut;
-use liquid_prelude::{string::String, vec::Vec};
+use liquid_prelude::{
+    string::{String, ToString},
+    vec::Vec,
+};
 
 #[derive(InOut)]
 pub struct TableInfo {
+    key_order: u8,
     key_column: String,
     value_columns: Vec<String>,
 }
@@ -19,21 +23,14 @@ pub struct Entry {
 
 #[derive(InOut)]
 pub struct UpdateField {
-    field_name: String,
+    column_name: String,
     value: String,
 }
 
 #[derive(InOut)]
-pub enum ConditionOP {
-    GT(u8),
-    GE(u8),
-    LT(u8),
-    LE(u8),
-}
-
-#[derive(InOut)]
 pub struct Condition {
-    op: ConditionOP,
+    op: u8,
+    field: String,
     value: String,
 }
 
@@ -56,10 +53,15 @@ mod table {
     use super::*;
 
     extern "liquid" {
-        fn select(&self, key: String) -> Entry;
+        fn select(&self, key: Vec<Condition>, limit: Limit) -> Vec<Entry>;
         fn insert(&mut self, entry: Entry) -> i32;
-        fn update(&mut self, key: String, update_fields: Vec<UpdateField>) -> i32;
-        fn remove(&mut self, key: String) -> i32;
+        fn update(
+            &mut self,
+            key: Vec<Condition>,
+            limit: Limit,
+            update_fields: Vec<UpdateField>,
+        ) -> i32;
+        fn remove(&mut self, key: Vec<Condition>, limit: Limit) -> i32;
     }
 }
 
@@ -91,40 +93,59 @@ mod table_test {
     #[liquid(methods)]
     impl TableTest {
         pub fn new(&mut self) {
-            self.table_name.initialize(String::from("t_test"));
+            self.table_name.initialize(String::from("t_testV320"));
             self.tm
                 .initialize(TableManager::at("/sys/table_manager".parse().unwrap()));
 
-            let mut column_names = Vec::new();
+            let mut column_names: Vec<String> = Vec::new();
             column_names.push(String::from("name"));
             column_names.push(String::from("age"));
+            column_names.push(String::from("status"));
             let ti = TableInfo {
+                key_order: 1,
                 key_column: String::from("id"),
                 value_columns: column_names,
             };
 
             self.tm.createTable(self.table_name.clone(), ti);
             self.table
-                .initialize(Table::at("/tables/t_test".parse().unwrap()));
+                .initialize(Table::at("/tables/t_testV320".parse().unwrap()));
         }
 
-        pub fn select(&self, id: String) -> (String, String) {
-            let entry = self.table.select(id).unwrap();
+        pub fn select(&self, id_low: i64, id_high: i64) -> Vec<String> {
+            let limit = Limit {
+                offset: 0,
+                count: 500,
+            };
+            let mut conditions: Vec<Condition> = Vec::new();
+            conditions.push(Condition {
+                op: 0,
+                field: String::from("id"),
+                value: id_low.to_string(),
+            });
 
-            if entry.fields.len() < 1 {
-                return (Default::default(), Default::default());
+            conditions.push(Condition {
+                op: 3,
+                field: String::from("id"),
+                value: id_high.to_string(),
+            });
+
+            let entries = self.table.select(conditions, limit).unwrap();
+            let mut values: Vec<String> = Vec::new();
+            for entry in entries {
+                values.push(entry.fields[0].clone());
             }
-
-            return (entry.fields[0].clone(), entry.fields[1].clone());
+            return values.clone();
         }
 
-        pub fn insert(&mut self, id: String, name: String, age: String) -> i32 {
+        pub fn insert(&mut self, id: i64, name: String, age: String) -> i32 {
             let mut values = Vec::new();
             values.push(name);
             values.push(age);
+            values.push(String::from("init"));
 
             let entry = Entry {
-                key: id,
+                key: id.to_string(),
                 fields: values,
             };
             let result = self.table.insert(entry).unwrap();
@@ -134,27 +155,55 @@ mod table_test {
             return result;
         }
 
-        pub fn update(&mut self, id: String, name: String, age: String) -> i32 {
+        pub fn update(&mut self, id_low: i64, id_high: i64) -> i32 {
             let mut update_fields = Vec::new();
             update_fields.push(UpdateField {
-                field_name: String::from("name"),
-                value: name,
+                column_name: String::from("status"),
+                value: String::from("updated"),
             });
 
-            update_fields.push(UpdateField {
-                field_name: String::from("age"),
-                value: age,
+            let limit = Limit {
+                offset: 0,
+                count: 500,
+            };
+            let mut conditions: Vec<Condition> = Vec::new();
+            conditions.push(Condition {
+                op: 0,
+                field: String::from("id"),
+                value: id_low.to_string(),
             });
 
-            let result = self.table.update(id, update_fields).unwrap();
+            conditions.push(Condition {
+                op: 3,
+                field: String::from("id"),
+                value: id_high.to_string(),
+            });
+
+            let result = self.table.update(conditions, limit, update_fields).unwrap();
             self.env().emit(UpdateResult {
                 count: result.clone(),
             });
             return result;
         }
 
-        pub fn remove(&mut self, id: String) -> i32 {
-            let result = self.table.remove(id).unwrap();
+        pub fn remove(&mut self, id_low: i64, id_high: i64) -> i32 {
+            let limit = Limit {
+                offset: 0,
+                count: 500,
+            };
+            let mut conditions: Vec<Condition> = Vec::new();
+            conditions.push(Condition {
+                op: 0,
+                field: String::from("id"),
+                value: id_low.to_string(),
+            });
+
+            conditions.push(Condition {
+                op: 3,
+                field: String::from("id"),
+                value: id_high.to_string(),
+            });
+            let result = self.table.remove(conditions, limit).unwrap();
             self.env().emit(RemoveResult {
                 count: result.clone(),
             });

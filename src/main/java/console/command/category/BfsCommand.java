@@ -93,6 +93,16 @@ public class BfsCommand extends BasicCategoryCommand {
                     2,
                     2);
 
+    public static final CommandInfo FIX_BFS =
+            new CommandInfo(
+                    "fixBFS",
+                    "Fix the bfs bug of the specified version.",
+                    () -> System.out.println("Fix the bfs bug of the specified version."),
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getPrecompiledFace().fixBFS(params),
+                    0,
+                    0);
+
     public static final CommandInfo PWD =
             new CommandInfo(
                     "pwd",

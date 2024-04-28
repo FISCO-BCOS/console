@@ -6,6 +6,7 @@ import console.client.ConsoleClientFace;
 import console.client.ConsoleClientImpl;
 import console.collaboration.CollaborationFace;
 import console.collaboration.CollaborationImpl;
+import console.command.JlineUtils;
 import console.common.ConsoleUtils;
 import console.contract.ConsoleContractFace;
 import console.contract.ConsoleContractImpl;
@@ -24,6 +25,7 @@ import org.fisco.bcos.sdk.v3.crypto.CryptoSuite;
 import org.fisco.bcos.sdk.v3.crypto.exceptions.LoadKeyStoreException;
 import org.fisco.bcos.sdk.v3.crypto.keypair.CryptoKeyPair;
 import org.fisco.bcos.sdk.v3.model.CryptoType;
+import org.jline.reader.LineReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +44,19 @@ public class ConsoleInitializer {
     private AuthFace authFace;
     private CollaborationFace collaborationFace;
     private boolean disableAutoCompleter = false;
+    private LineReader lineReader;
+    private boolean useV1TxService;
+
+    // v2 transaction extension
+    private byte[] extension;
+
+    public LineReader getLineReader() {
+        return lineReader;
+    }
+
+    public void setLineReader(LineReader lineReader) {
+        this.lineReader = lineReader;
+    }
 
     public void init(String[] args) throws ConfigException {
         AccountInfo accountInfo = null;
@@ -58,14 +73,28 @@ public class ConsoleInitializer {
 
         accountInfo = loadConfig(args);
         loadAccountInfo(accountInfo, groupID);
+
+        if (args.length > 3 && "-v1".equals(args[3])) {
+            // use v1 transaction service
+            logger.info("use v1 transaction service");
+            useV1TxService = true;
+        }
+        if (args.length > 3 && "-v2".equals(args[3])) {
+            logger.info("use v2 transaction service");
+            useV1TxService = true;
+            extension = args.length > 4 ? args[4].getBytes() : null;
+        }
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
-        this.consoleContractFace = new ConsoleContractImpl(client);
+        this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
+        if (extension != null) {
+            ((ConsoleContractImpl) this.consoleContractFace).setExtension(extension);
+        }
         this.collaborationFace = new CollaborationImpl(client);
         this.authFace = new AuthImpl(client);
     }
 
-    private class AccountInfo {
+    private static class AccountInfo {
         private String accountFileFormat;
         private String accountFile;
         private String password;
@@ -125,7 +154,11 @@ public class ConsoleInitializer {
                 System.exit(0);
             }
 
-            if (args.length == 3) {
+            if (config.getCryptoMaterialConfig().getEnableHsm()) {
+                return new AccountInfo("HSM", "", "");
+            }
+
+            if (args.length >= 3) {
                 return loadAccount(bcosSDK, args);
             }
         } catch (NumberFormatException e) {
@@ -150,30 +183,36 @@ public class ConsoleInitializer {
                     .getConfig()
                     .getAccountConfig()
                     .isAccountConfigured()) {
-                accountInfo = loadAccountRandomly(bcosSDK, client);
-                if (accountInfo != null) {
+                // load key from account dir
+                AccountInfo newAccountInfo = loadAccountRandomly(bcosSDK, client);
+                if (newAccountInfo != null) {
                     this.client
                             .getCryptoSuite()
                             .loadAccount(
-                                    accountInfo.accountFileFormat,
-                                    accountInfo.accountFile,
-                                    accountInfo.password);
+                                    newAccountInfo.accountFileFormat,
+                                    newAccountInfo.accountFile,
+                                    newAccountInfo.password);
                 }
-                if (accountInfo == null) {
+                if (newAccountInfo == null) {
+                    // still not found key, use client crypto key pair
                     // save the keyPair
                     client.getCryptoSuite().getCryptoKeyPair().storeKeyPairWithPemFormat();
                 }
             }
         } catch (LoadKeyStoreException e) {
-            logger.warn(
+            logger.error(
                     "loadAccountRandomly failed, try to generate and load the random account, error info: {}",
                     e.getMessage(),
                     e);
+            System.out.println(
+                    "Failed to load the account from the keyStoreDir, error info: "
+                            + e.getMessage());
+            System.exit(0);
         } catch (Exception e) {
             System.out.println(
                     "Failed to create BcosSDK failed! Please check the node status and the console configuration, error info: "
                             + e.getMessage());
-            logger.error(" message: {}, e: {}", e.getMessage(), e);
+            logger.error(" message: {}", e.getMessage(), e);
             System.exit(0);
         }
     }
@@ -216,12 +255,12 @@ public class ConsoleInitializer {
             System.out.println("Invalid param " + params[1] + ", must be -pem or -p12");
             System.exit(0);
         }
-        if (params[1].compareToIgnoreCase("-pem") == 0 && params.length != 3) {
+        if (params[1].compareToIgnoreCase("-pem") == 0 && params.length < 3) {
             System.out.println(
                     "Load account from the pem file failed! Please specified the pem file path");
             System.exit(0);
         }
-        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length != 3) {
+        if (params[1].compareToIgnoreCase("-p12") == 0 && params.length < 3) {
             System.out.println(
                     "Load account from the p12 file failed! Please specified the p12 file path");
             System.exit(0);
@@ -256,9 +295,14 @@ public class ConsoleInitializer {
             }
             this.consoleClientFace = new ConsoleClientImpl(client);
             this.precompiledFace = new PrecompiledImpl(client);
-            this.consoleContractFace = new ConsoleContractImpl(client);
+            this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
+            if (extension != null) {
+                ((ConsoleContractImpl) this.consoleContractFace).setExtension(extension);
+            }
             this.collaborationFace = new CollaborationImpl(client);
             this.authFace = new AuthImpl(client);
+            JlineUtils.switchGroup(client);
+            this.lineReader = JlineUtils.getLineReader();
             System.out.println("Switched to group " + group + ".");
             System.out.println();
         } catch (Exception e) {
@@ -328,7 +372,10 @@ public class ConsoleInitializer {
         cryptoSuite.loadAccount(accountFormat, accountPath, accountPassword);
         this.consoleClientFace = new ConsoleClientImpl(client);
         this.precompiledFace = new PrecompiledImpl(client);
-        this.consoleContractFace = new ConsoleContractImpl(client);
+        this.consoleContractFace = new ConsoleContractImpl(client, useV1TxService);
+        if (extension != null) {
+            ((ConsoleContractImpl) this.consoleContractFace).setExtension(extension);
+        }
         this.collaborationFace = new CollaborationImpl(client);
         this.authFace = new AuthImpl(client);
         System.out.println("Load account " + params[1] + " success!");
