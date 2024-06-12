@@ -11,8 +11,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.v3.client.protocol.model.JsonTransactionResponse;
@@ -148,10 +152,29 @@ public class ConsoleClientImpl implements ConsoleClientFace {
         if (blockByNumber.getBlock() == null) {
             System.out.println("Block not found, please check number: " + blockNumber);
         } else {
-            ConsoleUtils.printJson(
-                    client.getBlockByNumber(BigInteger.valueOf(blockNumber), false, flag)
-                            .getBlock()
-                            .toString());
+            ConsoleUtils.printJson(blockByNumber.getBlock().toString());
+        }
+    }
+
+    @Override
+    public void getLatestBlock(String[] params) throws IOException {
+        boolean flag = false;
+        if (params.length == 2) {
+            if ("true".equals(params[1])) {
+                flag = true;
+            } else if ("false".equals(params[1])) {
+                flag = false;
+            } else {
+                System.out.println("Please provide true or false for the second parameter.");
+                return;
+            }
+        }
+        BigInteger blockNumber = client.getBlockNumber().getBlockNumber();
+        BcosBlock block = client.getBlockByNumber(blockNumber, false, flag);
+        if (block.getBlock() == null) {
+            System.out.println("Block not found, please check number: " + blockNumber);
+        } else {
+            ConsoleUtils.printJson(block.getBlock().toString());
         }
     }
 
@@ -324,6 +347,39 @@ public class ConsoleClientImpl implements ConsoleClientFace {
             String value = client.getSystemConfigByKey(key).getSystemConfig().getValue();
             System.out.println(value);
         }
+    }
+
+    @Override
+    public void listConfigs(String[] params) throws Exception {
+        Map<String, Optional<SystemConfig>> systemConfigList = client.getSystemConfigList();
+        int longestKeySize = 0;
+        for (String key : systemConfigList.keySet()) {
+            if (key.length() > longestKeySize) {
+                longestKeySize = key.length();
+            }
+        }
+        String leftAlignFormat = "| %-" + longestKeySize + "s | %-14s | %-12s |%n";
+        String separatorLine =
+                Stream.generate(() -> "-").limit(longestKeySize + 2).collect(Collectors.joining());
+        String adaptableTitle =
+                "| Config"
+                        + Stream.generate(() -> " ")
+                                .limit(longestKeySize - "Config".length())
+                                .collect(Collectors.joining());
+        System.out.println("+" + separatorLine + "+----------------+--------------+");
+        System.out.println(adaptableTitle + " | Value          | Enable Block |");
+        System.out.println("+" + separatorLine + "+----------------+--------------+");
+        systemConfigList.forEach(
+                (key, value) -> {
+                    String configValue = "null";
+                    long blockNumber = 0;
+                    if (value.isPresent()) {
+                        configValue = value.get().getSystemConfig().getValue();
+                        blockNumber = value.get().getSystemConfig().getBlockNumber();
+                    }
+                    System.out.format(leftAlignFormat, key, configValue, blockNumber);
+                });
+        System.out.println("+" + separatorLine + "+----------------+--------------+");
     }
 
     @Override
