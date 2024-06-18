@@ -28,6 +28,8 @@ public interface ConsoleClientFace {
 
     void getBlockByNumber(String[] params) throws IOException;
 
+    void getLatestBlock(String[] params) throws IOException;
+
     void getBlockHeaderByHash(String[] params) throws IOException;
 
     void getBlockHashByNumber(String[] params) throws IOException;
@@ -49,6 +51,8 @@ public interface ConsoleClientFace {
     void getTotalTransactionCount(String[] params) throws IOException;
 
     void getSystemConfigByKey(String[] params) throws Exception;
+
+    void listConfigs(String[] params) throws Exception;
 
     void newAccount(String[] params);
 

@@ -79,8 +79,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printJson(
-                    this.consensusService.addSealer(nodeId, BigInteger.valueOf(weight)).toString());
+            RetCode retCode = this.consensusService.addSealer(nodeId, BigInteger.valueOf(weight));
+            ConsoleUtils.printJson(retCode.toString());
+            if (retCode.getCode() == PrecompiledRetCode.CODE_NO_AUTHORIZED.getCode()) {
+                System.out.println(
+                        "Maybe you should use 'addSealerProposal' command to change system config.");
+            }
         }
     }
 
@@ -90,7 +94,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printJson(this.consensusService.addObserver(nodeId).toString());
+            RetCode retCode = this.consensusService.addObserver(nodeId);
+            ConsoleUtils.printJson(retCode.toString());
+            if (retCode.getCode() == PrecompiledRetCode.CODE_NO_AUTHORIZED.getCode()) {
+                System.out.println(
+                        "Maybe you should use 'addObserverProposal' command to change system config.");
+            }
         }
     }
 
@@ -100,7 +109,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printJson(this.consensusService.removeNode(nodeId).toString());
+            RetCode retCode = this.consensusService.removeNode(nodeId);
+            ConsoleUtils.printJson(retCode.toString());
+            if (retCode.getCode() == PrecompiledRetCode.CODE_NO_AUTHORIZED.getCode()) {
+                System.out.println(
+                        "Maybe you should use 'removeNodeProposal' command to change system config.");
+            }
         }
     }
 
@@ -111,8 +125,12 @@ public class PrecompiledImpl implements PrecompiledFace {
         if (nodeId.length() != 128) {
             ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
         } else {
-            ConsoleUtils.printJson(
-                    this.consensusService.setWeight(nodeId, BigInteger.valueOf(weight)).toString());
+            RetCode retCode = this.consensusService.setWeight(nodeId, BigInteger.valueOf(weight));
+            ConsoleUtils.printJson(retCode.toString());
+            if (retCode.getCode() == PrecompiledRetCode.CODE_NO_AUTHORIZED.getCode()) {
+                System.out.println(
+                        "Maybe you should use 'setConsensusNodeWeightProposal' command to change system config.");
+            }
         }
     }
 
@@ -128,6 +146,10 @@ public class PrecompiledImpl implements PrecompiledFace {
         }
         RetCode retCode = this.systemConfigService.setValueByKey(key, value);
         ConsoleUtils.printJson(retCode.toString());
+        if (retCode.getCode() == PrecompiledRetCode.CODE_NO_AUTHORIZED.getCode()) {
+            System.out.println(
+                    "Maybe you should use 'setSysConfigProposal' command to change system config.");
+        }
         if (key.equals(SystemConfigService.COMPATIBILITY_VERSION)
                 && retCode.code == PrecompiledRetCode.CODE_SUCCESS.code) {
             String[] param = new String[2];

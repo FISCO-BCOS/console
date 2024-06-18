@@ -156,6 +156,13 @@ public class HelpInfo {
                 "* boolean -- (optional) If true it returns only the hashes of the transactions, if false then return the full transaction objects.");
     }
 
+    public static void getLatestBlockHelp() {
+        System.out.println("Query the latest block.");
+        System.out.println("Usage: \ngetLatestBlock [boolean]");
+        System.out.println(
+                "* boolean -- (optional) If true it returns only the hashes of the transactions, if false then return the full transaction objects.");
+    }
+
     public static void getBlockHeaderByHashHelp() {
         System.out.println("Query information about a block header by hash.");
         System.out.println("Usage: \ngetBlockHeaderByHash blockHash [boolean]");
@@ -417,6 +424,11 @@ public class HelpInfo {
         System.out.println("* key -- The name of system config.");
         System.out.println(
                 "    -- supported keys: " + String.join(",", Common.SUPPORTED_SYSTEM_KEYS));
+    }
+
+    public static void listSystemConfigsHelp() {
+        System.out.println("List all support system configs.");
+        System.out.println("Usage: \nlistSystemConfigs ");
     }
 
     public static void operateGroupHelp(String command, String operator) {

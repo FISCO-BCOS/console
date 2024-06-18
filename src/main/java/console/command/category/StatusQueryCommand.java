@@ -67,6 +67,16 @@ public class StatusQueryCommand extends BasicCategoryCommand {
                     (consoleInitializer, params, pwd) ->
                             consoleInitializer.getConsoleClientFace().getBlockNumber(params));
 
+    public static final CommandInfo GET_LATEST_BLOCK =
+            new CommandInfo(
+                    "getLatestBlock",
+                    "Query the latest block",
+                    HelpInfo::getLatestBlockHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().getLatestBlock(params),
+                    0,
+                    1);
+
     public static final CommandInfo GET_BLOCK_HASH_BY_NUMBER =
             new CommandInfo(
                     "getBlockHashByNumber",
@@ -202,6 +212,16 @@ public class StatusQueryCommand extends BasicCategoryCommand {
                             consoleInitializer.getConsoleClientFace().getSystemConfigByKey(params),
                     1,
                     1);
+
+    public static final CommandInfo LIST_CONFIGS =
+            new CommandInfo(
+                    "listSystemConfigs",
+                    "List all support system configs",
+                    HelpInfo::listSystemConfigsHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleClientFace().listConfigs(params),
+                    0,
+                    0);
 
     static {
         Field[] fields = StatusQueryCommand.class.getDeclaredFields();
