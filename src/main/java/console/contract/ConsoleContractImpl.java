@@ -247,7 +247,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throws ConsoleMessageException {
         try {
             boolean isContractParallelAnalysis = false;
-            Version version = Version.V0_8_11;
+            Version version = Version.V0_8_26;
             if (!inputParams.isEmpty()) {
                 int lastIndexOf = inputParams.lastIndexOf("-p");
                 if (lastIndexOf != -1) {
@@ -1080,7 +1080,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
         logger.debug(
                 "compileSolToBinAndAbi, solc version:{} ,basePath: {}",
-                Version.V0_8_11,
+                Version.V0_8_26,
                 solFile.getParentFile().getCanonicalPath());
         SolidityCompiler.Option basePath =
                 new SolidityCompiler.CustomOption(
@@ -1093,7 +1093,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         solFile,
                         (client.getCryptoType() == CryptoType.SM_TYPE),
                         true,
-                        Version.V0_8_11,
+                        Version.V0_8_26,
                         options.toArray(new SolidityCompiler.Option[0]));
 
         if (logger.isDebugEnabled()) {
