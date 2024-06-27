@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity >=0.6.10 <0.8.20;
+pragma solidity >=0.6.10 <=0.8.26;
 
 import "./Cast.sol";
 
 contract CastTest {
-    Cast constant cast =  Cast(address(0x100f));
+    Cast constant cast = Cast(address(0x100f));
+
     function stringToS256(string memory _s) public virtual view returns (int256){
         return cast.stringToS256(_s);
     }
+
     function stringToS64(string memory _s) public virtual view returns (int64){
         return cast.stringToS64(_s);
     }

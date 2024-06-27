@@ -1,12 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
-pragma solidity >=0.6.10 <0.8.20;
+pragma solidity >=0.6.10 <=0.8.26;
+
 pragma experimental ABIEncoderV2;
 
 abstract contract Cast {
     function stringToS256(string memory) public virtual view returns (int256);
+
     function stringToS64(string memory) public virtual view returns (int64);
+
     function stringToU256(string memory) public virtual view returns (uint256);
+
     function stringToAddr(string memory) public virtual view returns (address);
+
     function stringToBytes32(string memory) public virtual view returns (bytes32);
     
     function s256ToString(int256) public virtual view returns (string memory);
