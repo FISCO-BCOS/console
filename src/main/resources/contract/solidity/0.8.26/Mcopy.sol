@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.6.10 <=0.8.26;
+
 contract Mcopy {
     function memoryCopy() external pure returns (bytes32 x) {
         assembly {

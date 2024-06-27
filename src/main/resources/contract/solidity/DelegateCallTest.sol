@@ -1,4 +1,4 @@
-
+pragma solidity >=0.6.10 <=0.8.26;
 
 contract DelegateCallDest {
     int public value = 0;
