@@ -247,7 +247,18 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throws ConsoleMessageException {
         try {
             boolean isContractParallelAnalysis = false;
-            Version version = Version.V0_8_26;
+            Version version = Version.V0_8_11;
+            try {
+                String flag =
+                        client.getSystemConfigByKey("feature_evm_cancun")
+                                .getSystemConfig()
+                                .getValue();
+                if (Integer.parseInt(flag) == 1) {
+                    version = Version.V0_8_26;
+                }
+            } catch (Exception e) {
+                version = Version.V0_8_11;
+            }
             if (!inputParams.isEmpty()) {
                 int lastIndexOf = inputParams.lastIndexOf("-p");
                 if (lastIndexOf != -1) {
@@ -1077,10 +1088,20 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
         List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
         List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
+        Version version = Version.V0_8_11;
+        try {
+            String flag =
+                    client.getSystemConfigByKey("feature_evm_cancun").getSystemConfig().getValue();
+            if (Integer.parseInt(flag) == 1) {
+                version = Version.V0_8_26;
+            }
+        } catch (Exception e) {
+            version = Version.V0_8_11;
+        }
 
         logger.debug(
                 "compileSolToBinAndAbi, solc version:{} ,basePath: {}",
-                Version.V0_8_26,
+                version,
                 solFile.getParentFile().getCanonicalPath());
         SolidityCompiler.Option basePath =
                 new SolidityCompiler.CustomOption(
@@ -1093,7 +1114,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                         solFile,
                         (client.getCryptoType() == CryptoType.SM_TYPE),
                         true,
-                        Version.V0_8_26,
+                        version,
                         options.toArray(new SolidityCompiler.Option[0]));
 
         if (logger.isDebugEnabled()) {

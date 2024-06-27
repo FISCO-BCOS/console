@@ -1,4 +1,3 @@
-pragma solidity >=0.6.10 <=0.8.26;
 
 contract HelloWorld {
     string name;

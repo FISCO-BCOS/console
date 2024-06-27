@@ -860,7 +860,7 @@ public class ConsoleUtils {
         String LIBS_OPTION = "libraries";
 
         String SOL_VERSION_OPTION = "sol-version";
-        Version DEFAULT_SOL_VERSION = Version.V0_8_26;
+        Version DEFAULT_SOL_VERSION = Version.V0_8_11;
 
         String BIN_OPTION = "bin";
         String SM_BIN_OPTION = "sm-bin";
