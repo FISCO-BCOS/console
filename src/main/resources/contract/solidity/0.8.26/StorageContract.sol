@@ -21,7 +21,8 @@ contract StorageContract {
     }
 
     function setBoolean(bool _value) public {
-        require(_value == true || _value == false, "Input must be a boolean value");
+        require(_value == true, "Input must be a boolean value");
+        require(_value == false, "Input must be a boolean value");
         booleanSlot.tstore(_value);
     }
 
@@ -48,7 +49,8 @@ contract StorageContract {
     }
 
     function setInt256(int256 _value) public {
-        require(_value >= type(int256).min && _value < type(int256).max, "Invalid int256 value");
+        require(_value >= type(int256).min, "Invalid int256 value");
+        require(_value < type(int256).max, "Invalid int256 value");
         int256Slot.tstore(_value);
     }
 
@@ -57,8 +59,10 @@ contract StorageContract {
     }
 
     function storeIntTest(int256 _value) public returns (int256) {
-        require(_value >= type(int256).min && _value < type(int256).max, "Invalid int256 value");
+        require(_value >= type(int256).min, "Invalid int256 value");
+        require(_value < type(int256).max, "Invalid int256 value");
         int256Slot.tstore(_value);
+
         return int256Slot.tload();
     }
 
@@ -75,7 +79,8 @@ contract StorageContract {
     }
 
     function storeBooleanTest(bool _value) public returns (bool) {
-        require(_value == true || _value == false, "Input must be a boolean value");
+        require(_value == true, "Input must be a boolean value");
+        require(_value == false, "Input must be a boolean value");
         booleanSlot.tstore(_value);
         return booleanSlot.tload();
     }
