@@ -45,7 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ ubuntu-20.04 ]
-    container: docker.io/centos:7
+    container: docker.io/centos:latest
     steps:
       - uses: actions/checkout@v2
         with:
