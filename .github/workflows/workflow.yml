@@ -52,7 +52,10 @@ jobs:
           fetch-depth: 5
       - name: install CentOS dependencies
         run: |
-          yum clean all
+          cd /etc/yum.repos.d/
+          sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+          sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+          yum update -y
           yum install -y which git openssl-devel openssl wget
       - name: Set up JDK 1.8
         uses: actions/setup-java@v3
