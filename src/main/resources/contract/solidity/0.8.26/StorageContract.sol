@@ -52,6 +52,7 @@ contract StorageContract {
         require(_value >= type(int256).min, "Invalid int256 value");
         require(_value < type(int256).max, "Invalid int256 value");
         int256Slot.tstore(_value);
+
         return int256Slot.tload();
     }
 
