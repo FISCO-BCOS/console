@@ -20,16 +20,6 @@ contract StorageContract {
         return addressSlot.tload();
     }
 
-    function setBoolean(bool _value) public {
-        require(_value == true, "Input must be a boolean value");
-        require(_value == false, "Input must be a boolean value");
-        booleanSlot.tstore(_value);
-    }
-
-    function getBoolean() public view returns (bool) {
-        return booleanSlot.tload();
-    }
-
     function setBytes32(bytes32 _value) public {
         require(_value != bytes32(0), "Invalid bytes32 value");
         bytes32Slot.tstore(_value);
@@ -62,7 +52,6 @@ contract StorageContract {
         require(_value >= type(int256).min, "Invalid int256 value");
         require(_value < type(int256).max, "Invalid int256 value");
         int256Slot.tstore(_value);
-
         return int256Slot.tload();
     }
 
@@ -79,8 +68,6 @@ contract StorageContract {
     }
 
     function storeBooleanTest(bool _value) public returns (bool) {
-        require(_value == true, "Input must be a boolean value");
-        require(_value == false, "Input must be a boolean value");
         booleanSlot.tstore(_value);
         return booleanSlot.tload();
     }
