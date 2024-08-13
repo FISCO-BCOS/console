@@ -28,8 +28,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.codegen.v3.exceptions.CodeGenException;
 import org.fisco.bcos.codegen.v3.utils.CodeGenUtils;
@@ -70,27 +75,25 @@ public class ContractCompiler {
             throws CompileContractException {
         // if absolute path
         File contractFile = new File(contractNameOrPath);
-        // the contractPath
-        if (contractFile.exists() && !contractFile.isDirectory()) {
-            return dynamicCompileSolFilesToJava(
-                    contractFile, specifyContractName, sm, isContractParallelAnalysis, version);
-        }
 
-        // if absolute path without sol
-        // try again with .sol suffix
-        contractFile = new File(contractNameOrPath + SOL_SUFFIX);
-        if (contractFile.exists() && !contractFile.isDirectory()) {
-            return dynamicCompileSolFilesToJava(
-                    contractFile, specifyContractName, sm, isContractParallelAnalysis, version);
-        }
-
-        // if relative path in contracts/
-        // the contractName
-        String contractFileName = ConsoleUtils.removeSolSuffix(contractNameOrPath) + SOL_SUFFIX;
-        contractFile = new File(SOLIDITY_PATH + File.separator + contractFileName);
-        if (!contractFile.exists()) {
-            throw new CompileContractException(
-                    "There is no " + contractFileName + " in the directory of " + SOLIDITY_PATH);
+        if (!contractFile.exists() || contractFile.isDirectory()) {
+            // if absolute path without sol
+            // try again with .sol suffix
+            contractFile = new File(contractNameOrPath + SOL_SUFFIX);
+            if (!contractFile.exists() || contractFile.isDirectory()) {
+                // if relative path in contracts/
+                // the contractName
+                String contractFileName =
+                        ConsoleUtils.removeSolSuffix(contractNameOrPath) + SOL_SUFFIX;
+                contractFile = new File(SOLIDITY_PATH + File.separator + contractFileName);
+                if (!contractFile.exists()) {
+                    throw new CompileContractException(
+                            "There is no "
+                                    + contractFileName
+                                    + " in the directory of "
+                                    + SOLIDITY_PATH);
+                }
+            }
         }
         return dynamicCompileSolFilesToJava(
                 contractFile, specifyContractName, sm, isContractParallelAnalysis, version);
@@ -131,53 +134,42 @@ public class ContractCompiler {
             boolean isContractParallelAnalysis,
             Version version)
             throws IOException, CompileContractException {
-        if (compileType == OnlyNonSM) {
+        if (compileType != All) {
             return compileSolToBinAndAbi(
                     contractFile,
                     abiDir,
                     binDir,
-                    false,
+                    compileType == OnlySM,
                     librariesOption,
                     specifyContractName,
                     isContractParallelAnalysis,
                     version);
-        } else if (compileType == OnlySM) {
-            return compileSolToBinAndAbi(
-                    contractFile,
-                    abiDir,
-                    binDir,
-                    true,
-                    librariesOption,
-                    specifyContractName,
-                    isContractParallelAnalysis,
-                    version);
-        } else {
-            AbiAndBin abiAndBin =
-                    compileSolToBinAndAbi(
-                            contractFile,
-                            abiDir,
-                            binDir,
-                            false,
-                            librariesOption,
-                            specifyContractName,
-                            isContractParallelAnalysis,
-                            version);
-            AbiAndBin abiAndBinSM =
-                    compileSolToBinAndAbi(
-                            contractFile,
-                            abiDir,
-                            binDir,
-                            true,
-                            librariesOption,
-                            specifyContractName,
-                            isContractParallelAnalysis,
-                            version);
-            return new AbiAndBin(
-                    abiAndBin.getAbi(),
-                    abiAndBin.getBin(),
-                    abiAndBinSM.getSmBin(),
-                    abiAndBin.getDevdoc());
         }
+        AbiAndBin abiAndBin =
+                compileSolToBinAndAbi(
+                        contractFile,
+                        abiDir,
+                        binDir,
+                        false,
+                        librariesOption,
+                        specifyContractName,
+                        isContractParallelAnalysis,
+                        version);
+        AbiAndBin abiAndBinSM =
+                compileSolToBinAndAbi(
+                        contractFile,
+                        abiDir,
+                        binDir,
+                        true,
+                        librariesOption,
+                        specifyContractName,
+                        isContractParallelAnalysis,
+                        version);
+        return new AbiAndBin(
+                abiAndBin.getAbi(),
+                abiAndBin.getBin(),
+                abiAndBinSM.getSmBin(),
+                abiAndBin.getDevdoc());
     }
 
     // compile with libraries option
@@ -220,9 +212,15 @@ public class ContractCompiler {
         } else {
             logger.debug("compileSolToBinAndAbi, solc version:{}", version);
         }
+
+        String fileName = contractFile.getName();
+        String dir = contractFile.getParentFile().getCanonicalPath() + File.separator;
+
+        String mergedSource = mergeSource(dir, fileName, new HashSet<>());
+
         SolidityCompiler.Result res =
                 SolidityCompiler.compile(
-                        contractFile,
+                        mergedSource.getBytes(StandardCharsets.UTF_8),
                         sm,
                         true,
                         version,
@@ -274,6 +272,58 @@ public class ContractCompiler {
         abiAndBin.setAbi(abi);
         checkBinaryCode(contractName, meta.bin);
         return abiAndBin;
+    }
+
+    public static String mergeSource(String currentDir, String sourceFile, Set<String> dependencies)
+            throws IOException {
+        StringBuilder sourceBuffer = new StringBuilder();
+
+        String fullPath = currentDir + sourceFile;
+        String dir = fullPath.substring(0, fullPath.lastIndexOf(File.separator)) + File.separator;
+
+        File sourceResource = new File(fullPath);
+
+        if (!sourceResource.exists()) {
+            throw new IOException("Source file:" + fullPath + " not found");
+        }
+
+        Pattern pattern = Pattern.compile("^\\s*import\\s+[\"'](.+)[\"']\\s*;\\s*$");
+        try (Scanner scanner = new Scanner(sourceResource, "UTF-8")) {
+            while (scanner.hasNextLine()) {
+                String line = scanner.nextLine();
+                if (line.contains("pragma experimental ABIEncoderV2;")) {
+                    if (!dependencies.contains("pragma experimental ABIEncoderV2;")) {
+                        dependencies.add("pragma experimental ABIEncoderV2;");
+                        sourceBuffer.append(line);
+                        sourceBuffer.append(System.lineSeparator());
+                    }
+                    continue;
+                }
+
+                // skip SPDX-License-Identifier
+                if (line.contains("SPDX-License-Identifier")) {
+                    continue;
+                }
+
+                Matcher matcher = pattern.matcher(line);
+                if (matcher.find()) {
+                    String depSourcePath = matcher.group(1);
+                    String nextPath = dir + depSourcePath;
+                    if (nextPath.contains("./")) {
+                        nextPath = new File(nextPath).getCanonicalPath();
+                    }
+                    if (!dependencies.contains(nextPath)) {
+                        dependencies.add(nextPath);
+                        sourceBuffer.append(mergeSource(dir, depSourcePath, dependencies));
+                    }
+                } else {
+                    sourceBuffer.append(line);
+                    sourceBuffer.append(System.lineSeparator());
+                }
+            }
+        }
+
+        return sourceBuffer.toString();
     }
 
     public static void checkBinaryCode(String contractName, String binary)
