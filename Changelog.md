@@ -1,10 +1,30 @@
+## v3.8.0
+
+(2024-08-20)
+
+请阅读控制台 v3.x+文档：
+
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
+
+### 新增
+
+- 在编译合约时支持解析所有依赖合约，并合并成同一份合约文件。详情见：[#853](https://github.com/FISCO-BCOS/console/pull/853)
+- 新增在部署合约时指定编译器版本的功能，支持 `deploy` 命令后使用 `-v` 或者 `--sol-version` 参数指定编译器版本编译合约。详情见：[#846](https://github.com/FISCO-BCOS/console/pull/846)
+- 新增 `listSystemConfigs` 命令，可以查看链上所有系统配置项。详情见：[#848](https://github.com/FISCO-BCOS/console/pull/848)
+- 新增 `getLatestBlock` 命令，可以查看链上最新的区块信息。详情见：[#848](https://github.com/FISCO-BCOS/console/pull/848)
+- 新增Solidity `0.8.26` 版本的支持，提供示例合约。详情见：[#851](https://github.com/FISCO-BCOS/console/pull/851)
+
+### 更新
+
+- 更新 `code-generator` 到 `1.6.0` 版本，以支持根据Solidity合约中devdoc和userdoc生成Java接口注释，解决合约接口返回struct类型时生成Java接口文件的问题。
+
 ## v3.7.0
 
 (2024-03-25)
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
@@ -38,7 +58,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
@@ -74,7 +94,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
@@ -107,7 +127,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 更新
 
@@ -129,7 +149,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
@@ -165,7 +185,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
@@ -194,7 +214,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
@@ -210,7 +230,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
@@ -239,7 +259,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
@@ -267,7 +287,7 @@
 
 请阅读控制台 v3.x+文档：
 
-- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/index.html)
+- [中文用户手册](https://fisco-bcos-doc.readthedocs.io/zh-cn/latest/docs/operation_and_maintenance/console/index.html)
 
 ### 新增
 
