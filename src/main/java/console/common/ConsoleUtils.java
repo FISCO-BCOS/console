@@ -1058,6 +1058,15 @@ public class ConsoleUtils {
     }
 
     public static Version convertStringToVersion(String version) {
-        return Version.valueOf("V" + version.replace('.', '_'));
+        try {
+            return Version.valueOf("V" + version.replace('.', '_'));
+        } catch (Exception e) {
+            System.out.println(
+                    "Invalid solidity version: "
+                            + version
+                            + ", only support: "
+                            + Arrays.toString(Version.values()));
+            throw e;
+        }
     }
 }

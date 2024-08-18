@@ -1,5 +1,7 @@
 package console.contract;
 
+import static console.contract.utils.ContractCompiler.mergeAbi;
+import static console.contract.utils.ContractCompiler.mergeSource;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
@@ -30,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1073,27 +1076,30 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         if (!solFile.exists()) {
             throw new Exception("The contract file " + contractFilePath + " doesn't exist!");
         }
-        String contractName = solFile.getName().split("\\.")[0];
 
         List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
         List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
 
         logger.debug(
                 "compileSolToBinAndAbi, solc version:{} ,basePath: {}",
-                Version.V0_8_11,
+                Version.V0_8_26,
                 solFile.getParentFile().getCanonicalPath());
         SolidityCompiler.Option basePath =
                 new SolidityCompiler.CustomOption(
                         "base-path", solFile.getParentFile().getCanonicalPath());
         options.add(basePath);
+        String fileName = solFile.getName();
+        String dir = solFile.getParentFile().getCanonicalPath() + File.separator;
+
+        String mergedSource = mergeSource(dir, fileName, new HashSet<>());
 
         // compile ecdsa
         SolidityCompiler.Result res =
                 SolidityCompiler.compile(
-                        solFile,
+                        mergedSource.getBytes(StandardCharsets.UTF_8),
                         (client.getCryptoType() == CryptoType.SM_TYPE),
                         true,
-                        Version.V0_8_11,
+                        Version.V0_8_26,
                         options.toArray(new SolidityCompiler.Option[0]));
 
         if (logger.isDebugEnabled()) {
@@ -1111,8 +1117,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         }
 
         CompilationResult result = CompilationResult.parse(res.getOutput());
-        CompilationResult.ContractMetadata contractMetadata = result.getContract(contractName);
-        return contractMetadata.abi;
+        return mergeAbi(result);
     }
 
     private String getWasmAbi(String groupId, String pwd, String contractFileName)
