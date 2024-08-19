@@ -20,6 +20,10 @@ import static org.fisco.solc.compiler.SolidityCompiler.Options.DEVDOC;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.USERDOC;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import console.common.ConsoleUtils;
 import console.contract.exceptions.CompileContractException;
 import console.contract.model.AbiAndBin;
@@ -38,6 +42,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.fisco.bcos.codegen.v3.exceptions.CodeGenException;
 import org.fisco.bcos.codegen.v3.utils.CodeGenUtils;
+import org.fisco.bcos.sdk.v3.utils.ObjectMapperFactory;
 import org.fisco.bcos.sdk.v3.utils.StringUtils;
 import org.fisco.evm.analysis.EvmAnalyser;
 import org.fisco.solc.compiler.CompilationResult;
@@ -241,7 +246,8 @@ public class ContractCompiler {
 
         String bin = sm ? "" : meta.bin;
         String smBin = sm ? meta.bin : "";
-        AbiAndBin abiAndBin = new AbiAndBin(meta.abi, bin, smBin, meta.devdoc);
+        String abi = mergeAbi(result);
+        AbiAndBin abiAndBin = new AbiAndBin(abi, bin, smBin, meta.devdoc);
 
         // evm static analysis
         File abiFile = new File(abiDir + contractName + ".abi");
@@ -268,8 +274,11 @@ public class ContractCompiler {
             }
         }
 
-        String abi = FileUtils.readFileToString(abiFile, StandardCharsets.UTF_8);
-        abiAndBin.setAbi(abi);
+        // write abi and re-read abi for add evm analysis result
+        if (isContractParallelAnalysis) {
+            abi = FileUtils.readFileToString(abiFile, StandardCharsets.UTF_8);
+            abiAndBin.setAbi(abi);
+        }
         checkBinaryCode(contractName, meta.bin);
         return abiAndBin;
     }
@@ -287,7 +296,10 @@ public class ContractCompiler {
             throw new IOException("Source file:" + fullPath + " not found");
         }
 
-        Pattern pattern = Pattern.compile("^\\s*import\\s+[\"'](.+)[\"']\\s*;\\s*$");
+        Pattern simpleImport = Pattern.compile("^\\s*import\\s+[\"'](.+)[\"']\\s*;\\s*$");
+        Pattern asImport = Pattern.compile("^\\s*import\\s+[\"'](.+)[\"']\\s*as\\s*(.+);\\s*$");
+        Pattern fromImport =
+                Pattern.compile("^\\s*import\\s+[\\w{}]*\\s+from\\s+['\"](.+)['\"];\\s*$");
         try (Scanner scanner = new Scanner(sourceResource, "UTF-8")) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
@@ -305,9 +317,21 @@ public class ContractCompiler {
                     continue;
                 }
 
-                Matcher matcher = pattern.matcher(line);
-                if (matcher.find()) {
-                    String depSourcePath = matcher.group(1);
+                Matcher simpleMatcher = simpleImport.matcher(line);
+                Matcher fromMatcher = fromImport.matcher(line);
+                Matcher asMatcher = asImport.matcher(line);
+                boolean simpleFlag = simpleMatcher.find();
+                boolean fromFlag = fromMatcher.find();
+                boolean asFlag = asMatcher.find();
+                if (simpleFlag || fromFlag || asFlag) {
+                    String depSourcePath;
+                    if (simpleFlag) {
+                        depSourcePath = simpleMatcher.group(1);
+                    } else if (fromFlag) {
+                        depSourcePath = fromMatcher.group(1);
+                    } else {
+                        depSourcePath = asMatcher.group(1);
+                    }
                     String nextPath = dir + depSourcePath;
                     if (nextPath.contains("./")) {
                         nextPath = new File(nextPath).getCanonicalPath();
@@ -324,6 +348,24 @@ public class ContractCompiler {
         }
 
         return sourceBuffer.toString();
+    }
+
+    public static String mergeAbi(CompilationResult result) throws JsonProcessingException {
+
+        List<String> contractNames = result.getContractKeys();
+        if (contractNames.isEmpty()) {
+            return null;
+        }
+        ObjectReader objectReader = ObjectMapperFactory.getObjectReader();
+        ArrayNode mainNode = (ArrayNode) objectReader.createArrayNode();
+        for (String contractName : contractNames) {
+            String key = contractName.substring(contractName.lastIndexOf(':') + 1);
+            JsonNode jsonNode = objectReader.readTree(result.getContract(key).abi);
+            if (jsonNode.isArray() && !jsonNode.isEmpty()) {
+                mainNode.addAll((ArrayNode) jsonNode);
+            }
+        }
+        return mainNode.toString();
     }
 
     public static void checkBinaryCode(String contractName, String binary)
