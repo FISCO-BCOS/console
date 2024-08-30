@@ -1,6 +1,5 @@
 package console.contract;
 
-import static console.contract.utils.ContractCompiler.mergeAbi;
 import static console.contract.utils.ContractCompiler.mergeSource;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
@@ -1115,9 +1114,10 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throw new CompileSolidityException(
                     " Compile " + solFile.getName() + " error: " + res.getErrors());
         }
-
+        String contractName = solFile.getName().split("\\.")[0];
         CompilationResult result = CompilationResult.parse(res.getOutput());
-        return mergeAbi(result);
+        CompilationResult.ContractMetadata contractMetadata = result.getContract(contractName);
+        return contractMetadata.abi;
     }
 
     private String getWasmAbi(String groupId, String pwd, String contractFileName)
