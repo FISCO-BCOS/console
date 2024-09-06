@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // 该接口文件定义了FISCO BCOS v3.1.0及以前版本的接口，使用时需要将该文件放在合约目录下
 // 若要使用FISCO BCOS v3.2.0及以后版本的接口，请使用TableV320.sol，旧合约仍然能在新节点中使用
-pragma solidity >=0.6.10 <0.8.20;
+pragma solidity >=0.6.10 <=0.8.26;
 pragma experimental ABIEncoderV2;
 
 // KeyOrder指定Key的排序规则，字典序和数字序，如果指定为数字序，key只能为数字

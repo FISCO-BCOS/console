@@ -1,8 +1,8 @@
-pragma solidity >=0.6.10 <=0.8.26;
+pragma solidity ^0.5.2;
 
 pragma experimental ABIEncoderV2;
 
-abstract contract Crypto
+contract Crypto
 {
     function sm3(bytes memory data) public view returns (bytes32){}
 

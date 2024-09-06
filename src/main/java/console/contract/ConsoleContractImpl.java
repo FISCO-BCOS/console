@@ -1,5 +1,6 @@
 package console.contract;
 
+import static console.contract.utils.ContractCompiler.mergeSource;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.ABI;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.BIN;
 import static org.fisco.solc.compiler.SolidityCompiler.Options.METADATA;
@@ -30,6 +31,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -75,6 +77,7 @@ import org.fisco.bcos.sdk.v3.utils.Numeric;
 import org.fisco.bcos.sdk.v3.utils.StringUtils;
 import org.fisco.solc.compiler.CompilationResult;
 import org.fisco.solc.compiler.SolidityCompiler;
+import org.fisco.solc.compiler.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -244,16 +247,38 @@ public class ConsoleContractImpl implements ConsoleContractFace {
     public TransactionResponse deploySolidity(
             String contractName, String contractNameOrPath, List<String> inputParams)
             throws ConsoleMessageException {
-        List<String> tempInputParams = inputParams;
         try {
             boolean isContractParallelAnalysis = false;
+            Version version = Version.V0_8_11;
             if (!inputParams.isEmpty()) {
-                if ("-p".equals(inputParams.get(inputParams.size() - 1))
-                        || "--parallel-analysis".equals(inputParams.get(inputParams.size() - 1))) {
+                int lastIndexOf = inputParams.lastIndexOf("-p");
+                if (lastIndexOf != -1) {
                     isContractParallelAnalysis = true;
-                    tempInputParams = inputParams.subList(0, inputParams.size() - 1);
-                    logger.info(
-                            "deploy contract {} with '--parallel-analysis' or '-p'", contractName);
+                    inputParams.remove(lastIndexOf);
+                    logger.info("deploy contract {} with '-p'", contractName);
+                }
+
+                lastIndexOf = inputParams.lastIndexOf("--parallel-analysis");
+                if (lastIndexOf != -1) {
+                    isContractParallelAnalysis = true;
+                    inputParams.remove(lastIndexOf);
+                    logger.info("deploy contract {} with '--parallel-analysis'", contractName);
+                }
+
+                lastIndexOf = inputParams.lastIndexOf("-v");
+                if (lastIndexOf != -1 && lastIndexOf != inputParams.size() - 1) {
+                    version = ConsoleUtils.convertStringToVersion(inputParams.get(lastIndexOf + 1));
+                    inputParams.remove(lastIndexOf);
+                    inputParams.remove(lastIndexOf);
+                    logger.info("deploy contract {} with '-v'", contractName);
+                }
+
+                lastIndexOf = inputParams.lastIndexOf("--sol-version");
+                if (lastIndexOf != -1 && lastIndexOf != inputParams.size() - 1) {
+                    version = ConsoleUtils.convertStringToVersion(inputParams.get(lastIndexOf + 1));
+                    inputParams.remove(lastIndexOf);
+                    inputParams.remove(lastIndexOf);
+                    logger.info("deploy contract {} with '--sol-version'", contractName);
                 }
             }
 
@@ -263,7 +288,11 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                                     == CryptoType.HSM_TYPE);
             AbiAndBin abiAndBin =
                     ContractCompiler.compileContract(
-                            contractNameOrPath, contractName, sm, isContractParallelAnalysis);
+                            contractNameOrPath,
+                            contractName,
+                            sm,
+                            isContractParallelAnalysis,
+                            version);
             String bin = abiAndBin.getBin();
             if (sm) {
                 bin = abiAndBin.getSmBin();
@@ -273,12 +302,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 DeployTransactionRequestWithStringParams request =
                         new TransactionRequestBuilder(abiAndBin.getAbi(), bin)
                                 .setExtension(extension)
-                                .buildDeployStringParamsRequest(tempInputParams);
+                                .buildDeployStringParamsRequest(inputParams);
                 response = assembleTransactionService.deployContract(request);
             } else {
                 response =
                         this.assembleTransactionProcessor.deployAndGetResponseWithStringParams(
-                                abiAndBin.getAbi(), bin, tempInputParams, null);
+                                abiAndBin.getAbi(), bin, inputParams, null);
             }
             if (response.getReturnCode() != PrecompiledRetCode.CODE_SUCCESS.getCode()) {
                 System.out.println("deploy contract for " + contractName + " failed!");
@@ -367,8 +396,8 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             // save the bin and abi
             AbiAndBin abiAndBin =
                     client.getCryptoSuite().getCryptoTypeConfig() == CryptoType.SM_TYPE
-                            ? new AbiAndBin(abi, null, binStr)
-                            : new AbiAndBin(abi, binStr, null);
+                            ? new AbiAndBin(abi, null, binStr, null)
+                            : new AbiAndBin(abi, binStr, null, null);
 
             String contractAddress =
                     Base64.getUrlEncoder()
@@ -644,7 +673,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
                 }
                 abi = list.getValue2().get(0).getExt().get(1);
             }
-            AbiAndBin abiAndBin = new AbiAndBin(abi, "", "");
+            AbiAndBin abiAndBin = new AbiAndBin(abi, "", "", null);
             String functionName = params[2];
             List<String> inputParams = Arrays.asList(params).subList(3, params.length);
             callContract(abiAndBin, "", address, functionName, inputParams);
@@ -881,6 +910,12 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
         Map<ByteBuffer, ABIDefinition> methodIDToFunctions =
                 contractABIDefinition.getMethodIDToFunctions();
+        ABIDefinition constructorABIDefinition = contractABIDefinition.getConstructor();
+        if (constructorABIDefinition != null) {
+            constructorABIDefinition.setName("constructor");
+            methodIDToFunctions.put(
+                    ByteBuffer.wrap("constructor".getBytes()), constructorABIDefinition);
+        }
 
         if (!methodIDToFunctions.isEmpty()) {
             System.out.println("Method list: ");
@@ -1040,33 +1075,30 @@ public class ConsoleContractImpl implements ConsoleContractFace {
         if (!solFile.exists()) {
             throw new Exception("The contract file " + contractFilePath + " doesn't exist!");
         }
-        String contractName = solFile.getName().split("\\.")[0];
 
         List<SolidityCompiler.Option> defaultOptions = Arrays.asList(ABI, BIN, METADATA);
         List<SolidityCompiler.Option> options = new ArrayList<>(defaultOptions);
 
-        if (ContractCompiler.solcJVersion.compareToIgnoreCase(ConsoleUtils.COMPILE_WITH_BASE_PATH)
-                >= 0) {
-            logger.debug(
-                    "compileSolToBinAndAbi, solc version:{} ,basePath: {}",
-                    ContractCompiler.solcJVersion,
-                    solFile.getParentFile().getCanonicalPath());
-            SolidityCompiler.Option basePath =
-                    new SolidityCompiler.CustomOption(
-                            "base-path", solFile.getParentFile().getCanonicalPath());
-            options.add(basePath);
-        } else {
-            logger.debug(
-                    "compileSolToBinAndAbi, solc version:{}",
-                    org.fisco.solc.compiler.Version.version);
-        }
+        logger.debug(
+                "compileSolToBinAndAbi, solc version:{} ,basePath: {}",
+                Version.V0_8_26,
+                solFile.getParentFile().getCanonicalPath());
+        SolidityCompiler.Option basePath =
+                new SolidityCompiler.CustomOption(
+                        "base-path", solFile.getParentFile().getCanonicalPath());
+        options.add(basePath);
+        String fileName = solFile.getName();
+        String dir = solFile.getParentFile().getCanonicalPath() + File.separator;
+
+        String mergedSource = mergeSource(dir, fileName, new HashSet<>());
 
         // compile ecdsa
         SolidityCompiler.Result res =
                 SolidityCompiler.compile(
-                        solFile,
+                        mergedSource.getBytes(StandardCharsets.UTF_8),
                         (client.getCryptoType() == CryptoType.SM_TYPE),
                         true,
+                        Version.V0_8_26,
                         options.toArray(new SolidityCompiler.Option[0]));
 
         if (logger.isDebugEnabled()) {
@@ -1082,7 +1114,7 @@ public class ConsoleContractImpl implements ConsoleContractFace {
             throw new CompileSolidityException(
                     " Compile " + solFile.getName() + " error: " + res.getErrors());
         }
-
+        String contractName = solFile.getName().split("\\.")[0];
         CompilationResult result = CompilationResult.parse(res.getOutput());
         CompilationResult.ContractMetadata contractMetadata = result.getContract(contractName);
         return contractMetadata.abi;

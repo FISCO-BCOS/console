@@ -156,6 +156,13 @@ public class HelpInfo {
                 "* boolean -- (optional) If true it returns only the hashes of the transactions, if false then return the full transaction objects.");
     }
 
+    public static void getLatestBlockHelp() {
+        System.out.println("Query the latest block.");
+        System.out.println("Usage: \ngetLatestBlock [boolean]");
+        System.out.println(
+                "* boolean -- (optional) If true it returns only the hashes of the transactions, if false then return the full transaction objects.");
+    }
+
     public static void getBlockHeaderByHashHelp() {
         System.out.println("Query information about a block header by hash.");
         System.out.println("Usage: \ngetBlockHeaderByHash blockHash [boolean]");
@@ -227,7 +234,7 @@ public class HelpInfo {
             System.out.println(
                     "Deploy a " + "\033[32m" + "Solidity" + "\033[m" + " contract on blockchain.");
             System.out.println(
-                    "Usage: \ndeploy contractNameOrPath parameters... [--parallel-analysis/-p]");
+                    "Usage: \ndeploy contractNameOrPath parameters... [--parallel-analysis/-p --sol-version/-v 0.8.11]");
             System.out.println(
                     "* contractNameOrPath -- The name of a contract or the path of a contract (Default load contract from the \"contracts/solidity\" path when using contractName).");
             System.out.println(
@@ -237,6 +244,8 @@ public class HelpInfo {
                             + "                  link must locate under '/apps', and be composed of contract name and version ");
             System.out.println(
                     "* --parallel-analysis/-p[Optional] -- parallel conflict analysis with the contract, default: no.");
+            System.out.println(
+                    "* --sol-version/-v[Optional] -- The version of solidity compiler supported 0.4.25, 0.5.2, 0.6.10, 0.8.11, default is 0.8.11.");
         } else {
             System.out.println(
                     "Deploy a " + "\033[32m" + "Liquid" + "\033[m" + " contract on blockchain.");
@@ -415,6 +424,11 @@ public class HelpInfo {
         System.out.println("* key -- The name of system config.");
         System.out.println(
                 "    -- supported keys: " + String.join(",", Common.SUPPORTED_SYSTEM_KEYS));
+    }
+
+    public static void listSystemConfigsHelp() {
+        System.out.println("List all support system configs.");
+        System.out.println("Usage: \nlistSystemConfigs ");
     }
 
     public static void operateGroupHelp(String command, String operator) {
