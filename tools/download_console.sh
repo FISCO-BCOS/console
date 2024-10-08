@@ -82,7 +82,7 @@ check_params()
 download_console(){
     check_params
     git_download_link=https://github.com/FISCO-BCOS/console/releases/download/v${download_version}/${package_name}
-    download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${download_version}/${package_name}
+    download_link=https://github.com/FISCO-BCOS/console/releases/v${download_version}/${package_name}
 
     if [ $(curl -IL -o /dev/null -s -w %{http_code} "${download_link}") == 200 ];then
         LOG_INFO "Downloading console ${download_version} from ${download_link}"
@@ -107,7 +107,7 @@ download_console(){
 download_solcJ(){
     check_params
     git_download_link=https://github.com/FISCO-BCOS/console/releases/download/v${solc_download_version}/${solcj_name}
-    download_link=https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/FISCO-BCOS/console/releases/v${solc_download_version}/${solcj_name}
+    download_link=https://github.com/FISCO-BCOS/console/releases/v${solc_download_version}/${solcj_name}
 
     if [ $(curl -IL -o /dev/null -s -w %{http_code} "${download_link}") == 200 ];then
         LOG_INFO "Downloading solcJ ${solcj_name} from ${download_link}"
