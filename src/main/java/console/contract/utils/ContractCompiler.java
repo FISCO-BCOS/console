@@ -246,7 +246,7 @@ public class ContractCompiler {
 
         String bin = sm ? "" : meta.bin;
         String smBin = sm ? meta.bin : "";
-        String abi = mergeAbi(result);
+        String abi = mergeAbi(contractName, result);
         AbiAndBin abiAndBin = new AbiAndBin(abi, bin, smBin, meta.devdoc);
 
         // evm static analysis
@@ -350,7 +350,8 @@ public class ContractCompiler {
         return sourceBuffer.toString();
     }
 
-    public static String mergeAbi(CompilationResult result) throws JsonProcessingException {
+    public static String mergeAbi(String mainContract, CompilationResult result)
+            throws JsonProcessingException {
 
         List<String> contractNames = result.getContractKeys();
         if (contractNames.isEmpty()) {
@@ -358,11 +359,25 @@ public class ContractCompiler {
         }
         ObjectReader objectReader = ObjectMapperFactory.getObjectReader();
         ArrayNode mainNode = (ArrayNode) objectReader.createArrayNode();
+        CompilationResult.ContractMetadata main = result.getContract(mainContract);
+        mainNode.addAll((ArrayNode) objectReader.readTree(main.abi));
+
         for (String contractName : contractNames) {
             String key = contractName.substring(contractName.lastIndexOf(':') + 1);
-            JsonNode jsonNode = objectReader.readTree(result.getContract(key).abi);
+            if (key.equals(mainContract)) {
+                continue;
+            }
+
+            CompilationResult.ContractMetadata contract = result.getContract(key);
+            JsonNode jsonNode = objectReader.readTree(contract.abi);
             if (jsonNode.isArray() && !jsonNode.isEmpty()) {
-                mainNode.addAll((ArrayNode) jsonNode);
+                ArrayNode arrayNode = (ArrayNode) jsonNode;
+                for (JsonNode node : arrayNode) {
+                    if (node.has("type") && node.get("type").asText().equals("constructor")) {
+                    } else {
+                        mainNode.add(node);
+                    }
+                }
             }
         }
         return mainNode.toString();
