@@ -135,6 +135,23 @@ public class PrecompiledImpl implements PrecompiledFace {
     }
 
     @Override
+    public void setConsensusNodeTermWeight(String[] params) throws Exception {
+        String nodeId = params[1];
+        int weight = ConsoleUtils.processNonNegativeNumber("consensusWeight", params[2]);
+        if (nodeId.length() != 128) {
+            ConsoleUtils.printJson(PrecompiledRetCode.CODE_INVALID_NODEID.toString());
+        } else {
+            RetCode retCode =
+                    this.consensusService.setTermWeight(nodeId, BigInteger.valueOf(weight));
+            ConsoleUtils.printJson(retCode.toString());
+            if (retCode.getCode() == PrecompiledRetCode.CODE_NO_AUTHORIZED.getCode()) {
+                System.out.println(
+                        "Maybe you should use 'setConsensusNodeTermWeightProposal' command to change system config.");
+            }
+        }
+    }
+
+    @Override
     public void setSystemConfigByKey(ConsoleInitializer consoleInitializer, String[] params)
             throws Exception {
         String key = params[1];

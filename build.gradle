@@ -42,7 +42,7 @@ dependencies {
     //implementation 'org.fisco-bcos:solcJ:0.5.2.1'
     implementation 'org.fisco-bcos:solcJ:1.0.0'
 
-    implementation ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.8.0') {
+    implementation ('org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:3.9.0-SNAPSHOT') {
         exclude group: "org.slf4j"
     }
 
