@@ -229,6 +229,13 @@ public class HelpInfo {
         System.out.println("Usage: \ngetTotalTransactionCount");
     }
 
+    public static void sendRawTransactionHelp() {
+        System.out.println("Send a raw signed transaction to chain.");
+        System.out.println("Usage: \nsendRawTransaction [rawTransactionHex]");
+        System.out.println(
+                "* rawTransactionHex -- Raw signed transaction in hex, and it is encoded by Tars.");
+    }
+
     public static void deployHelp(boolean isWasm) {
         if (!isWasm) {
             System.out.println(

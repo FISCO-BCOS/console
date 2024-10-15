@@ -43,6 +43,7 @@ import org.fisco.bcos.sdk.jni.common.JniException;
 import org.fisco.bcos.sdk.v3.client.Client;
 import org.fisco.bcos.sdk.v3.client.exceptions.ClientException;
 import org.fisco.bcos.sdk.v3.client.protocol.response.Abi;
+import org.fisco.bcos.sdk.v3.client.protocol.response.BcosTransactionReceipt;
 import org.fisco.bcos.sdk.v3.codec.ContractCodecException;
 import org.fisco.bcos.sdk.v3.codec.EventEncoder;
 import org.fisco.bcos.sdk.v3.codec.datatypes.generated.tuples.generated.Tuple2;
@@ -122,6 +123,31 @@ public class ConsoleContractImpl implements ConsoleContractFace {
 
     public void setExtension(byte[] extension) {
         this.extension = extension;
+    }
+
+    @Override
+    public void sendRawTransaction(String[] params) throws Exception {
+        String rawTx = params[0];
+        BcosTransactionReceipt bcosTransactionReceipt = client.sendTransaction(rawTx, false);
+        TransactionReceipt transactionReceipt = bcosTransactionReceipt.getTransactionReceipt();
+        System.out.println("transaction hash: " + transactionReceipt.getTransactionHash());
+        ConsoleUtils.singleLine();
+        System.out.println("transaction status: " + transactionReceipt.getStatus());
+
+        if (transactionReceipt.getStatus() == 0) {
+            System.out.println("description: " + "transaction executed successfully");
+        }
+        ConsoleUtils.singleLine();
+        System.out.println("Receipt message: " + transactionReceipt.getMessage());
+        System.out.println("Return message: " + transactionReceipt.getOutput());
+        ConsoleUtils.singleLine();
+        if (transactionReceipt.getLogEntries() != null
+                && !transactionReceipt.getLogEntries().isEmpty()) {
+            System.out.println("Event logs");
+            for (TransactionReceipt.Logs logEntry : transactionReceipt.getLogEntries()) {
+                System.out.println(logEntry);
+            }
+        }
     }
 
     @Override
