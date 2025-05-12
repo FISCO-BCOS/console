@@ -54,14 +54,15 @@ LOG_INFO()
     echo -e "\033[32m[INFO] ${content}\033[0m"
 }
 
-check_env() {
-    [ ! -z "$(openssl version | grep 1.0.2)" ] || [ ! -z "$(openssl version | grep 1.1)" ] || [ ! -z "$(openssl version | grep '3.')" ] || [ ! -z "$(openssl version | grep reSSL)" ] || {
+check_env()
+{
+    if [ ! -z "$(openssl version | grep 1.0.2)" ] || [ ! -z "$(openssl version | grep 1.1)" ] || [ ! -z "$(openssl version | grep '3.')" ] || [ ! -z "$(openssl version | grep reSSL)" ];then
         echo "please install openssl! use \"openssl version\" command to check."
         LOG_INFO "  Ubuntu : sudo apt install -y openssl"
         LOG_INFO "  CentOS : sudo yum install -y openssl"
         LOG_INFO "  macOS  : brew install -y openssl"
         exit 1
-    }
+    fi
     if [ ! -z "$(openssl version | grep reSSL)" ];then
         export PATH="/usr/local/opt/openssl/bin:$PATH"
     fi

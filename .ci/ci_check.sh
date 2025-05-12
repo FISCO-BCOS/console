@@ -76,8 +76,11 @@ prepare_environment()
 
 build_node()
 {
-  curl -LO https://github.com/FISCO-BCOS/console/releases/download/v3.0.0/get_account.sh
-  curl -LO https://github.com/FISCO-BCOS/console/releases/download/v3.0.0/get_gm_account.sh
+  cp ./tools/get_account.sh .
+  cp ./tools/get_gm_account.sh .
+  mkdir ~/.fisco
+  cp ./tools/get_account.sh ~/.fisco/
+  cp ./tools/get_gm_account.sh ~/.fisco/
   bash build_chain.sh -l 127.0.0.1:4 ${@} -e ./fisco-bcos
   ./nodes/127.0.0.1/fisco-bcos -v
   ./nodes/127.0.0.1/start_all.sh
@@ -177,9 +180,9 @@ java -version
 #cp src/integration-test/resources/config-example.toml src/integration-test/resources/config.toml
 download_tassl
 
-LOG_INFO "------ download_binary: v3.11.0---------"
-download_binary "v3.11.0"
-download_build_chain "v3.11.0"
+LOG_INFO "------ download_binary: v3.15.2---------"
+download_binary "v3.15.2"
+download_build_chain "v3.15.2"
 LOG_INFO "------ check_standard_node---------"
 check_standard_node false
 LOG_INFO "------ check_sm_node---------"

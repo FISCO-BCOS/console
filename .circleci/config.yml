@@ -19,6 +19,7 @@ jobs:
       - run:
           name: Compile
           command: |
+            export JAVA_HOME=$(dirname $(dirname $(readlink $(readlink $(which java))))
             bash gradlew build
       - run:
           name: Integration Test
