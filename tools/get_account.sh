@@ -54,18 +54,24 @@ LOG_INFO()
     echo -e "\033[32m[INFO] ${content}\033[0m"
 }
 
-check_env()
-{
-    if [ ! -z "$(openssl version | grep 1.0.2)" ] || [ ! -z "$(openssl version | grep 1.1)" ] || [ ! -z "$(openssl version | grep '3.')" ] || [ ! -z "$(openssl version | grep reSSL)" ];then
+check_env() {
+    if ! command -v openssl >/dev/null 2>&1; then
         echo "please install openssl! use \"openssl version\" command to check."
         LOG_INFO "  Ubuntu : sudo apt install -y openssl"
         LOG_INFO "  CentOS : sudo yum install -y openssl"
-        LOG_INFO "  macOS  : brew install -y openssl"
+        LOG_INFO "  macOS  : brew install openssl"
         exit 1
     fi
-    if [ ! -z "$(openssl version | grep reSSL)" ];then
-        export PATH="/usr/local/opt/openssl/bin:$PATH"
+
+    if openssl version 2>/dev/null | grep -E -q '1\.0\.2|1\.1|^OpenSSL 3|reSSL'; then
+        return 0
     fi
+
+    echo "please install openssl! use \"openssl version\" command to check."
+    LOG_INFO "  Ubuntu : sudo apt install -y openssl"
+    LOG_INFO "  CentOS : sudo yum install -y openssl"
+    LOG_INFO "  macOS  : brew install openssl"
+    exit 1
 }
 
 calculate_address_pem()

@@ -16,8 +16,8 @@ targetCompatibility = 1.8
 repositories {
     mavenCentral()
     maven { url "https://maven.aliyun.com/nexus/content/groups/public/" }
-    maven { url "https://oss.sonatype.org/service/local/staging/deploy/maven2" }
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/" }
+    maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
 }
 
 googleJavaFormat {
@@ -50,16 +50,17 @@ dependencies {
 		exclude group: "org.slf4j"
     }
     implementation('commons-cli:commons-cli:1.5.0')
-    implementation('org.jline:jline:3.21.0')
+    implementation('org.jline:jline:3.30.6')
     implementation('io.bretty:console-table-builder:1.2')
     implementation('com.github.jsqlparser:jsqlparser:2.0')
     implementation('org.fisco-bcos.code-generator:bcos-code-generator:1.6.0') {
         exclude group: "org.fisco-bcos.java-sdk"
         exclude group: "org.slf4j"
     }
-    implementation ('com.fasterxml.jackson.core:jackson-databind:2.14.3'){
+    implementation ('com.fasterxml.jackson.core:jackson-databind:2.20.1'){
         force true
     }
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.20.1")
     testImplementation('com.github.stefanbirkner:system-rules:1.19.0')
     testImplementation('junit:junit:4.13.2')
 }
