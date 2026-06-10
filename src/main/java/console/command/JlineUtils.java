@@ -214,7 +214,15 @@ public class JlineUtils {
             if (group.isPresent() && !group.get().getNodeList().isEmpty()) {
                 group.get()
                         .getNodeList()
-                        .forEach(groupNodeInfo -> keys.addAll(groupNodeInfo.getFeatureKeys()));
+                        .forEach(
+                                groupNodeInfo -> {
+                                    if (groupNodeInfo.getFeatureKeys() != null) {
+                                        keys.addAll(groupNodeInfo.getFeatureKeys());
+                                    }
+                                    if (groupNodeInfo.getSupportConfigs() != null) {
+                                        keys.addAll(groupNodeInfo.getSupportConfigs());
+                                    }
+                                });
             }
         } catch (Exception ignored) {
             logger.info("Failed to get group info list, skip feature keys.");

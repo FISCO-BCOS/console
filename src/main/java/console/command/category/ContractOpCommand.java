@@ -49,6 +49,16 @@ public class ContractOpCommand extends BasicCategoryCommand {
         DEPLOY.setMinParamLength(wasm ? 2 : 1);
     }
 
+    public static final CommandInfo SEND_RAW_TRANSACTION =
+            new CommandInfo(
+                    "sendRawTransaction",
+                    "Send a raw signed transaction to chain",
+                    () -> HelpInfo.deployHelp(isWasm),
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer.getConsoleContractFace().sendRawTransaction(params),
+                    1,
+                    1);
+
     public static final CommandInfo DEPLOY =
             new CommandInfo(
                     "deploy",

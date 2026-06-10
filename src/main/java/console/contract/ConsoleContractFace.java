@@ -3,6 +3,9 @@ package console.contract;
 import console.ConsoleInitializer;
 
 public interface ConsoleContractFace {
+
+    void sendRawTransaction(String[] params) throws Exception;
+
     void deploy(String[] params, String pwd) throws Exception;
 
     void call(String[] params, String pwd) throws Exception;

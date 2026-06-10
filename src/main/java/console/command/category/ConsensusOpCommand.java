@@ -133,6 +133,18 @@ public class ConsensusOpCommand extends BasicCategoryCommand {
                     2,
                     2);
 
+    public static final CommandInfo SET_CONSENSUS_TERM_WEIGHT =
+            new CommandInfo(
+                    "setConsensusTermWeight",
+                    "Set consensus term weight for the specified node",
+                    HelpInfo::setConsensusWeightHelp,
+                    (consoleInitializer, params, pwd) ->
+                            consoleInitializer
+                                    .getPrecompiledFace()
+                                    .setConsensusNodeTermWeight(params),
+                    2,
+                    2);
+
     static {
         Field[] fields = ConsensusOpCommand.class.getDeclaredFields();
         for (Field field : fields) {
@@ -159,5 +171,6 @@ public class ConsensusOpCommand extends BasicCategoryCommand {
                             ConsensusOpCommand.ADD_OBSERVER.getCommand(),
                             ConsensusOpCommand.ADD_SEALER.getCommand(),
                             ConsensusOpCommand.REMOVE_NODE.getCommand(),
-                            ConsensusOpCommand.SET_CONSENSUS_WEIGHT.getCommand()));
+                            ConsensusOpCommand.SET_CONSENSUS_WEIGHT.getCommand(),
+                            ConsensusOpCommand.SET_CONSENSUS_TERM_WEIGHT.getCommand()));
 }
