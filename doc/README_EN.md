@@ -53,7 +53,7 @@ $ bash gradlew build
 If you install successfully, it produces the `dist` directory.
 
 ## Configuration
-Please see the [documentation](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/console_config.html) about configuration for the console. Have fun :)
+Please see the [documentation](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/operation_and_maintenance/console/console_config.html) about configuration for the console. Have fun :)
 
 ## Code Contribution
 - Star our GitHub.
