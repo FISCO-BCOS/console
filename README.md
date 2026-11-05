@@ -53,12 +53,12 @@ $ bash gradlew build
 如果安装成功，将在当前目录生成一个`dist`目录。
 
 ## 配置
-控制台具体配置参考[这里](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/develop/console/console_config.html)。
+控制台具体配置参考[这里](https://fisco-bcos-doc.readthedocs.io/zh_CN/latest/docs/operation_and_maintenance/console/console_config.html)。
 
 ## 贡献代码
 欢迎参与FISCO BCOS的社区建设：
 - 点亮我们的小星星(点击项目左上方Star按钮)。
-- 提交代码(Pull requests)，参考我们的[代码贡献流程](CONTRIBUTING_CN.md)。
+- 提交代码(Pull requests)，参考我们的[代码贡献流程](CONTRIBUTING.md)。
 - [提问和提交BUG](https://github.com/FISCO-BCOS/console/issues)。
 
 ## 加入我们的社区
